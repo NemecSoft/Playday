@@ -1,0 +1,44 @@
+/* tokens.css — default semantic design tokens (shadcn naming), hex values.
+   These are the first-paint defaults; the 96-palette + 67-style library
+   (themeLibrary.ts / styleLibrary.ts) injects over :root at runtime.
+
+   Legacy business variables (--bg-base, --text-primary, --accent, ...) are
+   defined here so un-migrated components (GridView/TopBar/Sidebar) follow the
+   active palette. */
+
+/* Default theme = dark (game-library friendly). The 96-palette library
+   injects over :root at runtime; this is just the first-paint default. */
+:root {
+  --background: #0e0e16;
+  --foreground: #e6e7ee;
+  --card: #15161f;
+  --card-foreground: #e6e7ee;
+  --primary: #6d5df6;
+  --primary-foreground: #ffffff;
+  --secondary: #1e1f2b;
+  --secondary-foreground: #e6e7ee;
+  --muted: #1b1c26;
+  --muted-foreground: #8a8da0;
+  --border: #262734;
+  --ring: #6d5df6;
+
+  /* Legacy business variables (dark default) */
+  --bg-base: #0e0e16;
+  --bg-top: #15161f;
+  --bg-sidebar: #12131b;
+  --bg-panel: #15161f;
+  --bg-item-hover: #1f2130;
+  --bg-item-active: #262838;
+  --bg-input: #191a24;
+  --border-strong: #343647;
+  --text-primary: #e6e7ee;
+  --text-secondary: #a6a8bc;
+  --text-dim: #7a7d92;
+  --accent: #6d5df6;
+  --accent-hover: #7f72ff;
+  --accent-soft: rgba(109, 93, 246, 0.18);
+  --success: #2fbf7f;
+  --warning: #e0a63a;
+  --danger: #e5484d;
+  --glow: none;
+}

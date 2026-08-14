@@ -1,0 +1,70 @@
+# ============================================================
+# Playday — Electron 项目标准忽略规则
+# ============================================================
+
+# ---- Node / 依赖 ----
+node_modules/
+
+# ---- 构建产物（前端 + 主进程 + 打包输出）----
+dist/
+dist-electron/
+out/
+build/
+*.tsbuildinfo
+
+# ---- Vite / 打包缓存 ----
+*.local
+.eslintcache
+.vite/
+
+# ---- 日志 ----
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- 编辑器 / 系统 ----
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# ---- 环境变量 / 密钥（防止泄露）----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+
+# ---- 测试覆盖率 / 临时文件 ----
+coverage/
+.tmp/
+temp/
+
+# ============================================================
+# 发布目录 release/：运行时文件体积巨大，不入库。
+# 仅放行 data/library（含 library.db，忽略 .bak）、
+#       data/announcements、data/config.json 三样。
+# ============================================================
+release/*
+!release/data/
+
+# data 下：只保留 library、announcements、config.json
+release/data/*
+!release/data/library/
+!release/data/announcements/
+!release/data/config.json
+
+# 其他数据目录（封面/详情页体积大，不入库）
+release/data/CoverImages/
+release/data/Game_Details/
+
+# library 里只推 database，忽略备份
+release/data/library/*
+!release/data/library/library.db

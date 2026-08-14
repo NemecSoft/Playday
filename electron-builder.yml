@@ -1,0 +1,45 @@
+# 打包配置：把 Playday 打成"免安装便携版"（绿色版）。
+# 产物形态：release/win-unpacked/ 下一个文件夹，里面是
+#   Playnite.DesktopApp.exe（客户端）
+#   以及运行所需的 electron 运行时、资源、node_modules 依赖。
+# data 目录（游戏库数据库 + CoverImages 封面图）是"绿色存储"，由用户放到 exe 同级，
+# 因为主进程 configRoot() 在生产环境就用 exe 所在目录，data 放 exe 同级即可被找到。
+
+appId: com.playday.app
+productName: Playday
+# 主进程编译产物入口在 package.json 的 main 字段（dist-electron/electron/main.js）
+
+# 打包后 exe 文件名（配合 build.config.ts 的 CLIENT_EXE_NAME）
+win:
+  executableName: Playnite.DesktopApp
+  # exe 文件自身的图标（替换 Electron 默认图标）
+  icon: public/icons/icon.png
+
+# 只打免安装目录，不打安装包（用户要"拷走就能跑"，用 --dir 时该 target 生效）
+# 产物会落在 <output>/win-unpacked/
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - dist/**          # 渲染进程产物（vite build 输出）
+  - dist-electron/** # 主进程编译产物（tsc 输出）
+  - package.json
+
+# 说明：sql.js 在 package.json 的 dependencies 里，electron-builder 会自动把
+# 生产依赖的 node_modules（含 sql.js 的 .wasm 文件）一起打进 app.asar，
+# 主进程 locateFile 会从 app.asar 内读取，无需额外处理。
+
+# 不打包进 asar 的额外资源：把图标放一份到 resources/ 下，
+# 打包后从 process.resourcesPath 读（路径稳定，比读 asar 内的更保险）。
+extraResources:
+  - from: public/icons/tray.png
+    to: tray.png
+  - from: public/icons/icon.png
+    to: icon.png
+
+# 禁止 electron-builder 自动下载/打包我们不需要的东西
+npmRebuild: false
+
+# 不自动上传/发布
+publish: null
