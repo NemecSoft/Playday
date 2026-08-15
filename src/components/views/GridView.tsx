@@ -230,7 +230,7 @@ function GridCard({
           </button>
         </div>
       </div>
-      <div className="title">{displayName(game)}</div>
+      <div className="title-wrap"><div className="title">{displayName(game)}</div></div>
       {(game.localizedNames?.length || game.alternateNames?.length) ? (
         <div
           className="alt-names"

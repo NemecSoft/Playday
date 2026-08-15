@@ -47,6 +47,12 @@ coverage/
 .tmp/
 temp/
 
+# ---- 本地开发配置（不入仓库）----
+.codebuddy/
+.prototools
+*.log
+dev-client-err.log
+
 # ============================================================
 # 发布目录 release/：运行时文件体积巨大，不入库。
 # 仅放行 data/library（含 library.db，忽略 .bak）、

@@ -42,9 +42,32 @@ export function configRoot(): string {
   return path.resolve(__dirname, "..", "..", "..");
 }
 
-// 数据库文件路径：<数据根>/library/library.db
-export function databasePath(): string {
+// 判断当前是否管理端模式：`--admin` 参数，或当前运行的 exe 文件名是 Playday.Admin。
+// 管理端与客户端用不同位置的数据库，见 databasePath()。
+export function isAdminMode(): boolean {
+  try {
+    const exeName = path.basename(process.execPath, ".exe").toLowerCase();
+    return process.argv.includes("--admin") || exeName === "playday.admin";
+  } catch {
+    return process.argv.includes("--admin");
+  }
+}
+
+// 权威库路径（管理端 + 下发来源）：<数据根>/Admin/library.db
+export function adminDatabasePath(): string {
+  return path.join(configRoot(), "Admin", "library.db");
+}
+
+// 运行时库路径（客户端每次启动用它）：<数据根>/library/library.db
+export function runtimeDatabasePath(): string {
   return path.join(configRoot(), "library", "library.db");
+}
+
+// 数据库文件路径。
+// 管理端读权威库 <数据根>/Admin/library.db（管理端直接改这个，改完下发）；
+// 客户端读运行时副本 <数据根>/library/library.db（每次启动由 openDb 从 Admin 复制过来）。
+export function databasePath(): string {
+  return isAdminMode() ? adminDatabasePath() : runtimeDatabasePath();
 }
 
 // 应用设置文件路径：<数据根>/config.json
@@ -57,9 +80,29 @@ export function coverImagesDir(): string {
   return path.join(configRoot(), "CoverImages");
 }
 
-// 游戏静态详情页目录：<数据根>/Game_Details
+// 读取 config.json 里用户自定义的"游戏静态详情页目录"（settings.gameDetailsDir）。
+// 返回绝对路径字符串；未配置或配置不是有效绝对路径时返回 null（用默认）。
+// 注意：这里直接解析 config.json，不 import settings.ts，避免 paths ↔ settings 循环依赖。
+function configuredDetailsDir(): string | null {
+  try {
+    const raw = fs.readFileSync(configPath(), "utf-8");
+    const parsed = JSON.parse(raw) as { settings?: { gameDetailsDir?: string } };
+    const dir = parsed?.settings?.gameDetailsDir;
+    if (dir && typeof dir === "string" && path.isAbsolute(dir)) {
+      return dir;
+    }
+    return null;
+  } catch {
+    // config.json 不存在或损坏：没有自定义目录，用默认。
+    return null;
+  }
+}
+
+// 游戏静态详情页目录。
+// 默认是 <数据根>/Game_Details；如果用户设置了 gameDetailsDir（config.json），
+// 则整体替换为该绝对路径（HTML + 视频都由内置 HTTP 服务器托管该目录）。
 export function gamesHtmlDir(): string {
-  return path.join(configRoot(), "Game_Details");
+  return configuredDetailsDir() ?? path.join(configRoot(), "Game_Details");
 }
 
 // 公告目录：<数据根>/announcements

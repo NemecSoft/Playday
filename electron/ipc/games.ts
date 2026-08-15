@@ -18,7 +18,6 @@ import {
   deleteGameLibrary,
 } from "../core/db";
 import { readSettings, writeSettings, getLibraries } from "../core/settings";
-import { autoTagsFor } from "../core/tags";
 import { applyCoversToDb } from "../core/covers";
 import {
   launchGame,
@@ -31,32 +30,34 @@ import {
 } from "../core/process";
 import { expandVariables, runScript } from "../core/scriptRunner";
 import type { AppSettings, Game, GameLibrary } from "../core/models";
+import { registerCommand } from "./registry";
 
 export function registerGamesIpc(ipc: typeof ipcMain) {
   // ---------- 游戏 ----------
-  ipc.handle("get_games", async () => {
+  registerCommand(ipc, "get_games", async () => {
     // 库为空就返回空列表，前端会显示"没有游戏"的占位提示；不塞示例数据。
     // 自动给游戏套封面（空封面/封面文件丢失的重新匹配 CoverImages 目录）。
     const { games } = applyCoversToDb();
     return games;
   });
 
-  ipc.handle("get_game", async (_e, a: string | { id: string }) => {
-    const id = typeof a === "string" ? a : a?.id ?? "";
-    return getGame(id);
+  // 中间件按 field="id" 自动解包：兼容前端对象包装 { id } 和 spread 传字符串。
+  registerCommand(ipc, "get_game", async ({ id }: { id?: string }) => getGame(id ?? ""), {
+    field: "id",
   });
 
-  ipc.handle("upsert_game", async (_e, a: Game | { game: Game }) => {
+  registerCommand(ipc, "upsert_game", async (a: Game | { game: Game }) => {
     // 兼容两种：直接传 Game 对象，或前端对象包装 { game }
     const game = a && "game" in a ? a.game : a;
     upsertGame(game);
     return true;
   });
 
-  ipc.handle("delete_game", async (_e, a: string | { id: string }) => {
-    const id = typeof a === "string" ? a : a?.id ?? "";
-    deleteGame(id);
+  registerCommand(ipc, "delete_game", async ({ id }: { id?: string }) => {
+    deleteGame(id ?? "");
     return true;
+  }, {
+    field: "id",
   });
 
   ipc.handle(
@@ -101,12 +102,15 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
     }
   );
 
-  ipc.handle(
+  // 启动游戏。中间件统一解包 { id, actionId }，并开启耗时日志（启动是慢操作）。
+  // 说明：真正权限校验（用户等级 vs 游戏等级）在 launchGame 内部做，
+  //      这里不再重复，保持单点校验，避免逻辑分散。
+  registerCommand(
+    ipc,
     "launch_game",
-    async (_e, a: string | { id: string; actionId?: string }, b?: string) => {
-      const id = typeof a === "string" ? a : a?.id ?? "";
-      const actionId =
-        typeof a === "string" ? b ?? undefined : a?.actionId ?? undefined;
+    async (args: { id?: string; actionId?: string | null }) => {
+      const id = args?.id ?? "";
+      const actionId = args?.actionId ?? undefined;
       const game = getGame(id);
       if (!game) return { launched: false, error: `游戏不存在：${id}` };
       const settings = readSettings();
@@ -125,15 +129,17 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
         runScript(expandVariables(game.postLaunchScript, game), game.installDirectory);
       }
       return result;
-    }
+    },
+    { field: "id", log: true }
   );
 
-  ipc.handle(
+  // 用指定路径直接启动游戏文件（不走动作解析，供"以文件方式启动"场景）。
+  registerCommand(
+    ipc,
     "launch_game_path",
-    async (_e, a: string | { id: string; path: string }, b?: string) => {
-      const id = typeof a === "string" ? a : a?.id ?? "";
-      const p = typeof a === "string" ? b ?? "" : a?.path ?? "";
-      // 用指定路径直接启动游戏文件（不走动作解析，供"以文件方式启动"场景）。
+    async (args: { id?: string; path?: string }) => {
+      const id = args?.id ?? "";
+      const p = args?.path ?? "";
       const game = getGame(id);
       if (!game) return { launched: false, error: `游戏不存在：${id}` };
       const settings = readSettings();
@@ -152,80 +158,63 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
         gameLibraries: getLibraries(),
       });
       return result;
-    }
+    },
+    { field: "id", log: true }
   );
 
-  ipc.handle("is_game_running", async (_e, a: string | { id: string }) => {
-    const id = typeof a === "string" ? a : a?.id ?? "";
-    return isGameRunning(id);
-  });
+  registerCommand(ipc, "is_game_running", async ({ id }: { id?: string }) => {
+    return isGameRunning(id ?? "");
+  }, { field: "id" });
 
-  ipc.handle("stop_game", async (_e, a: string | { id: string }) => {
-    const id = typeof a === "string" ? a : a?.id ?? "";
+  registerCommand(ipc, "stop_game", async ({ id }: { id?: string }) => {
+    const gid = id ?? "";
     // 手动停止追踪（结算时长），并执行退出后脚本。
-    const game = getGame(id);
+    const game = getGame(gid);
     if (game && game.postExitEnabled && game.postExitScript) {
       runScript(expandVariables(game.postExitScript, game), game.installDirectory);
     }
-    return stopGameTracking(id);
-  });
+    return stopGameTracking(gid);
+  }, { field: "id" });
 
-  // ---------- 库统计 / 自动标签 ----------
-  ipc.handle("library_stats", async () => {
+  // ---------- 库统计 ----------
+  registerCommand(ipc, "library_stats", async () => {
     return libraryStats();
   });
 
-  ipc.handle("regenerate_tags", async () => {
-    // 重新计算所有游戏的自动标签（带 Tag: 前缀），并合并到各自 tags 列表。
-    const games = getGames();
-    let updated = 0;
-    for (const g of games) {
-      const text = [g.name, ...(g.alternateNames || []), ...g.localizedNames.map((n) => n.name)].join(" ");
-      const auto = autoTagsFor(text).map((t) => "Tag: " + t);
-      const manual = (g.tags || []).filter((t) => !t.startsWith("Tag:"));
-      const merged = [...new Set([...manual, ...auto])];
-      if (merged.length !== g.tags.length) {
-        g.tags = merged;
-        upsertGame(g);
-        updated++;
-      }
-    }
-    return { updated };
-  });
-
   // ---------- 游戏库（按根目录组织） ----------
-  ipc.handle("get_game_libraries", async () => {
+  registerCommand(ipc, "get_game_libraries", async () => {
     return getGameLibraries();
   });
 
-  ipc.handle("upsert_game_library", async (_e, lib: GameLibrary) => {
+  registerCommand(ipc, "upsert_game_library", async (lib: GameLibrary) => {
     // 游戏库是"数据"，权威存数据库 game_libraries 表，config.json 不再写（历史双写已去掉）。
     upsertGameLibrary(lib);
     return true;
   });
 
-  ipc.handle("delete_game_library", async (_e, id: string) => {
-    deleteGameLibrary(id);
+  // 用 field="id" 解包：兼容对象包装 { id } 和 spread 传字符串，避免参数错位。
+  registerCommand(ipc, "delete_game_library", async ({ id }: { id?: string }) => {
+    deleteGameLibrary(id ?? "");
     return true;
-  });
+  }, { field: "id" });
 
   // ---------- 平台 / 库插件 ----------
-  ipc.handle("get_platforms", async () => {
+  registerCommand(ipc, "get_platforms", async () => {
     // TODO(Task: covers): 平台表已迁移，这里直接查库。先返回空（封面匹配会用到）。
     return [];
   });
 
-  ipc.handle("get_library_plugins", async () => {
+  registerCommand(ipc, "get_library_plugins", async () => {
     // TODO(Task: library 插件): 返回已注册库插件（如 Steam/Origin 概念）。先返回空。
     return [];
   });
 
   // ---------- 设置 ----------
-  ipc.handle("get_settings", async () => {
+  registerCommand(ipc, "get_settings", async () => {
     return readSettings();
   });
 
-  ipc.handle("save_settings", async (_e, patch: Partial<AppSettings>) => {
+  registerCommand(ipc, "save_settings", async (patch: Partial<AppSettings>) => {
     // 安全：这些"会话/登录态"字段只能由 auth 流程（login/logout/resolve_enterprise）
     // 写入，绝不能信任渲染进程通过 save_settings 伪造。这里直接剥离，防止
     // 前端把自己改成"已登录 / 等级3全权限"绕过权限控制。
@@ -247,7 +236,7 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
     return writeSettings(safePatch);
   });
 
-  ipc.handle("get_config_dir", async () => {
+  registerCommand(ipc, "get_config_dir", async () => {
     // 返回数据根目录，方便前端拼封面/详情页静态资源地址（后续 Task 用）。
     const { configRoot } = await import("../core/paths");
     return configRoot();
@@ -255,7 +244,7 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
 
   // ---------- 运行状态（Task 5） ----------
   // 运行中的游戏列表（前端顶部/详情页展示）。
-  ipc.handle("running_games", async () => {
+  registerCommand(ipc, "running_games", async () => {
     return runningGames();
   });
 
@@ -263,14 +252,14 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
   //   running：正在运行，elapsedSec 为已运行秒数（前端实时计时）。
   //   stopped：本会话内退出过一次，lastSessionSec 为最近一次运行时长。
   //   never：从没运行过。
-  ipc.handle("get_run_state", async (_e, a: string | { gameId: string }) => {
-    const gameId = typeof a === "string" ? a : a?.gameId ?? "";
-    const g = getGame(gameId);
+  registerCommand(ipc, "get_run_state", async ({ gameId }: { gameId?: string }) => {
+    const id = gameId ?? "";
+    const g = getGame(id);
     const persistedLast = g?.lastSessionSeconds ?? 0;
-    if (isGameRunning(gameId)) {
-      return { state: "running", elapsedSec: elapsedSeconds(gameId), lastSessionSec: persistedLast };
+    if (isGameRunning(id)) {
+      return { state: "running", elapsedSec: elapsedSeconds(id), lastSessionSec: persistedLast };
     }
-    const last = lastExitSeconds(gameId);
+    const last = lastExitSeconds(id);
     if (last > 0) {
       return { state: "stopped", elapsedSec: 0, lastSessionSec: Math.max(last, persistedLast) };
     }
@@ -282,7 +271,12 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
 
   // 管理端"测试脚本"：不启动游戏，只执行传入脚本并返回每行结果。
   // 工作目录优先级：游戏所属游戏库根目录 → 安装目录 → 应用目录。
-  ipc.handle("test_script", async (_e, script: string, gameId?: string) => {
+  // 入参兼容两种风格：spread (script, gameId)，或对象包装 { script, gameId }（管理端前端用）。
+  ipc.handle(
+    "test_script",
+    async (_e, a: string | { script: string; gameId?: string | null }, b?: string) => {
+      const script = typeof a === "string" ? a : a?.script ?? "";
+      const gameId = typeof a === "string" ? b : a?.gameId ?? undefined;
     let cwd: string | undefined;
     if (gameId) {
       const game = getGame(gameId);
@@ -290,10 +284,17 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
       const libs = getLibraries();
       const libRoot = game?.gameLibrary ? libs.find((l) => l.name === game.gameLibrary)?.path : undefined;
       // 从"作为启动指令"的路径解析出工作目录（去掉文件名）。
+      // 注意：playAction.path 可能含 {库名} 占位符（如 {Gamelibrary2}\Grain Rot\Meld\...），
+      // 直接 path.dirname 只会拿到字面 dirname，得不到游戏库根。先用 validateLaunchPath 展开成真实路径。
       const playAction = game?.actions.find((a) => a.isPlayAction && a.type === "File");
-      const workdirFromAction = playAction?.path
-        ? path.dirname(playAction.path)
-        : undefined;
+      let workdirFromAction: string | undefined;
+      if (playAction?.path) {
+        const precheck = validateLaunchPath(playAction.path, "File", libs);
+        // 只在展开成功（绝对路径且校验通过）时使用，否则回退到游戏库根
+        if (precheck.valid && precheck.resolved && path.isAbsolute(precheck.resolved)) {
+          workdirFromAction = path.dirname(precheck.resolved);
+        }
+      }
       cwd = workdirFromAction || libRoot || game?.installDirectory;
     }
     return runScript(script, cwd);

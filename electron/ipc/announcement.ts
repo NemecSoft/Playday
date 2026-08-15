@@ -6,6 +6,7 @@ import { ipcMain } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { announcementFile, announcementsDir } from "../core/paths";
+import { registerCommand } from "./registry";
 
 // 当没有公告文件时，给前端一个简洁的默认页（带一点样式，中文友好）。
 const DEFAULT_ANNOUNCEMENT = `<!DOCTYPE html>
@@ -24,7 +25,7 @@ const DEFAULT_ANNOUNCEMENT = `<!DOCTYPE html>
 
 export function registerAnnouncementIpc(ipc: typeof ipcMain) {
   // 返回公告 HTML 全文。文件不存在返回默认页。
-  ipc.handle("get_announcement", async () => {
+  registerCommand(ipc, "get_announcement", async () => {
     const file = announcementFile();
     if (fs.existsSync(file)) {
       try {
@@ -37,7 +38,7 @@ export function registerAnnouncementIpc(ipc: typeof ipcMain) {
   });
 
   // 返回公告目录信息（是否可写、最后修改时间等），供设置页展示。
-  ipc.handle("get_announcement_info", async () => {
+  registerCommand(ipc, "get_announcement_info", async () => {
     const dir = announcementsDir();
     const file = announcementFile();
     let modifiedAt: number | null = null;

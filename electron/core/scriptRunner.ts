@@ -62,7 +62,9 @@ export function runScript(script: string, cwd?: string): ScriptLineResult[] {
       if (res.error) {
         results.push({ line, ok: false, error: res.error.message });
       } else {
-        results.push({ line, ok: res.status === 0, error: res.status === 0 ? null : `退出码 ${res.status}` });
+        // 只把"没能启动/执行出错"当成失败；非零退出码也算执行成功（显示对号）。
+        // 很多游戏启动器/服务端脚本本来就以非零码正常退出，不该被当成错误来吓人。
+        results.push({ line, ok: true, error: null });
       }
     } catch (e) {
       results.push({ line, ok: false, error: (e as Error).message });

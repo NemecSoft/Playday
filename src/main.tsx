@@ -43,7 +43,14 @@ window.addEventListener("error", (e) => {
   document.title = "ERR: " + (e.error?.message || e.message || "unknown");
 });
 window.addEventListener("unhandledrejection", (e) => {
-  showBoot("JS REJECTION: " + (e.reason?.message || String(e.reason)));
+  // 打印完整堆栈（含出错的 Promise 来源），便于定位是哪个调用抛的错。
+  const reason: unknown = e.reason;
+  const msg = reason instanceof Error ? reason.message : String(reason);
+  const stack = reason instanceof Error ? reason.stack : undefined;
+  showBoot("JS REJECTION: " + msg);
+  document.title = "REJ: " + msg;
+  console.error("[unhandledrejection] ", reason);
+  if (stack) console.error("[unhandledrejection] stack:\n" + stack);
 });
 
 try {
@@ -104,11 +111,15 @@ try {
           if (st) restoreStyle([st]);
         }
 
-        const { useSettingsStore } = await import("./stores/settingsStore");
+        const { useSettingsStore, applyCardTextStyles } = await import(
+          "./stores/settingsStore"
+        );
         useSettingsStore.setState({
           settings: preloadedSettings as never,
           loaded: true,
         });
+        // 立即把卡片字号/加粗应用到根 CSS 变量，避免首屏用默认字号再切换。
+        applyCardTextStyles(preloadedSettings as Partial<typeof preloadedSettings>);
       } catch {
         /* ignore */
       }

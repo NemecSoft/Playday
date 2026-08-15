@@ -124,7 +124,10 @@ async function handleApi(cmd, body) {
       const r = d.exec("SELECT * FROM games WHERE id = $id", { $id: id })[0];
       if (!r || r.values.length === 0) return null;
       const cols = r.columns;
-      return rowToGame(Object.fromEntries(cols.map((c, i) => [r.values[0][i]])));
+      // 把每行数组转成 { 列名: 值 } 的对象，交给 rowToGame 转为前端 Game 对象。
+      // 注意：Object.fromEntries 需要 [key, value] 二元数组，这里补上列名 c 作为 key。
+      const row = Object.fromEntries(cols.map((c, i) => [c, r.values[0][i]]));
+      return rowToGame(row);
     }
     case "get_settings": {
       const cfg = fs.existsSync(path.join(DATA_DIR, "config.json"))

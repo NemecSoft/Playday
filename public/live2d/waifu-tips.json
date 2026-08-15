@@ -1,0 +1,58 @@
+{
+  "models": [
+    {
+      "name": "式 shizuku",
+      "message": "我是式，今天也要加油哦！",
+      "paths": ["/live2d/models/shizuku/shizuku.model.json"]
+    },
+    {
+      "name": "响 hibiki",
+      "message": "我是响，请多关照～",
+      "paths": ["/live2d/models/hibiki/hibiki.model.json"]
+    },
+    {
+      "name": "晴人 haruto",
+      "message": "我是晴人，准备好了吗？",
+      "paths": ["/live2d/models/haruto/haruto.model.json"]
+    },
+    {
+      "name": "小春 koharu",
+      "message": "我是小春，来一起玩吧！",
+      "paths": ["/live2d/models/koharu/koharu.model.json"]
+    },
+    {
+      "name": "遥 haru01",
+      "message": "我是遥，请多指教！",
+      "paths": ["/live2d/models/haru01/haru01.model.json"]
+    },
+    {
+      "name": "遥 haru02",
+      "message": "我是遥，今天想换个造型～",
+      "paths": ["/live2d/models/haru02/haru02.model.json"]
+    }
+  ],
+  "message": {
+    "welcome": "欢迎回来，祝你今天游戏愉快！",
+    "default": ["点击我会有惊喜哦～"],
+    "referrer": "从别处来的朋友，你好呀！",
+    "hoverBody": ["摸头！"],
+    "tapBody": ["哎呀～不要乱碰！"],
+    "click": [{
+      "selector": "#announcement-page",
+      "text": ["欢迎来到 Playday 游戏库！"]
+    }],
+    "console": ["快试试这个按钮！"],
+    "copy": ["复制成功，记得分享哦～"],
+    "visibilitychange": ["欢迎回来！"]
+  },
+  "time": [
+    { "hour": "5-11", "text": ["早上好，新的一天开始啦！"] },
+    { "hour": "11-14", "text": ["中午好，记得休息哦！"] },
+    { "hour": "14-18", "text": ["下午好，继续加油！"] },
+    { "hour": "18-23", "text": ["晚上好，注意休息！"] },
+    { "hour": "23-5", "text": ["夜深了，早点休息哦～"] }
+  ],
+  "seasons": [],
+  "mouseover": [],
+  "click": []
+}

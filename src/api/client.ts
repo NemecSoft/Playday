@@ -66,8 +66,6 @@ export const api = {
   getRunState: (gameId: string) => call<RunState>("get_run_state", { gameId }),
   testScript: (script: string, gameId?: string) =>
     call<ScriptLineResult[]>("test_script", { script, gameId: gameId ?? null }),
-  regenerateTags: () =>
-    call<{ updated: number }>("regenerate_tags").then((r) => r.updated),
 
   // —— 库统计 ——
   libraryStats: () => call<LibraryStats>("library_stats"),

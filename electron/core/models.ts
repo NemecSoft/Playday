@@ -118,6 +118,17 @@ export interface Game {
   // 游戏退出后执行的脚本。
   postExitScript?: string;
   postExitEnabled: boolean;
+  // 存档路径配置（存档管理：备份-恢复）。最多 3 条，含通配符。
+  savePaths?: SavePath[];
+}
+
+// 一个游戏的存档路径（备份-恢复用）。
+// path 支持 {游戏库名} 占位符，可含通配符（如 *.*、*.save）。
+export interface SavePath {
+  id: string;          // 唯一 id（编辑时增删）
+  path: string;        // 存档路径（可含通配符、{游戏库名} 占位符）
+  type: "file" | "dir"; // 目标类型（有通配符时按通配符匹配）
+  note?: string;       // 备注（可选）
 }
 
 // 统一用户记录：企业用户（按公网 IP 匹配）和个人用户（账号登录）都存这张表。
@@ -143,6 +154,61 @@ export interface CurrentUser {
 }
 
 // 应用设置（存 config.json，不在数据库里）。
+
+// 卡片文字样式：完整自定义——颜色/描边/发光/阴影/背景填充。
+// 所有字段都有默认值；缺字段时前端用 DEFAULT_CARD_TEXT 兜底。
+export interface CardTextStyle {
+  /** 主文字颜色（hex，如 "#fff8e7"） */
+  color: string;
+  /** 描边启用开关 */
+  stroke: boolean;
+  /** 描边颜色 hex */
+  strokeColor: string;
+  /** 描边粗细 px（0..3） */
+  strokeWidth: number;
+  /** 文字发光启用 */
+  glow: boolean;
+  /** 发光颜色 hex */
+  glowColor: string;
+  /** 发光模糊半径 px（0..30） */
+  glowBlur: number;
+  /** 文字阴影启用 */
+  shadow: boolean;
+  /** 阴影颜色 hex */
+  shadowColor: string;
+  /** 阴影水平偏移 px（-10..10） */
+  shadowOffsetX: number;
+  /** 阴影垂直偏移 px（-10..10） */
+  shadowOffsetY: number;
+  /** 阴影模糊 px（0..20） */
+  shadowBlur: number;
+  /** 文字背景填充启用（卡在卡面上的色块底） */
+  bg: boolean;
+  /** 背景颜色 hex */
+  bgColor: string;
+  /** 背景不透明度 0..1 */
+  bgOpacity: number;
+}
+
+/** 默认卡片文字样式：暖白 + 紫光 + 黑色描边（接近"史诗紫金"预设） */
+export const DEFAULT_CARD_TEXT: CardTextStyle = {
+  color: "#fff8e7",
+  stroke: true,
+  strokeColor: "#000000",
+  strokeWidth: 1.5,
+  glow: true,
+  glowColor: "#a040c8",
+  glowBlur: 10,
+  shadow: true,
+  shadowColor: "#000000",
+  shadowOffsetX: 0,
+  shadowOffsetY: 1,
+  shadowBlur: 2,
+  bg: false,
+  bgColor: "#000000",
+  bgOpacity: 0.5,
+};
+
 export interface AppSettings {
   startupBehavior: string;
   enableTray: boolean;
@@ -191,11 +257,22 @@ export interface AppSettings {
   currentUserLevel: number;
   // 用户选择的界面字体（空 = 用主题默认字体）。
   fontFamily: string;
+  // 卡片标题/别名字号（px）。默认 15（比老版 12px 更易读，可设 12~22）。
+  cardFontSize: number;
+  // 卡片标题/别名是否加粗（true=700，false=500）。
+  cardFontBold: boolean;
+  // 卡片文字自定义样式（颜色/描边/发光/阴影/背景填充）。
+  // 用户在"外观"里逐项调，结果存这里。CSS 直接读这里 4 个属性：
+  // --card-text-color / --card-stroke-* / --card-glow-* / --card-shadow-* / --card-bg-*
+  cardText: CardTextStyle;
   // 用户选择的主题调色板 id（对应 themeLibrary 的某个 palette id）。
   // 存 config.json 而不是 localStorage，保证打包版(file://)下重启也不丢。
   themeId?: string;
   // 用户选择的风格 id（对应 styleLibrary 的某个 style id）。
   styleId?: string;
+  // 游戏静态详情页目录。留空/未设置时用默认 <数据根>/Game_Details；
+  // 设置了绝对路径则详情页全部改从该目录读（HTML + 视频都由内置 HTTP 服务器托管）。
+  gameDetailsDir?: string;
 }
 
 // 库统计信息（library_stats 命令返回）。
@@ -252,7 +329,12 @@ export const DEFAULT_SETTINGS: AppSettings = {
   currentUserName: "",
   currentUserLevel: 3,
   fontFamily: "",
+  cardFontSize: 15,
+  cardFontBold: false,
+  cardText: DEFAULT_CARD_TEXT,
   // 主题/风格默认空 = 用内置静态主题（dark/light 等），不额外套动态调色板。
   themeId: undefined,
   styleId: undefined,
+  // 详情页目录默认空 = 用 <数据根>/Game_Details；设置后覆盖到指定绝对路径。
+  gameDetailsDir: undefined,
 };

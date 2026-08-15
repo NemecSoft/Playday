@@ -12,5 +12,5 @@ export const APP_NAME = "YunGame";
 export const CLIENT_EXE_NAME = "Playnite.DesktopApp";
 
 // 管理端可执行文件名（不含 .exe 后缀）。
-// 用户可能要求改成 Playday.Admin 等。
-export const ADMIN_EXE_NAME = "Playnite.Admin";
+// 独立的管理端程序，打开管理界面（用户/游戏/游戏库管理）。
+export const ADMIN_EXE_NAME = "Playday.Admin";

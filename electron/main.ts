@@ -1,12 +1,14 @@
 // 整个应用的主入口：负责创建窗口、注册 IPC、挂系统托盘。
 // 名字统一从 electron/config.ts 拿，不在本文件硬编码。
 import { app, BrowserWindow, Menu } from "electron";
+import * as path from "path";
 import { registerIpc } from "./ipc/register";
 import { openDb, closeDb } from "./core/db";
 import { readSettings } from "./core/settings";
 import { gamesHtmlDir } from "./core/paths";
 import { startGameServer, stopGameServer } from "./core/gameServer";
 import { createTray, destroyTray } from "./core/tray";
+import { ADMIN_EXE_NAME } from "./config";
 import {
   createClientWindow,
   createAdminWindow,
@@ -14,7 +16,18 @@ import {
 } from "./windows";
 
 // 通过命令行参数决定启动哪个窗口：`--admin` 打开管理端，否则打开客户端。
-const shouldOpenAdmin = process.argv.includes("--admin");
+// 也支持按"当前运行的 exe 文件名"判断：如果是 Playday.Admin.exe 就按管理端启动，
+// 这样打包出的独立管理端 exe 无需手动加 --admin 参数。
+const exeName = (() => {
+  try {
+    return path.basename(process.execPath, ".exe").toLowerCase();
+  } catch {
+    return "";
+  }
+})();
+const shouldOpenAdmin =
+  process.argv.includes("--admin") ||
+  (!!exeName && exeName === ADMIN_EXE_NAME.toLowerCase());
 
 // 全局保存窗口引用，避免被垃圾回收。
 let clientWin: BrowserWindow | null = null;
@@ -33,19 +46,22 @@ app.whenReady().then(async () => {
   // 注册所有主进程 ←→ 渲染进程 的命令。
   registerIpc();
 
-  // 启动游戏详情页本地 HTTP 服务器（托管 Game_Details/ 目录，端口随机）。
-  try {
-    await startGameServer(gamesHtmlDir());
-  } catch (e) {
-    console.error("[main] 启动游戏详情页服务器失败:", e);
-  }
-
-  // 按设置决定是否启用系统托盘。
-  if (readSettings().enableTray) {
+  // 客户端才启动详情页服务器和托盘；管理端（独立 Playday.Admin.exe）不需要。
+  if (!shouldOpenAdmin) {
+    // 启动游戏详情页本地 HTTP 服务器（托管 Game_Details/ 目录，端口随机）。
     try {
-      createTray();
+      await startGameServer(gamesHtmlDir());
     } catch (e) {
-      console.error("[main] 创建托盘失败:", e);
+      console.error("[main] 启动游戏详情页服务器失败:", e);
+    }
+
+    // 按设置决定是否启用系统托盘。
+    if (readSettings().enableTray) {
+      try {
+        createTray();
+      } catch (e) {
+        console.error("[main] 创建托盘失败:", e);
+      }
     }
   }
 

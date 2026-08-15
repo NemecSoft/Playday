@@ -10,7 +10,12 @@
 import * as fs from "fs";
 import * as path from "path";
 import initSqlJs, { Database, SqlJsStatic } from "sql.js";
-import { databasePath } from "./paths";
+import {
+  databasePath,
+  adminDatabasePath,
+  runtimeDatabasePath,
+  isAdminMode,
+} from "./paths";
 import type { AppUser, CurrentUser, Game, GameLibrary, LibraryStats } from "./models";
 
 // 全局的 sql.js 静态对象（init 一次复用）。
@@ -80,7 +85,8 @@ CREATE TABLE IF NOT EXISTS games (
     post_launch_script TEXT,
     post_launch_enabled INTEGER,
     post_exit_script TEXT,
-    post_exit_enabled INTEGER
+    post_exit_enabled INTEGER,
+    save_paths TEXT
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -139,6 +145,42 @@ export async function openDb(): Promise<Database> {
   }
 
   const dbPath = databasePath();
+
+  // 客户端启动缓存机制：权威库在 <数据根>/Admin/library.db（管理端修改后下发），
+  // 运行时库在 <数据根>/library/library.db。客户端每次启动先看权威库在不在，
+  // 在就把它复制成新的运行时库，再用运行时库。这样下发更新不影响正在运行的客户端，
+  // 重启后自动用最新下发版本。管理端直接用权威库，不走复制。
+  if (!isAdminMode()) {
+    const adminPath = adminDatabasePath();
+    const runPath = runtimeDatabasePath();
+    try {
+      if (fs.existsSync(adminPath)) {
+        const dir = path.dirname(runPath);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.copyFileSync(adminPath, runPath);
+      }
+      // Admin 库不存在（纯客户端、从未下发过）：回退用现有运行时库，不复制。
+    } catch (e) {
+      // 复制失败（如文件被占用）不致命：继续用现有运行时库。
+      console.error("[db] 从 Admin 复制运行时库失败:", e);
+    }
+  } else {
+    // 管理端：直接操作权威库 <数据根>/Admin/library.db。
+    // 首次迁移：如果权威库还不存在，但现有运行时库（老库）在，就把老库提升为权威，
+    // 避免"从旧版升级到双库机制"后管理端打开一个空库而丢掉已有游戏数据。
+    try {
+      const adminPath = adminDatabasePath();
+      const runPath = runtimeDatabasePath();
+      if (!fs.existsSync(adminPath) && fs.existsSync(runPath)) {
+        const dir = path.dirname(adminPath);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.copyFileSync(runPath, adminPath);
+      }
+    } catch (e) {
+      console.error("[db] 首次提升老库为权威库失败:", e);
+    }
+  }
+
   const dir = path.dirname(dbPath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -157,7 +199,24 @@ export async function openDb(): Promise<Database> {
 
   // 确保表存在（文件存在但可能缺某些表）。
   db.run(SCHEMA);
+  // 迁移：旧库可能缺 save_paths 列（存档管理新增），补上。
+  migrateAddColumns();
   return db;
+}
+
+// 对已存在的旧库做增量列迁移：确保新加的列存在。
+// 用 PRAGMA table_info 检查，缺列则 ALTER TABLE ADD COLUMN。
+function migrateAddColumns(): void {
+  try {
+    if (!db) return;
+    const cols = db.exec("PRAGMA table_info(games)")[0]?.values.map((r) => r[1]) ?? [];
+    if (!cols.includes("save_paths")) {
+      db.run("ALTER TABLE games ADD COLUMN save_paths TEXT");
+      persist();
+    }
+  } catch (e) {
+    console.error("[db] 迁移 save_paths 列失败:", e);
+  }
 }
 
 // 把内存里的库导出成二进制并写回磁盘，实现"持久化"。
@@ -276,6 +335,7 @@ export function upsertGame(game: Game): void {
     $post_launch_enabled: game.postLaunchEnabled ? 1 : 0,
     $post_exit_script: game.postExitScript ?? null,
     $post_exit_enabled: game.postExitEnabled ? 1 : 0,
+    $save_paths: JSON.stringify(game.savePaths ?? []),
   };
   db.run(
     `INSERT INTO games (
@@ -288,7 +348,7 @@ export function upsertGame(game: Game): void {
       emulator, completion_status, user_score_set, manual_game, plugin_id, links,
       actions, features_enabled, guide, screenshots, videos, game_library, game_level,
       pre_launch_script, pre_launch_enabled, post_launch_script, post_launch_enabled,
-      post_exit_script, post_exit_enabled
+      post_exit_script, post_exit_enabled, save_paths
     ) VALUES (
       $id, $name, $sort_name, $localized_names, $alternate_names, $game_id, $installed,
       $install_directory, $play_task, $other_tasks, $last_played, $play_count, $last_activity,
@@ -299,7 +359,7 @@ export function upsertGame(game: Game): void {
       $emulator, $completion_status, $user_score_set, $manual_game, $plugin_id, $links,
       $actions, $features_enabled, $guide, $screenshots, $videos, $game_library, $game_level,
       $pre_launch_script, $pre_launch_enabled, $post_launch_script, $post_launch_enabled,
-      $post_exit_script, $post_exit_enabled
+      $post_exit_script, $post_exit_enabled, $save_paths
     )
     ON CONFLICT(id) DO UPDATE SET
       name=$name, sort_name=$sort_name, localized_names=$localized_names,
@@ -320,7 +380,8 @@ export function upsertGame(game: Game): void {
       videos=$videos, game_library=$game_library, game_level=$game_level,
       pre_launch_script=$pre_launch_script, pre_launch_enabled=$pre_launch_enabled,
       post_launch_script=$post_launch_script, post_launch_enabled=$post_launch_enabled,
-      post_exit_script=$post_exit_script, post_exit_enabled=$post_exit_enabled`,
+      post_exit_script=$post_exit_script, post_exit_enabled=$post_exit_enabled,
+      save_paths=$save_paths`,
     values as never
   );
   persist();
@@ -635,6 +696,14 @@ function rowToGame(r: Record<string, unknown>): Game {
     postLaunchEnabled: bool(r.post_launch_enabled),
     postExitScript: r.post_exit_script ? str(r.post_exit_script) : undefined,
     postExitEnabled: bool(r.post_exit_enabled),
+    savePaths: (() => {
+      try {
+        const p = JSON.parse(str(r.save_paths));
+        return Array.isArray(p) ? (p as Game["savePaths"]) : undefined;
+      } catch {
+        return undefined;
+      }
+    })(),
   };
 }
 

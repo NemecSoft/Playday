@@ -7,6 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { gamesHtmlDir } from "../core/paths";
 import { getGameServerBaseUrl } from "../core/gameServer";
+import { registerCommand } from "./registry";
 
 // 返回某游戏的详情页 HTML 文件路径。规则：
 //   1. 有 id 子目录 `Game_Details/<id>/index.html` → 用它
@@ -41,12 +42,12 @@ export function registerGameHtmlIpc(ipc: typeof ipcMain) {
   );
 
   // 返回本机详情页 HTTP 服务器的 base URL；未启动返回空串。
-  ipc.handle("get_game_server_url", async () => {
+  registerCommand(ipc, "get_game_server_url", async () => {
     return getGameServerBaseUrl();
   });
 
   // 列出 Game_Details/ 目录下有哪些游戏的详情页（管理端诊断用）。
-  ipc.handle("list_game_html_dirs", async () => {
+  registerCommand(ipc, "list_game_html_dirs", async () => {
     const root = gamesHtmlDir();
     if (!fs.existsSync(root)) return [];
     const dirs: string[] = [];

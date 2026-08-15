@@ -24,14 +24,35 @@
     "username": null,
     "trackPlaytime": true,
     "cardWidth": 320,
-    "cardGap": 20,
-    "sidebarWidth": 201,
+    "cardGap": 0,
+    "sidebarWidth": 380,
     "enterpriseConfigPath": "D:/1.json",
     "currentUserKind": "guest",
     "currentUserName": "Guest",
     "currentUserLevel": 3,
     "fontFamily": "HarmonyOS Sans SC",
+    "cardFontSize": 18,
+    "cardFontBold": false,
+    "cardText": {
+      "color": "#e8eaed",
+      "stroke": false,
+      "strokeColor": "#000000",
+      "strokeWidth": 0,
+      "glow": true,
+      "glowColor": "#ff66b3",
+      "glowBlur": 10,
+      "shadow": false,
+      "shadowColor": "#000000",
+      "shadowOffsetX": 0,
+      "shadowOffsetY": 0,
+      "shadowBlur": 0,
+      "bg": false,
+      "bgColor": "#000000",
+      "bgOpacity": 0
+    },
     "themeId": "p-cn-red",
-    "styleId": "s4"
+    "styleId": "s35",
+    "gameDetailsDir": "D:/Addons",
+    "cardTextPreset": "classic"
   }
 }

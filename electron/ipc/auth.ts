@@ -1,10 +1,12 @@
 // 客户端登录 / 权限 / 状态栏 IPC 命令（Task 6）。移植自原 Rust 的 commands/auth.rs。
 
 import { ipcMain } from "electron";
+import * as fs from "fs";
 import { readSettings, writeSettings } from "../core/settings";
 import { getUserByIp } from "../core/db";
 import { publicIpv4Address, localIpv4Addresses, verifyPersonalLogin, canPlay, loadEnterpriseRecords } from "../core/auth";
 import type { CurrentUser } from "../core/models";
+import { registerCommand } from "./registry";
 
 // 把当前用户拼成给前端的载荷。
 function toPayload(u: CurrentUser, enterprise: boolean, configPath: string, configExists: boolean) {
@@ -21,10 +23,9 @@ function toPayload(u: CurrentUser, enterprise: boolean, configPath: string, conf
 
 export function registerAuthIpc(ipc: typeof ipcMain) {
   // 状态栏数据：本机 IP + 公网 IP + 命中的网吧名。
-  ipc.handle("get_status_bar", async () => {
+  registerCommand(ipc, "get_status_bar", async () => {
     const settings = readSettings();
     const cfgPath = settings.enterpriseConfigPath;
-    const fs = require("fs");
     const configExists = fs.existsSync(cfgPath);
     const localIps = localIpv4Addresses();
     const localIp = localIps[0] || "";
@@ -43,10 +44,9 @@ export function registerAuthIpc(ipc: typeof ipcMain) {
   });
 
   // 确定当前用户：企业（公网 IP 匹配）> 个人会话 > 游客(等级3)。
-  ipc.handle("get_current_user", async () => {
+  registerCommand(ipc, "get_current_user", async () => {
     let settings = readSettings();
     const cfgPath = settings.enterpriseConfigPath;
-    const fs = require("fs");
     const cfgExists = fs.existsSync(cfgPath);
 
     const publicIp = await publicIpv4Address();
@@ -89,7 +89,7 @@ export function registerAuthIpc(ipc: typeof ipcMain) {
   });
 
   // 主动解析企业用户（公网 IP 匹配 users 表），命中则存为当前会话。
-  ipc.handle("resolve_enterprise", async () => {
+  registerCommand(ipc, "resolve_enterprise", async () => {
     const settings = readSettings();
     const cfgPath = settings.enterpriseConfigPath;
     const fs = require("fs");
@@ -114,7 +114,6 @@ export function registerAuthIpc(ipc: typeof ipcMain) {
       const password = typeof a === "string" ? b ?? "" : a?.password ?? "";
       const settings = readSettings();
     const cfgPath = settings.enterpriseConfigPath;
-    const fs = require("fs");
     const user = await verifyPersonalLogin(account, password);
     if (user) {
       writeSettings({
@@ -130,7 +129,7 @@ export function registerAuthIpc(ipc: typeof ipcMain) {
   });
 
   // 清除个人会话。
-  ipc.handle("logout", async () => {
+  registerCommand(ipc, "logout", async () => {
     writeSettings({
       loggedIn: false,
       username: undefined,
@@ -142,9 +141,9 @@ export function registerAuthIpc(ipc: typeof ipcMain) {
   });
 
   // 当前用户是否能玩等级 game_level 的游戏。
-  ipc.handle("check_can_play", async (_e, a: number | { gameLevel: number }) => {
-    const gameLevel = typeof a === "number" ? a : a?.gameLevel ?? 0;
+  // 中间件按 field="gameLevel" 统一解包：兼容对象 { gameLevel } 和直接传数字。
+  registerCommand(ipc, "check_can_play", async ({ gameLevel }: { gameLevel?: number }) => {
     const settings = readSettings();
-    return canPlay(settings.currentUserLevel, gameLevel);
-  });
+    return canPlay(settings.currentUserLevel, gameLevel ?? 0);
+  }, { field: "gameLevel" });
 }

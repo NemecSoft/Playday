@@ -43,7 +43,9 @@ function applyStartupBehavior(win: BrowserWindow): void {
 }
 
 // 开发态：有 VITE_DEV_SERVER_URL 环境变量时走 Vite 开发服务器；否则加载打包后的页面。
+// 客户端用主 Vite（5173），管理端用 admin Vite（1421）。
 const devUrl = process.env.VITE_DEV_SERVER_URL;
+const adminDevUrl = process.env.VITE_ADMIN_DEV_SERVER_URL;
 
 // 找一个可用的应用图标（窗口/任务栏用）。
 // 跟托盘图标同一个来源：dev 用 public/icons/icon.png，打包用 resources/icon.png。
@@ -96,19 +98,27 @@ export function createClientWindow(): BrowserWindow {
 // 创建公告窗口（启动必经的引导窗口，类似微信的登录界面）。
 // 特点：固定尺寸、居中、无边框、不可缩放。里面显示公告 + "进入系统"按钮，
 // 点了按钮后主进程会创建主窗口并关闭本窗口（传统桌面应用的 Splash/引导模式）。
+//
+// 采用"真·异形（透明抠图）"样式：transparent:true 让窗口背景完全透明，
+// 前端用一个四周透明、带圆角/装饰突起的 CSS 异形面板 + 看板娘立绘组成窗口，
+// 透明像素会透出桌面，窗口形状随面板轮廓走（类似 QQ/宠物窗）。
+// 注意：透明窗口不能带系统阴影（会变黑块），且透明区域无法用 app-region 拖动，
+// 所以拖动只能靠面板不透明的顶部/边框区域（前端用 drag / no-drag 控制）。
 export function createAnnouncementWindow(): BrowserWindow {
   const win = new BrowserWindow({
-    width: 620,
-    height: 520,
+    width: 700,
+    height: 560,
     title: APP_NAME,
     frame: false,
+    transparent: true, // 关键：窗口背景透明，四周露出桌面形成异形
+    backgroundColor: "#00000000", // 完全透明，避免闪白/闪黑
     resizable: false,
     maximizable: false,
     fullscreenable: false,
     center: true,
     icon: appIconPath(),
-    backgroundColor: "#0d1117",
     autoHideMenuBar: true,
+    hasShadow: false, // 透明窗口别开系统阴影，否则透明区域会出现黑块
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -122,15 +132,16 @@ export function createAnnouncementWindow(): BrowserWindow {
 }
 
 // 创建管理端窗口（独立窗口，标题用可配置的管理端名）。
-// 同样无边框，复用同一套前后端 chrome 设计。
+// 管理端保持原生窗口（带标题栏 + 最大/最小/关闭按钮），与客户端（无边框）刻意区分。
 export function createAdminWindow(): BrowserWindow {
   const win = new BrowserWindow({
     width: 1080,
     height: 760,
-    title: `${ADMIN_EXE_NAME} · 管理端`,
-    frame: false,
+    minWidth: 800,
+    minHeight: 560,
+    title: `Playday Admin`,
     icon: appIconPath(), // 管理端窗口也用同一个应用图标
-    backgroundColor: "#0d1117",
+    backgroundColor: "#f7f8fa",
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -139,14 +150,26 @@ export function createAdminWindow(): BrowserWindow {
     },
   });
   win.setMenuBarVisibility(false);
+  // DWM（窗口管理器）层面设置图标，确保任务栏与开始菜单正确显示。
   applyWindowIcon(win);
   loadRenderer(win, "admin");
   return win;
 }
 
 // 根据开发/生产态加载渲染页面，并通过 query 参数告诉渲染进程是哪个窗口。
+// 管理端（windowName === "admin"）加载独立的 dist-admin 前端；其它加载客户端 dist。
 function loadRenderer(win: BrowserWindow, windowName: string): void {
-  if (devUrl) {
+  const isAdmin = windowName === "admin";
+  if (isAdmin) {
+    // 管理端：dev 用 admin Vite（1421），否则加载打包产物 dist-admin/index.html
+    if (adminDevUrl) {
+      win.loadURL(`${adminDevUrl}?window=admin`);
+    } else {
+      win.loadFile(path.join(__dirname, "..", "..", "dist-admin", "index.html"), {
+        query: { window: "admin" },
+      });
+    }
+  } else if (devUrl) {
     win.loadURL(`${devUrl}?window=${windowName}`);
   } else {
     // 主进程编译产物在 dist-electron/electron/，vite 渲染产物在工程根 dist/，

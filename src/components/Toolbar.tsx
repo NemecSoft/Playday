@@ -9,6 +9,7 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import { LayoutGrid, Globe } from "lucide-react";
 import { useGamesStore } from "../stores/gamesStore";
 import { useI18n } from "../i18n";
+import { Input } from "./ui/input";
 
 export default function Toolbar() {
   const searchQuery = useGamesStore((s) => s.searchQuery);
@@ -79,7 +80,7 @@ export default function Toolbar() {
   return (
     <div className="toolbar">
       <div className="search-box">
-        <input
+        <Input
           ref={inputRef}
           type="text"
           autoFocus

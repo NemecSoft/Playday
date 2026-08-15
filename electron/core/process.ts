@@ -12,6 +12,9 @@ import { configRoot } from "./paths";
 import { getGame, upsertGame } from "./db";
 import type { Game, GameAction, GameLibrary } from "./models";
 import { expandVariables, runScript } from "./scriptRunner";
+import { collectSavePath, backupFileName } from "./saveManager";
+import { compileBackupToExe, nsisAvailable, type NsisEntry } from "./nsis";
+import { getLibraries as getLibrariesFromSettings } from "./settings";
 
 // 运行中游戏的记录。
 export interface RunningGame {
@@ -287,6 +290,51 @@ function onProcessExit(game: Game, started: number): void {
     }
   } catch (e) {
     console.error("[process] 写回游戏时长失败:", e);
+  }
+  // 游戏退出后自动备份存档（若该游戏配置了存档路径）。
+  // 这是后台异步任务，失败不打扰用户，只记日志。
+  autoBackupOnExit(game);
+}
+
+// 游戏退出时自动备份存档：生成 NSIS 自解压 exe 到 <数据根>/backups/。
+// 仅当游戏配了 savePaths 且本机有 NSIS 编译器时才做。fire-and-forget。
+function autoBackupOnExit(game: Game): void {
+  const savePaths = game.savePaths ?? [];
+  if (savePaths.length === 0) return; // 没配存档路径，跳过
+  if (!nsisAvailable()) {
+    console.warn("[backup] 未安装 NSIS，跳过自动存档备份:", game.name);
+    return;
+  }
+  // 后台异步执行，不阻塞退出回调
+  setTimeout(() => {
+    try {
+      const fs = require("fs") as typeof import("fs");
+      // 预检：只保留有匹配文件的路径
+      const entries: NsisEntry[] = [];
+      for (const sp of savePaths) {
+        const col = collectSavePath(sp, getLibrariesForBackup());
+        if (col.matches.length > 0) entries.push({ savePath: sp, resolved: col.resolved, collect: col });
+      }
+      if (entries.length === 0) return; // 没有匹配文件，跳过
+
+      const outDir = path.join(configRoot(), "backups");
+      fs.mkdirSync(outDir, { recursive: true });
+      const fileName = backupFileName(game.name);
+      const outFile = path.join(outDir, fileName);
+      compileBackupToExe({ entries, gameName: game.name, outFile });
+      console.log("[backup] 自动备份完成:", outFile);
+    } catch (e) {
+      console.error("[backup] 自动备份失败:", game.name, (e as Error).message);
+    }
+  }, 1500); // 延迟 1.5s，避免刚退出就抢文件
+}
+
+// 自动备份用的游戏库列表（从 settings 读）。已顶部导入 getLibrariesFromSettings。
+function getLibrariesForBackup(): GameLibrary[] {
+  try {
+    return getLibrariesFromSettings();
+  } catch {
+    return [];
   }
 }
 

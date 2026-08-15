@@ -22,6 +22,7 @@ import { readSettings, writeSettings, getLibraries } from "../core/settings";
 import { hashPassword, loadEnterpriseRecords, localIpv4Addresses, resolveEnterpriseUser, publicUser } from "../core/auth";
 import { validateLaunchPath } from "../core/process";
 import type { AppUser, GameLibrary } from "../core/models";
+import { registerCommand } from "./registry";
 
 // 给管理端展示的用户（去掉密码哈希/IP 等敏感字段，但保留 kind）。
 function toPublic(u: AppUser) {
@@ -30,15 +31,16 @@ function toPublic(u: AppUser) {
 
 export function registerAdminIpc(ipc: typeof ipcMain) {
   // ---- 用户管理 ----
-  ipc.handle("admin_list_users", async () => {
+  registerCommand(ipc, "admin_list_users", async () => {
     return listAllUsers().map(toPublic);
   });
 
   // 新建或更新用户。id 为空 => 新建（账号必须唯一）；否则按账号/ID 更新。
   // kind: "personal" | "enterprise"；password 非空时才更新密码。
-  ipc.handle(
+  registerCommand(
+    ipc,
     "admin_save_user",
-    async (_e, payload: { id?: string; account: string; name: string; level: number; kind: string; password: string }) => {
+    async (payload: { id?: string; account: string; name: string; level: number; kind: string; password: string }) => {
       const level = Math.min(3, Math.max(1, payload.level));
       const kind = payload.kind.toLowerCase() === "enterprise" ? "enterprise" : "personal";
       const id = payload.id || "";
@@ -74,55 +76,53 @@ export function registerAdminIpc(ipc: typeof ipcMain) {
     }
   );
 
-  ipc.handle("admin_delete_user", async (_e, a: string | { id: string }) => {
-    const id = typeof a === "string" ? a : a?.id ?? "";
-    deleteUser(id); // 软删除
+  registerCommand(ipc, "admin_delete_user", async ({ id }: { id?: string }) => {
+    deleteUser(id ?? ""); // 软删除
     return true;
-  });
+  }, { field: "id" });
 
-  ipc.handle("admin_restore_user", async (_e, a: string | { id: string }) => {
-    const id = typeof a === "string" ? a : a?.id ?? "";
-    const u = restoreUser(id);
-    if (!u) throw new Error(`找不到用户：${id}`);
+  registerCommand(ipc, "admin_restore_user", async ({ id }: { id?: string }) => {
+    const uid = id ?? "";
+    const u = restoreUser(uid);
+    if (!u) throw new Error(`找不到用户：${uid}`);
     return toPublic(u);
-  });
+  }, { field: "id" });
 
   // ---- 设置 / 企业配置 ----
-  ipc.handle("admin_get_settings", async () => {
+  registerCommand(ipc, "admin_get_settings", async () => {
     return readSettings();
   });
 
-  ipc.handle("admin_set_enterprise_config", async (_e, a: string | { configPath: string }) => {
-    const configPath = typeof a === "string" ? a : a?.configPath ?? "";
-    return writeSettings({ enterpriseConfigPath: configPath });
-  });
+  registerCommand(ipc, "admin_set_enterprise_config", async ({ configPath }: { configPath?: string }) => {
+    return writeSettings({ enterpriseConfigPath: configPath ?? "" });
+  }, { field: "configPath" });
 
   // 预览企业配置文件：多少条记录、本机 IP 是否命中。
-  ipc.handle("admin_preview_enterprise", async (_e, a: string | { configPath: string }) => {
-    const configPath = typeof a === "string" ? a : a?.configPath ?? "";
-    const records = loadEnterpriseRecords(configPath);
+  registerCommand(ipc, "admin_preview_enterprise", async ({ configPath }: { configPath?: string }) => {
+    const p = configPath ?? "";
+    const records = loadEnterpriseRecords(p);
     const localIps = localIpv4Addresses();
     const matched = resolveEnterpriseUser(records, localIps);
     return {
-      path: configPath,
-      exists: fs.existsSync(configPath),
+      path: p,
+      exists: fs.existsSync(p),
       records: records.length,
       matchedIp: localIps[0] ?? null,
       matchedName: matched?.name ?? "",
       matchedLevel: matched?.level ?? 0,
     };
-  });
+  }, { field: "configPath" });
 
   // 导入企业用户：从 JSON 文件（旧格式数组）读入，写入 users 表 kind=enterprise。
-  ipc.handle("admin_import_enterprise_users", async (_e, a: string | { jsonPath: string }) => {
-    const jsonPath = typeof a === "string" ? a : a?.jsonPath ?? "";
-    if (!fs.existsSync(jsonPath)) throw new Error(`无法读取文件：${jsonPath}`);
-    const text = fs.readFileSync(jsonPath, "utf-8");
+  registerCommand(ipc, "admin_import_enterprise_users", async ({ jsonPath }: { jsonPath?: string }) => {
+    const jp = jsonPath ?? "";
+    if (!fs.existsSync(jp)) throw new Error(`无法读取文件：${jp}`);
+    const text = fs.readFileSync(jp, "utf-8");
     let records;
     try {
       records = JSON.parse(text);
     } catch {
-      throw new Error(`JSON 解析失败：${jsonPath}`);
+      throw new Error(`JSON 解析失败：${jp}`);
     }
     if (!Array.isArray(records)) throw new Error(`JSON 格式错误：应为数组`);
     const now = new Date().toISOString();
@@ -150,17 +150,16 @@ export function registerAdminIpc(ipc: typeof ipcMain) {
     }
     const imported = replaceEnterpriseUsers(users);
     return { imported, skippedEmpty };
-  });
+  }, { field: "jsonPath" });
 
-  ipc.handle("admin_list_enterprise_users", async () => {
+  registerCommand(ipc, "admin_list_enterprise_users", async () => {
     return listAllUsers().filter((u) => u.kind === "enterprise");
   });
 
-  ipc.handle("admin_delete_enterprise_user", async (_e, a: string | { id: string }) => {
-    const id = typeof a === "string" ? a : a?.id ?? "";
-    deleteUser(id);
+  registerCommand(ipc, "admin_delete_enterprise_user", async ({ id }: { id?: string }) => {
+    deleteUser(id ?? "");
     return true;
-  });
+  }, { field: "id" });
 
   // ---- 游戏等级 ----
   ipc.handle(
@@ -205,8 +204,8 @@ export function registerAdminIpc(ipc: typeof ipcMain) {
   });
 
   // 对选中的多个游戏做"运行前检测"（批量体检）。
-  ipc.handle("validate_selected_actions", async (_e, a: string[] | { gameIds: string[] }) => {
-    const gameIds = Array.isArray(a) ? a : a?.gameIds ?? [];
+  registerCommand(ipc, "validate_selected_actions", async (args: { gameIds?: string[] } | string[]) => {
+    const gameIds = Array.isArray(args) ? args : args?.gameIds ?? [];
     const libs = getLibraries();
     return gameIds.map((id) => {
       const game = getGame(id);
@@ -228,26 +227,30 @@ export function registerAdminIpc(ipc: typeof ipcMain) {
 
   // ---- 游戏库（按根目录组织）管理 ----
   // 游戏库是"数据"，权威存数据库 game_libraries 表，config.json 不再写（历史双写已去掉）。
-  ipc.handle("admin_get_game_libraries", async () => {
+  registerCommand(ipc, "admin_get_game_libraries", async () => {
     return getGameLibraries();
   });
 
-  ipc.handle("admin_save_game_library", async (_e, a: GameLibrary | { lib: GameLibrary }) => {
-    const lib = a && "lib" in a ? a.lib : a;
+  // 前端直接传 lib 对象（{ id,name,path }），也兼容包装成 { lib } / { library }。
+  registerCommand(
+    ipc,
+    "admin_save_game_library",
+    async (a: GameLibrary | { lib: GameLibrary } | { library: GameLibrary }) => {
+      const lib =
+        a && "lib" in a ? a.lib : a && "library" in a ? a.library : a;
     const newLib = { ...lib, name: lib.name.trim(), path: lib.path.trim() };
     if (!newLib.id) newLib.id = "lib-" + randomUUID().split("-")[0];
     upsertGameLibrary(newLib);
     return getGameLibraries();
   });
 
-  ipc.handle("admin_delete_game_library", async (_e, a: string | { id: string }) => {
-    const id = typeof a === "string" ? a : a?.id ?? "";
-    deleteGameLibrary(id);
+  registerCommand(ipc, "admin_delete_game_library", async ({ id }: { id?: string }) => {
+    deleteGameLibrary(id ?? "");
     return getGameLibraries();
-  });
+  }, { field: "id" });
 
   // ---- 游戏库整体数据（管理端编辑用） ----
-  ipc.handle("admin_get_all_games", async () => {
+  registerCommand(ipc, "admin_get_all_games", async () => {
     return getGames();
   });
 }

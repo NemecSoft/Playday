@@ -2,8 +2,8 @@ chcp 65001
 @echo off
 REM ============================================================
 REM  Playday (YunGame) 管理端开发模式启动脚本
-REM  与 dev-client.bat 相同，只是给 Electron 加 --admin 参数，
-REM  让它打开管理端窗口（?window=admin）。
+REM  用独立的管理端 Vite（端口 1421）热更新 admin/ 前端，
+REM  通过 VITE_ADMIN_DEV_SERVER_URL 让主进程加载 dist-admin 的 dev server。
 REM ============================================================
 setlocal
 
@@ -18,18 +18,18 @@ if exist "%NODE22%\node.exe" (
 )
 
 set "YUNGAME_DATA_DIR=%~dp0release\data"
-set "VITE_DEV_SERVER_URL=http://localhost:5173"
+set "VITE_ADMIN_DEV_SERVER_URL=http://localhost:1421"
 REM set "ELECTRON_DISABLE_GPU=1"
 
 echo ============================================
 echo  Playday 管理端开发模式
 echo  数据目录: %YUNGAME_DATA_DIR%
-echo  Vite     : http://localhost:5173
+echo  管理端Vite: http://localhost:1421
 echo ============================================
 
-REM 启动 Vite（若已由客户端启动则复用同一端口）
-echo [dev] 启动 Vite 开发服务器...
-start "Playday Vite" /min cmd /c "cd /d %~dp0 && node node_modules\vite\bin\vite.js --port 5173 --strictPort"
+REM 启动管理端 Vite（端口 1421）
+echo [dev] 启动管理端 Vite 开发服务器...
+start "Playday Admin Vite" /min cmd /c "cd /d %~dp0 && node node_modules\vite\bin\vite.js --config vite.admin.config.ts"
 
 echo [dev] 等待 Vite 就绪...
 set /a tries=0
@@ -39,7 +39,7 @@ if %tries% gtr 30 (
     echo [dev] 警告: Vite 未就绪，仍尝试启动 Electron
     goto runelectron
 )
-powershell -NoProfile -Command "try { (Invoke-WebRequest -Uri 'http://localhost:5173' -UseBasicParsing -TimeoutSec 1).StatusCode -eq 200 } catch { $false }" >nul 2>&1
+powershell -NoProfile -Command "try { (Invoke-WebRequest -Uri 'http://localhost:1421' -UseBasicParsing -TimeoutSec 1).StatusCode -eq 200 } catch { $false }" >nul 2>&1
 if errorlevel 1 (
     timeout /t 1 /nobreak >nul
     goto waitvite
@@ -47,7 +47,7 @@ if errorlevel 1 (
 echo [dev] Vite 已就绪。
 
 :runelectron
-REM 管理端：加 --admin
+REM 管理端：加 --admin（或 exe 名是 Playday.Admin 时自动走管理端）
 echo [dev] 启动 Electron（管理端）...
 call node_modules\.bin\electron.cmd . --admin 2>dev-admin-err.log
 

@@ -3,6 +3,8 @@
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useI18n } from "../../i18n";
 import { Button } from "../ui/button";
+import { Checkbox } from "../ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 export default function LoginSection() {
   const settings = useSettingsStore((s) => s.settings);
@@ -14,26 +16,29 @@ export default function LoginSection() {
       <h3 className="mb-3.5">{t("settings_login_header")}</h3>
 
       <div className="mb-3.5 flex items-center gap-2">
-        <input
-          type="checkbox"
+        <Checkbox
           id="loginEnabled"
           checked={settings.loginEnabled}
-          onChange={(e) => save({ loginEnabled: e.target.checked })}
+          onCheckedChange={(v) => save({ loginEnabled: v === true })}
         />
         <label htmlFor="loginEnabled">{t("settings_loginEnable")}</label>
       </div>
 
       <div className="mb-3.5">
         <label className="mb-1.5 block text-xs text-secondary-text">{t("settings_loginMethod")}</label>
-        <select
-          className="w-full rounded-md border border-border bg-input px-2.5 py-2 text-[13px] outline-none focus:border-accent disabled:opacity-50"
+        <Select
           value={settings.loginType}
-          onChange={(e) => save({ loginType: e.target.value })}
+          onValueChange={(v) => save({ loginType: v })}
           disabled={!settings.loginEnabled}
         >
-          <option value="wechat">{t("login_wechat")}</option>
-          <option value="account">{t("login_account")}</option>
-        </select>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="wechat">{t("login_wechat")}</SelectItem>
+            <SelectItem value="account">{t("login_account")}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {settings.loggedIn && (

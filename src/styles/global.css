@@ -872,9 +872,63 @@ textarea {
   color: #fff;
 }
 
-/* Sidebar */
-.sidebar {
-  width: var(--sidebar-width);
+/* Sidebar（VS Code Activity Bar 成熟模式）
+   结构：.sidebar-root 横向 flex
+     ├── .sidebar-toggle-btn（固定 toggle 按钮，常驻左边缘垂直居中）
+     └── .sidebar-panel（抽屉/标签栏，展开时才渲染）
+   toggle 按钮和抽屉解耦：按钮不被抽屉内容滚动影响，也不存在"鼠标移开误关"问题。 */
+.sidebar-root {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  /* 高度由父级 flex 的 align-items:stretch 拉伸撑满，不设 height */
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+/* 固定 toggle 按钮：常驻左边缘、垂直居中。它控制抽屉开合（同一把钥匙）。 */
+.sidebar-toggle-btn {
+  position: relative;
+  align-self: center; /* 在 .sidebar-root 的 cross-axis（垂直）上居中 */
+  flex-shrink: 0;
+  width: auto;
+  height: auto;
+  min-height: 220px;
+  margin: 0 6px 0 8px;
+  padding: 14px 8px;
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: #FFE082; /* 暖金，所有配色下都清晰可读 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  user-select: none;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s, border-color 0.15s;
+  /* 竖排文字（从上到下），让窄条放得下完整提示语。 */
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  max-height: 50vh;
+  /* 柔和的提示光晕，告诉用户"这里有可点击入口"。 */
+  box-shadow: 0 0 4px rgba(255, 224, 130, 0.25);
+  z-index: 2;
+}
+.sidebar-toggle-btn:hover,
+.sidebar-toggle-btn:focus-visible {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(255, 224, 130, 0.5);
+  border-color: var(--accent);
+}
+
+/* 抽屉（标签栏）：只占自己宽度，内容可滚动。 */
+.sidebar-panel {
+  flex-shrink: 0;
   background: var(--bg-sidebar);
   border-right: 1px solid var(--border);
   display: flex;
@@ -882,91 +936,9 @@ textarea {
   padding: 8px 8px 12px;
   overflow-y: auto;
   overflow-x: hidden;
-  flex-shrink: 0;
+  /* 定位祖先：让 .sidebar-resizer（拖动条）相对它定位在右侧。 */
   position: relative;
-  transition: width 0.22s ease, padding 0.22s ease, opacity 0.18s ease,
-    border-color 0.22s ease;
-  opacity: 1;
-}
-.sidebar.collapsed {
-  /* 折叠时 sidebar 不再是 width:0 硬收缩，而是宽度由 handle 内容自适应撑开。
-     这样主内容区被 flex 自动往右推（handle 不遮挡卡片），且能 hover 展开。 */
-  width: auto;
-  padding: 8px;
-  opacity: 1;
-  border-right-color: var(--border);
-  pointer-events: auto;
-  /* 折叠时 flex 居中 handle（不让 handle 顶部伸到 topbar 下覆盖搜索下拉）。 */
-  justify-content: center;
-  align-items: center;
-}
-/* handle 只在 sidebar 折叠时显示，作为提示窄条。 */
-.sidebar.collapsed .sidebar-handle {
-  display: flex;
-}
-.sidebar:not(.collapsed) .sidebar-handle {
-  display: none;
-}
-.sidebar-handle {
-  /* 占布局流（非 fixed），在 sidebar 折叠时撑开自适应宽度——主内容被 flex
-     推开，天然不遮挡卡片。之前用 position: fixed 覆盖在主内容上必然遮挡。 */
-  position: relative;
-  width: auto;
-  height: auto;
-  min-height: 220px;
-  padding: 14px 8px;
-  background: var(--accent-soft);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  /* 文字用最亮的暖金（#FFE082），所有配色下都清晰可读；
-     之前用 var(--accent-hover) 在中国红下是 #B33445 暗红、对比度偏弱。 */
-  color: #FFE082;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  /* 默认带"发光→变暗→发光"的呼吸光效（box-shadow 亮/暗循环），
-     告诉用户"这里有东西可交互"；hover/focus 时停掉动画 + 变金底。 */
-  animation: sidebar-handle-glow 2.4s ease-in-out infinite;
-  transition: background 0.15s, color 0.15s;
-  /* Render the hint text vertically (top-to-bottom, single column). */
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  font-size: 15px; /* 比之前 13px 大 2 号，竖排提示更清晰 */
-  font-weight: 600;
-  letter-spacing: 2px;
-  user-select: none;
-  /* handle 不要溢出 sidebar 容器，避免顶部覆盖 topbar 下的搜索下拉。 */
-  max-height: 50vh;
-}
-.sidebar-handle:hover,
-.sidebar-handle:focus-visible {
-  /* hover/focus 时停掉呼吸光效、背景变金、文字变白——
-     给用户清晰的"找到这个提示"的反馈。 */
-  animation: none;
-  background: var(--accent);
-  color: #fff;
-}
-
-/* 呼吸/发光动画：box-shadow 由弱到强再到弱，循环 2.4s。
-   "发光→变暗→发光"效果——告诉用户"这里有交互"但不会左右移动干扰卡片布局。 */
-@keyframes sidebar-handle-glow {
-  0%, 100% {
-    box-shadow: 0 0 4px rgba(255, 224, 130, 0.25);
-  }
-  50% {
-    box-shadow: 0 0 18px rgba(255, 224, 130, 0.7);
-  }
-}
-/* 兼容"用户偏好减少动效"（无障碍）：关闭脉动，保持静态。 */
-@media (prefers-reduced-motion: reduce) {
-  .sidebar-handle {
-    animation: none;
-  }
-}
-.sidebar-handle:not(.hidden) {
-  opacity: 1;
-  pointer-events: auto;
+  transition: width 0.22s ease;
 }
 
 .sidebar-toprow {
@@ -1065,26 +1037,71 @@ textarea {
   color: var(--text-dim);
 }
 
-/* Sidebar tag (checkbox) list */
-.sidebar-tag-search {
+/* Sidebar header：标题 */
+.sidebar-header {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 4px 8px;
-  margin: 4px 8px 6px;
-  color: var(--text-dim);
+  padding: 4px 4px 8px;
+  /* 不被 flex 挤压：标题始终占自己需要的最小高度 */
+  flex-shrink: 0;
 }
-.sidebar-tag-search input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--text-primary);
+.sidebar-header-title {
   font-size: 12px;
-  min-width: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  text-shadow: var(--text-glow, none);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Sidebar tag (checkbox) list */
+.sidebar-tag-search {
+  margin: 0 4px 8px;
+  flex-shrink: 0; /* 搜索框占自然高度，不被挤压 */
+}
+.sidebar-tag-search .input {
+  height: 32px;
+  font-size: 12px;
+}
+.sidebar-clear-row {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 4px 8px 8px;
+  flex-shrink: 0; /* 已选标签行不被挤压 */
+}
+.sidebar-clear-info {
+  /* 醒目显示选中数量：用户第一时间就能看到"选了几个标签"。
+     用主色 + 加粗 + 14px，避免之前 11px + 淡灰色几乎看不清的问题。 */
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-shadow: var(--text-glow, none);
+  text-align: center;
+  padding: 2px 0;
+}
+.sidebar-clear-btn {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent-hover);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+  font-family: inherit;
+  transition: background 0.13s, color 0.13s;
+}
+.sidebar-clear-btn:hover {
+  background: var(--accent-soft);
 }
 .sidebar-tag-list {
   display: grid;
@@ -1094,6 +1111,8 @@ textarea {
   gap: 4px;
   padding: 0 4px;
   align-content: start;
+  /* 不单独滚动：由 .sidebar-panel（抽屉）整体滚动。
+     这样 header/search/tag-list 一起滚，拖动调宽度/关闭按钮不受影响。 */
 }
 .sidebar-tag {
   min-width: 0;
@@ -1130,7 +1149,18 @@ textarea {
   white-space: nowrap;
   min-width: 0;
   max-width: 100%;
-  text-shadow: var(--text-glow, none);
+  /* 跟随"卡片文字样式"：颜色/描边/发光/阴影/字号/加粗，与 .grid-card .title
+     风格统一，让用户调过的文字样式在整个应用一致生效。
+     字号 = 卡片标题的 0.75 倍且最大 15px，兼顾 sidebar 布局不撑破，
+     又随 cardFontSize 滑杆一起变大变小（用户要求"一样变化大小"）。 */
+  color: var(--card-text-color, var(--text-primary));
+  font-size: min(calc(var(--card-title-size, 15px) * 0.75), 15px);
+  font-weight: var(--card-title-weight, 500);
+  -webkit-text-stroke: var(--card-stroke-width, 0px) var(--card-stroke-color, transparent);
+  paint-order: stroke fill;
+  text-shadow:
+    var(--card-shadow-offset-x, 0px) var(--card-shadow-offset-y, 0px) var(--card-shadow-blur, 0px) var(--card-shadow-color, transparent),
+    0 0 var(--card-glow-blur, 0px) var(--card-glow-color, transparent);
 }
 .sidebar-tag .sidebar-tag-meta {
   display: flex;
@@ -1580,15 +1610,46 @@ textarea {
   border: 2px solid rgba(0, 0, 0, 0.6);
 }
 .grid-card .title {
-  font-size: 12px;
+  font-size: var(--card-title-size, 15px);
+  font-weight: var(--card-title-weight, 500);
   margin-top: 7px;
   text-align: center;
+  /* 完全由用户在"外观"里自定义的卡片文字样式。
+     所有 CSS 变量都由 applyCardTextStyles() 从 settings.cardText 注入。
+     关闭某项（如描边/发光/阴影/背景）= 该变量 blur=0 + color=transparent，
+     CSS 自然不渲染，效果开关无需额外条件分支。*/
+  color: var(--card-text-color, #fff8e7);
+  /* 描边：-webkit-text-stroke 支持纯透明描边"关" */
+  -webkit-text-stroke: var(--card-stroke-width, 0px) var(--card-stroke-color, transparent);
+  paint-order: stroke fill;
+  /* 发光：text-shadow 第一层（中心 + 模糊半径），用 var 控开关 */
+  text-shadow:
+    /* 阴影层（偏移 + 模糊） */
+    var(--card-shadow-offset-x, 0px) var(--card-shadow-offset-y, 0px) var(--card-shadow-blur, 0px) var(--card-shadow-color, transparent),
+    /* 发光层（中心对称） */
+    0 0 var(--card-glow-blur, 0px) var(--card-glow-color, transparent);
+  /* 背景填充：把背景色当成"文字背后"色块（不可 background-clip text，
+     否则描边/发光/阴影都被剪掉。用 padding+background 做纯色背景块） */
+  background-color: var(--card-bg-color, transparent);
+  border-radius: 4px;
+  padding: 1px 6px;
+  display: inline-block;
+  max-width: 100%;
+  box-sizing: border-box;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--text-primary);
-  font-weight: 500;
   letter-spacing: 0.2px;
+  /* 背景透明度用 opacity？不，会影响文字。用 background-color 的 rgba 在 JS 里拼好。
+     这里不重复设 opacity，由 card-bg-opacity 控制的视觉通过 --card-bg-color 自身 alpha 解决。 */
+}
+/* 当背景填充启用（opacity>0）时，文字标题元素铺满一行：用 inline-block + 父容器 flex 居中。
+   通过容器 .grid-card .title-wrap 包一层（HTML 改动见 GridView.tsx）。
+   父层 center 对齐下 inline-block 自然居中，无需额外。 */
+.grid-card .title-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 7px;
 }
 
 /* Cover-overlay text (debug index badge, etc.) — needs to read on top of
@@ -1892,7 +1953,11 @@ textarea {
   min-width: 460px;
   max-width: 640px;
   max-height: 86vh;
-  overflow: auto;
+  /* 用 flex column 布局：header 固定不滚，内容区独立滚动。
+     overflow: hidden 禁止 modal 自身滚动，避免"滑下来标题也跟着滚没了"。 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
 }
 .modal-header {
@@ -1900,6 +1965,7 @@ textarea {
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
+  flex-shrink: 0; /* 标题栏始终固定在顶部，不随内容滚动 */
 }
 .modal-header h2 {
   font-size: 16px;
@@ -1960,7 +2026,9 @@ textarea {
 /* Settings layout */
 .settings-layout {
   display: flex;
-  height: 100%;
+  /* 占满 modal 剩余高度（flex column 下 flex:1 生效），并允许内部滚动 */
+  flex: 1;
+  min-height: 0;
 }
 .settings-nav {
   width: 190px;
@@ -1971,6 +2039,8 @@ textarea {
 }
 .settings-content {
   flex: 1;
+  /* min-height:0 让 flex:1 在 flex column 容器里真正生效，内容区独立滚动不撑破 header */
+  min-height: 0;
   overflow-y: auto;
   padding: 20px 24px;
 }
@@ -2199,7 +2269,7 @@ textarea {
   box-shadow: 8px 8px 16px #c4cddb, -8px -8px 16px #ffffff;
   border-color: transparent;
 }
-:root[data-theme="neumorphism"] .sidebar,
+:root[data-theme="neumorphism"] .sidebar-panel,
 :root[data-theme="neumorphism"] .topbar {
   box-shadow: 4px 4px 12px #c4cddb, -4px -4px 12px #ffffff;
 }
@@ -2397,10 +2467,11 @@ textarea {
   gap: 4px;
   margin-top: 4px;
   line-height: 1.4;
+  font-size: var(--card-alt-size, 12px);
+  font-weight: var(--card-title-weight, 500);
 }
 .list-alt-names {
   margin-top: 2px;
-  font-size: 11px;
 }
 .alt-name {
   display: inline-block;
@@ -2771,6 +2842,163 @@ textarea {
   color: var(--text-dim, #667080);
   border-top: 1px dashed var(--border, #2e3540);
   padding-top: 12px;
+}
+
+/* ================= 公告异形窗口（真·透明抠图样式） =================
+   窗口背景由主进程设为 transparent，前端画一个四周透明的异形面板 + 看板娘。
+   关键约束：
+   - 异形面板四周要留透明边距，透明像素透出桌面形成不规则外形。
+   - 透明区域无法用 -webkit-app-region 拖动，所以只有面板不透明部分可拖。
+   - 用 mix-blend-mode: multiply 让白底立绘融入深色面板（把白当透明）。
+*/
+.ann-window {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent; /* 窗口已透明，这里也透明，露出桌面 */
+  overflow: hidden;
+  user-select: none;
+}
+
+/* 异形面板：四周留透明边距，大圆角 + 顶部装饰，背景用深色质感图 */
+.ann-shape {
+  position: relative;
+  width: 660px;
+  height: 500px;
+  display: flex;
+  flex-direction: column;
+  background: url("/announcement/bg-panel.png") center/cover no-repeat;
+  background-color: #0d1117;
+  border: 1px solid rgba(120, 160, 255, 0.35);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  /* 顶部及两侧边框区域可拖动窗口（透明区域拖不了，只能靠这里） */
+  -webkit-app-region: drag;
+  animation: annFloat 4s ease-in-out infinite;
+}
+/* 顶部装饰突起：做一个山字形上边，强化"异形"轮廓（配合透明边距） */
+.ann-crown {
+  position: absolute;
+  top: -26px;
+  left: 0;
+  right: 0;
+  height: 52px;
+  background: inherit;
+  background-image: url("/announcement/bg-panel.png");
+  background-size: cover;
+  background-position: center -0px;
+  border-bottom: 1px solid rgba(120, 160, 255, 0.35);
+  border-radius: 24px 24px 0 0;
+  z-index: 1;
+  pointer-events: none;
+}
+/* Live2D 看板娘容器（initWidget 注入的 #waifu）覆盖定位：
+   从 live2d-widget 默认的"整页左下角"移到异形面板右下角。
+   透明窗口下 canvas 透明背景透出桌面，看板娘叠加在面板上。 */
+#waifu {
+  position: absolute !important;
+  right: 6px !important;
+  bottom: 10px !important;
+  left: auto !important;
+  top: auto !important;
+  margin: 0 !important;
+  z-index: 20 !important;
+  -webkit-app-region: no-drag;
+  pointer-events: none;
+}
+#waifu canvas {
+  display: block;
+  width: 220px;
+  height: auto;
+  filter: drop-shadow(0 8px 24px rgba(45, 127, 249, 0.35));
+}
+/* 隐藏 initWidget 自带的小对话框（我们要的是纯看板娘，不弹气泡） */
+#waifu-tips {
+  display: none !important;
+}
+/* 隐藏右下角开关按钮 */
+#waifu-toggle {
+  display: none !important;
+}
+
+/* 内容区：公告滚动，占满面板中部 */
+.ann-content {
+  position: relative;
+  flex: 1 1 auto;
+  overflow: hidden;
+  margin: 40px 30px 0;
+  -webkit-app-region: no-drag; /* 内容区可交互，不拖动 */
+  z-index: 2;
+}
+.ann-scroll {
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+/* 公告富文本排版 */
+.ann-html {
+  color: #e6e9ee;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.ann-html h1, .ann-html h2, .ann-html h3 {
+  margin: 0 0 10px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.ann-html h1 { font-size: 24px; }
+.ann-html h2 { font-size: 19px; }
+.ann-html p { margin: 0 0 12px; }
+.ann-html a { color: #4d94ff; }
+.ann-html code {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.ann-html img { max-width: 100%; border-radius: 8px; }
+
+/* 底部"进入系统"按钮 */
+.ann-footer {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 0 22px;
+  z-index: 3;
+  -webkit-app-region: no-drag;
+}
+.ann-enter-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  padding: 11px 32px;
+  border: 1px solid rgba(120, 180, 255, 0.6);
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2d7ff9, #5b5bf0);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(45, 127, 249, 0.4);
+  transition: filter 0.15s, transform 0.15s, box-shadow 0.2s;
+}
+.ann-enter-btn:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 10px 30px rgba(45, 127, 249, 0.55);
+}
+.ann-enter-btn:active { transform: translateY(1px); }
+
+/* 面板轻微漂浮 + 看板娘轻微上下摆动，增加可爱感 */
+@keyframes annFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 /* ---------- News (recently added) ---------- */

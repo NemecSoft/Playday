@@ -29,6 +29,44 @@ export interface GameName {
   name: string;
 }
 
+/** 卡片文字自定义样式：颜色/描边/发光/阴影/背景填充。所有字段都有默认值。 */
+export interface CardTextStyle {
+  color: string;
+  stroke: boolean;
+  strokeColor: string;
+  strokeWidth: number;
+  glow: boolean;
+  glowColor: string;
+  glowBlur: number;
+  shadow: boolean;
+  shadowColor: string;
+  shadowOffsetX: number;
+  shadowOffsetY: number;
+  shadowBlur: number;
+  bg: boolean;
+  bgColor: string;
+  bgOpacity: number;
+}
+
+/** 默认卡片文字样式（暖白 + 紫光 + 黑色描边） */
+export const DEFAULT_CARD_TEXT: CardTextStyle = {
+  color: "#fff8e7",
+  stroke: true,
+  strokeColor: "#000000",
+  strokeWidth: 1.5,
+  glow: true,
+  glowColor: "#a040c8",
+  glowBlur: 10,
+  shadow: true,
+  shadowColor: "#000000",
+  shadowOffsetX: 0,
+  shadowOffsetY: 1,
+  shadowBlur: 2,
+  bg: false,
+  bgColor: "#000000",
+  bgOpacity: 0.5,
+};
+
 export interface Game {
   id: string;
   /** Primary display name (usually the original English title). */
@@ -98,6 +136,18 @@ export interface Game {
   /** Script run after the game exited. */
   postExitScript?: string;
   postExitEnabled: boolean;
+  /** Save-path config for save backup/restore (up to 3, supports wildcards). */
+  savePaths?: SavePath[];
+}
+
+/** A single save path for a game (backup/restore). */
+export interface SavePath {
+  id: string;
+  /** Supports {游戏库名} placeholder and wildcards like *.*, *.save */
+  path: string;
+  /** "file" | "dir" */
+  type: string;
+  note?: string;
 }
 
 /** A gameplay/live video attached to a game. */
@@ -153,10 +203,18 @@ export interface AppSettings {
   currentUserLevel: number;
   /** User-selected UI font family (empty = theme default). */
   fontFamily: string;
+  /** 卡片上标题/别名的字号（px）。默认 15，比老版 12px 更易读。 */
+  cardFontSize: number;
+  /** 卡片上文字是否加粗。 */
+  cardFontBold: boolean;
+  /** 卡片文字自定义样式（颜色/描边/发光/阴影/背景）。默认走 DEFAULT_CARD_TEXT。 */
+  cardText: CardTextStyle;
   /** Selected theme palette id (themeLibrary). Persisted in config.json. */
   themeId?: string;
   /** Selected style id (styleLibrary). Persisted in config.json. */
   styleId?: string;
+  /** Custom game detail pages dir (absolute). Empty = default data/Game_Details. */
+  gameDetailsDir?: string;
 }
 
 /** The resolved current user (enterprise or personal or guest). */

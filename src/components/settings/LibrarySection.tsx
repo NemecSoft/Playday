@@ -2,6 +2,8 @@
 
 import { useSettingsStore } from "../../stores/settingsStore";
 import { useI18n } from "../../i18n";
+import { Checkbox } from "../ui/checkbox";
+import { Input } from "../ui/input";
 
 export default function LibrarySection() {
   const settings = useSettingsStore((s) => s.settings);
@@ -14,9 +16,8 @@ export default function LibrarySection() {
 
       <div className="mb-3.5">
         <label className="mb-1.5 block text-xs text-secondary-text">{t("settings_databaseLocation")}</label>
-        <input
+        <Input
           type="text"
-          className="w-full rounded-md border border-border bg-input px-2.5 py-2 text-[13px] outline-none focus:border-accent"
           value={settings.databasePath || ""}
           onChange={(e) => save({ databasePath: e.target.value })}
           placeholder={t("settings_defaultLocation")}
@@ -24,11 +25,10 @@ export default function LibrarySection() {
       </div>
 
       <div className="mb-3.5 flex items-center gap-2">
-        <input
-          type="checkbox"
+        <Checkbox
           id="installedOnly"
           checked={settings.showInstalledOnly}
-          onChange={(e) => save({ showInstalledOnly: e.target.checked })}
+          onCheckedChange={(v) => save({ showInstalledOnly: v === true })}
         />
         <label htmlFor="installedOnly">{t("settings_showInstalledOnly")}</label>
       </div>
