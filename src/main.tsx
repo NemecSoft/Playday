@@ -39,8 +39,11 @@ function showBoot(msg: string, keep = true) {
 
 // 出错时把错误信息显示在 boot 屏上，便于排查。
 window.addEventListener("error", (e) => {
-  showBoot("JS ERROR: " + (e.error?.message || e.message || "unknown"));
-  document.title = "ERR: " + (e.error?.message || e.message || "unknown");
+  const msg = e.error?.message || e.message || "unknown";
+  const stack = e.error?.stack || e.filename + ":" + e.lineno + ":" + e.colno;
+  showBoot("JS ERROR: " + msg + "\n\n" + stack);
+  document.title = "ERR: " + msg;
+  console.error("[window.onerror]", msg, "\n", stack);
 });
 window.addEventListener("unhandledrejection", (e) => {
   // 打印完整堆栈（含出错的 Promise 来源），便于定位是哪个调用抛的错。

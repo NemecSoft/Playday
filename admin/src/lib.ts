@@ -65,7 +65,7 @@ export interface Game {
   id: string;
   name: string;
   gameLevel: number;
-  sortName?: string | null;
+  originName?: string | null;
   localizedNames?: { language: string; name: string }[];
   alternateNames?: string[];
   gameId?: string | null;
@@ -121,6 +121,9 @@ export interface Game {
   postLaunchEnabled?: boolean;
   postExitScript?: string | null;
   postExitEnabled?: boolean;
+  /** 手动指定的"计时监控 exe"：`进程名|窗口标题关键字`（如 dotnet.exe|泰拉瑞亚）。
+      仅少数用 start 启动游戏后自身提前退出的 bat 脚本需要填。留空=脚本退出即结算。 */
+  monitorExe?: string | null;
 }
 
 export interface PublicUser {

@@ -19,6 +19,17 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+/**
+ * 把网格卡片行间距（cardRowGap）注入到 :root 的 CSS 变量上。
+ * .grid-card 的 padding-bottom 读 var(--card-row-gap)，所以滑块调整即时生效。
+ * 兜底：字段缺失或非法值时落到 6px（保持老版默认间距，不破坏现有布局）。
+ */
+export function applyGridRowGap(s: Partial<AppSettings>) {
+  if (typeof document === "undefined") return; // SSR 兜底
+  const v = Math.max(0, Math.min(60, Number(s.cardRowGap) || 0));
+  document.documentElement.style.setProperty("--card-row-gap", `${v}px`);
+}
+
 export function applyCardTextStyles(s: Partial<AppSettings>) {
   if (typeof document === "undefined") return; // SSR 兜底
   const size = Math.max(10, Math.min(28, Number(s.cardFontSize) || 15));
@@ -45,6 +56,10 @@ export function applyCardTextStyles(s: Partial<AppSettings>) {
   root.setProperty("--card-title-weight", String(weight));
   // 别名字号按标题 80% 缩放（11px 对应 14px 标题），保持视觉比例。
   root.setProperty("--card-alt-size", `${Math.max(9, Math.round(size * 0.8))}px`);
+  // 简介字号：单独设置 9~16px，CSS .grid-desc 用 var(--card-desc-font-size) 读取。
+  // GridView 也会订阅这个值参与精确行高公式（3 行截断高度依赖字号）。
+  const descSize = Math.max(9, Math.min(16, Number(s.cardDescFontSize) || 11));
+  root.setProperty("--card-desc-font-size", `${descSize}px`);
   // 用户自定义颜色/描边/发光/阴影/背景。CSS 用 var(--card-...) 读取。
   root.setProperty("--card-text-color", ct.color || "#fff8e7");
   root.setProperty("--card-stroke-color", ct.strokeColor || "#000000");
@@ -74,6 +89,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   enableTray: true,
   minimizeToTray: false,
   closeToTray: false,
+  showBatConsole: false,
   language: "en-US",
   firstTimeWizardComplete: false,
   databasePath: undefined,
@@ -95,6 +111,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   trackPlaytime: true,
   cardWidth: 180,
   cardGap: 8,
+  cardRowGap: 8,
   sidebarWidth: 210,
   enterpriseConfigPath: "D:/1.json",
   currentUserKind: "",
@@ -102,10 +119,13 @@ const DEFAULT_SETTINGS: AppSettings = {
   currentUserLevel: 3,
   fontFamily: "",
   cardFontSize: 15,
+  cardDescFontSize: 11,
   cardFontBold: false,
   cardText: DEFAULT_CARD_TEXT,
   themeId: undefined,
   styleId: undefined,
+  gameDetailsDir: undefined,
+  showCardDescription: true,
 };
 
 interface SettingsState {
@@ -136,6 +156,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     merged.cardText = { ...DEFAULT_CARD_TEXT, ...(merged.cardText || {}) } as CardTextStyle;
     set({ settings: merged, loaded: true });
     applyCardTextStyles(merged);
+    applyGridRowGap(merged);
   },
 
   save: async (partial) => {
@@ -150,6 +171,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     const saved = await api.saveSettings(next);
     set({ settings: saved });
     applyCardTextStyles(saved);
+    applyGridRowGap(saved);
   },
 
   loadPlatforms: async () => {

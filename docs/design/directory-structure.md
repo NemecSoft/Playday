@@ -104,6 +104,8 @@ data/
 ├── config.json           # 应用设置 { settings: {...} }
 ├── library/library.db    # sql.js 数据库（games/users/game_libraries/platform）
 ├── CoverImages/          # 封面图（用户丢图自动匹配）
-├── Game_Details/         # 游戏静态详情页目录
+├── Game_Details/         # 游戏静态详情页目录（可用 settings.gameDetailsDir 改到其它绝对路径）
 └── announcements/announcement.html  # 公告文件
 ```
+
+> 详情页目录可通过 `config.json` 的 `settings.gameDetailsDir` 覆盖（默认用这里的 `Game_Details`），由内置 HTTP 服务器惰性托管，详见 [游戏静态详情页](./game-details.md)。

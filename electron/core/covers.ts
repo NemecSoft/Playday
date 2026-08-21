@@ -9,7 +9,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { coverImagesDir } from "./paths";
-import { getGames, upsertGame } from "./db";
+import { getGames, updateCoverImages } from "./db";
 import type { Game } from "./models";
 
 // 我们当作封面的图片扩展名。
@@ -191,14 +191,22 @@ export function applyCovers(games: Game[]): { games: Game[]; result: CoverScanRe
 }
 
 // 给库里所有游戏套封面，并只持久化"封面从空变成有"的游戏（避免无谓写库）。
+//
+// 性能优化：这里把"逐张 upsertGame()"（每张都会把整个内存库导出写盘一次）改成
+// 先收集所有需要更新的条目，最后用一次批量 UPDATE + 只 persist() 一次。启动时若
+// 有几百张封面要补，写盘从几百次降为一次，这是启动慢的主要来源之一。
 export function applyCoversToDb(): { games: Game[]; result: CoverScanResult } {
   const games = getGames();
   const { games: updated, result } = applyCovers(games);
+  const toUpdate: Array<{ id: string; coverImage: string }> = [];
   updated.forEach((g, i) => {
     const before = games[i];
     if (g.coverImage !== before.coverImage && g.coverImage) {
-      upsertGame(g);
+      toUpdate.push({ id: g.id, coverImage: g.coverImage });
     }
   });
+  if (toUpdate.length > 0) {
+    updateCoverImages(toUpdate);
+  }
   return { games: updated, result };
 }

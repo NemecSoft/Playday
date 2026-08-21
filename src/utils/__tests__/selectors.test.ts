@@ -114,15 +114,15 @@ describe("sortGames", () => {
     expect(r.map((g) => g.name)).toEqual(["Banana", "Apple"]);
   });
 
-  it("使用 sortName 而非 name 排序", () => {
+  it("按 name（中文名）排序", () => {
     const games = [
-      makeGame({ name: "The Witcher 3", sortName: "Witcher 3" }),
-      makeGame({ name: "A Hat in Time", sortName: "Hat in Time" }),
+      makeGame({ name: "巫师3" }),
+      makeGame({ name: "帽子先生" }),
     ];
     const r = sortGames(games, "name", "ascending");
-    // sortName: "Hat in Time" < "Witcher 3"
-    expect(r[0].name).toBe("A Hat in Time");
-    expect(r[1].name).toBe("The Witcher 3");
+    // 中文名拼音排序：mao... < wu...
+    expect(r[0].name).toBe("帽子先生");
+    expect(r[1].name).toBe("巫师3");
   });
 
   it("按游玩时长降序排序", () => {

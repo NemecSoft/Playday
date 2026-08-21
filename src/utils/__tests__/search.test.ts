@@ -70,9 +70,10 @@ describe("gameNameVariants", () => {
     expect(variants.filter((v) => v === "星际争霸")).toHaveLength(1);
   });
 
-  it("sortName 也算一个变体", () => {
-    const g = makeGame({ name: "The Witcher 3", sortName: "Witcher 3" });
-    expect(gameNameVariants(g)).toContain("Witcher 3");
+  it("originName 也算一个变体（搜英文原名能命中）", () => {
+    const g = makeGame({ name: "三男一狗", originName: "GTA5" });
+    expect(gameNameVariants(g)).toContain("GTA5");
+    expect(matchSearch(g, "gta5")).toBe(true);
   });
 });
 
@@ -98,6 +99,22 @@ describe("matchSearch", () => {
       localizedNames: [{ language: "zh-CN", name: "星际争霸" }],
     });
     expect(matchSearch(g, "xjzb")).toBe(true);
+  });
+
+  it("别名也能用拼音首字母搜到（车枪大战5 -> cqdz5）", () => {
+    const g = makeGame({
+      name: "GTA5",
+      alternateNames: ["车枪大战5"],
+    });
+    expect(matchSearch(g, "cqdz5")).toBe(true);
+  });
+
+  it("别名支持子串匹配（三男一狗 -> 三男）", () => {
+    const g = makeGame({
+      name: "GTA5",
+      localizedNames: [{ language: "zh-CN", name: "三男一狗" }],
+    });
+    expect(matchSearch(g, "三男")).toBe(true);
   });
 
   it("不匹配返回 false", () => {

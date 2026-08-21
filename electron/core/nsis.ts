@@ -5,12 +5,11 @@
 import * as fs from "fs";
 import * as path from "path";
 import { spawnSync } from "child_process";
-import type { SavePath } from "./models";
 import type { SavePathCollect } from "./saveManager";
 
 // 每个存档路径的编译输入：校验通过（有匹配文件）后写进脚本。
 export interface NsisEntry {
-  savePath: SavePath;
+  savePath: string;        // 原始存档路径（含通配符）
   resolved: string;        // 占位符展开后的原始路径（含通配符）
   collect: SavePathCollect;
 }
@@ -123,9 +122,11 @@ function buildNsiScript(opts: {
   lines.push("");
 
   // 每个存档路径一个 Section：SetOutPath 设恢复目标目录，File /r 递归打包匹配文件。
-  for (const e of entries) {
+  // Section 名用数组下标（1、2、3...），因为存档路径不存 id，存储更简洁。
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
     const targetDir = targetDirOf(e.resolved);
-    lines.push(`Section "Save ${e.savePath.id}"`);
+    lines.push(`Section "Save ${i + 1}"`);
     lines.push(`  SetOutPath "${escapeNsi(targetDir)}"`);
     lines.push("  SetOverwrite on");
     lines.push(`  File /r "${escapeNsi(e.resolved)}"`);

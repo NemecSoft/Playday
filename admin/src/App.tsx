@@ -66,6 +66,7 @@ export default function AdminApp() {
     postLaunchEnabled: false,
     postExitScript: "",
     postExitEnabled: false,
+    monitorExe: "",
   });
   // Game libraries: [{ name, path }] — name is user-editable ("库1" etc.),
   // path is the root directory. Referenced via `{name}` placeholders.
@@ -288,7 +289,7 @@ export default function AdminApp() {
     setEditingGame({ id: "", name: "", gameLevel: 1, developer: [], genre: [], platform: [], category: [] });
     setIsEditingGame(false);
     setEditTab("general");
-    const f = { name: "", gameLevel: 1, developer: [], genre: [], platform: [], category: [], tags: [], gameLibrary: "", version: "", publisher: [], series: [], releaseDate: "", description: "", guide: "", notes: "", favorite: false, hidden: false, actions: [], preLaunchScript: "", preLaunchEnabled: false, postLaunchScript: "", postLaunchEnabled: false, postExitScript: "", postExitEnabled: false };
+    const f = { name: "", gameLevel: 1, developer: [], genre: [], platform: [], category: [], tags: [], gameLibrary: "", version: "", publisher: [], series: [], releaseDate: "", description: "", guide: "", notes: "", favorite: false, hidden: false, actions: [], preLaunchScript: "", preLaunchEnabled: false, postLaunchScript: "", postLaunchEnabled: false, postExitScript: "", postExitEnabled: false, monitorExe: "" };
     setGameForm(f);
     gameFormInitRef.current = JSON.stringify(f);
     customWorkingDirRef.current = {};
@@ -348,6 +349,7 @@ export default function AdminApp() {
       postLaunchEnabled: !!g.postLaunchEnabled,
       postExitScript: g.postExitScript || "",
       postExitEnabled: !!g.postExitEnabled,
+      monitorExe: g.monitorExe || "",
     };
     setGameForm(f);
     gameFormInitRef.current = JSON.stringify(f);
@@ -415,7 +417,7 @@ export default function AdminApp() {
           id: crypto.randomUUID(),
           name: "",
           gameLevel: 1,
-          sortName: null,
+          originName: null,
           localizedNames: [],
           alternateNames: [],
           gameId: null,
@@ -516,6 +518,7 @@ export default function AdminApp() {
       postLaunchEnabled: !!gameForm.postLaunchEnabled,
       postExitScript: gameForm.postExitScript || null,
       postExitEnabled: !!gameForm.postExitEnabled,
+      monitorExe: gameForm.monitorExe?.trim() || null,
       modified: new Date().toISOString(),
     };
     try {
@@ -1535,6 +1538,32 @@ export default function AdminApp() {
                       ))}
                     </div>
                   )}
+                </div>
+
+                {/* 计时监控 exe：仅少数用 start 启动游戏后自身提前退出的 bat 需要填。
+                    格式 `进程名|窗口标题关键字`，如 `dotnet.exe|泰拉瑞亚`。 */}
+                <div className="script-editor">
+                  <label className="check">
+                    <input
+                      type="checkbox"
+                      checked={!!gameForm.monitorExe}
+                      onChange={(e) => setGameForm((f) => ({ ...f, monitorExe: e.target.checked ? f.monitorExe || "game.exe" : "" }))}
+                    />
+                    启用"计时监控 exe"
+                  </label>
+                  {gameForm.monitorExe ? (
+                    <input
+                      type="text"
+                      placeholder="进程名|窗口标题关键字（如 dotnet.exe|泰拉瑞亚）"
+                      value={gameForm.monitorExe}
+                      onChange={(e) => setGameForm((f) => ({ ...f, monitorExe: e.target.value }))}
+                    />
+                  ) : null}
+                  <p className="hint" style={{ marginTop: 6 }}>
+                    当启动指令是 .bat/.cmd 且脚本用 <code>start</code> 启动游戏后自身会提前退出时，
+                    填这里让后台继续监控真实游戏进程，直到它关闭才结算游戏时长（不会只算脚本那几秒）。
+                    格式：<code>进程名|窗口标题关键字</code>，窗口标题可省略。留空 = 脚本退出即结算时长。
+                  </p>
                 </div>
               </div>
             )}

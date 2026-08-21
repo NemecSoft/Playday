@@ -27,6 +27,7 @@ import {
   Map, // 古地图：地图
   Swords, // 魔兽世界：双剑（史诗/战场）
   Gamepad2, // 英雄联盟：手柄（竞技/电竞）
+  Sparkles, // 紫色流光：闪光（reactbits 暗黑紫 + 流光）
 } from "lucide-react";
 import { themeLibrary } from "../../utils/themeLibrary";
 import { styleLibrary } from "../../utils/styleLibrary";
@@ -52,6 +53,7 @@ const styleIconMap: Record<string, LucideIcon> = {
   s35: Zap, // 赛博朋克：电流/科幻感
   s43: Grid3x3, // 像素风：像素网格
   s10: Radio, // 复古未来/蒸汽波：复古电子
+  recordly: Layers, // Recordly：克制的层叠卡片 SaaS 风
 };
 
 // 每个 palette 用一个能代表其颜色/风格的 lucide 图标。
@@ -60,6 +62,7 @@ const styleIconMap: Record<string, LucideIcon> = {
 // 注意：之前 key 写成"chinese-red"等短串，跟 themeLibrary 里的"p-cn-red"对不上，
 // 一直走 Palette 兜底。已修正为真实 id。
 const paletteIconMap: Record<string, LucideIcon> = {
+  "p-reactbits": Sparkles, // 紫色流光：闪光
   "p-light": Sun, // 明亮：太阳
   "p-dark": Moon, // 暗黑：月亮
   "p-cn-red": Flame, // 中国红：红色火焰
@@ -71,6 +74,7 @@ const paletteIconMap: Record<string, LucideIcon> = {
   "p-ancient-map": Map, // 古地图：地图
   "p-wow-epic": Swords, // 魔兽世界：双剑
   "p-lol-neon": Gamepad2, // 英雄联盟：手柄
+  "p-recordly": Palette, // Recordly：标准色板
 };
 
 export default function ThemesSection() {
@@ -109,6 +113,21 @@ export default function ThemesSection() {
                   storeStyleId(s.id); // 立即生效：存 localStorage
                   void saveSettings({ styleId: s.id }); // 持久化：存 config.json
                   setStyleId(s.id);
+                  // Recordly 主题自带固定调色板：选中它时，自动带上配套的 p-recordly 配色。
+                  if (s.id === "recordly") {
+                    const rp = themeLibrary.find((p) => p.id === "p-recordly");
+                    if (rp) {
+                      applyPaletteTheme(rp.palette);
+                      storeThemeId(rp.id);
+                      void saveSettings({ themeId: rp.id });
+                      setPaletteId(rp.id);
+                      document.body.classList.toggle(
+                        "theme-diamond",
+                        rp.gradientClass === "theme-diamond",
+                      );
+                      document.body.dataset.themeId = rp.id;
+                    }
+                  }
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -117,6 +136,20 @@ export default function ThemesSection() {
                     storeStyleId(s.id);
                     void saveSettings({ styleId: s.id });
                     setStyleId(s.id);
+                    if (s.id === "recordly") {
+                      const rp = themeLibrary.find((p) => p.id === "p-recordly");
+                      if (rp) {
+                        applyPaletteTheme(rp.palette);
+                        storeThemeId(rp.id);
+                        void saveSettings({ themeId: rp.id });
+                        setPaletteId(rp.id);
+                        document.body.classList.toggle(
+                          "theme-diamond",
+                          rp.gradientClass === "theme-diamond",
+                        );
+                        document.body.dataset.themeId = rp.id;
+                      }
+                    }
                   }
                 }}
                 className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors ${

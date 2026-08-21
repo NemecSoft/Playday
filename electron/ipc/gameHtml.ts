@@ -6,7 +6,7 @@ import { ipcMain } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { gamesHtmlDir } from "../core/paths";
-import { getGameServerBaseUrl } from "../core/gameServer";
+import { startGameServer, getGameServerBaseUrl } from "../core/gameServer";
 import { registerCommand } from "./registry";
 
 // 返回某游戏的详情页 HTML 文件路径。规则：
@@ -41,9 +41,20 @@ export function registerGameHtmlIpc(ipc: typeof ipcMain) {
     }
   );
 
-  // 返回本机详情页 HTTP 服务器的 base URL；未启动返回空串。
+  // 返回本机详情页 HTTP 服务器的 base URL。
+  // 惰性启动：应用启动时不再预启动这个服务器（缩短启动时间），而是第一次
+  // 打开详情页调用本命令时，若服务器还没起来就现场启动它再返回 URL。
+  // startGameServer 内部有"已启动就复用"的守卫，重复调用是安全的。
   registerCommand(ipc, "get_game_server_url", async () => {
-    return getGameServerBaseUrl();
+    if (getGameServerBaseUrl()) {
+      return getGameServerBaseUrl();
+    }
+    try {
+      return await startGameServer(gamesHtmlDir());
+    } catch (e) {
+      console.error("[get_game_server_url] 惰性启动详情页服务器失败:", e);
+      return "";
+    }
   });
 
   // 列出 Game_Details/ 目录下有哪些游戏的详情页（管理端诊断用）。

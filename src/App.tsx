@@ -19,6 +19,7 @@ import SettingsModal from "./components/settings/SettingsModal";
 import ToastContainer from "./components/ToastContainer";
 import LaunchingBanner from "./components/LaunchingBanner";
 import ImageProgressBar from "./components/ImageProgressBar";
+import GameExitBackupPrompt from "./components/GameExitBackupPrompt";
 import GameDetailPage from "./pages/GameDetailPage";
 import { useSettingsStore } from "./stores/settingsStore";
 import { useGamesStore } from "./stores/gamesStore";
@@ -115,6 +116,8 @@ function AppShell() {
       <ToastContainer />
       <LaunchingBanner />
       <ImageProgressBar />
+      {/* 游戏退出后弹"是否备份存档"确认框（监听 game_exited 事件）。 */}
+      <GameExitBackupPrompt />
       <AnimatePresence>
         {settingsOpen && <SettingsModal onClose={closeSettings} />}
         <LaunchActionModal />

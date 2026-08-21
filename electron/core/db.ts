@@ -28,7 +28,7 @@ const SCHEMA = `
 CREATE TABLE IF NOT EXISTS games (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    sort_name TEXT,
+    origin_name TEXT,
     localized_names TEXT,
     alternate_names TEXT,
     game_id TEXT,
@@ -86,7 +86,8 @@ CREATE TABLE IF NOT EXISTS games (
     post_launch_enabled INTEGER,
     post_exit_script TEXT,
     post_exit_enabled INTEGER,
-    save_paths TEXT
+    save_paths TEXT,
+    monitor_exe TEXT
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -214,8 +215,12 @@ function migrateAddColumns(): void {
       db.run("ALTER TABLE games ADD COLUMN save_paths TEXT");
       persist();
     }
+    if (!cols.includes("monitor_exe")) {
+      db.run("ALTER TABLE games ADD COLUMN monitor_exe TEXT");
+      persist();
+    }
   } catch (e) {
-    console.error("[db] 迁移 save_paths 列失败:", e);
+    console.error("[db] 迁移 save_paths/monitor_exe 列失败:", e);
   }
 }
 
@@ -271,13 +276,54 @@ export function getGame(id: string): Game | null {
   return row ? rowToGame(row) : null;
 }
 
+/**
+ * 规范化"库占位符路径"，保证存库的都是合法格式 `{库名}\相对路径\文件`。
+ *
+ * 用户在管理端填启动路径时，占位符 `{Gamelibrary1}` 后面可能随手多敲/少敲斜杠或
+ * 混用正反斜杠，例如：
+ *   `{Gamelibrary1}\game1\game.exe`  ✅（本来就对，保留）
+ *   `{Gamelibrary1}game1/game.exe`   ❌（少一个 \，/ 混用）
+ *   `{Gamelibrary1}//game1\\game.exe`❌（重复斜杠）
+ *   `{Gamelibrary1}/game1\game.exe`  ❌（/ 开头）
+ * 本函数统一归一化成 `{Gamelibrary1}\game1\game.exe`。
+ * 只处理以 `{...}` 占位符开头的路径；普通绝对路径（D:\Games\...）原样不动。
+ */
+function normalizeLibPath(input?: string | null): string | null {
+  if (!input) return null;
+  let s = input.trim();
+  if (!s) return null;
+  // 只规范以 {占位符} 开头的库路径
+  const m = s.match(/^\{[^}]+\}/);
+  if (!m) return s;
+  const placeholder = m[0];
+  let rest = s.slice(placeholder.length);
+  // 去掉 rest 开头的 ./ .\ / \ 等冗余符号
+  rest = rest.replace(/^[\\/\.]+/, "");
+  // 内部统一成反斜杠，并去掉重复分隔符
+  rest = rest.replace(/[\\/]+/g, "\\");
+  rest = rest.replace(/^\\+/, "");
+  if (!rest) return placeholder; // 只有占位符没有后续路径
+  return `${placeholder}\\${rest}`;
+}
+
 export function upsertGame(game: Game): void {
   if (!db) throw new Error("数据库未打开");
+  // 统一规范化库占位符路径：installDirectory 和每个 action 的 path / workingDir。
+  // 这样无论从管理端、客户端还是脚本入口保存，入库的都是 {占位符}\相对路径 合法格式，
+  // 不会再有 ".\Gamelibrary\..." 和 "{Gamelibrary1}\..." 两套写法不一致的问题。
+  game.installDirectory = normalizeLibPath(game.installDirectory) ?? undefined;
+  if (Array.isArray(game.actions)) {
+    game.actions = game.actions.map((a) => ({
+      ...a,
+      path: normalizeLibPath(a.path) ?? undefined,
+      workingDir: normalizeLibPath(a.workingDir) ?? undefined,
+    }));
+  }
   const now = new Date().toISOString();
   const values = {
     $id: game.id,
     $name: game.name,
-    $sort_name: game.sortName ?? null,
+    $origin_name: game.originName ?? null,
     $localized_names: JSON.stringify(game.localizedNames ?? []),
     $alternate_names: JSON.stringify(game.alternateNames ?? []),
     $game_id: game.gameId ?? null,
@@ -336,10 +382,11 @@ export function upsertGame(game: Game): void {
     $post_exit_script: game.postExitScript ?? null,
     $post_exit_enabled: game.postExitEnabled ? 1 : 0,
     $save_paths: JSON.stringify(game.savePaths ?? []),
+    $monitor_exe: game.monitorExe ?? null,
   };
   db.run(
     `INSERT INTO games (
-      id, name, sort_name, localized_names, alternate_names, game_id, installed,
+      id, name, origin_name, localized_names, alternate_names, game_id, installed,
       install_directory, play_task, other_tasks, last_played, play_count, last_activity,
       playtime, last_session_seconds, last_session_ended_at, added, modified, category,
       genre, developer, publisher, tags, series, age_rating, region, source, features,
@@ -348,9 +395,9 @@ export function upsertGame(game: Game): void {
       emulator, completion_status, user_score_set, manual_game, plugin_id, links,
       actions, features_enabled, guide, screenshots, videos, game_library, game_level,
       pre_launch_script, pre_launch_enabled, post_launch_script, post_launch_enabled,
-      post_exit_script, post_exit_enabled, save_paths
+      post_exit_script, post_exit_enabled, save_paths, monitor_exe
     ) VALUES (
-      $id, $name, $sort_name, $localized_names, $alternate_names, $game_id, $installed,
+      $id, $name, $origin_name, $localized_names, $alternate_names, $game_id, $installed,
       $install_directory, $play_task, $other_tasks, $last_played, $play_count, $last_activity,
       $playtime, $last_session_seconds, $last_session_ended_at, $added, $modified, $category,
       $genre, $developer, $publisher, $tags, $series, $age_rating, $region, $source, $features,
@@ -359,10 +406,10 @@ export function upsertGame(game: Game): void {
       $emulator, $completion_status, $user_score_set, $manual_game, $plugin_id, $links,
       $actions, $features_enabled, $guide, $screenshots, $videos, $game_library, $game_level,
       $pre_launch_script, $pre_launch_enabled, $post_launch_script, $post_launch_enabled,
-      $post_exit_script, $post_exit_enabled, $save_paths
+      $post_exit_script, $post_exit_enabled, $save_paths, $monitor_exe
     )
     ON CONFLICT(id) DO UPDATE SET
-      name=$name, sort_name=$sort_name, localized_names=$localized_names,
+      name=$name, origin_name=$origin_name, localized_names=$localized_names,
       alternate_names=$alternate_names, game_id=$game_id, installed=$installed,
       install_directory=$install_directory, play_task=$play_task, other_tasks=$other_tasks,
       last_played=$last_played, play_count=$play_count, last_activity=$last_activity,
@@ -381,7 +428,7 @@ export function upsertGame(game: Game): void {
       pre_launch_script=$pre_launch_script, pre_launch_enabled=$pre_launch_enabled,
       post_launch_script=$post_launch_script, post_launch_enabled=$post_launch_enabled,
       post_exit_script=$post_exit_script, post_exit_enabled=$post_exit_enabled,
-      save_paths=$save_paths`,
+      save_paths=$save_paths, monitor_exe=$monitor_exe`,
     values as never
   );
   persist();
@@ -390,6 +437,24 @@ export function upsertGame(game: Game): void {
 export function deleteGame(id: string): void {
   if (!db) throw new Error("数据库未打开");
   db.run("DELETE FROM games WHERE id = $id", { $id: id });
+  persist();
+}
+
+// 批量更新多个游戏的封面路径。这是给启动时的封面匹配用的：
+// 如果像 upsertGame 那样一张一张写，每张都要把整个内存库导出写盘一次，
+// 几百张封面就是几百次全库序列化，启动会非常慢。
+// 这里改为循环执行 UPDATE 但只在最后 persist() 一次，把写盘从"每张一次"降到"总共一次"。
+export function updateCoverImages(entries: Array<{ id: string; coverImage: string }>): void {
+  if (!db) throw new Error("数据库未打开");
+  if (!entries || entries.length === 0) return;
+  const stmt = db.prepare("UPDATE games SET cover_image = $cover, modified = $m WHERE id = $id");
+  const now = new Date().toISOString();
+  for (const e of entries) {
+    stmt.bind({ $id: e.id, $cover: e.coverImage, $m: now } as never);
+    stmt.step();
+    stmt.reset();
+  }
+  stmt.free();
   persist();
 }
 
@@ -434,18 +499,55 @@ export function setGameHidden(id: string, hidden: boolean): void {
 }
 
 export function libraryStats(): LibraryStats {
-  const games = getGames();
-  const totalGames = games.length;
-  const installedGames = games.filter((g) => g.installed).length;
-  const totalPlaytime = games.reduce((s, g) => s + (g.playtime || 0), 0);
-  const favoriteGames = games.filter((g) => g.favorite).length;
-  const hiddenGames = games.filter((g) => g.hidden).length;
+  // 性能优化：原来这里是 getGames() 把 1271 个游戏全部 SELECT * 再逐行转对象做统计，
+  // 很浪费。改成用单条 SQL 聚合查询直接算总数/已装/收藏/隐藏/总时长，
+  // 平台和类型分布也只用一条 GROUP BY，避免把整张表搬到内存。
+  if (!db) {
+    return {
+      totalGames: 0, installedGames: 0, installedPct: 0, totalPlaytime: 0,
+      totalSize: 0, favoriteGames: 0, hiddenGames: 0, platformBreakdown: [], genreBreakdown: [],
+    };
+  }
+  let totalGames = 0;
+  let installedGames = 0;
+  let totalPlaytime = 0;
+  let favoriteGames = 0;
+  let hiddenGames = 0;
 
+  const agg = db.exec(
+    `SELECT COUNT(*) AS total,
+            SUM(installed) AS installed,
+            SUM(playtime) AS playtime,
+            SUM(favorite) AS favorite,
+            SUM(hidden) AS hidden
+     FROM games`
+  );
+  if (agg[0] && agg[0].values.length > 0) {
+    const r = agg[0].values[0];
+    totalGames = Number(r[0]) || 0;
+    installedGames = Number(r[1]) || 0;
+    totalPlaytime = Number(r[2]) || 0;
+    favoriteGames = Number(r[3]) || 0;
+    hiddenGames = Number(r[4]) || 0;
+  }
+
+  // 平台/类型分布：platform 和 genre 列存的是 JSON 数组字符串。
+  // 只把这两列读出来按项计数（不读整行、不转成完整 Game 对象），开销很小。
+  const parseArr = (v: unknown): string[] => {
+    if (!v) return [];
+    try {
+      const p = JSON.parse(String(v));
+      return Array.isArray(p) ? p : [];
+    } catch {
+      return [];
+    }
+  };
   const platformMap = new Map<string, number>();
   const genreMap = new Map<string, number>();
-  for (const g of games) {
-    for (const p of g.platform || []) platformMap.set(p, (platformMap.get(p) || 0) + 1);
-    for (const g2 of g.genre || []) genreMap.set(g2, (genreMap.get(g2) || 0) + 1);
+  const rows = allRows<Record<string, unknown>>("SELECT platform, genre FROM games");
+  for (const r of rows) {
+    for (const p of parseArr(r.platform)) platformMap.set(p, (platformMap.get(p) || 0) + 1);
+    for (const g of parseArr(r.genre)) genreMap.set(g, (genreMap.get(g) || 0) + 1);
   }
   const platformBreakdown = [...platformMap.entries()].map(([name, count]) => ({ name, count }));
   const genreBreakdown = [...genreMap.entries()].map(([name, count]) => ({ name, count }));
@@ -614,7 +716,7 @@ function rowToGame(r: Record<string, unknown>): Game {
   return {
     id: str(r.id),
     name: str(r.name),
-    sortName: r.sort_name ? str(r.sort_name) : undefined,
+    originName: r.origin_name ? str(r.origin_name) : undefined,
     localizedNames: (() => {
       try {
         return JSON.parse(str(r.localized_names)) as Game["localizedNames"];
@@ -699,11 +801,17 @@ function rowToGame(r: Record<string, unknown>): Game {
     savePaths: (() => {
       try {
         const p = JSON.parse(str(r.save_paths));
-        return Array.isArray(p) ? (p as Game["savePaths"]) : undefined;
+        if (!Array.isArray(p)) return undefined;
+        // 兼容两种存储：旧版 [{id,path}]（取 path）与新版 ["path"]（直接用）。
+        // 统一返回纯字符串数组（简洁存储，不存 id）。
+        return p
+          .map((x: unknown) => (typeof x === "string" ? x : (x as { path?: string })?.path))
+          .filter((x: unknown): x is string => typeof x === "string" && x.length > 0);
       } catch {
         return undefined;
       }
     })(),
+    monitorExe: r.monitor_exe ? str(r.monitor_exe) : undefined,
   };
 }
 

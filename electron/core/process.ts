@@ -12,9 +12,6 @@ import { configRoot } from "./paths";
 import { getGame, upsertGame } from "./db";
 import type { Game, GameAction, GameLibrary } from "./models";
 import { expandVariables, runScript } from "./scriptRunner";
-import { collectSavePath, backupFileName } from "./saveManager";
-import { compileBackupToExe, nsisAvailable, type NsisEntry } from "./nsis";
-import { getLibraries as getLibrariesFromSettings } from "./settings";
 
 // 运行中游戏的记录。
 export interface RunningGame {
@@ -187,7 +184,17 @@ export interface LaunchResult {
 // 启动游戏。userLevel 用于权限校验；track 是否累计时长。
 export function launchGame(
   game: Game,
-  options: { actionId?: string; userLevel: number; track: boolean; gameLibraries: GameLibrary[] }
+  options: {
+    actionId?: string;
+    userLevel: number;
+    track: boolean;
+    gameLibraries: GameLibrary[];
+    // 是否显示 .bat/.cmd 脚本的控制台窗口。默认 false=隐藏。
+    showBatConsole?: boolean;
+    // 手动指定的"计时监控 exe"：`进程名|窗口标题关键字`。设置后脚本不再以 cmd
+    // 退出为计时终点，改为轮询该目标进程（见 doSpawn 说明）。
+    monitorExe?: string;
+  }
 ): LaunchResult {
   // 权限校验：用户等级必须 >= 游戏等级。
   if (!canPlay(options.userLevel, game.gameLevel)) {
@@ -204,20 +211,40 @@ export function launchGame(
 
   if (action) {
     if (action.type === "File") {
-      const exe = action.path || "";
-      if (!exe) return { launched: false, error: "启动指令路径为空" };
+      const p = action.path || "";
+      if (!p) return { launched: false, error: "启动指令路径为空" };
+      const fs = require("fs");
+      const resolved = resolvePath(p, libs);
+      // path 可能是目录（如安装目录），也可能是 exe 文件。若是目录，自动在其中找
+      // 真正的可执行文件（兼容 path 配成目录的情况），并让工作目录跟随该 exe。
+      let exeResolved = resolved;
+      let exeDir = "";
+      try {
+        if (fs.statSync(resolved).isDirectory()) {
+          const found = findGameExecutable(resolved);
+          if (!found) {
+            return { launched: false, error: `启动目录中找不到可执行文件：${resolved}` };
+          }
+          exeResolved = found.exe;
+          exeDir = found.wd; // findGameExecutable 返回 exe 所在目录作为工作目录
+        }
+      } catch {
+        /* 路径不存在等情况交给下面的 validateLaunchPath 报具体错误 */
+      }
+      if (!exeDir) exeDir = path.dirname(exeResolved);
       // 运行前检测：目标必须存在且是可执行文件。
-      const precheck = validateLaunchPath(exe, "File", libs);
+      const precheck = validateLaunchPath(exeResolved, "File", libs);
       if (!precheck.valid) {
         return {
           launched: false,
           error: `启动前检测未通过：${precheck.reason}（解析路径：${precheck.resolved}）`,
         };
       }
-      const exeResolved = precheck.resolved;
       const args = action.arguments ? action.arguments.split(/\s+/).filter(Boolean) : [];
-      const wd = action.workingDir?.trim() ? resolvePath(action.workingDir, libs) : path.dirname(exeResolved);
-      childStarted = doSpawn(game, exeResolved, args, wd, options.track);
+      // 工作目录：永远 = exe 所在目录（自动切过去）。不再使用 action.workingDir 字段
+      // （用户决定不用这个数据，cwd 统一跟随 exe）。脚本需要安装目录时由脚本系统
+      // 用 install_directory 单独指定，与 exe 的 cwd 无关。
+      childStarted = doSpawn(game, exeResolved, args, exeDir, options.track, options.showBatConsole, options.monitorExe);
     } else if (action.type === "URL") {
       const url = action.path;
       if (!url) return { launched: false, error: "URL 启动指令的地址为空" };
@@ -230,7 +257,7 @@ export function launchGame(
     // 没有启动动作：在安装目录里自动找 exe。
     const found = findGameExecutable(game.installDirectory);
     if (found) {
-      childStarted = doSpawn(game, found.exe, [], found.wd, options.track);
+      childStarted = doSpawn(game, found.exe, [], found.wd, options.track, options.showBatConsole, options.monitorExe);
     } else {
       return {
         launched: false,
@@ -246,9 +273,23 @@ export function launchGame(
 
 // 真正 spawn 游戏进程，登记运行状态，监听退出写回时长。
 // 返回是否成功拉起进程。
-function doSpawn(game: Game, exe: string, args: string[], cwd: string, track: boolean): boolean {
+// monitorExe 传 `进程名|窗口标题关键字`（如 `dotnet.exe|泰拉瑞亚`）时，说明该游戏用
+// bat 脚本且脚本内部用 start 启动游戏后自身会提前退出——这时不能以 cmd 退出为计时
+// 终点（否则时长只算脚本那几秒）。改为：cmd 退出后继续每隔 3 秒用 tasklist /v 轮询
+// 目标进程（按进程名 + 可选窗口标题关键字判断），直到目标进程消失才结算时长。
+function doSpawn(game: Game, exe: string, args: string[], cwd: string, track: boolean, showBatConsole?: boolean, monitorExe?: string): boolean {
   try {
-    const child = spawn(exe, args, { cwd, stdio: "ignore" });
+    // .bat/.cmd 作为游戏指令调用时，默认会弹出一个控制台黑窗（cmd.exe 的子窗口）。
+    // 默认隐藏（showBatConsole=false），符合多数玩家的幕后执行需求；
+    // 用户可在"设置-通用"里打开 showBatConsole，则 .bat/.cmd 显示控制台窗口
+    // （方便看脚本提示/进度）。真 exe（游戏主程序）正常显示窗口不受影响。
+    // windowsHide 是 Windows 专属选项，非 Windows 平台自动忽略，跨平台写安全。
+    const isScript = /\.(bat|cmd)$/i.test(exe);
+    const child = spawn(exe, args, {
+      cwd,
+      stdio: "ignore",
+      windowsHide: isScript && !showBatConsole,
+    });
     // 游戏再次启动，清掉上次"最近退出"标记。
     lastExit.delete(game.id);
     const started = Date.now();
@@ -260,10 +301,22 @@ function doSpawn(game: Game, exe: string, args: string[], cwd: string, track: bo
         elapsedStart: started,
       });
     }
+
+    // 是否启用"额外监控 exe"计时：只有脚本(bat/cmd)才可能提前退出，真 exe 不需要。
+    const useMonitor = isScript && !!monitorExe && process.platform === "win32";
+
+    // cmd 退出后的结算逻辑。若启用了 monitorExe，则等到目标进程消失才真正结算。
+    const onCmdExit = () => {
+      if (!useMonitor || !track) {
+        onProcessExit(game, started);
+        return;
+      }
+      // 脚本已退出，但需要监控的目标进程可能还在（start 启动的游戏）。轮询它。
+      startMonitorPolling(game, started, monitorExe!);
+    };
+
     // 监听进程退出，把运行时长写回库。
-    child.on("exit", () => {
-      onProcessExit(game, started);
-    });
+    child.on("exit", onCmdExit);
     child.on("error", (e) => {
       console.error("[process] 游戏进程启动错误:", game.name, e.message);
       onProcessExit(game, started);
@@ -273,6 +326,72 @@ function doSpawn(game: Game, exe: string, args: string[], cwd: string, track: bo
     console.error("[process] 启动游戏失败:", game.name, (e as Error).message);
     return false;
   }
+}
+
+// 解析 monitorExe 字符串，得到进程名和可选的窗口标题关键字。
+function parseMonitorExe(monitorExe: string): { image: string; title: string } {
+  // 格式：`进程名|窗口标题关键字`。只处理一个 |；多个取第一个 |。
+  const idx = monitorExe.indexOf("|");
+  if (idx >= 0) {
+    return {
+      image: monitorExe.slice(0, idx).trim(),
+      title: monitorExe.slice(idx + 1).trim(),
+    };
+  }
+  return { image: monitorExe.trim(), title: "" };
+}
+
+// 用 tasklist /v 检查目标进程（进程名 + 可选窗口标题关键字）是否还在运行。
+function isMonitorTargetRunning(image: string, title: string): boolean {
+  try {
+    const cp = require("child_process");
+    const { execSync } = cp;
+    // /v 输出才含窗口标题（Window Title 列）；/fo csv 方便解析。
+    let out = "";
+    try {
+      out = execSync(`tasklist /v /fo csv /fi "imagename eq ${image}"`, {
+        encoding: "utf8",
+        windowsHide: true,
+        timeout: 5000,
+      });
+    } catch {
+      // tasklist 出错或没找到进程（非零退出码）都视为"没匹配到"，返回 false。
+      return false;
+    }
+    // 没有窗口标题过滤：进程名存在即可。
+    if (!title) return out.includes(image.toLowerCase());
+    // 有窗口标题过滤：任意一行的"窗口标题"列含关键字就算在运行（与 bat 的 findstr 一致）。
+    const lines = out.split(/\r?\n/);
+    for (const line of lines) {
+      if (line.toLowerCase().includes(image.toLowerCase()) && line.toLowerCase().includes(title.toLowerCase())) {
+        return true;
+      }
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+// 轮询监控目标进程，直到它消失才结算时长。只对启用了 monitorExe 的脚本调用。
+function startMonitorPolling(game: Game, started: number, monitorExe: string): void {
+  const { image, title } = parseMonitorExe(monitorExe);
+  if (!image) {
+    // 没填进程名：退化为脚本退出即结算，别卡住。
+    onProcessExit(game, started);
+    return;
+  }
+  // 先延迟一小段（等脚本真正把游戏拉起来），再开始轮询。
+  const timer = setInterval(() => {
+    if (isMonitorTargetRunning(image, title)) {
+      return; // 目标进程还在，继续等
+    }
+    clearInterval(timer);
+    // 目标进程已消失：结算时长。
+    onProcessExit(game, started);
+  }, 3000);
+  // 不让定时器阻止进程退出。
+  if (typeof timer.unref === "function") timer.unref();
 }
 
 // 进程退出回调：结算时长，写回库（最近一次会话时长 + 退出时间 + 累加 playtime）。
@@ -291,50 +410,31 @@ function onProcessExit(game: Game, started: number): void {
   } catch (e) {
     console.error("[process] 写回游戏时长失败:", e);
   }
-  // 游戏退出后自动备份存档（若该游戏配置了存档路径）。
-  // 这是后台异步任务，失败不打扰用户，只记日志。
-  autoBackupOnExit(game);
+  // 游戏退出后【不自动备份】存档——改为通知前端弹"是否备份存档"的确认框，
+  // 由用户决定要不要备份。原因：游戏中直接自动备份可能因存档文件被游戏进程
+  // 锁定而失败；退出时让用户确认也更符合预期（避免每次都生成 exe 垃圾文件）。
+  notifyGameExit(game);
 }
 
-// 游戏退出时自动备份存档：生成 NSIS 自解压 exe 到 <数据根>/backups/。
-// 仅当游戏配了 savePaths 且本机有 NSIS 编译器时才做。fire-and-forget。
-function autoBackupOnExit(game: Game): void {
-  const savePaths = game.savePaths ?? [];
-  if (savePaths.length === 0) return; // 没配存档路径，跳过
-  if (!nsisAvailable()) {
-    console.warn("[backup] 未安装 NSIS，跳过自动存档备份:", game.name);
-    return;
-  }
-  // 后台异步执行，不阻塞退出回调
-  setTimeout(() => {
+// —— 游戏退出事件订阅器 ——
+// core 层不依赖 electron，无法直接向渲染进程发消息。这里暴露一个订阅器，
+// 由 ipc 层（能拿到 BrowserWindow）注册回调，游戏退出时把信息推给前端。
+type GameExitListener = (payload: { gameId: string; gameName: string; hasSavePaths: boolean }) => void;
+const gameExitListeners: GameExitListener[] = [];
+
+export function subscribeGameExit(fn: GameExitListener): void {
+  gameExitListeners.push(fn);
+}
+
+// 通知所有订阅者：某游戏刚退出（携带是否有存档路径，前端据此决定要不要提示）。
+function notifyGameExit(game: Game): void {
+  const hasSavePaths = (game.savePaths ?? []).length > 0;
+  for (const fn of gameExitListeners) {
     try {
-      const fs = require("fs") as typeof import("fs");
-      // 预检：只保留有匹配文件的路径
-      const entries: NsisEntry[] = [];
-      for (const sp of savePaths) {
-        const col = collectSavePath(sp, getLibrariesForBackup());
-        if (col.matches.length > 0) entries.push({ savePath: sp, resolved: col.resolved, collect: col });
-      }
-      if (entries.length === 0) return; // 没有匹配文件，跳过
-
-      const outDir = path.join(configRoot(), "backups");
-      fs.mkdirSync(outDir, { recursive: true });
-      const fileName = backupFileName(game.name);
-      const outFile = path.join(outDir, fileName);
-      compileBackupToExe({ entries, gameName: game.name, outFile });
-      console.log("[backup] 自动备份完成:", outFile);
+      fn({ gameId: game.id, gameName: game.name, hasSavePaths });
     } catch (e) {
-      console.error("[backup] 自动备份失败:", game.name, (e as Error).message);
+      console.error("[process] 通知游戏退出失败:", game.name, (e as Error).message);
     }
-  }, 1500); // 延迟 1.5s，避免刚退出就抢文件
-}
-
-// 自动备份用的游戏库列表（从 settings 读）。已顶部导入 getLibrariesFromSettings。
-function getLibrariesForBackup(): GameLibrary[] {
-  try {
-    return getLibrariesFromSettings();
-  } catch {
-    return [];
   }
 }
 

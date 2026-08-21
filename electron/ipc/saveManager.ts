@@ -1,16 +1,31 @@
 // 存档管理 IPC 命令：备份-恢复游戏存档。
 // 备份产物是 NSIS 自解压 exe（双击即恢复，可带走）。
-import { ipcMain } from "electron";
+import { ipcMain, BrowserWindow } from "electron";
 import * as path from "path";
 import { getGame } from "../core/db";
 import { getLibraries } from "../core/settings";
 import { collectSavePath, backupFileName, desktopPath } from "../core/saveManager";
 import { compileBackupToExe, nsisAvailable, type NsisEntry } from "../core/nsis";
+import { subscribeGameExit } from "../core/process";
 import { registerCommand } from "./registry";
 
 export function registerSaveManagerIpc(ipc: typeof ipcMain) {
   // 检测 NSIS 编译器是否可用（生成 exe 的前提）。
   registerCommand(ipc, "nsis_available", async () => nsisAvailable());
+
+  // 游戏退出后【不自动备份】，改为把"游戏刚退出、可考虑备份"推给所有窗口的渲染进程。
+  // 前端监听 game_exited 事件 → 弹"是否备份存档？"确认框 → 用户选"是"再调 backup_game_save。
+  // 这样避免游戏中自动备份因存档文件被锁定而失败，也避免每次都生成 exe 垃圾文件。
+  subscribeGameExit((payload) => {
+    // 只有该游戏配置了存档路径时才需要提示用户（没配存档路径的备份无意义）。
+    if (!payload.hasSavePaths) return;
+    for (const win of BrowserWindow.getAllWindows()) {
+      win.webContents.send("game_exited", {
+        gameId: payload.gameId,
+        gameName: payload.gameName,
+      });
+    }
+  });
 
   // 列出某游戏的存档路径及匹配结果（供 UI 展示 / 编辑预览）。
   // 中间件按 field="gameId" 解包：兼容对象 { gameId } 和 spread 传字符串。

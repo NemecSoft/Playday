@@ -52,7 +52,8 @@ export interface GameLink {
 export interface Game {
   id: string;
   name: string;
-  sortName?: string;
+  // 原始英文名（origin_name）。老游戏不回填（NULL），新游戏手动填入英文原名。
+  originName?: string;
   localizedNames: GameName[];
   alternateNames: string[];
   gameId?: string;
@@ -118,18 +119,17 @@ export interface Game {
   // 游戏退出后执行的脚本。
   postExitScript?: string;
   postExitEnabled: boolean;
-  // 存档路径配置（存档管理：备份-恢复）。最多 3 条，含通配符。
-  savePaths?: SavePath[];
+  // 存档路径配置（存档管理：备份-恢复）。纯字符串数组，含通配符。
+  savePaths?: string[];
+  // 手动指定的"计时监控 exe"：格式 `进程名|窗口标题关键字`（如 `dotnet.exe|泰拉瑞亚`）。
+  // 仅少数用 start 启动游戏后自身提前退出的 bat 脚本才需要填。
+  // 填了之后，启动脚本时不以 cmd 退出为计时终点，而是按 进程名(+可选窗口标题) 轮询
+  // 该目标进程，直到它消失才结算时长。留空 = 保持现状（脚本退出即结算）。
+  monitorExe?: string;
 }
 
-// 一个游戏的存档路径（备份-恢复用）。
-// path 支持 {游戏库名} 占位符，可含通配符（如 *.*、*.save）。
-export interface SavePath {
-  id: string;          // 唯一 id（编辑时增删）
-  path: string;        // 存档路径（可含通配符、{游戏库名} 占位符）
-  type: "file" | "dir"; // 目标类型（有通配符时按通配符匹配）
-  note?: string;       // 备注（可选）
-}
+// 存档路径（备份-恢复用）——纯字符串数组，简洁存储，不存 id/type/note。
+// 每条路径支持 {游戏库名} 占位符，可含通配符（如 *.*、*.save）。
 
 // 统一用户记录：企业用户（按公网 IP 匹配）和个人用户（账号登录）都存这张表。
 export interface AppUser {
@@ -214,6 +214,8 @@ export interface AppSettings {
   enableTray: boolean;
   minimizeToTray: boolean;
   closeToTray: boolean;
+  // 运行 .bat/.cmd 脚本指令时是否显示控制台窗口。默认 false=隐藏（幕后执行）。
+  showBatConsole: boolean;
   language: string;
   firstTimeWizardComplete: boolean;
   databasePath?: string;
@@ -240,8 +242,10 @@ export interface AppSettings {
   trackPlaytime: boolean;
   // 网格卡片宽度（像素）。
   cardWidth: number;
-  // 网格卡片间距（像素，0~20）。
+  // 网格卡片水平间距（像素，0~20，卡片左右之间）。
   cardGap: number;
+  // 网格卡片垂直间距（像素，0~60，卡片行与行之间的上下间距）。
+  cardRowGap: number;
   // 左侧边栏宽度（像素，160~600）。
   sidebarWidth: number;
   // 企业用户配置文件 JSON 路径（默认 D:/1.json）。
@@ -259,6 +263,9 @@ export interface AppSettings {
   fontFamily: string;
   // 卡片标题/别名字号（px）。默认 15（比老版 12px 更易读，可设 12~22）。
   cardFontSize: number;
+  // 卡片简介字号（px）。默认 11（紧凑 3 行截断），可设 9~16。
+  // 变化时 GridView 的精确行高公式会同步刷新，避免虚拟列表排布错位。
+  cardDescFontSize: number;
   // 卡片标题/别名是否加粗（true=700，false=500）。
   cardFontBold: boolean;
   // 卡片文字自定义样式（颜色/描边/发光/阴影/背景填充）。
@@ -273,6 +280,8 @@ export interface AppSettings {
   // 游戏静态详情页目录。留空/未设置时用默认 <数据根>/Game_Details；
   // 设置了绝对路径则详情页全部改从该目录读（HTML + 视频都由内置 HTTP 服务器托管）。
   gameDetailsDir?: string;
+  // 网格卡片上是否显示简介（description）。true=显示，false=隐藏。持久化到 config.json。
+  showCardDescription: boolean;
 }
 
 // 库统计信息（library_stats 命令返回）。
@@ -302,6 +311,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   enableTray: true,
   minimizeToTray: false,
   closeToTray: false,
+  showBatConsole: false,
   language: "en-US",
   firstTimeWizardComplete: false,
   databasePath: undefined,
@@ -323,6 +333,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   trackPlaytime: true,
   cardWidth: 180,
   cardGap: 8,
+  cardRowGap: 8,
   sidebarWidth: 210,
   enterpriseConfigPath: "D:/1.json",
   currentUserKind: "",
@@ -330,6 +341,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   currentUserLevel: 3,
   fontFamily: "",
   cardFontSize: 15,
+  cardDescFontSize: 11,
   cardFontBold: false,
   cardText: DEFAULT_CARD_TEXT,
   // 主题/风格默认空 = 用内置静态主题（dark/light 等），不额外套动态调色板。
@@ -337,4 +349,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   styleId: undefined,
   // 详情页目录默认空 = 用 <数据根>/Game_Details；设置后覆盖到指定绝对路径。
   gameDetailsDir: undefined,
+  // 网格卡片默认显示简介。
+  showCardDescription: true,
 };

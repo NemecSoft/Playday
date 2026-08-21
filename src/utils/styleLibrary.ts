@@ -131,4 +131,18 @@ export const styleLibrary: StyleEntry[] = [
       fx: "retro",
     },
   },
+  {
+    id: "recordly",
+    name: "Recordly",
+    zh: "Recordly",
+    category: "SaaS",
+    vars: {
+      radius: "14px",
+      glow: "none",
+      shadow: "soft",
+      font: "inherit",
+      blur: "0px",
+      fx: "recordly",
+    },
+  },
 ];

@@ -166,6 +166,27 @@ export const api = {
     ),
   getGameServerUrl: () => call<string>("get_game_server_url"),
 
+  // —— 修改器 ——
+  // 列出某游戏的修改器 exe（含图标 dataURL）；无修改器返回空数组。
+  getTrainers: (gameId: string, gameName: string) =>
+    call<{ name: string; exePath: string; icon: string }[]>("get_game_trainers", {
+      gameId,
+      gameName: gameName ?? null,
+    }),
+  // 直接启动某个修改器 exe（不做等级校验、不计时长）。
+  launchTrainer: (exePath: string) =>
+    call<{ launched: boolean; error?: string }>("launch_trainer", { exePath }),
+
+  // —— 存档备份 ——
+  // 检测本机是否有 NSIS 编译器（生成备份 exe 的前提）。
+  getNsisAvailable: () => call<boolean>("nsis_available"),
+  // 备份某游戏的存档：生成自解压 exe，默认放桌面。
+  backupGameSave: (gameId: string, outDir?: string) =>
+    call<{ ok: boolean; file?: string; fileName?: string; error?: string }>(
+      "backup_game_save",
+      outDir ? { gameId, outDir } : { gameId }
+    ),
+
   // —— 系统 ——
   getAppInfo: () =>
     call<{ appName: string; version: string; os: string; arch: string; dataDir: string; configDir: string }>("get_app_info"),

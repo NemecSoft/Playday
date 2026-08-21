@@ -37,6 +37,14 @@
   --bg-item-active: #2f3641;
   --bg-input: #101318;
   --border: #2e3540;
+
+  /* 全局统一的"按钮/标题文字色"，默认用 --text-primary（主题主文字色）。
+     关键设计：之前用 var(--accent)（品牌强调色），但 Recordly 等浅色 accent
+     配色（蓝色 accent + 淡蓝背景）会导致"同色系看不清"。
+     改成 var(--text-primary) 后，每个配色的文字色都是为该配色优化的"可读主文字色"，
+     在所有配色下都清晰（暗黑下浅、中国红下金、Recordly 下深）。
+     将来想"统一改"按钮文字色，只改这里即可。 */
+  --ui-accent: var(--text-primary);
   --border-strong: #3a4250;
   --text-primary: #e6e9ee;
   --text-secondary: #9aa4b2;
@@ -381,6 +389,42 @@ body.theme-diamond[data-theme-id="p-grad-pink-green"] {
 }
 body.theme-diamond[data-theme-id="p-grad-moss-yellow"] {
   background: linear-gradient(135deg, #10B981 0%, #4FCA9F 35%, #B5C450 65%, #FBBF24 100%);
+}
+
+/* "紫色流光"（p-reactbits）：参考 reactbits.dev 主页的暗黑紫调。
+   深紫黑底 #120F17 + 多团模糊紫色光晕（蓝紫/亮紫/粉紫）缓慢流动。
+   用 body 的固定定位伪元素承载光晕（z-index:-1 让它落在内容下层），
+   radial-gradient 大圆自带柔和边缘，无需额外 blur，性能更好。 */
+body.theme-reactbits {
+  background: #120F17;
+}
+body.theme-reactbits .main-area {
+  background: transparent;
+}
+body.theme-reactbits::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(700px 480px at 12% 22%, rgba(124, 92, 246, 0.40), transparent 62%),
+    radial-gradient(760px 520px at 82% 68%, rgba(168, 85, 247, 0.32), transparent 62%),
+    radial-gradient(560px 420px at 45% 92%, rgba(139, 92, 246, 0.26), transparent 62%),
+    radial-gradient(420px 320px at 70% 20%, rgba(192, 132, 252, 0.20), transparent 60%);
+  animation: reactbitsFlow 20s ease-in-out infinite alternate;
+}
+/* 多团光晕整体缓慢平移 + 轻微缩放，营造"光在流"的呼吸感 */
+@keyframes reactbitsFlow {
+  0%   { transform: translate3d(-1.5%, -1.5%, 0) scale(1); }
+  50%  { transform: translate3d(1.5%, 2%, 0) scale(1.06); }
+  100% { transform: translate3d(-1%, 1%, 0) scale(1.02); }
+}
+/* 禁用动效偏好时，流光退化为静态光晕，不影响可读性 */
+@media (prefers-reduced-motion: reduce) {
+  body.theme-reactbits::before {
+    animation: none;
+  }
 }
   /* Global baseline: crisp default rendering. Glow/stroke effects are NOT
      inherited here — applying a stroke + multi-layer glow to every text
@@ -763,12 +807,11 @@ textarea {
   background: var(--bg-item-hover);
 }
 .topbar-tab.active {
-  /* 当前激活 tab 用"亮黄色"硬编码（#FFE082 暖金），保证所有配色下都清晰醒目。
-     之前用 var(--accent) 在中国红下是 #E5B04B 纯金，对比度偏弱看不清；
-     改成最亮的暖金，所有深色/红色底上都是最亮的那抹黄。 */
-  color: #FFE082;
+  /* 激活 tab 文字/下边框用全局统一变量 --ui-accent。
+     和卡片标题、侧栏按钮、简介等所有按钮文字用同一个变量，将来"统一改"只改 --ui-accent 一处。 */
+  color: var(--ui-accent);
   background: var(--bg-base);
-  border-bottom-color: #FFE082;
+  border-bottom-color: var(--ui-accent);
 }
 
 /* Right of the tabs: edition label (YunGame——黄金版) */
@@ -899,7 +942,9 @@ textarea {
   background: var(--accent-soft);
   border: 1px solid var(--border);
   border-radius: 8px;
-  color: #FFE082; /* 暖金，所有配色下都清晰可读 */
+  /* 收起态：背景 accent-soft（淡 accent 底）+ 文字 --ui-accent（统一紫字）。
+     --ui-accent 是全局统一的按钮/标题文字色，将来想"统一改"只改 --ui-accent 一处。 */
+  color: var(--ui-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -924,6 +969,14 @@ textarea {
   color: #fff;
   box-shadow: 0 0 12px rgba(255, 224, 130, 0.5);
   border-color: var(--accent);
+}
+/* 抽屉展开时的激活态：按钮背景用 accent、文字白色、发光增强，
+   与"收起态"的 accent-soft 暖金字形成明显区别，让用户一眼看出当前是开/关。 */
+.sidebar-toggle-btn.open {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
 /* 抽屉（标签栏）：只占自己宽度，内容可滚动。 */
@@ -1190,6 +1243,74 @@ textarea {
   text-align: center;
 }
 
+/* —— 修改器下拉（游戏详情页顶部栏） —— */
+.trainer-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 240px;
+  max-width: 320px;
+  max-height: 360px;
+  overflow-y: auto;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  padding: 6px;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.trainer-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: calc(var(--radius) - 2px);
+  font-size: 13px;
+  color: var(--text-primary);
+  text-align: left;
+}
+.trainer-item-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s, border-color 0.12s;
+}
+.trainer-item-btn:hover {
+  background: var(--bg-item-hover);
+  border-color: var(--border);
+}
+.trainer-item-dim {
+  color: var(--text-dim);
+  justify-content: center;
+}
+.trainer-item-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+.trainer-item-icon-fallback {
+  color: var(--accent-hover);
+}
+.trainer-item-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trainer-item-launch {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--accent-hover);
+  opacity: 0.85;
+}
+
 /* Right-edge resize handle for the sidebar */
 .sidebar-resizer {
   position: absolute;
@@ -1292,6 +1413,75 @@ textarea {
 .view-btn.active {
   background: var(--accent);
   color: var(--accent-contrast, #fff);
+}
+
+/* 工具栏简介开关：iOS 风 Switch + 图标 + 文字标签一行排布。 */
+.desc-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  margin-left: 4px;
+  border-radius: 999px;
+  /* 不让整个容器拦截 Switch 的点击（Switch 自身 cursor:pointer）。 */
+  cursor: default;
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+.desc-toggle:hover {
+  color: var(--text-primary);
+}
+.desc-toggle-label {
+  user-select: none;
+}
+
+/* iOS 风 Switch（基于 Radix）。用纯 CSS 而不是 Tailwind JIT，
+   因为 data-[state=...] 动态选择器在 Tailwind JIT 静态扫描时不一定生成。 */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  /* 默认（unchecked）：半透明中性灰轨道，深浅主题下都看得见 */
+  background-color: rgba(82, 82, 91, 0.4);
+  transition: background-color 0.18s ease;
+  flex-shrink: 0;
+}
+.switch[data-state="checked"] {
+  /* checked：主题主色（accent） */
+  background-color: var(--accent, #3b82f6);
+}
+.switch:focus-visible {
+  outline: 2px solid var(--ring, #3b82f6);
+  outline-offset: 2px;
+}
+.switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.switch-thumb {
+  /* iOS 圆点：20×20 白色 + 强阴影 + 细灰边。 */
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.2);
+  /* unchecked 时圆点在左（外加 2px border 让 padding=4px，正好容纳） */
+  transform: translateX(2px);
+  transition: transform 0.18s ease;
+}
+.switch-thumb[data-state="checked"] {
+  /* checked 时圆点右移 20px，到达轨道右端内侧 */
+  transform: translateX(22px);
 }
 
 /* 3D 星球视图 */
@@ -1470,7 +1660,16 @@ textarea {
   cursor: pointer;
   position: relative;
   border-radius: var(--radius);
-  padding: 6px;
+  /* uiverse slimy-pug 卡片风格：顶部白色 inset 柔光，营造"卡片被光从下方照亮"的立体感。
+     颜色用 18% 白色（比原版 25% 略淡），适配深色卡片背景。 */
+  box-shadow: inset 0 -14px 24px -6px rgba(255, 255, 255, 0.18);
+  /* 左右各 6px padding 让卡片视觉边界更明显；
+  // 下方 padding 用 CSS 变量 --card-row-gap，由 settings.cardRowGap 驱动（默认 6px = 跟原来一致），
+  // cardRowGap=0 时两行紧贴，避免"固定 6px 上下 padding 永远叠加成 12px 行间距"。
+  // measureElement 用 getBoundingClientRect.height 含 padding，因此行间距真实反映给虚拟列表。 */
+  padding: 6px 6px var(--card-row-gap, 6px) 6px;
+  /* transform 以卡片中心为轴（3D 倾斜时不会整体歪出边界） */
+  transform-origin: center;
   /* 上浮 transform + 阴影 + hover 背景色一起过渡；只过渡 transform 会丢掉背景渐变 */
   transition:
     transform 0.18s ease,
@@ -1479,12 +1678,112 @@ textarea {
 }
 .grid-card:hover {
   background: var(--bg-item-hover);
-  /* 悬停时封面卡片微微上浮（lift），配合 cover 上的流光扫过 */
+  /* 卡片 hover 只做轻微上浮 + accent 发光描边（静态荧光，无倾斜/无流光扫过）。 */
   transform: translateY(-3px);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.35),
+    0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent),
+    0 0 16px color-mix(in srgb, var(--accent) 35%, transparent),
+    /* 保留顶部柔光（uiverse 风格） */
+    inset 0 -14px 24px -6px rgba(255, 255, 255, 0.18);
 }
 .grid-card.selected {
   background: var(--accent-soft);
+  /* 选中态也带 accent 描边，突出当前卡片 */
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent),
+    0 0 12px color-mix(in srgb, var(--accent) 30%, transparent),
+    inset 0 -14px 24px -6px rgba(255, 255, 255, 0.18);
 }
+/* 系统减弱动效偏好：连轻微上浮也去掉，只保留荧光边框，避免任何位移动效 */
+@media (prefers-reduced-motion: reduce) {
+  .grid-card:hover {
+    transform: none;
+  }
+}
+/* 静态荧光边框（强发光版）：
+   参考 freefrontend 的 "Neon Glow Border Button" —— 用 linear-gradient + mask
+   把彩色渐变裁成 2px 厚的描边环，再叠加 filter: drop-shadow 形成多层霓虹光晕。
+   实现要点：
+     1) 挂在 .grid-card::before（不是 .cover::before），让外发光能从卡片溢出（.cover 有 overflow:hidden 会裁掉）。
+     2) padding:2px + background:linear-gradient(accent...) 形成渐变色；
+        -webkit-mask + mask-composite:exclude 把渐变裁剪成只显示 padding 那圈，
+        内部 content-box 透明、外部 0 内容可见——得到一圈彩色描边。
+     3) 双层 filter:drop-shadow 不同模糊半径，营造强霓虹光晕。
+     4) z-index:0 在卡片内容之下，pointer-events:none 不拦截点击。
+     5) hover 时通过 opacity 增强发光强度（保持 transition 平滑）。
+*/
+.grid-card::before {
+  content: "";
+  position: absolute;
+  /* 荧光边框覆盖整个 grid-card（含 padding）。padding-bottom/card-row-gap 也会有
+     外发光，让两行卡片的发光环自然过渡（强化"卡片是整体"的语义）。 */
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  padding: 2px; /* 描边厚度 */
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--accent) 100%, transparent) 0%,
+    color-mix(in srgb, var(--accent) 65%, transparent) 50%,
+    color-mix(in srgb, var(--accent) 100%, transparent) 100%
+  );
+  /* mask 把整个元素裁剪为"只显示 padding 那圈"，内部 content 透明 */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  /* 多层 drop-shadow 形成霓虹光晕（双层：近光 + 远光） */
+  filter:
+    drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 95%, transparent))
+    drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 55%, transparent))
+    drop-shadow(0 0 14px color-mix(in srgb, var(--accent) 30%, transparent));
+  opacity: 0.85;
+  transition: opacity 0.18s ease, filter 0.18s ease;
+}
+/* Recordly 主题：卡片描边改为 Recordly 标志性的"蓝→橙→黄"渐变描边（替代单色 accent 荧光）。
+   渐变取自 Recordly 的 linear-gradient(111.6deg, rgba(114,167,232) 9.4%, rgba(253,129,82) 43.9%, rgba(249,202,86) 86.3%)。
+   Recordly 是克制 SaaS 风，因此减弱外发光、保持清爽的彩色细描边。 */
+:root[data-fx="recordly"] .grid-card::before {
+  background: linear-gradient(
+    111.6deg,
+    #72a7e8 9.4%,
+    #fd8152 43.9%,
+    #f9ca56 86.3%
+  );
+  filter: drop-shadow(0 0 2px rgba(37, 99, 235, 0.35));
+}
+:root[data-fx="recordly"] .grid-card:hover::before {
+  opacity: 1;
+  filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.45));
+}
+/* Recordly 主题特殊覆盖：
+   Recordly 是浅色 SaaS 风（accent #2563EB 蓝色），如果统一按钮文字色继续用 var(--accent)，
+   蓝字 + 淡蓝背景会"同色系看不清"（对比度仅 3.3 左右）。
+   改成用 var(--text-primary)（深色 #1B2430，对比度 ≥13），让统一按钮文字在 Recordly
+   浅色底上清晰可读。其他暗黑/中国风/渐变主题仍用 --accent 紫字（深底上清晰）。 */
+:root[data-fx="recordly"] {
+  --ui-accent: var(--text-primary);
+}
+/* hover 时荧光更强 */
+.grid-card:hover::before {
+  opacity: 1;
+  filter:
+    drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 100%, transparent))
+    drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 70%, transparent))
+    drop-shadow(0 0 18px color-mix(in srgb, var(--accent) 40%, transparent));
+}
+/* selected 状态荧光最强 */
+.grid-card.selected::before {
+  opacity: 1;
+  filter:
+    drop-shadow(0 0 5px var(--accent))
+    drop-shadow(0 0 12px color-mix(in srgb, var(--accent) 80%, transparent))
+    drop-shadow(0 0 22px color-mix(in srgb, var(--accent) 50%, transparent));
+}
+
 .grid-card .cover {
   aspect-ratio: 16 / 9;
   background: var(--bg-panel);
@@ -1522,33 +1821,8 @@ textarea {
   font-size: 26px;
 }
 
-/*
-  Cover sheen (流光) + lift (上浮) on hover.
-  源自原 PlayniteTauri 的 globals.css：鼠标移上封面时，一道斜向白光带扫过封面。
-  实现：.cover::after 是一条斜向半透明白色渐变光带，默认 translateX(-120%) 藏在
-  左侧外边；hover 时过渡到 translateX(120%) 扫到右边，配合 overflow:hidden 只在
-  卡片范围内可见。pointer-events:none 保证光带不挡点击（Play/Details 按钮）。
-  .cover 已有 position:relative + overflow:hidden，正好满足光带裁剪。
-  用 transition（transform 过渡）实现，无 @keyframes，每次 hover 扫一次，不循环。
-*/
-.grid-card .cover::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  background: linear-gradient(
-    115deg,
-    transparent 20%,
-    rgba(255, 255, 255, 0.35) 50%,
-    transparent 80%
-  );
-  transform: translateX(-120%);
-  transition: transform 0.6s ease;
-  pointer-events: none;
-}
-.grid-card:hover .cover::after {
-  transform: translateX(120%);
-}
+/* 说明：已移除 Cover sheen（hover 时白光带扫过封面的动态光效），
+   卡片只保留静态荧光边框（见 .cover::before）。 */
 
 /* Hover actions on the card cover: Play + Details */
 .grid-card .cover-actions {
@@ -1614,11 +1888,16 @@ textarea {
   font-weight: var(--card-title-weight, 500);
   margin-top: 7px;
   text-align: center;
+  /* 文字可被鼠标选中并复制（覆盖 body 的 user-select: none）。 */
+  user-select: text;
+  -webkit-user-select: text;
   /* 完全由用户在"外观"里自定义的卡片文字样式。
      所有 CSS 变量都由 applyCardTextStyles() 从 settings.cardText 注入。
      关闭某项（如描边/发光/阴影/背景）= 该变量 blur=0 + color=transparent，
      CSS 自然不渲染，效果开关无需额外条件分支。*/
-  color: var(--card-text-color, #fff8e7);
+  /* 标题文字色统一用 --ui-accent（用户要求的"统一变量"）。
+     不再用 --card-text-color 覆盖，避免用户自定义破坏"统一改"的目标。 */
+  color: var(--ui-accent);
   /* 描边：-webkit-text-stroke 支持纯透明描边"关" */
   -webkit-text-stroke: var(--card-stroke-width, 0px) var(--card-stroke-color, transparent);
   paint-order: stroke fill;
@@ -1626,30 +1905,102 @@ textarea {
   text-shadow:
     /* 阴影层（偏移 + 模糊） */
     var(--card-shadow-offset-x, 0px) var(--card-shadow-offset-y, 0px) var(--card-shadow-blur, 0px) var(--card-shadow-color, transparent),
-    /* 发光层（中心对称） */
-    0 0 var(--card-glow-blur, 0px) var(--card-glow-color, transparent);
-  /* 背景填充：把背景色当成"文字背后"色块（不可 background-clip text，
-     否则描边/发光/阴影都被剪掉。用 padding+background 做纯色背景块） */
-  background-color: var(--card-bg-color, transparent);
-  border-radius: 4px;
-  padding: 1px 6px;
-  display: inline-block;
-  max-width: 100%;
+    /* 发光层（中心对称，由用户"卡片文字预设"控制强度/颜色） */
+    0 0 var(--card-glow-blur, 0px) var(--card-glow-color, transparent),
+    /* 卡片底色是 accent 渐变（button 风格），文字不再需要 accent 柔光——去掉之前
+       0 0 6px 和 0 0 14px 那两层，避免白字糊掉。保留 1 层极轻 accent 描边光。 */
+    0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+  /* 标题底座与侧栏 toggle 按钮（收起态）统一：accent-soft 淡底 + accent 紫字 + 圆角矩形。
+     原来是 accent 实色底，紫字在上面同色系看不清；改回淡底让紫字清晰，视觉也与侧栏一致。 */
+  background: var(--accent-soft);
+  border: 0;
+  /* 圆角矩形（横条高度小所以圆角看起来仍有"圆润按钮"感），不再是胶囊 */
+  border-radius: 12px;
+  padding: 4px 10px;
+  /* 横条式：宽度 100%，占满 .title-wrap（贴卡片左右，仅留 grid-card 的 6px padding）*/
+  display: block;
+  width: 100%;
   box-sizing: border-box;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  letter-spacing: 0.2px;
-  /* 背景透明度用 opacity？不，会影响文字。用 background-color 的 rgba 在 JS 里拼好。
-     这里不重复设 opacity，由 card-bg-opacity 控制的视觉通过 --card-bg-color 自身 alpha 解决。 */
+  letter-spacing: 0.3px;
 }
 /* 当背景填充启用（opacity>0）时，文字标题元素铺满一行：用 inline-block + 父容器 flex 居中。
    通过容器 .grid-card .title-wrap 包一层（HTML 改动见 GridView.tsx）。
    父层 center 对齐下 inline-block 自然居中，无需额外。 */
+/* 横条式标题容器：让 .title 横跨卡片左右（贴边，留卡片 padding 间距），
+   圆角矩形不再用胶囊 (9999px)，改用 12px 圆角矩形 */
 .grid-card .title-wrap {
-  display: flex;
-  justify-content: center;
+  display: block;
   margin-top: 7px;
+  padding: 0; /* 卡片自身的 padding 已经预留左右 6px 边距 */
+}
+/* 副标题：英文原名（game.name）。小字、灰、居中，跟主标题保持紧凑。
+   仅当主标题（中文名）≠ 英文原名时渲染（GridView 里判断）。
+   超长英文名省略号，不换行撑高卡片。 */
+.grid-card .title-orig {
+  margin-top: 1px;
+  /* 副标题（英文原名）可被鼠标选中复制。 */
+  user-select: text;
+  -webkit-user-select: text;
+  padding: 0 10px;
+  font-size: 11px;
+  line-height: 14px;
+  /* 副标题统一为 --ui-accent，和侧栏 toggle 按钮、主标题一致。 */
+  color: var(--ui-accent);
+  text-align: center;
+  letter-spacing: 0.2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 网格卡片简介：默认 2-3 行省略，点击展开完整。受工具栏"简介"开关控制。
+   套用 uiverse button 风格的"轻量化版"：浅 accent 渐变背景 + 圆角胶囊 + inset 白色高光。 */
+.grid-card .grid-desc {
+  margin-top: 4px;
+  padding: 2px 10px;
+  /* 字号由 settings.cardDescFontSize 注入（默认 11px）。*/
+  font-size: var(--card-desc-font-size, 11px);
+  line-height: 1.5;
+  /* 简介统一为 --ui-accent，和侧栏 toggle 按钮、主标题一致。 */
+  color: var(--ui-accent);
+  text-align: center;
+  /* 简介文字可被鼠标选中复制（即使展开后也能选中）。 */
+  user-select: text;
+  -webkit-user-select: text;
+  /* 默认收成 3 行，超出行显示省略号 */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  cursor: pointer;
+  transition: color 0.12s;
+  word-break: break-word;
+  /* button 风格：浅 accent 渐变 + 圆角 + inset 白高光（比 .title 弱，避免太显眼） */
+  background-image: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--accent) 22%, transparent) 0%,
+    color-mix(in srgb, var(--accent) 12%, transparent) 100%
+  );
+  /* 横条式：宽度 100%（贴边），圆角矩形 12px */
+  width: calc(100% + 4px);
+  margin-left: -2px;
+  margin-right: -2px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  box-shadow: inset 0 -2px 14px -4px rgba(255, 255, 255, 0.35);
+  text-align: center;
+}
+/* 简介 hover：保持 --ui-accent 紫字，只做轻微强调（不再变淡以免降低对比度） */
+.grid-card .grid-desc:hover {
+  color: color-mix(in srgb, var(--ui-accent) 80%, #000);
+}
+/* 展开：显示完整文字，去掉省略号 */
+.grid-card .grid-desc.expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
 }
 
 /* Cover-overlay text (debug index badge, etc.) — needs to read on top of
@@ -1792,22 +2143,27 @@ textarea {
   font-size: 11px;
 }
 
-/* Group headers */
+/* Group headers: 胶囊背景，和卡片明显分隔，避免视觉挤压。 */
 .group-header {
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--text-primary);
-  padding: 18px 4px 8px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 8px;
   display: flex;
   align-items: center;
   gap: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-primary);
+  /* 背景胶囊 + 圆角 + 与卡片拉开间距（垂直 + 横向都留白） */
+  background: var(--bg-item-hover);
+  border-radius: var(--radius);
+  padding: 7px 14px;
+  margin: 2px 4px 14px;
+  letter-spacing: 0.02em;
+  box-shadow: inset 0 0 0 1px var(--border);
 }
 .group-header .count {
   font-size: 12px;
   color: var(--text-dim);
   font-weight: 400;
+  margin-left: auto;
 }
 /* Details view */
 .details-view {
@@ -2469,6 +2825,9 @@ textarea {
   line-height: 1.4;
   font-size: var(--card-alt-size, 12px);
   font-weight: var(--card-title-weight, 500);
+  /* 别名（容器 + 单个 badge）可被鼠标选中复制。 */
+  user-select: text;
+  -webkit-user-select: text;
 }
 .list-alt-names {
   margin-top: 2px;
@@ -2485,6 +2844,9 @@ textarea {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* 单个别名胶囊可被鼠标选中复制。 */
+  user-select: text;
+  -webkit-user-select: text;
 }
 .list-alt-names .alt-name {
   font-size: 10px;
@@ -2862,79 +3224,18 @@ textarea {
   user-select: none;
 }
 
-/* 异形面板：四周留透明边距，大圆角 + 顶部装饰，背景用深色质感图 */
-.ann-shape {
-  position: relative;
-  width: 660px;
-  height: 500px;
-  display: flex;
-  flex-direction: column;
-  background: url("/announcement/bg-panel.png") center/cover no-repeat;
-  background-color: #0d1117;
-  border: 1px solid rgba(120, 160, 255, 0.35);
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
-  /* 顶部及两侧边框区域可拖动窗口（透明区域拖不了，只能靠这里） */
-  -webkit-app-region: drag;
-  animation: annFloat 4s ease-in-out infinite;
-}
-/* 顶部装饰突起：做一个山字形上边，强化"异形"轮廓（配合透明边距） */
-.ann-crown {
-  position: absolute;
-  top: -26px;
-  left: 0;
-  right: 0;
-  height: 52px;
-  background: inherit;
-  background-image: url("/announcement/bg-panel.png");
-  background-size: cover;
-  background-position: center -0px;
-  border-bottom: 1px solid rgba(120, 160, 255, 0.35);
-  border-radius: 24px 24px 0 0;
-  z-index: 1;
-  pointer-events: none;
-}
-/* Live2D 看板娘容器（initWidget 注入的 #waifu）覆盖定位：
-   从 live2d-widget 默认的"整页左下角"移到异形面板右下角。
-   透明窗口下 canvas 透明背景透出桌面，看板娘叠加在面板上。 */
-#waifu {
-  position: absolute !important;
-  right: 6px !important;
-  bottom: 10px !important;
-  left: auto !important;
-  top: auto !important;
-  margin: 0 !important;
-  z-index: 20 !important;
-  -webkit-app-region: no-drag;
-  pointer-events: none;
-}
-#waifu canvas {
-  display: block;
-  width: 220px;
-  height: auto;
-  filter: drop-shadow(0 8px 24px rgba(45, 127, 249, 0.35));
-}
-/* 隐藏 initWidget 自带的小对话框（我们要的是纯看板娘，不弹气泡） */
-#waifu-tips {
-  display: none !important;
-}
-/* 隐藏右下角开关按钮 */
-#waifu-toggle {
-  display: none !important;
-}
-
 /* 内容区：公告滚动，占满面板中部 */
-.ann-content {
+.announcement-body {
   position: relative;
   flex: 1 1 auto;
   overflow: hidden;
-  margin: 40px 30px 0;
-  -webkit-app-region: no-drag; /* 内容区可交互，不拖动 */
+  padding: 28px 30px 0;
   z-index: 2;
 }
-.ann-scroll {
+.announcement-body .announcement-scroll {
+  max-height: none;
   height: 100%;
+  padding: 0;
   overflow-y: auto;
   padding-right: 8px;
 }
@@ -2961,8 +3262,8 @@ textarea {
 }
 .ann-html img { max-width: 100%; border-radius: 8px; }
 
-/* 底部"进入系统"按钮 */
-.ann-footer {
+/* 底部"进入系统"按钮（荧光发光样式，保留用户的"荧光特效"要求） */
+.announcement-footer {
   position: relative;
   flex: 0 0 auto;
   display: flex;
@@ -2970,7 +3271,6 @@ textarea {
   justify-content: center;
   padding: 18px 0 22px;
   z-index: 3;
-  -webkit-app-region: no-drag;
 }
 .ann-enter-btn {
   display: inline-flex;
@@ -2994,12 +3294,6 @@ textarea {
   box-shadow: 0 10px 30px rgba(45, 127, 249, 0.55);
 }
 .ann-enter-btn:active { transform: translateY(1px); }
-
-/* 面板轻微漂浮 + 看板娘轻微上下摆动，增加可爱感 */
-@keyframes annFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
 
 /* ---------- News (recently added) ---------- */
 .news-header {

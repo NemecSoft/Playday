@@ -29,9 +29,10 @@ function currentAppInfo() {
 }
 
 export function registerSystemIpc(ipc: typeof ipcMain) {
-  // "进入系统"：公告窗口点按钮后，关闭公告窗口并创建主窗口。
+  // "进入系统"：公告窗口点按钮后，先打开数据库，再关闭公告窗口并创建主窗口。
+  // await enterSystem()：等数据库就绪后再返回，主窗口渲染时数据一定可用。
   registerCommand(ipc, "enter_system", async () => {
-    enterSystem();
+    await enterSystem();
     return true;
   });
 

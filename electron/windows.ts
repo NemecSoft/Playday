@@ -47,6 +47,41 @@ function applyStartupBehavior(win: BrowserWindow): void {
 const devUrl = process.env.VITE_DEV_SERVER_URL;
 const adminDevUrl = process.env.VITE_ADMIN_DEV_SERVER_URL;
 
+// 是否开启调试模式：只在"开发模式启动"时开启。
+// 判断依据是 VITE_DEV_SERVER_URL（只有 dev-client.bat 会设置它，指向 Vite 开发服务器）。
+// 也就是说：用 dev-client.bat 启动 → 开调试（自动 DevTools + 转发渲染日志）；
+// 用打包版 exe 启动 → 没有该变量 → 不开调试，完全正常使用。
+function isDebug(): boolean {
+  return !!process.env.VITE_DEV_SERVER_URL;
+}
+
+// 调试辅助：自动打开 DevTools + 转发渲染进程日志/错误到主进程 stdout。
+// 只在 isDebug() 开启时生效；否则不做任何事，不影响正常使用。
+function applyDebug(win: BrowserWindow, windowName: string): void {
+  if (!isDebug()) return;
+  const wc = win.webContents;
+  // 自动打开 DevTools（分离成独立窗口，不占用主窗口布局）。
+  try {
+    wc.openDevTools({ mode: "detach" });
+  } catch {
+    /* ignore */
+  }
+  // 转发渲染进程 console（log/warn/error）到主进程 stdout，带窗口名和级别。
+  wc.on("console-message", (_e, level, message, line, sourceId) => {
+    console.log(`[render:${windowName}:${level}] ${message} (${sourceId}:${line})`);
+  });
+  // 渲染进程崩溃、加载失败、页面无响应时都打印，方便定位。
+  wc.on("render-process-gone", (_e, details) => {
+    console.error(`[render:${windowName}] 渲染进程崩溃: ${details.reason}`);
+  });
+  wc.on("did-fail-load", (_e, code, desc, url) => {
+    console.error(`[render:${windowName}] 加载失败 ${code}: ${desc} ${url}`);
+  });
+  wc.on("unresponsive", () => {
+    console.error(`[render:${windowName}] 页面无响应`);
+  });
+}
+
 // 找一个可用的应用图标（窗口/任务栏用）。
 // 跟托盘图标同一个来源：dev 用 public/icons/icon.png，打包用 resources/icon.png。
 // 找不到就返回 undefined，让 Electron 用默认图标（不崩）。
@@ -90,6 +125,8 @@ export function createClientWindow(): BrowserWindow {
   // Windows 上必须 setIcon 才能真正把任务栏图标换成 Playday 的（而不是 Electron 默认）
   applyWindowIcon(win);
   loadRenderer(win, "client");
+  // 调试模式：自动打开 DevTools + 转发渲染日志（见 applyDebug）
+  applyDebug(win, "client");
   // 按用户的启动行为设置窗口初始状态（默认最大化/最小化/隐藏到托盘）
   applyStartupBehavior(win);
   return win;
@@ -99,26 +136,27 @@ export function createClientWindow(): BrowserWindow {
 // 特点：固定尺寸、居中、无边框、不可缩放。里面显示公告 + "进入系统"按钮，
 // 点了按钮后主进程会创建主窗口并关闭本窗口（传统桌面应用的 Splash/引导模式）。
 //
-// 采用"真·异形（透明抠图）"样式：transparent:true 让窗口背景完全透明，
-// 前端用一个四周透明、带圆角/装饰突起的 CSS 异形面板 + 看板娘立绘组成窗口，
-// 透明像素会透出桌面，窗口形状随面板轮廓走（类似 QQ/宠物窗）。
-// 注意：透明窗口不能带系统阴影（会变黑块），且透明区域无法用 app-region 拖动，
-// 所以拖动只能靠面板不透明的顶部/边框区域（前端用 drag / no-drag 控制）。
+// 2026-08-17 简化版：
+//   - 暂时去掉"真·异形（透明抠图）"样式：transparent:false + 深色 backgroundColor，
+//     不再让桌面透出，窗口就是普通矩形。
+//   - 暂时去掉 Live2D 看板娘立绘（前端 AnnouncementWindow.tsx 也不再渲染）。
+//   - 保留荧光特效：按钮发光（CSS .ann-enter-btn）+ 极光背景（CSS .announcement-aurora）
+//     + 公告 HTML 里的 NEW/星星等用户自定义元素。
+// 保留 frame:false 与主界面统一无边框风；窗口完全可拖动（无需 drag/no-drag 分区）。
 export function createAnnouncementWindow(): BrowserWindow {
   const win = new BrowserWindow({
     width: 700,
     height: 560,
     title: APP_NAME,
     frame: false,
-    transparent: true, // 关键：窗口背景透明，四周露出桌面形成异形
-    backgroundColor: "#00000000", // 完全透明，避免闪白/闪黑
+    transparent: false, // 不再用异形透明窗口
+    backgroundColor: "#0d1117", // 与前端 .announcement-window 背景一致，避免闪白
     resizable: false,
     maximizable: false,
     fullscreenable: false,
     center: true,
     icon: appIconPath(),
     autoHideMenuBar: true,
-    hasShadow: false, // 透明窗口别开系统阴影，否则透明区域会出现黑块
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -128,6 +166,7 @@ export function createAnnouncementWindow(): BrowserWindow {
   win.setMenuBarVisibility(false);
   applyWindowIcon(win);
   loadRenderer(win, "announcement");
+  applyDebug(win, "announcement");
   return win;
 }
 
@@ -153,6 +192,7 @@ export function createAdminWindow(): BrowserWindow {
   // DWM（窗口管理器）层面设置图标，确保任务栏与开始菜单正确显示。
   applyWindowIcon(win);
   loadRenderer(win, "admin");
+  applyDebug(win, "admin");
   return win;
 }
 
@@ -179,18 +219,7 @@ function loadRenderer(win: BrowserWindow, windowName: string): void {
     });
   }
 
-  // 联调辅助：设置 RENDER_LOG=1 时，把渲染进程的 console 和报错转发到主进程 stdout，
-  // 便于无头环境或无界面调试时看到前端 JS 错误。
-  if (process.env.RENDER_LOG === "1") {
-    const wc = win.webContents;
-    wc.on("console-message", (_e, level, message, line, sourceId) => {
-      console.log(`[render:${windowName}:${level}] ${message} (${sourceId}:${line})`);
-    });
-    wc.on("render-process-gone", (_e, details) => {
-      console.error(`[render:${windowName}] 渲染进程崩溃: ${details.reason}`);
-    });
-    wc.on("did-fail-load", (_e, code, desc, url) => {
-      console.error(`[render:${windowName}] 加载失败 ${code}: ${desc} ${url}`);
-    });
-  }
+  // 联调辅助统一在 applyDebug() 里做（自动开 DevTools + 转发渲染日志）。
+  // 历史：曾用 RENDER_LOG=1 只转发日志不开 DevTools；现在 PLAYDAY_DEBUG=1 或 --debug
+  // 会同时开 DevTools + 转发日志，更完整。旧的 RENDER_LOG 分支已移除。
 }

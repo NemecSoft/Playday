@@ -99,6 +99,7 @@
 - `paths.ts` 里 `adminDatabasePath()` = `<数据根>/Admin/library.db`（**权威库**：管理端读/改、改完下发）。
 - `runtimeDatabasePath()` = `<数据根>/library/library.db`（**运行时副本**：客户端每次启动 `openDb()` 在 `db.ts` 把 Admin 权威库 `copyFileSync` 复制过来再用）。
 - **所以同步/写标签一律针对 `Admin/library.db`**，改运行时副本是白费——下次启动会被 Admin 覆盖。
+- **游戏路径格式**：`installDirectory` 与 `actions[].path/workingDir` 存库时必须是 `{库占位符}\相对路径` 格式（如 `{Gamelibrary1}\game1\game.exe`），旧式 `.\Gamelibrary\...` 已废弃；`upsertGame()` 会自动规范化，详情见 `docs/design/data-models.md` 的「游戏路径与库占位符规范」。
 
 **约定**：
 - 侧栏标签统计只允许在 `src/components/Sidebar.tsx` 一处聚合（读 `useGamesStore.games`），不要多处各自统计。

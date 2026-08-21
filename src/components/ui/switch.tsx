@@ -1,4 +1,7 @@
-// shadcn/ui Switch（基于 @radix-ui/react-switch）。开关控件，替代手动 checkbox 开关。
+// iOS 风 Switch（基于 @radix-ui/react-switch）。
+// 样式全部用纯 CSS（global.css 的 .switch / .switch-thumb），
+// 不依赖 Tailwind JIT 扫描 data-[state=...] 选择器（JIT 经常漏生成，
+// 之前 bg-zinc-500/40 在 dist CSS 里压根不存在，Switch 关闭态就一片空）。
 import * as React from "react";
 import * as SwitchPrimitives from "@radix-ui/react-switch";
 import { cn } from "../../lib/utils";
@@ -8,18 +11,8 @@ function Switch({
   ...props
 }: React.ComponentProps<typeof SwitchPrimitives.Root>) {
   return (
-    <SwitchPrimitives.Root
-      className={cn(
-        "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border border-transparent bg-primary/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary",
-        className,
-      )}
-      {...props}
-    >
-      <SwitchPrimitives.Thumb
-        className={cn(
-          "pointer-events-none block h-4 w-4 rounded-full bg-background shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0",
-        )}
-      />
+    <SwitchPrimitives.Root className={cn("switch", className)} {...props}>
+      <SwitchPrimitives.Thumb className="switch-thumb" />
     </SwitchPrimitives.Root>
   );
 }

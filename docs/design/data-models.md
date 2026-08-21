@@ -2,7 +2,8 @@
 
 ## 概述
 
-`Game` 是核心实体，对应原版 Playnite 的 `Playnite.SDK.Models.Game`。本项目对原版做了关键改进，最核心的是**多名称支持**。前端类型定义在 `src/types/models.ts`，与主进程 `electron/core/models.ts` 返回的结构保持一致。
+`Game` 是核心实体，对应原版 Playnite 的 `Playnite.SDK.Models.Game`。
+本项目对原版做了关键改进，最核心的是**多名称支持**。前端类型定义在 `src/types/models.ts`，与主进程 `electron/core/models.ts` 返回的结构保持一致。
 
 ## `Game` 结构（TypeScript）
 
@@ -68,6 +69,41 @@ export interface Game {
 }
 ```
 
+## 游戏路径与库占位符规范
+
+游戏相关的路径（`installDirectory`、`actions[].path`、`actions[].workingDir`）在存库时**必须使用统一格式**，避免"两套写法不一致"导致启动失败。
+
+### 格式约定
+
+| 写法 | 示例 | 说明 |
+| --- | --- | --- |
+| ✅ 正确 | `{Gamelibrary1}\game1\game.exe` | **库占位符 + 反斜杠 + 相对路径**（唯一合法格式）|
+| ❌ 旧格式 | `.\Gamelibrary\game1\game.exe` | 早期"相对路径 + 字面目录名"写法，**已废弃**，会被规范化为占位符格式 |
+| ❌ 错误 | `{Gamelibrary1}game1/game.exe` | 占位符后少斜杠 / 混用正反斜杠 / 重复斜杠 |
+
+### 占位符语义
+
+- `{Gamelibrary1}` 是**游戏库占位符**，运行时由 `resolveLibraryPlaceholder()` 从 `game_libraries` 表解析为真实路径（例如 `{Gamelibrary1}` → `D:\Games2`）。
+- 只有**以 `{...}` 开头**的字符串才会被当作占位符解析；普通绝对路径（`D:\Games\...`）原样使用。
+- `game_libraries` 表是游戏库的权威定义（从 config.json 迁移而来），字段 `id / name / path`。
+
+### 自动规范化
+
+在 `electron/core/db.ts` 的 `upsertGame()`（所有游戏入库的权威保存点）调用 `normalizeLibPath()`，对**每个保存的游戏**自动规范化 `installDirectory` 和每个 action 的 `path` / `workingDir`：
+
+1. 只处理以 `{...}` 占位符开头的路径；
+2. 去掉占位符后多余的 `./`、`.\`、`/`、`\`；
+3. 内部统一成反斜杠并去掉重复分隔符；
+4. 结果统一为 `{占位符}\相对路径`。
+
+**入口无关**：管理端、客户端、脚本任何入口保存游戏都会自动规范化，保证库里只有一种合法写法。
+
+### 双库机制（务必分清）
+
+- `paths.ts` 的 `adminDatabasePath()` = `<数据根>/Admin/library.db`：**权威库**（管理端读/改）。
+- `paths.ts` 的 `runtimeDatabasePath()` = `<数据根>/library/library.db`：**运行时副本**（客户端每次启动 `openDb()` 把 Admin 库 `copyFileSync` 复制过来再用）。
+- **写库/同步一律针对 `Admin/library.db`**；改运行时副本是白费（下次启动被 Admin 覆盖）。
+
 ## 多名称设计（对原版 Playnite 的改进）
 
 > **背景**：原版 Playnite 的 `Game` 只有一个 `name` 字段。这导致一款游戏只能有一个标题，
@@ -124,9 +160,11 @@ export interface GameName {
 - **`GameAction`**：启动动作。类型仅 `"File"` / `"URL"`（原版还有 `"Emulator"`，本项目已移除模拟器）。字段含 `path`、`arguments`、`isPlayAction`、`trackGame` 等。
 - **`GameLink`**：游戏相关链接（如商店 / Wiki）。
 - **`GameVideo`**：游戏视频，`type` 为 `"youtube"` / `"file"` / `"url"`。
-- **`AppSettings`**：应用设置（语言、主题、风格、启动行为、托盘、登录、布局等），存 `config.json`。其中 `themeId` / `styleId` 持久化主题/风格选择。
+- **`AppSettings`**：应用设置（语言、主题、风格、启动行为、托盘、登录、布局等），存 `config.json`。其中 `themeId` / `styleId` 持久化主题/风格选择；`gameDetailsDir` 指定游戏静态详情页目录（留空用默认 `<数据根>/Game_Details`，见 [游戏静态详情页](./game-details.md)）。
 - **`Platform`**：平台（含 `specificationId`）。
 
 ## 存储
 
 `Game` 以 JSON 形式存入 SQLite 单表 `games`（字段用 TEXT/JSON 序列化）。数组字段（genre/developer 等）用 `JSON.stringify` 存入，读取时 `JSON.parse`；字段变更通过默认值保持兼容，**无需数据库迁移**（新增字段自动以默认值读入）。
+
+完整的 SQLite 表结构（games/users/game_libraries/platforms 等全部字段、类型、序列化约定、表间关系、双库与备份策略）见 **[database-schema.md](./database-schema.md)**。

@@ -69,9 +69,10 @@ export const DEFAULT_CARD_TEXT: CardTextStyle = {
 
 export interface Game {
   id: string;
-  /** Primary display name (usually the original English title). */
+  /** Primary display name (usually the Chinese common name). */
   name: string;
-  sortName?: string;
+  /** 原始英文名（origin_name）。老游戏为 NULL 不显示副标题，新游戏手动填英文原名。 */
+  originName?: string;
   /** Localized names across languages (zh-CN, zh-TW, ja, ko, ...). */
   localizedNames?: GameName[];
   /** Unofficial nicknames / colloquial aliases without a language tag. */
@@ -136,18 +137,11 @@ export interface Game {
   /** Script run after the game exited. */
   postExitScript?: string;
   postExitEnabled: boolean;
-  /** Save-path config for save backup/restore (up to 3, supports wildcards). */
-  savePaths?: SavePath[];
-}
-
-/** A single save path for a game (backup/restore). */
-export interface SavePath {
-  id: string;
-  /** Supports {游戏库名} placeholder and wildcards like *.*, *.save */
-  path: string;
-  /** "file" | "dir" */
-  type: string;
-  note?: string;
+  /** 存档路径（备份/恢复用，纯字符串数组，简洁存储）。支持 {游戏库名} 占位符和通配符。 */
+  savePaths?: string[];
+  /** 手动指定的"计时监控 exe"：`进程名|窗口标题关键字`（如 dotnet.exe|泰拉瑞亚）。
+      仅少数用 start 启动游戏后自身提前退出的 bat 脚本需要填。留空=脚本退出即结算。 */
+  monitorExe?: string;
 }
 
 /** A gameplay/live video attached to a game. */
@@ -163,6 +157,8 @@ export interface AppSettings {
   enableTray: boolean;
   minimizeToTray: boolean;
   closeToTray: boolean;
+  /** 运行 .bat/.cmd 指令时是否显示控制台窗口（默认 false=隐藏）。 */
+  showBatConsole: boolean;
   language: string;
   firstTimeWizardComplete: boolean;
   databasePath?: string;
@@ -189,8 +185,10 @@ export interface AppSettings {
   trackPlaytime: boolean;
   /** Grid card width in px. */
   cardWidth: number;
-  /** Gap between grid cards in px (0..20). */
+  /** Gap between grid cards in px (0..20) - horizontal (left-right). */
   cardGap: number;
+  /** Vertical gap between card rows in px (0..60) - top-bottom. */
+  cardRowGap: number;
   /** Left sidebar width in px (user-resizable, 160..600). */
   sidebarWidth: number;
   /** Path to the enterprise user config JSON. */
@@ -205,6 +203,8 @@ export interface AppSettings {
   fontFamily: string;
   /** 卡片上标题/别名的字号（px）。默认 15，比老版 12px 更易读。 */
   cardFontSize: number;
+  /** 卡片简介（description）的字号（px）。默认 11，可设 9~16。 */
+  cardDescFontSize: number;
   /** 卡片上文字是否加粗。 */
   cardFontBold: boolean;
   /** 卡片文字自定义样式（颜色/描边/发光/阴影/背景）。默认走 DEFAULT_CARD_TEXT。 */
@@ -215,6 +215,8 @@ export interface AppSettings {
   styleId?: string;
   /** Custom game detail pages dir (absolute). Empty = default data/Game_Details. */
   gameDetailsDir?: string;
+  /** Whether to show the description (简介) on grid cards. Persisted in config.json. */
+  showCardDescription: boolean;
 }
 
 /** The resolved current user (enterprise or personal or guest). */

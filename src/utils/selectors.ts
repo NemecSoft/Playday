@@ -68,7 +68,9 @@ export type SortKey = "name" | "added" | "lastPlayed" | "playtime" | "releaseDat
 export function sortGames(games: Game[], key: SortKey, direction: "ascending" | "descending"): Game[] {
   const dir = direction === "ascending" ? 1 : -1;
   const copy = [...games];
-  const sortName = (g: Game) => normalize(g.sortName || g.name);
+  // 按名称排序直接用 name（中文名）。sort_name 列已删除，origin_name 是"原始英文名"，
+  // 语义上不是排序键，所以不再参与名称排序。
+  const sortName = (g: Game) => normalize(g.name);
 
   copy.sort((a, b) => {
     let cmp = 0;

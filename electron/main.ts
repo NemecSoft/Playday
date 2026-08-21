@@ -5,8 +5,7 @@ import * as path from "path";
 import { registerIpc } from "./ipc/register";
 import { openDb, closeDb } from "./core/db";
 import { readSettings } from "./core/settings";
-import { gamesHtmlDir } from "./core/paths";
-import { startGameServer, stopGameServer } from "./core/gameServer";
+import { stopGameServer } from "./core/gameServer";
 import { createTray, destroyTray } from "./core/tray";
 import { ADMIN_EXE_NAME } from "./config";
 import {
@@ -40,21 +39,13 @@ app.whenReady().then(async () => {
   // 把剩下的菜单条彻底清掉，让 UI 完全由前端 TopBar 自定义。
   Menu.setApplicationMenu(null);
 
-  // 先打开数据库（sql.js 是异步初始化），再创建窗口，避免在窗口里访问数据时库还没就绪。
-  await openDb();
-
   // 注册所有主进程 ←→ 渲染进程 的命令。
   registerIpc();
 
-  // 客户端才启动详情页服务器和托盘；管理端（独立 Playday.Admin.exe）不需要。
+  // 客户端才启动托盘；管理端（独立 Playday.Admin.exe）不需要。
+  // 注：游戏详情页本地 HTTP 服务器不再在这里启动，改为"第一次打开详情页时"
+  // 由 get_game_server_url 惰性启动（见 ipc/gameHtml.ts），缩短应用启动时间。
   if (!shouldOpenAdmin) {
-    // 启动游戏详情页本地 HTTP 服务器（托管 Game_Details/ 目录，端口随机）。
-    try {
-      await startGameServer(gamesHtmlDir());
-    } catch (e) {
-      console.error("[main] 启动游戏详情页服务器失败:", e);
-    }
-
     // 按设置决定是否启用系统托盘。
     if (readSettings().enableTray) {
       try {
@@ -66,10 +57,13 @@ app.whenReady().then(async () => {
   }
 
   if (shouldOpenAdmin) {
-    // 管理端：直接打开管理窗口，不经过公告。
+    // 管理端：没有公告引导，直接打开管理窗口。管理窗口一打开就要读库，
+    // 所以必须先 await openDb() 把数据库（整库复制 + 读入内存）准备好。
+    await openDb();
     adminWin = createAdminWindow();
   } else {
-    // 客户端：先弹公告窗口（独立引导窗口），点"进入系统"后才创建主窗口。
+    // 客户端：先弹公告窗口（独立引导窗口）。数据库打开是重活（整库复制 + 读入内存），
+    // 推迟到点"进入系统"时再执行（见 enterSystem），让公告窗口第一时间出现，启动更快。
     announcementWin = createAnnouncementWindow();
   }
 
@@ -82,7 +76,12 @@ app.whenReady().then(async () => {
 
 // "进入系统"：公告窗口点按钮后回调到主进程，关闭公告窗口、创建主窗口。
 // 供 system.ts 的 IPC 调用，避免循环依赖。
-export function enterSystem(): void {
+// 这里是打开数据库的时机：把整库复制 + 读入内存这类重活从"应用启动"推迟到
+// "用户点击进入系统"时，让公告窗口能第一时间弹出来。
+export async function enterSystem(): Promise<void> {
+  // 先打开数据库（sql.js 是异步初始化，幂等：已打开则直接复用）。
+  // 只有 db 就绪后才创建主窗口，避免主窗口里访问数据时库还没就绪。
+  await openDb();
   // 关闭公告窗口
   if (announcementWin) {
     announcementWin.close();

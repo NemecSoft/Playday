@@ -6,10 +6,12 @@
 // so the user can start typing a pinyin search at any time.
 
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { LayoutGrid, Globe } from "lucide-react";
+import { LayoutGrid, Globe, FileText } from "lucide-react";
 import { useGamesStore } from "../stores/gamesStore";
+import { useSettingsStore } from "../stores/settingsStore";
 import { useI18n } from "../i18n";
 import { Input } from "./ui/input";
+import { Switch } from "./ui/switch";
 
 export default function Toolbar() {
   const searchQuery = useGamesStore((s) => s.searchQuery);
@@ -18,6 +20,9 @@ export default function Toolbar() {
   const setViewMode = useGamesStore((s) => s.setViewMode);
   const loading = useGamesStore((s) => s.loading);
   const games = useGamesStore((s) => s.games);
+  // 网格卡片简介显示开关：持久化到 config.json。
+  const showCardDescription = useSettingsStore((s) => s.settings.showCardDescription);
+  const saveSettings = useSettingsStore((s) => s.save);
   const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -108,6 +113,23 @@ export default function Toolbar() {
           <Globe size={15} />
           <span>{t("view_planet")}</span>
         </button>
+        {/* 简介开关：iOS 风格大圆头 Switch + 图标 + 文字标签。checked=显示简介。
+            checked=false 时文字显示"隐藏简介"，true 时显示"显示简介"——跟随状态。 */}
+        <div
+          className="desc-toggle"
+          title={t("toolbar_toggleDesc")}
+        >
+          <FileText size={15} />
+          <span className="desc-toggle-label">
+            {showCardDescription
+              ? t("toolbar_showDesc", { defaultValue: "显示简介" })
+              : t("toolbar_hideDesc", { defaultValue: "隐藏简介" })}
+          </span>
+          <Switch
+            checked={showCardDescription}
+            onCheckedChange={(v) => void saveSettings({ showCardDescription: v })}
+          />
+        </div>
       </div>
     </div>
   );

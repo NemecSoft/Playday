@@ -123,6 +123,8 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
         userLevel: settings.currentUserLevel,
         track: settings.trackPlaytime,
         gameLibraries: getLibraries(),
+        showBatConsole: settings.showBatConsole,
+        monitorExe: game.monitorExe,
       });
       // 启动成功后再执行启动后脚本（异步）。
       if (result.launched && game.postLaunchEnabled && game.postLaunchScript) {
@@ -156,6 +158,8 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
         userLevel: settings.currentUserLevel,
         track: settings.trackPlaytime,
         gameLibraries: getLibraries(),
+        showBatConsole: settings.showBatConsole,
+        monitorExe: game.monitorExe,
       });
       return result;
     },
@@ -280,22 +284,11 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
     let cwd: string | undefined;
     if (gameId) {
       const game = getGame(gameId);
-      const settings = readSettings();
       const libs = getLibraries();
-      const libRoot = game?.gameLibrary ? libs.find((l) => l.name === game.gameLibrary)?.path : undefined;
-      // 从"作为启动指令"的路径解析出工作目录（去掉文件名）。
-      // 注意：playAction.path 可能含 {库名} 占位符（如 {Gamelibrary2}\Grain Rot\Meld\...），
-      // 直接 path.dirname 只会拿到字面 dirname，得不到游戏库根。先用 validateLaunchPath 展开成真实路径。
-      const playAction = game?.actions.find((a) => a.isPlayAction && a.type === "File");
-      let workdirFromAction: string | undefined;
-      if (playAction?.path) {
-        const precheck = validateLaunchPath(playAction.path, "File", libs);
-        // 只在展开成功（绝对路径且校验通过）时使用，否则回退到游戏库根
-        if (precheck.valid && precheck.resolved && path.isAbsolute(precheck.resolved)) {
-          workdirFromAction = path.dirname(precheck.resolved);
-        }
-      }
-      cwd = workdirFromAction || libRoot || game?.installDirectory;
+      // 脚本统一在"安装目录"执行（game.installDirectory，如 {Gamelibrary1}\game1），
+      // 而不是 exe 所在目录（可能是 bin 子目录）。很多游戏（尤其网吧联机版）需要在
+      // 安装目录跑一个启动脚本，脚本 cwd 应与安装目录一致，与 exe 的 cwd 无关。
+      cwd = game?.installDirectory || undefined;
     }
     return runScript(script, cwd);
   });

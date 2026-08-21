@@ -75,6 +75,10 @@ const KEY_TO_VAR: Record<keyof ThemePaletteTokens, string> = {
 /** Apply a palette's tokens onto :root (documentElement inline style). */
 export function applyPaletteTheme(palette: ThemePaletteTokens): void {
   const root = document.documentElement;
+  // 先清空上一次配色注入的所有变量，再应用新配色。
+  // 否则新配色里没定义（未覆盖）的变量会保留上一个配色残留的值，
+  // 造成"切换配色后颜色残留/串色"的问题。
+  clearPaletteTheme();
   (Object.keys(palette) as (keyof ThemePaletteTokens)[]).forEach((k) => {
     root.style.setProperty(KEY_TO_VAR[k], palette[k]);
   });

@@ -99,6 +99,15 @@ export default function GeneralSection() {
         <label htmlFor="trackPlaytime">{t("settings_trackPlaytime", { defaultValue: "启用游戏时间追踪" })}</label>
       </div>
 
+      <div className="mb-3.5 flex items-center gap-2">
+        <Checkbox
+          id="showBatConsole"
+          checked={settings.showBatConsole}
+          onCheckedChange={(v) => save({ showBatConsole: v === true })}
+        />
+        <label htmlFor="showBatConsole">{t("settings_showBatConsole", { defaultValue: "运行 .bat/.cmd 指令时显示控制台窗口" })}</label>
+      </div>
+
       {/* 游戏静态详情页目录：留空用默认 <数据根>/Game_Details，可改到其它绝对路径。
           HTML 和视频都由内置 HTTP 服务器托管该目录。 */}
       <div className="mb-3.5">

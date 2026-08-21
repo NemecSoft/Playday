@@ -8,7 +8,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useGamesStore } from "../stores/gamesStore";
 import { useI18n } from "../i18n";
 import { api } from "../api/client";
-import { ArrowLeft, PlayCircle } from "lucide-react";
+import { ArrowLeft, PlayCircle, Wrench } from "lucide-react";
 import { Button } from "../components/ui/button";
 
 // 把秒数格式化成"时:分:秒"，比如 3661 秒 → "1:01:01"。
@@ -102,6 +102,42 @@ export default function GameDetailPage() {
   // 运行状态监控（详情页顶部显示"运行中/已退出/未运行"）。
   const run = useRunState(id ?? "");
 
+  // 修改器：列表 + 下拉开合。修改器目录 = <详情目录>/<游戏名>/修改器/*.exe。
+  const [trainers, setTrainers] = useState<{ name: string; exePath: string; icon: string }[]>([]);
+  const [trainersOpen, setTrainersOpen] = useState(false);
+  const [trainersLoading, setTrainersLoading] = useState(false);
+  const [trainersErr, setTrainersErr] = useState(false);
+  useEffect(() => {
+    if (!game) return;
+    let cancelled = false;
+    setTrainers([]);
+    setTrainersErr(false);
+    setTrainersLoading(true);
+    api
+      .getTrainers(game.id, game.name)
+      .then((list) => {
+        if (!cancelled) setTrainers(list);
+      })
+      .catch(() => {
+        if (!cancelled) setTrainersErr(true);
+      })
+      .finally(() => {
+        if (!cancelled) setTrainersLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [game?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 点击某个修改器 exe：直接启动，不校验等级、不计时长。
+  const launchTrainer = async (exePath: string) => {
+    try {
+      await api.launchTrainer(exePath);
+    } catch (e) {
+      console.error("启动修改器失败:", e);
+    }
+  };
+
   // Every game links to its standalone static detail page
   // (Game_Details/<游戏名>/index.html), served by the `yungame-game://` custom
   // scheme so the webview natively loads css/js/images and handles anchors.
@@ -190,9 +226,53 @@ export default function GameDetailPage() {
   //  - loading  → brief spinner
   //  - found    → back button + the page (iframe)
   //  - missing  → back button + a 404 page
+  // 修改器下拉内容：列出所有 exe（带图标），点某个直接启动；没有则显示"暂无修改器"。
+  const trainerDropdown = (
+    <div className="trainer-dropdown">
+      {trainersLoading && (
+        <div className="trainer-item trainer-item-dim">{t("details_loading")}</div>
+      )}
+      {!trainersLoading && trainersErr && (
+        <div className="trainer-item trainer-item-dim">{t("details_trainers_loadError")}</div>
+      )}
+      {!trainersLoading && !trainersErr && trainers.length === 0 && (
+        <div className="trainer-item trainer-item-dim">{t("details_trainers_none")}</div>
+      )}
+      {!trainersLoading &&
+        !trainersErr &&
+        trainers.map((tr) => (
+          <button
+            key={tr.exePath}
+            className="trainer-item trainer-item-btn"
+            onClick={() => void launchTrainer(tr.exePath)}
+          >
+            {tr.icon ? (
+              <img className="trainer-item-icon" src={tr.icon} alt="" />
+            ) : (
+              <Wrench className="trainer-item-icon trainer-item-icon-fallback" size={15} />
+            )}
+            <span className="trainer-item-name">{tr.name}</span>
+            <span className="trainer-item-launch">{t("details_trainers_launch")}</span>
+          </button>
+        ))}
+    </div>
+  );
+
   const detailTopbar = (
     <div className="flex items-center gap-2 border-b border-border bg-base px-5 py-3.5">
       {backButton}
+      {/* 修改器按钮：点击展开下拉，列出该游戏的修改器 exe。 */}
+      <div className="relative">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setTrainersOpen((v) => !v)}
+          className="flex items-center gap-1.5"
+        >
+          <Wrench size={15} /> {t("details_trainers")}
+        </Button>
+        {trainersOpen && trainerDropdown}
+      </div>
       <div className="ml-auto">{runBadge}</div>
     </div>
   );

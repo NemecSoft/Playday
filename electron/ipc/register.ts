@@ -13,6 +13,7 @@ import { registerAnnouncementIpc } from "./announcement";
 import { registerGameHtmlIpc } from "./gameHtml";
 import { registerSystemIpc } from "./system";
 import { registerSaveManagerIpc } from "./saveManager";
+import { registerTrainerIpc } from "./trainer";
 
 export function registerIpc() {
   registerGamesIpc(ipcMain);
@@ -23,4 +24,5 @@ export function registerIpc() {
   registerGameHtmlIpc(ipcMain);
   registerSystemIpc(ipcMain);
   registerSaveManagerIpc(ipcMain);
+  registerTrainerIpc(ipcMain);
 }

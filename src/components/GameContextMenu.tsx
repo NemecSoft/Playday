@@ -3,8 +3,9 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Game } from "../types/models";
-import { Play, Info } from "lucide-react";
+import { Play, Info, DatabaseBackup } from "lucide-react";
 import { useGamesStore } from "../stores/gamesStore";
+import { api } from "../api/client";
 import { useI18n } from "../i18n";
 
 interface Props {
@@ -46,6 +47,21 @@ export default function GameContextMenu({ game, x, y, onClose }: Props) {
     navigate(`/game/${encodeURIComponent(game.id)}`);
   };
 
+  // 手动备份存档：生成自解压 exe 到桌面。结果用 Toast 提示。
+  const backupSave = async () => {
+    if (!game.id) return;
+    try {
+      const res = await api.backupGameSave(game.id);
+      if (res?.ok) {
+        void api.showNotification(t("backup_success_title"), t("backup_success_body", { name: game.name }));
+      } else {
+        void api.showNotification(t("backup_failed_title"), res?.error || t("backup_failed_body", { name: game.name }));
+      }
+    } catch (e) {
+      void api.showNotification(t("backup_failed_title"), String(e));
+    }
+  };
+
   return (
     <div
       ref={ref}
@@ -55,6 +71,8 @@ export default function GameContextMenu({ game, x, y, onClose }: Props) {
       {item(t("menu_play"), <Play size={14} />, () => launchGame(game.id))}
       {/* 详情：等价于点击游戏卡片进入详情页（替换原来的"复制路径"）。 */}
       {item(t("menu_viewDetails"), <Info size={14} />, openDetails)}
+      {/* 备份游戏存档：手动生成自解压 exe 到桌面。 */}
+      {item(t("menu_backupSave"), <DatabaseBackup size={14} />, () => void backupSave())}
     </div>
   );
 }

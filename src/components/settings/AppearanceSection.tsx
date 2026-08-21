@@ -267,7 +267,7 @@ export default function AppearanceSection() {
 
       <div className="mb-3.5">
         <label className="mb-1.5 block text-xs text-secondary-text">
-          {t("settings_cardGap", { defaultValue: "卡片间距" })}: <strong>{settings.cardGap}px</strong>
+          {t("settings_cardGap", { defaultValue: "卡片左右间距" })}: <strong>{settings.cardGap}px</strong>
         </label>
         <Slider
           min={0}
@@ -280,6 +280,24 @@ export default function AppearanceSection() {
         <div className="flex justify-between text-[11px] text-dim">
           <span>0</span>
           <span>20</span>
+        </div>
+      </div>
+
+      <div className="mb-3.5">
+        <label className="mb-1.5 block text-xs text-secondary-text">
+          {t("settings_cardRowGap", { defaultValue: "卡片上下间距" })}: <strong>{settings.cardRowGap}px</strong>
+        </label>
+        <Slider
+          min={0}
+          max={60}
+          step={1}
+          value={[settings.cardRowGap ?? 8]}
+          onValueChange={(v) => save({ cardRowGap: v[0] ?? 8 })}
+          className="w-full"
+        />
+        <div className="flex justify-between text-[11px] text-dim">
+          <span>0</span>
+          <span>60</span>
         </div>
       </div>
 
@@ -301,6 +319,27 @@ export default function AppearanceSection() {
         </div>
         <div className="mt-1 text-[11px] text-dim">
           {t("settings_cardFontSizeHint", { defaultValue: "调整卡片上标题和别名的字号" })}
+        </div>
+      </div>
+
+      <div className="mb-3.5">
+        <label className="mb-1.5 block text-xs text-secondary-text">
+          {t("settings_cardDescFontSize", { defaultValue: "简介字号" })}: <strong>{settings.cardDescFontSize ?? 11}px</strong>
+        </label>
+        <Slider
+          min={9}
+          max={16}
+          step={1}
+          value={[settings.cardDescFontSize ?? 11]}
+          onValueChange={(v) => save({ cardDescFontSize: v[0] ?? 11 })}
+          className="w-full"
+        />
+        <div className="flex justify-between text-[11px] text-dim">
+          <span>9</span>
+          <span>16</span>
+        </div>
+        <div className="mt-1 text-[11px] text-dim">
+          {t("settings_cardDescFontSizeHint", { defaultValue: "调整卡片上简介的字号" })}
         </div>
       </div>
 

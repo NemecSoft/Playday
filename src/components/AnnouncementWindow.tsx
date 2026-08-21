@@ -1,11 +1,12 @@
 // 公告窗口（独立引导窗口，类似微信登录界面）。
-// 采用"真·异形（透明抠图）"样式：窗口背景透明（主进程 transparent:true），
-// 前端画一个四周透明、带圆角/装饰的异形面板 + 右下角看板娘立绘，
-// 透明像素透出桌面，窗口形状随面板轮廓走。
+// 2026-08-17 简化版：
+//   - 暂时去掉"真·异形（透明抠图）"样式（异形窗口 + 顶部 ann-crown 突起）
+//   - 暂时去掉 Live2D 看板娘立绘
+//   - 改为普通矩形面板（直接占满 BrowserWindow 内容区，圆角 + 深色背景）
+//   - 保留荧光特效：announcement-aurora 极光动画、ann-enter-btn 发光按钮、announcement.html 里的 NEW 徽章/星星由用户文案控制
 // 点"进入系统" → 调主进程 enter_system → 主进程关本窗口、建主窗口。
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
-import Live2DMascot from "./Live2DMascot";
 
 export default function AnnouncementWindow() {
   const [html, setHtml] = useState("");
@@ -37,18 +38,14 @@ export default function AnnouncementWindow() {
   };
 
   return (
-    <div className="ann-window">
-      {/* 异形面板：四周透明、带圆角与顶部/底部装饰突起 */}
-      <div className="ann-shape">
-        {/* 顶部装饰突起（营造异形轮廓） */}
-        <div className="ann-crown" aria-hidden="true" />
+    <div className="announcement-window">
+      <div className="announcement-card">
+        {/* 顶部：极光背景动画（保留荧光特效）。z-index 最低，铺在卡片下层。 */}
+        <div className="announcement-aurora" aria-hidden="true" />
 
-        {/* Live2D 看板娘：每次启动随机一个角色，自动注入 #waifu */}
-        <Live2DMascot />
-
-        {/* 内容区 */}
-        <div className="ann-content">
-          <div className="ann-scroll">
+        {/* 内容区：公告 HTML（用户在 announcements/announcement.html 里写的 NEW 徽章/星星都会保留） */}
+        <div className="announcement-body">
+          <div className="announcement-scroll">
             <div
               className="ann-html"
               dangerouslySetInnerHTML={{ __html: html }}
@@ -56,9 +53,13 @@ export default function AnnouncementWindow() {
           </div>
         </div>
 
-        {/* 底部"进入系统"按钮 */}
-        <div className="ann-footer">
-          <button type="button" className="ann-enter-btn" onClick={handleEnter}>
+        {/* 底部"进入系统"按钮（荧光发光样式保留） */}
+        <div className="announcement-footer">
+          <button
+            type="button"
+            className="ann-enter-btn"
+            onClick={handleEnter}
+          >
             进入系统
           </button>
         </div>

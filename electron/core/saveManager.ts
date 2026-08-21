@@ -6,11 +6,11 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import { resolvePath } from "./process";
-import type { GameLibrary, SavePath } from "./models";
+import type { GameLibrary } from "./models";
 
 // 一个"备份路径"匹配到的文件结果。
 export interface SavePathCollect {
-  savePath: SavePath;          // 原始配置（含通配符）
+  savePath: string;            // 原始配置（含通配符）
   resolved: string;            // 占位符展开后的路径（可能仍含通配符）
   matches: string[];           // 实际匹配到的文件/目录（绝对路径）
   skipped: string;             // 无匹配时的提示（可空）
@@ -54,8 +54,8 @@ function globMatch(dir: string, pattern: string): string[] {
 
 // 校验一个存档路径是否有匹配文件（供打包前预检：无匹配的路径不写进 NSIS 脚本，
 // 避免 makensis 因 File 找不到文件而编译失败）。
-export function collectSavePath(savePath: SavePath, gameLibraries: GameLibrary[]): SavePathCollect {
-  const resolvedBase = resolvePath(savePath.path, gameLibraries);
+export function collectSavePath(savePath: string, gameLibraries: GameLibrary[]): SavePathCollect {
+  const resolvedBase = resolvePath(savePath, gameLibraries);
   const { dir, pattern } = splitDirPattern(resolvedBase);
 
   if (pattern === null) {
