@@ -20,8 +20,24 @@ import type { Game } from "../types/models";
 
 /** A single windowable row: either a group header or a row of cards. */
 export type VirtualGridRow =
-  | { type: "header"; key: string; label: string; count: number }
-  | { type: "cards"; key: string; games: Game[] };
+  | {
+      type: "header";
+      key: string;
+      /** 分组原始 key（点击折叠时回传）。 */
+      groupKey: string;
+      label: string;
+      count: number;
+      /** 该组当前是否折叠（决定箭头方向）。 */
+      collapsed: boolean;
+    }
+  | {
+      type: "cards";
+      key: string;
+      groupKey: string;
+      games: Game[];
+      /** 是否是该组的最后一行（画下边框 + 下圆角，给分组框封底）。 */
+      isLastInGroup: boolean;
+    };
 
 export interface VirtualizedItem {
   /** The flattened row to render. */
@@ -47,6 +63,8 @@ export interface UseVirtualGridOptions {
   groupGap?: number;
   /** Height of a group header row. */
   headerHeight?: number;
+  /** 已折叠的分组 key 集合。折叠时不生成该组的卡片行（标题行保留）。 */
+  collapsedGroups?: ReadonlySet<string>;
 }
 
 export interface UseVirtualGridResult {
@@ -83,6 +101,7 @@ export function useVirtualGrid({
   titleHeight = 46,
   groupGap = 22,
   headerHeight = 28,
+  collapsedGroups,
 }: UseVirtualGridOptions): UseVirtualGridResult {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -140,20 +159,28 @@ export function useVirtualGrid({
     const starts = new Map<string, number>();
     let cardIndex = 0;
     for (const group of groups) {
+      const collapsed = collapsedGroups?.has(group.key) ?? false;
       flat.push({
         type: "header",
         key: `h:${group.key}`,
+        groupKey: group.key,
         label: group.label,
         count: group.games.length,
+        collapsed,
       });
       meta.push(headerRowHeight);
-      if (cols > 0 && group.games.length > 0) {
+      // 已折叠的组不生成卡片行 —— 行数变少后虚拟列表会重新测量，
+      // 折叠/展开因此天然生效，不需要额外的显隐逻辑。
+      if (!collapsed && cols > 0 && group.games.length > 0) {
+        const rowCount = Math.ceil(group.games.length / cols);
         for (let i = 0; i < group.games.length; i += cols) {
           const key = `r:${group.key}:${i}`;
           flat.push({
             type: "cards",
             key,
+            groupKey: group.key,
             games: group.games.slice(i, i + cols),
+            isLastInGroup: Math.floor(i / cols) === rowCount - 1,
           });
           meta.push(rowHeight);
           starts.set(key, cardIndex);
@@ -162,7 +189,7 @@ export function useVirtualGrid({
       }
     }
     return { allRows: flat, rowMeta: meta, rowStartIndex: starts };
-  }, [groups, cols, rowHeight, headerRowHeight]);
+  }, [groups, cols, rowHeight, headerRowHeight, collapsedGroups]);
 
   // useVirtualizer needs the actual scroll element. Pass a getter so it can
   // resolve the ref on every internal measurement cycle (it does measureElement
@@ -237,24 +264,4 @@ export function useVirtualGrid({
   // NOTE: do NOT memoize `getVirtualItems()` here. The virtualizer is an
   // external store that triggers re-renders on scroll/resize, but the items
   // list itself depends on the current scroll offset, which changes without
-  // any of our React deps changing. Computing it inline during render keeps
-  // the visible window in sync with the scrollbar.
-  const vItems = virtualizer.getVirtualItems();
-  const items: VirtualizedItem[] = vItems.map((v) => ({
-    row: allRows[v.index],
-    offset: v.start,
-    index: v.index,
-  }));
-
-  return {
-    scrollRef,
-    cols,
-    rowHeight,
-    totalSize: virtualizer.getTotalSize(),
-    items,
-    virtualizer,
-    allRows,
-    rowStartIndex,
-    measureRow,
-  };
-}
+  // any of our R

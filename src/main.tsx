@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import AnnouncementWindow from "./components/AnnouncementWindow";
+import CrashHandlerWindow from "./components/CrashHandlerWindow";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   restoreLibraryTheme,
@@ -130,16 +131,26 @@ try {
 
     // 根据窗口类型决定渲染哪个界面：
     //  - ?window=announcement → 公告窗口（独立引导窗口）
+    //  - ?window=crash → 崩溃处理器窗口（UnityCrashHandler64 风格，仅展示崩溃+上报）
     //  - 其它 → 主界面（客户端/管理端共用一个 App，靠 ?window 区分）
-    const isAnnouncement =
-      new URLSearchParams(window.location.search).get("window") ===
-      "announcement";
+    const params = new URLSearchParams(window.location.search);
+    const windowType = params.get("window") || "app";
+
+    // 崩溃窗口跳过主题/设置加载（应用已崩溃，只需展示崩溃信息）。
+    if (windowType === "crash") {
+      ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+        <React.StrictMode>
+          <CrashHandlerWindow />
+        </React.StrictMode>
+      );
+      return;
+    }
 
     // 渲染根组件。
     ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
       <React.StrictMode>
         <QueryClientProvider client={queryClient}>
-          {isAnnouncement ? <AnnouncementWindow /> : <App />}
+          {windowType === "announcement" ? <AnnouncementWindow /> : <App />}
         </QueryClientProvider>
       </React.StrictMode>
     );

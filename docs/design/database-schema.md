@@ -134,7 +134,7 @@ games.actions[].path {Gamelibrary1} ──解析──> game_libraries.path
 
 | 库 | 路径 | 角色 |
 | --- | --- | --- |
-| 权威库 | `paths.ts` 的 `adminDatabasePath()` = `<数据根>/Admin/library.db` | 管理端读/改，改完下发 |
+| 源库 | `paths.ts` 的 `sourceDatabasePath()` = `<数据根>/Admin/library.db` | 数据来源：手工维护的 games.json + 脚本（import-games.bat）写入 |
 | 运行时副本 | `paths.ts` 的 `runtimeDatabasePath()` = `<数据根>/library/library.db` | 客户端每次启动 `openDb()` 把 Admin 库 `copyFileSync` 复制过来再用 |
 
 **规则**：

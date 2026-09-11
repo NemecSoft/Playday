@@ -8,7 +8,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useGamesStore } from "../stores/gamesStore";
 import { useI18n } from "../i18n";
 import { api } from "../api/client";
-import { ArrowLeft, PlayCircle, Wrench } from "lucide-react";
+import { ArrowLeft, PlayCircle, Wrench, Archive } from "lucide-react";
 import { Button } from "../components/ui/button";
 
 // 把秒数格式化成"时:分:秒"，比如 3661 秒 → "1:01:01"。
@@ -138,6 +138,42 @@ export default function GameDetailPage() {
     }
   };
 
+  // 应用存档：与修改器同逻辑，目录换成"游戏存档"（<详情目录>/<游戏名>/游戏存档/*.exe）。
+  const [saves, setSaves] = useState<{ name: string; exePath: string; icon: string }[]>([]);
+  const [savesOpen, setSavesOpen] = useState(false);
+  const [savesLoading, setSavesLoading] = useState(false);
+  const [savesErr, setSavesErr] = useState(false);
+  useEffect(() => {
+    if (!game) return;
+    let cancelled = false;
+    setSaves([]);
+    setSavesErr(false);
+    setSavesLoading(true);
+    api
+      .getGameSaves(game.id, game.name)
+      .then((list) => {
+        if (!cancelled) setSaves(list);
+      })
+      .catch(() => {
+        if (!cancelled) setSavesErr(true);
+      })
+      .finally(() => {
+        if (!cancelled) setSavesLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [game?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 点击某个存档 exe：直接启动应用，不校验等级、不计时长。
+  const launchSave = async (exePath: string) => {
+    try {
+      await api.launchSave(exePath);
+    } catch (e) {
+      console.error("应用存档失败:", e);
+    }
+  };
+
   // Every game links to its standalone static detail page
   // (Game_Details/<游戏名>/index.html), served by the `yungame-game://` custom
   // scheme so the webview natively loads css/js/images and handles anchors.
@@ -258,6 +294,38 @@ export default function GameDetailPage() {
     </div>
   );
 
+  // 应用存档下拉：列出"游戏存档"目录下的所有 exe，点某个直接应用；没有则显示"暂无存档"。
+  const savesDropdown = (
+    <div className="trainer-dropdown">
+      {savesLoading && (
+        <div className="trainer-item trainer-item-dim">{t("details_loading")}</div>
+      )}
+      {!savesLoading && savesErr && (
+        <div className="trainer-item trainer-item-dim">{t("details_saves_loadError")}</div>
+      )}
+      {!savesLoading && !savesErr && saves.length === 0 && (
+        <div className="trainer-item trainer-item-dim">{t("details_saves_none")}</div>
+      )}
+      {!savesLoading &&
+        !savesErr &&
+        saves.map((sv) => (
+          <button
+            key={sv.exePath}
+            className="trainer-item trainer-item-btn"
+            onClick={() => void launchSave(sv.exePath)}
+          >
+            {sv.icon ? (
+              <img className="trainer-item-icon" src={sv.icon} alt="" />
+            ) : (
+              <Archive className="trainer-item-icon trainer-item-icon-fallback" size={15} />
+            )}
+            <span className="trainer-item-name">{sv.name}</span>
+            <span className="trainer-item-launch">{t("details_saves_launch")}</span>
+          </button>
+        ))}
+    </div>
+  );
+
   const detailTopbar = (
     <div className="flex items-center gap-2 border-b border-border bg-base px-5 py-3.5">
       {backButton}
@@ -272,6 +340,18 @@ export default function GameDetailPage() {
           <Wrench size={15} /> {t("details_trainers")}
         </Button>
         {trainersOpen && trainerDropdown}
+      </div>
+      {/* 应用存档按钮：与修改器同逻辑，列出"游戏存档"目录下的 exe，点击应用。 */}
+      <div className="relative">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setSavesOpen((v) => !v)}
+          className="flex items-center gap-1.5"
+        >
+          <Archive size={15} /> {t("details_saves")}
+        </Button>
+        {savesOpen && savesDropdown}
       </div>
       <div className="ml-auto">{runBadge}</div>
     </div>

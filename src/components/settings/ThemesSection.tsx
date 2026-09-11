@@ -28,6 +28,10 @@ import {
   Swords, // 魔兽世界：双剑（史诗/战场）
   Gamepad2, // 英雄联盟：手柄（竞技/电竞）
   Sparkles, // 紫色流光：闪光（reactbits 暗黑紫 + 流光）
+  // Zap 复用第 15 行的导入（赛博朋克与 s35 风格共用电流图标）
+  Coffee, // Catppuccin：咖啡杯（社区招牌昵称"猫咖"）
+  Feather, // 水墨·夜：羽毛笔（夜写水墨）
+  Cloud, // 仙侠：流云（御剑青冥）
 } from "lucide-react";
 import { themeLibrary } from "../../utils/themeLibrary";
 import { styleLibrary } from "../../utils/styleLibrary";
@@ -75,6 +79,10 @@ const paletteIconMap: Record<string, LucideIcon> = {
   "p-wow-epic": Swords, // 魔兽世界：双剑
   "p-lol-neon": Gamepad2, // 英雄联盟：手柄
   "p-recordly": Palette, // Recordly：标准色板
+  "p-cyberpunk": Zap, // 赛博朋克：电流
+  "p-catppuccin": Coffee, // Catppuccin：咖啡杯
+  "p-ink-night": Feather, // 水墨·夜：羽毛笔
+  "p-xianxia": Cloud, // 仙侠：流云
 };
 
 export default function ThemesSection() {

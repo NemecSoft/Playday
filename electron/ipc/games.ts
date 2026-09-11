@@ -18,7 +18,7 @@ import {
   deleteGameLibrary,
 } from "../core/db";
 import { readSettings, writeSettings, getLibraries } from "../core/settings";
-import { applyCoversToDb } from "../core/covers";
+import { applyCoversToLibrary } from "../core/covers";
 import {
   launchGame,
   isGameRunning,
@@ -36,8 +36,8 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
   // ---------- 游戏 ----------
   registerCommand(ipc, "get_games", async () => {
     // 库为空就返回空列表，前端会显示"没有游戏"的占位提示；不塞示例数据。
-    // 自动给游戏套封面（空封面/封面文件丢失的重新匹配 CoverImages 目录）。
-    const { games } = applyCoversToDb();
+    // 自动给游戏套封面（空封面/封面文件丢失的重新匹配 CoverImages 目录，只算不落库）。
+    const { games } = applyCoversToLibrary();
     return games;
   });
 
@@ -240,11 +240,8 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
     return writeSettings(safePatch);
   });
 
-  registerCommand(ipc, "get_config_dir", async () => {
-    // 返回数据根目录，方便前端拼封面/详情页静态资源地址（后续 Task 用）。
-    const { configRoot } = await import("../core/paths");
-    return configRoot();
-  });
+  // 说明：原 get_config_dir（返回数据根目录）已删除——名字与实际含义不符
+  // （它返回的是数据根而不是配置目录），且全项目没有任何调用方。
 
   // ---------- 运行状态（Task 5） ----------
   // 运行中的游戏列表（前端顶部/详情页展示）。

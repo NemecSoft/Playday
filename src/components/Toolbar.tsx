@@ -12,12 +12,21 @@ import { useSettingsStore } from "../stores/settingsStore";
 import { useI18n } from "../i18n";
 import { Input } from "./ui/input";
 import { Switch } from "./ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 export default function Toolbar() {
   const searchQuery = useGamesStore((s) => s.searchQuery);
   const setSearch = useGamesStore((s) => s.setSearch);
   const viewMode = useGamesStore((s) => s.viewMode);
   const setViewMode = useGamesStore((s) => s.setViewMode);
+  const groupBy = useGamesStore((s) => s.groupBy);
+  const setGroupBy = useGamesStore((s) => s.setGroupBy);
   const loading = useGamesStore((s) => s.loading);
   const games = useGamesStore((s) => s.games);
   // 网格卡片简介显示开关：持久化到 config.json。
@@ -95,6 +104,22 @@ export default function Toolbar() {
         />
       </div>
       <div className="view-switcher">
+        {/* 分组下拉：不分组 / 类型 / 系列 / 地区 / 年代。 */}
+        <div className="toolbar-group-by">
+          <span className="toolbar-group-label">{t("toolbar_groupBy")}</span>
+          <Select value={groupBy} onValueChange={setGroupBy}>
+            <SelectTrigger className="toolbar-select" aria-label={t("toolbar_groupBy")}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">{t("group_none")}</SelectItem>
+              <SelectItem value="genre">{t("facet_genre")}</SelectItem>
+              <SelectItem value="series">{t("facet_series")}</SelectItem>
+              <SelectItem value="region">{t("facet_region")}</SelectItem>
+              <SelectItem value="decade">{t("facet_decade")}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <button
           type="button"
           className={`view-btn ${viewMode === "grid" ? "active" : ""}`}

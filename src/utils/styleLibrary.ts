@@ -145,4 +145,20 @@ export const styleLibrary: StyleEntry[] = [
       fx: "recordly",
     },
   },
+  {
+    id: "fluent",
+    name: "Fluent 2",
+    zh: "Fluent 微软",
+    category: "微软",
+    vars: {
+      // Fluent 2 设计系统：中等圆角（borderRadiusLarge=6px，偏方正克制）、
+      // 无霓虹特效、克制的柔和阴影、Segoe UI 主字体（Windows 平台 Fluent 主字体）。
+      radius: "6px",
+      glow: "none",
+      shadow: "soft",
+      font: "'Segoe UI', system-ui, sans-serif",
+      blur: "0px",
+      fx: "",
+    },
+  },
 ];

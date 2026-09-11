@@ -20,6 +20,7 @@ import { Image as ImageIcon, Play, Info } from "lucide-react";
 import GameContextMenu from "../GameContextMenu";
 import { useLazyImage } from "../../hooks/useLazyImage";
 import { useVirtualGrid, type VirtualGridRow } from "../../hooks/useVirtualGrid";
+import { clampCardDescFontSize } from "../../utils/cardText";
 
 interface Props {
   groups: Group[];
@@ -75,7 +76,7 @@ export default function GridView({ groups }: Props) {
   //
   // 把这些加起来让 rowHeight = coverHeight + titleHeight + cardRowGap 精确等于真实渲染高度。
   // 这样 cardRowGap=0 时两行紧贴（除去下一张卡片自身无法消除的 padding-top）。
-  const descFontSize = Math.max(9, Math.min(16, cardDescFontSize ?? 11));
+  const descFontSize = clampCardDescFontSize(cardDescFontSize);
   // 副标题（英文原名）行高：库里很多游戏有本地化中文名，副标题普遍存在，
   // 统一预留 15px 行高最稳（避免有副标题的卡片溢出盖住下方）。没副标题的卡片
   // 实际更矮，虚拟列表按行内最高卡片排布，不影响正确性。
@@ -88,6 +89,36 @@ export default function GridView({ groups }: Props) {
     (showCardDescription ? 4 + descFontSize * 1.5 * 3 : 0); // 简介：margin-top + 3 行截断(line-height 1.5)
   const { scrollRef, cols, totalSize, items, virtualizer, rowStartIndex, measureRow } =
     useVirtualGrid({ groups, cardWidth, cardGap, cardRowGap, titleHeight: titlePlusDesc });
+
+  // 滚轮约定（与浏览器一致）：
+  //   Ctrl+滚轮 → 整页缩放（全局处理在 ZoomIndicator，这里不再管）；
+  //   Alt+滚轮  → 调整封面大小（120~400px，即时生效，停手 300ms 后落盘）。
+  // 必须用原生 wheel 监听 + passive:false 才能拦掉默认行为（Alt+滚轮默认会滚列表）。
+  const applySettings = useSettingsStore((s) => s.apply);
+  const saveSettings = useSettingsStore((s) => s.save);
+  const cardWidthSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      // Alt+滚轮：封面大小（Ctrl+滚轮的整页缩放由 ZoomIndicator 全局处理）。
+      if (!e.altKey) return;
+      e.preventDefault();
+      const cur = useSettingsStore.getState().settings.cardWidth;
+      const next = Math.max(120, Math.min(400, cur + (e.deltaY < 0 ? 10 : -10)));
+      if (next === cur) return;
+      applySettings({ cardWidth: next });
+      if (cardWidthSaveTimer.current) clearTimeout(cardWidthSaveTimer.current);
+      cardWidthSaveTimer.current = setTimeout(() => {
+        saveSettings({ cardWidth: useSettingsStore.getState().settings.cardWidth });
+      }, 300);
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      if (cardWidthSaveTimer.current) clearTimeout(cardWidthSaveTimer.current);
+    };
+  }, [scrollRef, applySettings, saveSettings]);
 
   // 等虚拟列表准备好之后，把记下来的滚动位置恢复回去。
   // 这里用 useLayoutEffect + virtualizer.scrollToOffset()（而不是直接改 scrollTop）
@@ -294,8 +325,9 @@ function GridCard({
   const { t } = useI18n();
   const { ref: coverRef } = useLazyImage(game.coverImage);
   // 简介展开/收起：默认收成几行，点击可展开完整。受工具栏"简介"开关控制。
+  // 注意：这里显示的是 Playday 用户维护的"简介"（intro），不是 Playnite 的"描述"（description）。
   const [descExpanded, setDescExpanded] = useState(false);
-  const hasDesc = !!game.description && game.description.trim().length > 0;
+  const hasDesc = !!game.intro && game.intro.trim().length > 0;
   // imageUrl() is synchronous: it returns the cached blob URL or undefined.
   // While the IntersectionObserver hasn't fired yet, the placeholder is
   // shown. Once the card scrolls near, ensureImageLoaded() warms the cache
@@ -371,7 +403,7 @@ function GridCard({
           }}
           title={descExpanded ? t("masonry_collapse") : t("masonry_expand")}
         >
-          {game.description!.trim()}
+          {game.intro!.trim()}
         </div>
       )}
       {(game.localizedNames?.length || game.alternateNames?.length) ? (

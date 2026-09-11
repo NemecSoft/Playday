@@ -4,6 +4,11 @@ import { create } from "zustand";
 import { api } from "../api/client";
 import type { AppSettings, Platform, CardTextStyle } from "../types/models";
 import { DEFAULT_CARD_TEXT } from "../types/models";
+import { clampCardDescFontSize } from "../utils/cardText";
+import { DEFAULT_SETTINGS } from "../../shared/models";
+// 主题改由顶栏 ThemeTopPicker 预设切换（themeApply.ts 注入 :root），
+// 不再走设计器（applyDesigner 会用旧 designer.paletteId 覆盖刚选的配色，
+// 导致"切主题不生效"，已移除）。DesignerSection 文件保留备查。
 
 // 把"卡片字号/加粗/自定义文字样式"应用到 :root 的 CSS 自定义属性上。
 // 让 .grid-card .title 用 var(--card-title-size/color/stroke/glow/shadow/bg) 即可生效。
@@ -58,7 +63,8 @@ export function applyCardTextStyles(s: Partial<AppSettings>) {
   root.setProperty("--card-alt-size", `${Math.max(9, Math.round(size * 0.8))}px`);
   // 简介字号：单独设置 9~16px，CSS .grid-desc 用 var(--card-desc-font-size) 读取。
   // GridView 也会订阅这个值参与精确行高公式（3 行截断高度依赖字号）。
-  const descSize = Math.max(9, Math.min(16, Number(s.cardDescFontSize) || 11));
+  // clamp 逻辑统一在 utils/cardText.ts（避免两处重复写 9~16 范围）。
+  const descSize = clampCardDescFontSize(s.cardDescFontSize);
   root.setProperty("--card-desc-font-size", `${descSize}px`);
   // 用户自定义颜色/描边/发光/阴影/背景。CSS 用 var(--card-...) 读取。
   root.setProperty("--card-text-color", ct.color || "#fff8e7");
@@ -84,50 +90,6 @@ export function applyCardTextStyles(s: Partial<AppSettings>) {
   ds.cardBg = bg ? "1" : "0";
 }
 
-const DEFAULT_SETTINGS: AppSettings = {
-  startupBehavior: "StartNormal",
-  enableTray: true,
-  minimizeToTray: false,
-  closeToTray: false,
-  showBatConsole: false,
-  language: "en-US",
-  firstTimeWizardComplete: false,
-  databasePath: undefined,
-  autoBackupEnabled: true,
-  gridViewImage: "Cover",
-  detailsViewImage: "Background",
-  listViewImage: "Icon",
-  showInstalledOnly: false,
-  showHidden: false,
-  showFavorites: false,
-  sortOrder: "Name",
-  sortDirection: "Ascending",
-  fullscreenMode: false,
-  controllerSupport: false,
-  loginEnabled: false,
-  loginType: "wechat",
-  loggedIn: false,
-  username: undefined,
-  trackPlaytime: true,
-  cardWidth: 180,
-  cardGap: 8,
-  cardRowGap: 8,
-  sidebarWidth: 210,
-  enterpriseConfigPath: "D:/1.json",
-  currentUserKind: "",
-  currentUserName: "",
-  currentUserLevel: 3,
-  fontFamily: "",
-  cardFontSize: 15,
-  cardDescFontSize: 11,
-  cardFontBold: false,
-  cardText: DEFAULT_CARD_TEXT,
-  themeId: undefined,
-  styleId: undefined,
-  gameDetailsDir: undefined,
-  showCardDescription: true,
-};
-
 interface SettingsState {
   settings: AppSettings;
   platforms: Platform[];
@@ -135,6 +97,8 @@ interface SettingsState {
 
   load: () => Promise<void>;
   save: (s: Partial<AppSettings>) => Promise<void>;
+  /** 只改内存不落盘：给 Ctrl+滚轮这类高频操作用（滚完由调用方 debounce 后再 save）。 */
+  apply: (s: Partial<AppSettings>) => void;
   loadPlatforms: () => Promise<void>;
 }
 
@@ -155,23 +119,38 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     // cardText 单独合并：缺整个对象用默认；缺字段用默认字段
     merged.cardText = { ...DEFAULT_CARD_TEXT, ...(merged.cardText || {}) } as CardTextStyle;
     set({ settings: merged, loaded: true });
+    // 配色由 main.tsx 的 restoreLibraryTheme 恢复（localStorage + config.json 双保险），
+    // 这里只做卡片文字/行距。
     applyCardTextStyles(merged);
     applyGridRowGap(merged);
   },
 
   save: async (partial) => {
     const current = get().settings;
-    const next: AppSettings = {
-      ...current,
-      ...partial,
-      cardText: partial.cardText
-        ? { ...current.cardText, ...partial.cardText }
-        : current.cardText,
-    } as AppSettings;
-    const saved = await api.saveSettings(next);
-    set({ settings: saved });
+    const localCardText = partial.cardText
+      ? { ...current.cardText, ...partial.cardText }
+      : current.cardText;
+    // 只把"本次改动的字段"发给主进程（不发明文全量）。
+    // 主进程会先读盘上的 config.json 再合并，因此用户手工编辑过的配置
+    // （数据库/封面/详情页路径等）不会被内存里的旧值覆盖——这是之前
+    // "手改 config.json 被应用重启后清掉"的根因。
+    const saved = await api.saveSettings(partial);
+    set({
+      settings: {
+        ...saved,
+        // 主进程返回的是"盘上配置 + 本次改动"，cardText 可能只有部分字段，做个合并兜底。
+        cardText: saved.cardText ? { ...saved.cardText, ...localCardText } : localCardText,
+      } as AppSettings,
+    });
+    // 注意：这里不能再 applyDesigner——否则保存 themeId 时会用旧设计器配色
+    // 覆盖刚选的主题（"切主题不生效"的根因）。
     applyCardTextStyles(saved);
     applyGridRowGap(saved);
+  },
+
+  apply: (partial) => {
+    const merged = { ...get().settings, ...partial } as AppSettings;
+    set({ settings: merged });
   },
 
   loadPlatforms: async () => {

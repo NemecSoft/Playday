@@ -29,6 +29,7 @@ import { useAuthStore } from "../stores/authStore";
 import { useUIStore, type ActiveTab } from "../stores/uiStore";
 import { resolveEditionName } from "../utils/edition";
 import AboutModal from "./AboutModal";
+import ThemeTopPicker from "./ThemeTopPicker";
 
 const TABS: { key: ActiveTab; labelKey: string; icon: typeof Home }[] = [
   { key: "home", labelKey: "tab_home", icon: Home },
@@ -211,6 +212,9 @@ export default function TopBar() {
           </button>
         ))}
       </nav>
+
+      {/* Right of the tabs: theme picker (all presets, one-click switch) */}
+      <ThemeTopPicker />
 
       {/* Right of the tabs: edition label (circle 1 in the reference image) */}
       <div className="topbar-edition" title={titleText}>

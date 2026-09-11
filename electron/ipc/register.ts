@@ -8,21 +8,25 @@ import { ipcMain } from "electron";
 import { registerGamesIpc } from "./games";
 import { registerCoversIpc } from "./covers";
 import { registerAuthIpc } from "./auth";
-import { registerAdminIpc } from "./admin";
 import { registerAnnouncementIpc } from "./announcement";
 import { registerGameHtmlIpc } from "./gameHtml";
 import { registerSystemIpc } from "./system";
 import { registerSaveManagerIpc } from "./saveManager";
 import { registerTrainerIpc } from "./trainer";
+import { registerSavesIpc } from "./saves";
+import { registerErrorReportIpc } from "./errorReport";
+import { registerZoomIpc } from "./zoom";
 
 export function registerIpc() {
   registerGamesIpc(ipcMain);
   registerCoversIpc(ipcMain);
   registerAuthIpc(ipcMain);
-  registerAdminIpc(ipcMain);
   registerAnnouncementIpc(ipcMain);
   registerGameHtmlIpc(ipcMain);
   registerSystemIpc(ipcMain);
   registerSaveManagerIpc(ipcMain);
   registerTrainerIpc(ipcMain);
+  registerSavesIpc(ipcMain);
+  registerErrorReportIpc(ipcMain);
+  registerZoomIpc();
 }

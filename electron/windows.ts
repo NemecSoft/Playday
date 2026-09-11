@@ -4,7 +4,7 @@
 import { BrowserWindow, nativeImage } from "electron";
 import * as fs from "fs";
 import * as path from "path";
-import { APP_NAME, ADMIN_EXE_NAME } from "./config";
+import { APP_NAME } from "./config";
 import { readSettings } from "./core/settings";
 
 // 给窗口动态设置应用图标。
@@ -45,7 +45,7 @@ function applyStartupBehavior(win: BrowserWindow): void {
 // 开发态：有 VITE_DEV_SERVER_URL 环境变量时走 Vite 开发服务器；否则加载打包后的页面。
 // 客户端用主 Vite（5173），管理端用 admin Vite（1421）。
 const devUrl = process.env.VITE_DEV_SERVER_URL;
-const adminDevUrl = process.env.VITE_ADMIN_DEV_SERVER_URL;
+// 说明：原先还有管理端 dev 地址（VITE_ADMIN_DEV_SERVER_URL），随管理端一并移除。
 
 // 是否开启调试模式：只在"开发模式启动"时开启。
 // 判断依据是 VITE_DEV_SERVER_URL（只有 dev-client.bat 会设置它，指向 Vite 开发服务器）。
@@ -170,17 +170,31 @@ export function createAnnouncementWindow(): BrowserWindow {
   return win;
 }
 
-// 创建管理端窗口（独立窗口，标题用可配置的管理端名）。
-// 管理端保持原生窗口（带标题栏 + 最大/最小/关闭按钮），与客户端（无边框）刻意区分。
-export function createAdminWindow(): BrowserWindow {
+// 崩溃处理器窗口（对齐 UnityCrashHandler64）：应用崩溃/未捕获异常时弹出，
+// 显示崩溃摘要，用户可点"发送崩溃报告"发到收件人邮箱，或"仅本地查看"。
+// 当前崩溃报告存模块级变量，窗口加载后前端通过 ipc:get_crash_report 读取。
+import type { CrashReport } from "./core/errorCollector";
+
+let currentCrashReport: CrashReport | null = null;
+export function setCrashReport(r: CrashReport): void {
+  currentCrashReport = r;
+}
+export function getCrashReport(): CrashReport | null {
+  return currentCrashReport;
+}
+
+export function createCrashHandlerWindow(): BrowserWindow {
   const win = new BrowserWindow({
-    width: 1080,
-    height: 760,
-    minWidth: 800,
-    minHeight: 560,
-    title: `Playday Admin`,
-    icon: appIconPath(), // 管理端窗口也用同一个应用图标
-    backgroundColor: "#f7f8fa",
+    width: 680,
+    height: 480,
+    title: "Playday 崩溃报告",
+    frame: false,
+    backgroundColor: "#0d1117",
+    resizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    center: true,
+    icon: appIconPath(),
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -189,27 +203,16 @@ export function createAdminWindow(): BrowserWindow {
     },
   });
   win.setMenuBarVisibility(false);
-  // DWM（窗口管理器）层面设置图标，确保任务栏与开始菜单正确显示。
   applyWindowIcon(win);
-  loadRenderer(win, "admin");
-  applyDebug(win, "admin");
+  loadRenderer(win, "crash"); // ?window=crash 渲染 CrashHandlerWindow
+  applyDebug(win, "crash");
   return win;
 }
 
 // 根据开发/生产态加载渲染页面，并通过 query 参数告诉渲染进程是哪个窗口。
-// 管理端（windowName === "admin"）加载独立的 dist-admin 前端；其它加载客户端 dist。
+// 说明：管理端（dist-admin / admin Vite）已移除，现在只加载客户端 dist。
 function loadRenderer(win: BrowserWindow, windowName: string): void {
-  const isAdmin = windowName === "admin";
-  if (isAdmin) {
-    // 管理端：dev 用 admin Vite（1421），否则加载打包产物 dist-admin/index.html
-    if (adminDevUrl) {
-      win.loadURL(`${adminDevUrl}?window=admin`);
-    } else {
-      win.loadFile(path.join(__dirname, "..", "..", "dist-admin", "index.html"), {
-        query: { window: "admin" },
-      });
-    }
-  } else if (devUrl) {
+  if (devUrl) {
     win.loadURL(`${devUrl}?window=${windowName}`);
   } else {
     // 主进程编译产物在 dist-electron/electron/，vite 渲染产物在工程根 dist/，

@@ -12,9 +12,8 @@ import * as path from "path";
 import initSqlJs, { Database, SqlJsStatic } from "sql.js";
 import {
   databasePath,
-  adminDatabasePath,
+  sourceDatabasePath,
   runtimeDatabasePath,
-  isAdminMode,
 } from "./paths";
 import type { AppUser, CurrentUser, Game, GameLibrary, LibraryStats } from "./models";
 
@@ -64,6 +63,7 @@ CREATE TABLE IF NOT EXISTS games (
     cover_image TEXT,
     icon TEXT,
     description TEXT,
+    intro TEXT,
     notes TEXT,
     version TEXT,
     platform TEXT,
@@ -89,6 +89,9 @@ CREATE TABLE IF NOT EXISTS games (
     save_paths TEXT,
     monitor_exe TEXT
 );
+
+-- 业务上游戏名唯一：与 Playnite 对齐（一个名字只能对应一个游戏），防止重名。
+CREATE UNIQUE INDEX IF NOT EXISTS idx_games_name ON games(name);
 
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -147,38 +150,22 @@ export async function openDb(): Promise<Database> {
 
   const dbPath = databasePath();
 
-  // 客户端启动缓存机制：权威库在 <数据根>/Admin/library.db（管理端修改后下发），
-  // 运行时库在 <数据根>/library/library.db。客户端每次启动先看权威库在不在，
-  // 在就把它复制成新的运行时库，再用运行时库。这样下发更新不影响正在运行的客户端，
-  // 重启后自动用最新下发版本。管理端直接用权威库，不走复制。
-  if (!isAdminMode()) {
-    const adminPath = adminDatabasePath();
+  // 数据来源 → 运行时库：
+  //   源库 <数据根>/Admin/library.db 由手工维护的 games.json + 脚本写入（import-games.bat）；
+  //   每次启动把它复制成 <数据根>/library/library.db 再用，运行期间不受外部改动影响，
+  //   重启即拿到最新数据。源库不存在时（首次运行/纯空环境）用现有运行时库，不复制。
+  {
+    const sourcePath = sourceDatabasePath();
     const runPath = runtimeDatabasePath();
     try {
-      if (fs.existsSync(adminPath)) {
+      if (fs.existsSync(sourcePath)) {
         const dir = path.dirname(runPath);
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.copyFileSync(adminPath, runPath);
+        fs.copyFileSync(sourcePath, runPath);
       }
-      // Admin 库不存在（纯客户端、从未下发过）：回退用现有运行时库，不复制。
     } catch (e) {
       // 复制失败（如文件被占用）不致命：继续用现有运行时库。
-      console.error("[db] 从 Admin 复制运行时库失败:", e);
-    }
-  } else {
-    // 管理端：直接操作权威库 <数据根>/Admin/library.db。
-    // 首次迁移：如果权威库还不存在，但现有运行时库（老库）在，就把老库提升为权威，
-    // 避免"从旧版升级到双库机制"后管理端打开一个空库而丢掉已有游戏数据。
-    try {
-      const adminPath = adminDatabasePath();
-      const runPath = runtimeDatabasePath();
-      if (!fs.existsSync(adminPath) && fs.existsSync(runPath)) {
-        const dir = path.dirname(adminPath);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.copyFileSync(runPath, adminPath);
-      }
-    } catch (e) {
-      console.error("[db] 首次提升老库为权威库失败:", e);
+      console.error("[db] 从源库复制运行时库失败:", e);
     }
   }
 
@@ -359,6 +346,7 @@ export function upsertGame(game: Game): void {
     $cover_image: game.coverImage ?? null,
     $icon: game.icon ?? null,
     $description: game.description ?? null,
+    $intro: game.intro ?? null,
     $notes: game.notes ?? null,
     $version: game.version ?? null,
     $platform: JSON.stringify(game.platform ?? []),
@@ -391,7 +379,7 @@ export function upsertGame(game: Game): void {
       playtime, last_session_seconds, last_session_ended_at, added, modified, category,
       genre, developer, publisher, tags, series, age_rating, region, source, features,
       release_date, community_score, critic_score, user_score, hidden, favorite,
-      background_image, cover_image, icon, description, notes, version, platform,
+      background_image, cover_image, icon, description, intro, notes, version, platform,
       emulator, completion_status, user_score_set, manual_game, plugin_id, links,
       actions, features_enabled, guide, screenshots, videos, game_library, game_level,
       pre_launch_script, pre_launch_enabled, post_launch_script, post_launch_enabled,
@@ -402,7 +390,7 @@ export function upsertGame(game: Game): void {
       $playtime, $last_session_seconds, $last_session_ended_at, $added, $modified, $category,
       $genre, $developer, $publisher, $tags, $series, $age_rating, $region, $source, $features,
       $release_date, $community_score, $critic_score, $user_score, $hidden, $favorite,
-      $background_image, $cover_image, $icon, $description, $notes, $version, $platform,
+      $background_image, $cover_image, $icon, $description, $intro, $notes, $version, $platform,
       $emulator, $completion_status, $user_score_set, $manual_game, $plugin_id, $links,
       $actions, $features_enabled, $guide, $screenshots, $videos, $game_library, $game_level,
       $pre_launch_script, $pre_launch_enabled, $post_launch_script, $post_launch_enabled,
@@ -420,7 +408,7 @@ export function upsertGame(game: Game): void {
       features=$features, release_date=$release_date, community_score=$community_score,
       critic_score=$critic_score, user_score=$user_score, hidden=$hidden, favorite=$favorite,
       background_image=$background_image, cover_image=$cover_image, icon=$icon,
-      description=$description, notes=$notes, version=$version, platform=$platform,
+      description=$description, intro=$intro, notes=$notes, version=$version, platform=$platform,
       emulator=$emulator, completion_status=$completion_status, user_score_set=$user_score_set,
       manual_game=$manual_game, plugin_id=$plugin_id, links=$links, actions=$actions,
       features_enabled=$features_enabled, guide=$guide, screenshots=$screenshots,
@@ -437,24 +425,6 @@ export function upsertGame(game: Game): void {
 export function deleteGame(id: string): void {
   if (!db) throw new Error("数据库未打开");
   db.run("DELETE FROM games WHERE id = $id", { $id: id });
-  persist();
-}
-
-// 批量更新多个游戏的封面路径。这是给启动时的封面匹配用的：
-// 如果像 upsertGame 那样一张一张写，每张都要把整个内存库导出写盘一次，
-// 几百张封面就是几百次全库序列化，启动会非常慢。
-// 这里改为循环执行 UPDATE 但只在最后 persist() 一次，把写盘从"每张一次"降到"总共一次"。
-export function updateCoverImages(entries: Array<{ id: string; coverImage: string }>): void {
-  if (!db) throw new Error("数据库未打开");
-  if (!entries || entries.length === 0) return;
-  const stmt = db.prepare("UPDATE games SET cover_image = $cover, modified = $m WHERE id = $id");
-  const now = new Date().toISOString();
-  for (const e of entries) {
-    stmt.bind({ $id: e.id, $cover: e.coverImage, $m: now } as never);
-    stmt.step();
-    stmt.reset();
-  }
-  stmt.free();
   persist();
 }
 
@@ -758,6 +728,7 @@ function rowToGame(r: Record<string, unknown>): Game {
     coverImage: r.cover_image ? str(r.cover_image) : undefined,
     icon: r.icon ? str(r.icon) : undefined,
     description: r.description ? str(r.description) : undefined,
+    intro: r.intro ? str(r.intro) : undefined,
     notes: r.notes ? str(r.notes) : undefined,
     version: r.version ? str(r.version) : undefined,
     platform: arr(r.platform),

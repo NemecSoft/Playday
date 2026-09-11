@@ -7,30 +7,19 @@ import { openDb, closeDb } from "./core/db";
 import { readSettings } from "./core/settings";
 import { stopGameServer } from "./core/gameServer";
 import { createTray, destroyTray } from "./core/tray";
-import { ADMIN_EXE_NAME } from "./config";
+import { registerErrorCollector } from "./core/errorCollector";
 import {
   createClientWindow,
-  createAdminWindow,
   createAnnouncementWindow,
+  createCrashHandlerWindow,
+  setCrashReport,
 } from "./windows";
 
-// 通过命令行参数决定启动哪个窗口：`--admin` 打开管理端，否则打开客户端。
-// 也支持按"当前运行的 exe 文件名"判断：如果是 Playday.Admin.exe 就按管理端启动，
-// 这样打包出的独立管理端 exe 无需手动加 --admin 参数。
-const exeName = (() => {
-  try {
-    return path.basename(process.execPath, ".exe").toLowerCase();
-  } catch {
-    return "";
-  }
-})();
-const shouldOpenAdmin =
-  process.argv.includes("--admin") ||
-  (!!exeName && exeName === ADMIN_EXE_NAME.toLowerCase());
+// 说明：管理端应用已移除（数据由手工维护的 games.json + 脚本写入源库）。
+// 现在只有客户端一种运行形态，不再有 --admin / Playday.Admin.exe 分支。
 
 // 全局保存窗口引用，避免被垃圾回收。
 let clientWin: BrowserWindow | null = null;
-let adminWin: BrowserWindow | null = null;
 let announcementWin: BrowserWindow | null = null;
 
 app.whenReady().then(async () => {
@@ -42,30 +31,30 @@ app.whenReady().then(async () => {
   // 注册所有主进程 ←→ 渲染进程 的命令。
   registerIpc();
 
-  // 客户端才启动托盘；管理端（独立 Playday.Admin.exe）不需要。
+  // 错误收集器：主进程崩溃/未捕获异常/渲染进程崩溃时，弹崩溃处理窗口（UnityCrashHandler64 风格）。
+  registerErrorCollector((report) => {
+    try {
+      setCrashReport(report);
+      createCrashHandlerWindow();
+    } catch (e) {
+      console.error("[main] 创建崩溃处理窗口失败:", e);
+    }
+  });
+
+  // 按设置决定是否启用系统托盘。
   // 注：游戏详情页本地 HTTP 服务器不再在这里启动，改为"第一次打开详情页时"
   // 由 get_game_server_url 惰性启动（见 ipc/gameHtml.ts），缩短应用启动时间。
-  if (!shouldOpenAdmin) {
-    // 按设置决定是否启用系统托盘。
-    if (readSettings().enableTray) {
-      try {
-        createTray();
-      } catch (e) {
-        console.error("[main] 创建托盘失败:", e);
-      }
+  if (readSettings().enableTray) {
+    try {
+      createTray();
+    } catch (e) {
+      console.error("[main] 创建托盘失败:", e);
     }
   }
 
-  if (shouldOpenAdmin) {
-    // 管理端：没有公告引导，直接打开管理窗口。管理窗口一打开就要读库，
-    // 所以必须先 await openDb() 把数据库（整库复制 + 读入内存）准备好。
-    await openDb();
-    adminWin = createAdminWindow();
-  } else {
-    // 客户端：先弹公告窗口（独立引导窗口）。数据库打开是重活（整库复制 + 读入内存），
-    // 推迟到点"进入系统"时再执行（见 enterSystem），让公告窗口第一时间出现，启动更快。
-    announcementWin = createAnnouncementWindow();
-  }
+  // 先弹公告窗口（独立引导窗口）。数据库打开是重活（整库复制 + 读入内存），
+  // 推迟到点"进入系统"时再执行（见 enterSystem），让公告窗口第一时间出现，启动更快。
+  announcementWin = createAnnouncementWindow();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -111,7 +100,4 @@ app.on("before-quit", () => {
 // 导出窗口引用，供系统命令（system.ts）控制窗口时使用。
 export function getClientWindow(): BrowserWindow | null {
   return clientWin;
-}
-export function getAdminWindow(): BrowserWindow | null {
-  return adminWin;
 }

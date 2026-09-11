@@ -17,6 +17,7 @@ export default function AppBody() {
         {activeTab === "home" && <Sidebar />}
         <MainContent />
       </div>
+      {/* 状态栏（右侧内嵌提示栏 TipsBar，同一行） */}
       <StatusBar />
     </div>
   );

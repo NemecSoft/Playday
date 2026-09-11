@@ -40,7 +40,9 @@ function SelectContent({
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
         className={cn(
-          "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border border-border bg-background text-foreground shadow-lg",
+          // z-[3000]：必须高于 .modal-overlay（z-index:1000），否则设置弹窗里
+          // 下拉面板被压在遮罩后面，视觉上"下拉弹不出来"。
+          "relative z-[3000] max-h-96 min-w-[8rem] overflow-hidden rounded-md border border-border bg-background text-foreground shadow-lg",
           position === "popper" &&
             "data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1",
           className,

@@ -25,7 +25,9 @@ export default function GamesView() {
   const activeCategoryFilter = useGamesStore((s) => s.activeCategoryFilter);
   const activeGenreFilter = useGamesStore((s) => s.activeGenreFilter);
   const activeDeveloperFilter = useGamesStore((s) => s.activeDeveloperFilter);
-  const selectedTags = useGamesStore((s) => s.selectedTags);
+  const facet = useGamesStore((s) => s.facet);
+  const facetValues = useGamesStore((s) => s.facetValues);
+  const facetMode = useGamesStore((s) => s.facetMode);
 
   const { filtered, groups } = useMemo(() => {
     const f = filterGames(games, {
@@ -37,7 +39,9 @@ export default function GamesView() {
       categoryFilter: activeCategoryFilter,
       genreFilter: activeGenreFilter,
       developerFilter: activeDeveloperFilter,
-      selectedTags,
+      facet,
+      facetValues,
+      facetMode,
     });
     const sorted = sortGames(f, sortOrder as SortKey, sortDirection);
     const g = groupGames(sorted, groupBy as any, {
@@ -60,7 +64,9 @@ export default function GamesView() {
     activeCategoryFilter,
     activeGenreFilter,
     activeDeveloperFilter,
-    selectedTags,
+    facet,
+    facetValues,
+    facetMode,
     t,
   ]);
 

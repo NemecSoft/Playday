@@ -1,0 +1,46 @@
+# Playday 行尾策略：统一用 Windows CRLF。
+# 这是 Windows 项目（Electron + Vite），所有文本文件强制 CRLF，避免 Git 的
+# "LF will be replaced by CRLF" 警告，也避免文件在 LF/CRLF 间来回转换。
+# 二进制文件显式标记为 binary，Git 不触碰它们的换行。
+
+# 所有文本文件：检出/提交都用 CRLF（Windows 标准）
+* text=auto eol=crlf
+
+# ---- 二进制文件：禁止换行转换 ----
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.bmp binary
+*.ico binary
+*.icns binary
+*.db binary
+*.sqlite binary
+*.sqlite3 binary
+*.wasm binary
+*.mp3 binary
+*.ogg binary
+*.wav binary
+*.m4a binary
+*.aac binary
+*.mtn binary
+*.webm binary
+*.mp4 binary
+*.avi binary
+*.mov binary
+*.mkv binary
+*.exe binary
+*.dll binary
+*.pak binary
+*.asar binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+*.zip binary
+*.7z binary
+*.tar binary
+*.gz binary
+*.pdf binary

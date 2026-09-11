@@ -48,12 +48,10 @@ export default function GameExitBackupPrompt() {
     setBusy(true);
     try {
       const res = await api.backupGameSave(pending.gameId);
-      if (res?.ok) {
-        void api.showNotification(
-          t("backup_success_title"),
-          t("backup_success_body", { name: pending.gameName })
-        );
-      } else {
+      // 成功启动后不再弹 App 通知：备份进度、失败原因和"如何使用备份包"都由
+      // GameSaveHelper 自己的窗口呈现，App 再提示一遍会重复打扰用户。
+      // 只有在"工具没能启动"时才需要 App 报错（未配置路径 / exe 不存在 / 无存档路径）。
+      if (!res?.ok) {
         void api.showNotification(
           t("backup_failed_title"),
           res?.error || t("backup_failed_body", { name: pending.gameName })

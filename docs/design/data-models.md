@@ -100,7 +100,7 @@ export interface Game {
 
 ### 双库机制（务必分清）
 
-- `paths.ts` 的 `adminDatabasePath()` = `<数据根>/Admin/library.db`：**权威库**（管理端读/改）。
+- `paths.ts` 的 `sourceDatabasePath()` = `<数据根>/Admin/library.db`：**源库**（数据来源，由手工/脚本维护）。
 - `paths.ts` 的 `runtimeDatabasePath()` = `<数据根>/library/library.db`：**运行时副本**（客户端每次启动 `openDb()` 把 Admin 库 `copyFileSync` 复制过来再用）。
 - **写库/同步一律针对 `Admin/library.db`**；改运行时副本是白费（下次启动被 Admin 覆盖）。
 

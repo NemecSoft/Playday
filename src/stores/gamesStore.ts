@@ -5,6 +5,7 @@ import { api } from "../api/client";
 import { useAuthStore } from "./authStore";
 import { preloadImages } from "../utils/assets";
 import type { Game, GameAction } from "../types/models";
+import type { FacetKey } from "../utils/selectors";
 
 // 模块级变量：控制"正在启动游戏"横幅至少展示多久。
 // 启动流程可能几百毫秒就完成，如果不强制最短展示时间，横幅会一闪而过看不清。
@@ -39,8 +40,12 @@ interface GamesState {
   activeCategoryFilter: string;
   activeGenreFilter: string;
   activeDeveloperFilter: string;
-  /** Tags checked in the sidebar (AND semantics: keep games that contain all of them). */
-  selectedTags: string[];
+  /** 侧栏当前筛选维度（标签/类型/系列/地区/年代）。 */
+  facet: FacetKey;
+  /** 侧栏该维度下勾选的值。 */
+  facetValues: string[];
+  /** 多选语义：and=全部命中（交集）/ or=任一命中（并集）。 */
+  facetMode: "and" | "or";
   /** Whether the sidebar is expanded. Auto-hides by default. */
   sidebarVisible: boolean;
 
@@ -68,8 +73,10 @@ interface GamesState {
   setCategoryFilter: (c: string) => void;
   setGenreFilter: (g: string) => void;
   setDeveloperFilter: (d: string) => void;
-  toggleTag: (tag: string) => void;
-  clearTags: () => void;
+  setFacet: (f: FacetKey) => void;
+  toggleFacetValue: (v: string) => void;
+  clearFacetValues: () => void;
+  setFacetMode: (m: "and" | "or") => void;
   setSidebarVisible: (v: boolean) => void;
   toggleSidebar: () => void;
   clearFilters: () => void;
@@ -97,8 +104,8 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   selectedGameIds: [],
   viewMode: "grid",
   searchQuery: "",
-  sortOrder: "name",
-  sortDirection: "ascending",
+  sortOrder: "added",
+  sortDirection: "descending",
   showInstalledOnly: false,
   showHidden: false,
   showFavorites: false,
@@ -107,7 +114,9 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   activeCategoryFilter: "all",
   activeGenreFilter: "all",
   activeDeveloperFilter: "all",
-  selectedTags: [],
+  facet: "tag",
+  facetValues: [],
+  facetMode: "and",
   sidebarVisible: false,
   lastLaunchedId: null,
   pendingLaunch: null,
@@ -131,7 +140,7 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   setViewMode: (m) => set({ viewMode: m }),
   // Search and tag filters are mutually exclusive: typing in the search box
   // clears the selected tags, and picking a tag clears the search query.
-  setSearch: (q) => set({ searchQuery: q, selectedTags: [] }),
+  setSearch: (q) => set({ searchQuery: q, facetValues: [] }),
   setSort: (o, d) => set({ sortOrder: o, sortDirection: d }),
   toggleInstalledOnly: () => set((s) => ({ showInstalledOnly: !s.showInstalledOnly })),
   toggleHidden: () => set((s) => ({ showHidden: !s.showHidden })),
@@ -141,16 +150,19 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   setCategoryFilter: (c) => set({ activeCategoryFilter: c }),
   setGenreFilter: (g) => set({ activeGenreFilter: g }),
   setDeveloperFilter: (d) => set({ activeDeveloperFilter: d }),
-  // Picking a tag clears the search query (search and tags are exclusive).
-  toggleTag: (tag) =>
+  // 切换维度时清空已勾选的值：不同维度的值混在一起没有意义。
+  setFacet: (f) => set({ facet: f, facetValues: [] }),
+  // 勾选/取消一个值；顺带清空搜索框（搜索与筛选互斥，沿用原有行为）。
+  toggleFacetValue: (v) =>
     set((s) => {
-      const has = s.selectedTags.includes(tag);
+      const has = s.facetValues.includes(v);
       return {
-        selectedTags: has ? s.selectedTags.filter((t) => t !== tag) : [...s.selectedTags, tag],
+        facetValues: has ? s.facetValues.filter((x) => x !== v) : [...s.facetValues, v],
         searchQuery: "",
       };
     }),
-  clearTags: () => set({ selectedTags: [] }),
+  clearFacetValues: () => set({ facetValues: [] }),
+  setFacetMode: (m) => set({ facetMode: m }),
   setSidebarVisible: (v) => set({ sidebarVisible: v }),
   toggleSidebar: () => set((s) => ({ sidebarVisible: !s.sidebarVisible })),
   clearLastLaunched: () => set({ lastLaunchedId: null }),
@@ -184,7 +196,7 @@ export const useGamesStore = create<GamesState>((set, get) => ({
       activeCategoryFilter: "all",
       activeGenreFilter: "all",
       activeDeveloperFilter: "all",
-      selectedTags: [],
+      facetValues: [],
     }),
 
   selectGame: (id, multi = false) =>

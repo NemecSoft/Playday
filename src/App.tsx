@@ -20,12 +20,16 @@ import ToastContainer from "./components/ToastContainer";
 import LaunchingBanner from "./components/LaunchingBanner";
 import ImageProgressBar from "./components/ImageProgressBar";
 import GameExitBackupPrompt from "./components/GameExitBackupPrompt";
+import ZoomIndicator from "./components/ZoomIndicator";
 import GameDetailPage from "./pages/GameDetailPage";
 import { useSettingsStore } from "./stores/settingsStore";
 import { useGamesStore } from "./stores/gamesStore";
 import { useLibraryStore } from "./stores/libraryStore";
 import { useAuthStore } from "./stores/authStore";
 import { useUIStore } from "./stores/uiStore";
+import { useCommunityStore } from "./utils/community/store";
+import DanmakuOverlay from "./components/community/DanmakuOverlay";
+import ActivityToast from "./components/community/ActivityToast";
 import { useI18n, type LanguageCode } from "./i18n";
 
 export default function App() {
@@ -90,6 +94,8 @@ function AppShell() {
   const clearLastLaunched = useGamesStore((s) => s.clearLastLaunched);
   const settingsOpen = useUIStore((s) => s.settingsOpen);
   const closeSettings = useUIStore((s) => s.closeSettings);
+  const games = useGamesStore((s) => s.games);
+  const communityEnabled = useSettingsStore((s) => s.settings.communityEnabled);
 
   // When a game has just been launched, jump to its detail page so the user
   // can read the guide / instructions while playing (Steam / Playnite-style).
@@ -99,6 +105,33 @@ function AppShell() {
       clearLastLaunched();
     }
   }, [lastLaunchedId, navigate, clearLastLaunched]);
+
+  // 详情页 iframe 里的标签云点击 → 主页筛选：
+  // 详情页 HTML 通过 parent.postMessage 广播 { type: "playday-filter-by-tag", tag }，
+  // 这里收到后把主页筛选条件设为该标签（单一标签），并导航回主页。
+  useEffect(() => {
+    const onTagFilter = (e: MessageEvent) => {
+      const d = e.data;
+      if (d && d.type === "playday-filter-by-tag" && typeof d.tag === "string") {
+        // 设为主页标签筛选（维度=标签、单一标签值，清空搜索），并跳回主页
+        useGamesStore.setState({ facet: "tag", facetValues: [d.tag], searchQuery: "" });
+        navigate("/");
+      }
+    };
+    window.addEventListener("message", onTagFilter);
+    return () => window.removeEventListener("message", onTagFilter);
+  }, [navigate]);
+
+  // 社区氛围：游戏库加载后初始化（传入游戏名列表供"正在玩"更贴合真实），
+  // 并跟随设置开关启停。
+  useEffect(() => {
+    if (games.length > 0) {
+      useCommunityStore.getState().init(games.map((g) => g.name));
+    }
+  }, [games]);
+  useEffect(() => {
+    useCommunityStore.getState().setEnabled(communityEnabled);
+  }, [communityEnabled]);
 
   return (
     <div className="app">
@@ -114,13 +147,18 @@ function AppShell() {
         </Routes>
       </RoutesErrorBoundary>
       <ToastContainer />
+      {/* 社区氛围：顶部弹幕 + 活动流 toast（可设置关闭） */}
+      <DanmakuOverlay />
+      <ActivityToast />
       <LaunchingBanner />
       <ImageProgressBar />
+      {/* Ctrl+滚轮缩放指示气泡（浏览器式：110% − + 重置）。 */}
+      <ZoomIndicator />
       {/* 游戏退出后弹"是否备份存档"确认框（监听 game_exited 事件）。 */}
       <GameExitBackupPrompt />
       <AnimatePresence>
-        {settingsOpen && <SettingsModal onClose={closeSettings} />}
-        <LaunchActionModal />
+        {settingsOpen && <SettingsModal key="settings" onClose={closeSettings} />}
+        <LaunchActionModal key="launch-action" />
       </AnimatePresence>
     </div>
   );

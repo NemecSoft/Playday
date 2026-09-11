@@ -1,0 +1,106 @@
+{
+  "_comment": "主界面底部提示栏的文案。zh 为中文（简体/繁体共用），en 为英文。可直接增删条目，改完刷新即生效（不显示分类标签）。",
+  "rotateSeconds": 12,
+  "tips": [
+    {
+      "id": "zoom-page",
+      "zh": "按住 Ctrl + 鼠标滚轮，可以缩放整个界面；右上角会显示当前比例，点「重置」回到 100%。",
+      "en": "Hold Ctrl + mouse wheel to zoom the whole interface. The current ratio appears in the top-right, with a one-click reset."
+    },
+    {
+      "id": "cover-size",
+      "zh": "按住 Alt + 鼠标滚轮，可以快速调整封面大小——每行能放几张封面也随之变化。",
+      "en": "Hold Alt + mouse wheel to resize covers — this also changes how many fit in each row."
+    },
+    {
+      "id": "search-focus",
+      "zh": "按 / 或 Ctrl+F 可以直接跳到搜索框，不用先用鼠标点。",
+      "en": "Press / or Ctrl+F to jump straight to the search box."
+    },
+    {
+      "id": "search-pinyin",
+      "zh": "搜索支持拼音首字母：输入 zy 就能找到「自由之翼」。",
+      "en": "Search accepts pinyin initials: typing zy finds 自由之翼 (Wings of Liberty)."
+    },
+    {
+      "id": "multi-select",
+      "zh": "按住 Ctrl 再点卡片，可以一次选中多个游戏。",
+      "en": "Ctrl + click cards to select several games at once."
+    },
+    {
+      "id": "context-menu",
+      "zh": "在卡片上点右键，会弹出快捷菜单（详情、收藏、启动等）。",
+      "en": "Right-click a card for a quick menu (details, favourite, launch…)."
+    },
+    {
+      "id": "desc-expand",
+      "zh": "卡片上的简介默认只显示几行，点一下即可展开完整文字。",
+      "en": "Card descriptions are clamped by default — click one to expand the full text."
+    },
+    {
+      "id": "desc-toggle",
+      "zh": "工具栏的「显示简介」开关能一键隐藏所有简介，网格会变得更紧凑。",
+      "en": "The “show description” switch in the toolbar hides every description for a denser grid."
+    },
+    {
+      "id": "tag-filter",
+      "zh": "左侧标签可以搜索和按标签筛选；边缘拖一下就能调整侧栏宽度。",
+      "en": "Filter games by tag in the left sidebar — drag its edge to resize, and use the box to search tags."
+    },
+    {
+      "id": "theme-switch",
+      "zh": "顶栏右侧的下拉可以换主题配色，悬停能看到每套配色的搭配理念。",
+      "en": "Switch colour themes from the dropdown in the top bar; hover an entry to see what it is designed for."
+    },
+    {
+      "id": "app-fullscreen",
+      "zh": "按 F11 可以在全屏和窗口之间切换（针对本程序窗口）。",
+      "en": "Press F11 to toggle full screen for this app window."
+    },
+    {
+      "id": "game-extras",
+      "zh": "详情页里有「修改器」和「应用存档」：把文件放进对应游戏目录，就能一键调用。",
+      "en": "Game detail pages offer Trainers and Save-applying: drop files into the game's folder to use them in one click."
+    },
+    {
+      "id": "covers",
+      "zh": "封面按「游戏名同名文件」自动匹配，放进 CoverImages 目录即可，重启后生效。",
+      "en": "Covers are matched by filename: drop “<game name>.jpg” into the CoverImages folder and restart."
+    },
+    {
+      "id": "game-fullscreen",
+      "zh": "大多数 PC 游戏按 Alt+Enter 就能在窗口和全屏之间切换，不用进设置菜单。",
+      "en": "Most PC games switch between windowed and full screen with Alt+Enter — no settings menu needed."
+    },
+    {
+      "id": "game-bar",
+      "zh": "Win+G 打开 Xbox 游戏栏，可以录屏、截图、看帧率。",
+      "en": "Win+G opens the Xbox Game Bar for recording, screenshots and frame-rate stats."
+    },
+    {
+      "id": "record-screen",
+      "zh": "Win+Alt+R 直接开始/停止录屏，Win+Shift+S 框选截图，都能用来记录精彩瞬间。",
+      "en": "Win+Alt+R starts/stops recording; Win+Shift+S captures a screen region — handy for saving highlights."
+    },
+    {
+      "id": "snap-window",
+      "zh": "Win+方向键可以把窗口贴到屏幕左半边或右半边，边玩边查攻略很方便。",
+      "en": "Win+arrow keys snap windows to a half of the screen — great for reading a guide while playing."
+    },
+    {
+      "id": "steam-screenshot",
+      "zh": "Steam 游戏按 F12 截图，进度卡住时先试试 Win+Tab 看有没有后台更新在抢资源。",
+      "en": "Steam games screenshot with F12. If performance drops, check Win+Tab for background updates stealing resources."
+    },
+    {
+      "id": "perf-dgpu",
+      "zh": "游戏掉帧时：关掉后台浏览器与下载，并在「图形设置」里指定用独显运行。",
+      "en": "Stuttering? Close background browsers/downloads and set the game to use your dedicated GPU in Graphics settings."
+    },
+    {
+      "id": "save-backup",
+      "zh": "存档最容易丢，养成定期备份的习惯——游戏详情页里的「应用存档」就是为此准备的。",
+      "en": "Save files are fragile — back them up regularly. The detail page's save-apply feature exists for exactly this."
+    }
+  ]
+}

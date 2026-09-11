@@ -29,43 +29,12 @@ export interface GameName {
   name: string;
 }
 
-/** 卡片文字自定义样式：颜色/描边/发光/阴影/背景填充。所有字段都有默认值。 */
-export interface CardTextStyle {
-  color: string;
-  stroke: boolean;
-  strokeColor: string;
-  strokeWidth: number;
-  glow: boolean;
-  glowColor: string;
-  glowBlur: number;
-  shadow: boolean;
-  shadowColor: string;
-  shadowOffsetX: number;
-  shadowOffsetY: number;
-  shadowBlur: number;
-  bg: boolean;
-  bgColor: string;
-  bgOpacity: number;
-}
-
-/** 默认卡片文字样式（暖白 + 紫光 + 黑色描边） */
-export const DEFAULT_CARD_TEXT: CardTextStyle = {
-  color: "#fff8e7",
-  stroke: true,
-  strokeColor: "#000000",
-  strokeWidth: 1.5,
-  glow: true,
-  glowColor: "#a040c8",
-  glowBlur: 10,
-  shadow: true,
-  shadowColor: "#000000",
-  shadowOffsetX: 0,
-  shadowOffsetY: 1,
-  shadowBlur: 2,
-  bg: false,
-  bgColor: "#000000",
-  bgOpacity: 0.5,
-};
+// CardTextStyle 与 DEFAULT_CARD_TEXT 的单一事实来源在 shared/models.ts，
+// 这里 re-export，保持前端引用方（AppSettings.cardText、settingsStore 等）无感知。
+// isolatedModules 下 re-export 类型必须用 export type，值用 export。
+export type { CardTextStyle, DesignerConfig, ErrorReportConfig, CrashReport } from "../../shared/models";
+export { DEFAULT_CARD_TEXT } from "../../shared/models";
+import type { CardTextStyle, DesignerConfig, ErrorReportConfig, CrashReport } from "../../shared/models";
 
 export interface Game {
   id: string;
@@ -109,6 +78,8 @@ export interface Game {
   coverImage?: string;
   icon?: string;
   description?: string;
+  /** 简介：Playday 用户维护的简短介绍（与 description「描述/版本信息」区分开）。 */
+  intro?: string;
   notes?: string;
   version?: string;
   platform: string[];
@@ -161,6 +132,7 @@ export interface AppSettings {
   showBatConsole: boolean;
   language: string;
   firstTimeWizardComplete: boolean;
+  /** 【已废弃，不再读取】数据库路径固定为双库机制；读取配置时会剔除该键。 */
   databasePath?: string;
   autoBackupEnabled: boolean;
   gridViewImage: string;
@@ -213,10 +185,22 @@ export interface AppSettings {
   themeId?: string;
   /** Selected style id (styleLibrary). Persisted in config.json. */
   styleId?: string;
-  /** Custom game detail pages dir (absolute). Empty = default data/Game_Details. */
+  /** Custom game detail pages dir (absolute or relative to data root). Empty = default data/Game_Details. */
   gameDetailsDir?: string;
+  /** Custom cover images dir (absolute or relative to data root). Empty = default data/CoverImages. */
+  coverImagesDir?: string;
+  /** Path to GameSaveHelper.exe (save backup tool). Empty/unset = not configured. */
+  gameSaveHelperPath?: string;
   /** Whether to show the description (简介) on grid cards. Persisted in config.json. */
   showCardDescription: boolean;
+  /** 综合主题/配色/字体设计器配置（见 shared/models.ts DesignerConfig）。 */
+  designer?: DesignerConfig;
+  /** 社区氛围：是否开启"多人氛围"（在线/弹幕/活动流）。默认 false。 */
+  communityEnabled: boolean;
+  /** 氛围来源：mock（随机模拟）/ real（真实后端，预留）。默认 mock。 */
+  communitySource: string;
+  /** 错误上报/崩溃报告（SMTP 发邮件到收件人邮箱），默认关。 */
+  errorReport: ErrorReportConfig;
 }
 
 /** The resolved current user (enterprise or personal or guest). */

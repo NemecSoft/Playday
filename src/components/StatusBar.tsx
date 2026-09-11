@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Network, Globe, MapPin } from "lucide-react";
 import { api } from "../api/client";
 import { useI18n } from "../i18n";
+import TipsBar from "./TipsBar";
 
 interface StatusBarData {
   localIp: string;
@@ -56,6 +57,8 @@ export default function StatusBar() {
         <MapPin size={13} className="text-dim" />
         <span>{cafe}</span>
       </span>
+      {/* 右侧：轮播小技巧（与网络信息同一行，见 src/data/tips.json） */}
+      <TipsBar />
     </div>
   );
 }

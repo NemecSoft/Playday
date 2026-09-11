@@ -14,23 +14,45 @@ import { useGamesStore } from "../stores/gamesStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useI18n } from "../i18n";
 import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { facetValuesOf, type FacetKey } from "../utils/selectors";
+import WhoIsOnline from "./community/WhoIsOnline";
 
 const SIDEBAR_MIN = 160;
 const SIDEBAR_MAX = 600;
 
+// 侧栏可选的筛选维度（顶部下拉框选项）。默认是「标签」。
+const FACET_OPTIONS: { value: FacetKey; labelKey: string }[] = [
+  { value: "tag", labelKey: "facet_tag" },
+  { value: "genre", labelKey: "facet_genre" },
+  { value: "series", labelKey: "facet_series" },
+  { value: "region", labelKey: "facet_region" },
+  { value: "decade", labelKey: "facet_decade" },
+];
+
 export default function Sidebar() {
   const games = useGamesStore((s) => s.games);
-  const selectedTags = useGamesStore((s) => s.selectedTags);
-  const toggleTag = useGamesStore((s) => s.toggleTag);
-  const clearTags = useGamesStore((s) => s.clearTags);
+  const facet = useGamesStore((s) => s.facet);
+  const facetValues = useGamesStore((s) => s.facetValues);
+  const facetMode = useGamesStore((s) => s.facetMode);
+  const setFacet = useGamesStore((s) => s.setFacet);
+  const toggleFacetValue = useGamesStore((s) => s.toggleFacetValue);
+  const clearFacetValues = useGamesStore((s) => s.clearFacetValues);
+  const setFacetMode = useGamesStore((s) => s.setFacetMode);
   const sidebarVisible = useGamesStore((s) => s.sidebarVisible);
   const toggleSidebar = useGamesStore((s) => s.toggleSidebar);
   const sidebarWidth = useSettingsStore((s) => s.settings.sidebarWidth);
   const saveSettings = useSettingsStore((s) => s.save);
   const { t } = useI18n();
 
-  // 标签搜索词：只过滤侧边栏里显示的标签，不影响 gamesStore 的全局搜索。
-  const [tagQuery, setTagQuery] = useState("");
+  // 列表搜索词：只过滤侧边栏里显示的值，不影响 gamesStore 的全局搜索。
+  const [listQuery, setListQuery] = useState("");
 
   // 本地宽度：拖动时即时更新 UI，拖动结束才持久化到后端。
   const [liveWidth, setLiveWidth] = useState(sidebarWidth);
@@ -81,29 +103,36 @@ export default function Sidebar() {
     };
   }, [liveWidth, saveSettings]);
 
-  // 按标签聚合（含计数，按频次排序）。
-  // 防御性过滤：跳过 "Tag: " 开头的旧自动标签残留，只显示正常标签。
-  const tagStats = useMemo(() => {
+  // 按当前维度聚合（含计数）。标签维度跳过 "Tag: " 开头的旧自动标签残留。
+  const facetStats = useMemo(() => {
     const map = new Map<string, number>();
     for (const g of games) {
-      for (const tag of g.tags) {
-        const k = tag.trim();
+      for (const raw of facetValuesOf(g, facet)) {
+        const k = raw.trim();
         if (!k) continue;
-        if (/^Tag:\s*/i.test(k)) continue; // 跳过旧的自动标签
+        if (facet === "tag" && /^Tag:\s*/i.test(k)) continue; // 跳过旧的自动标签
         map.set(k, (map.get(k) || 0) + 1);
       }
     }
-    return Array.from(map.entries())
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-  }, [games]);
+    const list = Array.from(map.entries()).map(([name, count]) => ({ name, count }));
+    if (facet === "decade") {
+      // 年代按时间正序（1980s → 2020s），"未知"之类非年份标签排最后。
+      const yearOf = (n: string) =>
+        /^\d{4}s$/.test(n) ? Number(n.slice(0, 4)) : Number.MAX_SAFE_INTEGER;
+      return list.sort((a, b) => yearOf(a.name) - yearOf(b.name) || a.name.localeCompare(b.name));
+    }
+    return list.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }, [games, facet]);
 
-  // 根据搜索词过滤标签列表（不区分大小写、中文包含匹配）。
-  const visibleTags = useMemo(() => {
-    const q = tagQuery.trim().toLowerCase();
-    if (!q) return tagStats;
-    return tagStats.filter(({ name }) => name.toLowerCase().includes(q));
-  }, [tagStats, tagQuery]);
+  // 根据搜索词过滤列表（不区分大小写、中文包含匹配）。
+  const visibleFacetValues = useMemo(() => {
+    const q = listQuery.trim().toLowerCase();
+    if (!q) return facetStats;
+    return facetStats.filter(({ name }) => name.toLowerCase().includes(q));
+  }, [facetStats, listQuery]);
+
+  // 当前维度名（用于"已选 N 个XX"文案）。
+  const facetLabelKey = FACET_OPTIONS.find((o) => o.value === facet)?.labelKey ?? "facet_tag";
 
   // 一个固定 toggle 按钮 + 一个抽屉（抽屉展开时才渲染）。
   return (
@@ -131,51 +160,87 @@ export default function Sidebar() {
             <span className="sidebar-header-title">{t("sidebar_title")}</span>
           </div>
 
+          {/* 维度下拉：决定侧栏列什么、拿什么筛。默认「标签」。 */}
+          <div className="sidebar-facet-row">
+            <span className="sidebar-facet-label">{t("facet_label")}</span>
+            <Select value={facet} onValueChange={(v) => setFacet(v as FacetKey)}>
+              <SelectTrigger className="sidebar-select" aria-label={t("facet_label")}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {FACET_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {t(o.labelKey)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 多选语义下拉：全部匹配（AND，默认）/ 任一匹配（OR）。 */}
+          <div className="sidebar-facet-row">
+            <span className="sidebar-facet-label">{t("facet_mode_label")}</span>
+            <Select
+              value={facetMode}
+              onValueChange={(v) => setFacetMode(v as "and" | "or")}
+            >
+              <SelectTrigger className="sidebar-select" aria-label={t("facet_mode_label")}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="and">{t("facet_mode_and")}</SelectItem>
+                <SelectItem value="or">{t("facet_mode_or")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="sidebar-tag-search">
             <Input
-              value={tagQuery}
-              onChange={(e) => setTagQuery(e.target.value)}
+              value={listQuery}
+              onChange={(e) => setListQuery(e.target.value)}
               placeholder={t("sidebar_tagSearch")}
               aria-label={t("sidebar_tagSearch")}
             />
           </div>
 
-          {/* 已勾选的标签：显示清空按钮，方便用户快速取消全部筛选 */}
-          {selectedTags.length > 0 && (
+          {/* 已勾选的值：显示清空按钮，方便用户快速取消全部筛选。
+              数字用 JS 模板字符串直接拼（不走 i18next 插值，"已选 N 个"这行现状就是硬编码中文）。 */}
+          {facetValues.length > 0 && (
             <div className="sidebar-clear-row">
-              {/* 用 JS 模板字符串直接拼数字，避免 i18next 插值不稳定。 */}
               <span className="sidebar-clear-info">
-                {`已选 ${selectedTags.length} 个标签`}
+                {`已选 ${facetValues.length} 个${t(facetLabelKey)}`}
               </span>
-              <button className="sidebar-clear-btn" onClick={clearTags}>
+              <button className="sidebar-clear-btn" onClick={clearFacetValues}>
                 {t("sidebar_clear")}
               </button>
             </div>
           )}
 
           <div className="sidebar-tag-list">
-            {visibleTags.map(({ name, count }) => {
-              const checked = selectedTags.includes(name);
+            {visibleFacetValues.map(({ name, count }) => {
+              const checked = facetValues.includes(name);
+              // "#" 前缀是标签的语义，其他维度显示纯名称。
+              const display = facet === "tag" ? `#${name}` : name;
               return (
                 <label
                   key={name}
                   className={`sidebar-tag ${checked ? "checked" : ""}`}
-                  title={`#${name} (${count})`}
+                  title={`${display} (${count})`}
                 >
-                  <span className="sidebar-tag-name">#{name}</span>
+                  <span className="sidebar-tag-name">{display}</span>
                   <span className="sidebar-tag-meta">
                     <input
                       type="checkbox"
                       checked={checked}
-                      onChange={() => toggleTag(name)}
+                      onChange={() => toggleFacetValue(name)}
                     />
                     <span className="count">{count}</span>
                   </span>
                 </label>
               );
             })}
-            {visibleTags.length === 0 && (
-              <div className="sidebar-empty">{t("sidebar_noTags")}</div>
+            {visibleFacetValues.length === 0 && (
+              <div className="sidebar-empty">{t("sidebar_noFacetValues")}</div>
             )}
           </div>
 
@@ -185,6 +250,8 @@ export default function Sidebar() {
             onMouseDown={onResizeMouseDown}
             title={t("sidebar_resize")}
           />
+          {/* 社区氛围：谁在玩（可设置关闭） */}
+          <WhoIsOnline />
         </aside>
       )}
     </div>

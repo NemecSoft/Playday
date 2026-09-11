@@ -47,15 +47,17 @@ export default function GameContextMenu({ game, x, y, onClose }: Props) {
     navigate(`/game/${encodeURIComponent(game.id)}`);
   };
 
-  // 手动备份存档：生成自解压 exe 到桌面。结果用 Toast 提示。
+  // 手动备份存档：启动 GameSaveHelper.exe，由它生成自解压恢复包。
+  // 成功不弹 Toast（工具窗口自己显示），只在"工具没能启动"时提示。
   const backupSave = async () => {
     if (!game.id) return;
     try {
       const res = await api.backupGameSave(game.id);
-      if (res?.ok) {
-        void api.showNotification(t("backup_success_title"), t("backup_success_body", { name: game.name }));
-      } else {
-        void api.showNotification(t("backup_failed_title"), res?.error || t("backup_failed_body", { name: game.name }));
+      if (!res?.ok) {
+        void api.showNotification(
+          t("backup_failed_title"),
+          res?.error || t("backup_failed_body", { name: game.name })
+        );
       }
     } catch (e) {
       void api.showNotification(t("backup_failed_title"), String(e));

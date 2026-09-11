@@ -12,6 +12,7 @@ import { configRoot } from "./paths";
 import { getGame, upsertGame } from "./db";
 import type { Game, GameAction, GameLibrary } from "./models";
 import { expandVariables, runScript } from "./scriptRunner";
+import { canPlay } from "./auth";
 
 // 运行中游戏的记录。
 export interface RunningGame {
@@ -169,10 +170,7 @@ function resolveAction(game: Game, actionId?: string): GameAction | undefined {
   return game.actions.find((a) => a.isPlayAction);
 }
 
-// ---- 权限检查（对齐 auth::can_play）----
-export function canPlay(userLevel: number, gameLevel: number): boolean {
-  return userLevel >= gameLevel;
-}
+// 权限检查统一走 auth.canPlay（单一数据源，避免与 auth.ts 重复实现）。
 
 // ---- 启动主入口 ----
 

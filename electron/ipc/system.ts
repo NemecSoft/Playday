@@ -4,7 +4,7 @@
 
 import { ipcMain, BrowserWindow, dialog } from "electron";
 import { APP_NAME, APP_VERSION } from "../config";
-import { configRoot } from "../core/paths";
+import { configRoot, appRoot } from "../core/paths";
 import { readSettings } from "../core/settings";
 import { getClientWindow, enterSystem } from "../main";
 import { registerCommand } from "./registry";
@@ -24,7 +24,9 @@ function currentAppInfo() {
     os: process.platform,
     arch: process.arch,
     dataDir: configRoot(),
-    configDir: configRoot(), // 绿色存储：数据目录和配置目录一致
+    // config.json 现在跟主程序走（<主程序目录>/config.json），不再等于数据目录。
+    // 之前这里两行都写 configRoot()，界面上显示的"配置目录"是错的。
+    configDir: appRoot(),
   };
 }
 

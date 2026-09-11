@@ -9,11 +9,36 @@
 import * as fs from "fs";
 import * as path from "path";
 import { coverImagesDir } from "./paths";
-import { getGames, updateCoverImages } from "./db";
+import { getGames } from "./db";
 import type { Game } from "./models";
 
 // 我们当作封面的图片扩展名。
 const IMAGE_EXTS = ["png", "jpg", "jpeg", "webp", "gif", "bmp"];
+
+/**
+ * 路径是否位于"当前配置的封面目录"内（Windows 大小写不敏感 + 目录边界检查）。
+ *
+ * 这是唯一事实来源，两处共用：
+ *   1) 读图白名单（ipc/covers.ts isAllowed）——决定这张图能不能读出来；
+ *   2) 封面是否有效（下面 applyCovers 的 hasCover）——决定要不要重新匹配。
+ * 两者判断必须一致。踩过的坑：只判断"文件是否存在"时，用户把封面目录改成新路径后，
+ * 老路径的文件还在 → 游戏继续指着旧目录 → 白名单不放行 → 全部显示占位符。
+ */
+export function isInCoverDir(p: string): boolean {
+  let canonical: string;
+  try {
+    canonical = fs.realpathSync(p); // 顺带校验文件存在
+  } catch {
+    return false;
+  }
+  const norm = (s: string) => {
+    const r = path.resolve(s);
+    return process.platform === "win32" ? r.toLowerCase() : r;
+  };
+  const a = norm(canonical);
+  const b = norm(coverImagesDir());
+  return a === b || a.startsWith(b.endsWith(path.sep) ? b : b + path.sep);
+}
 
 // 同名的图，动画格式优先于静态（APNG > webp > gif > jpg > png）。
 function formatPriority(ext: string, isApng: boolean): number {
@@ -166,8 +191,11 @@ export function applyCovers(games: Game[]): { games: Game[]; result: CoverScanRe
   let matched = 0;
   let considered = 0;
   const updated = games.map((g) => {
-    const hasCover =
-      g.coverImage != null && g.coverImage.trim() !== "" && fs.existsSync(g.coverImage.trim());
+    // 封面"有效"= 文件存在 **且** 位于当前配置的封面目录内。
+    // 只看文件是否存在的话，用户换掉封面目录后老路径仍然有效 → 不会被重新匹配 →
+    // 而白名单只放行新目录 → 界面上一片占位符。
+    const raw = g.coverImage?.trim();
+    const hasCover = !!raw && isInCoverDir(raw);
     if (hasCover) return g;
     considered++;
     const p = matchCover(index, g);
@@ -190,23 +218,12 @@ export function applyCovers(games: Game[]): { games: Game[]; result: CoverScanRe
   };
 }
 
-// 给库里所有游戏套封面，并只持久化"封面从空变成有"的游戏（避免无谓写库）。
+// 给库里所有游戏套封面（读时计算：只改内存里的 Game 对象，不写回数据库）。
 //
-// 性能优化：这里把"逐张 upsertGame()"（每张都会把整个内存库导出写盘一次）改成
-// 先收集所有需要更新的条目，最后用一次批量 UPDATE + 只 persist() 一次。启动时若
-// 有几百张封面要补，写盘从几百次降为一次，这是启动慢的主要来源之一。
-export function applyCoversToDb(): { games: Game[]; result: CoverScanResult } {
-  const games = getGames();
-  const { games: updated, result } = applyCovers(games);
-  const toUpdate: Array<{ id: string; coverImage: string }> = [];
-  updated.forEach((g, i) => {
-    const before = games[i];
-    if (g.coverImage !== before.coverImage && g.coverImage) {
-      toUpdate.push({ id: g.id, coverImage: g.coverImage });
-    }
-  });
-  if (toUpdate.length > 0) {
-    updateCoverImages(toUpdate);
-  }
-  return { games: updated, result };
+// 历史：这里原名 applyCoversToDb，会把匹配到的封面写回 cover_image 列。现在
+// cover_image 字段不再使用（导出/入库都以空值处理），写回没有意义，反而每次
+// 读游戏列表都要全库序列化一次，因此改为纯计算。games 表的 cover_image 列保留
+// 不删（旧库兼容），只是不再写入。
+export function applyCoversToLibrary(): { games: Game[]; result: CoverScanResult } {
+  return applyCovers(getGames());
 }

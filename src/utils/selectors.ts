@@ -13,8 +13,46 @@ export interface ViewOptions {
   categoryFilter: string;
   genreFilter: string;
   developerFilter: string;
-  /** Tags to AND-filter by. Game must contain every selected tag. */
-  selectedTags: string[];
+  /** 侧栏当前维度（决定用哪个字段做筛选）。 */
+  facet: FacetKey;
+  /** 侧栏该维度下勾选的值。 */
+  facetValues: string[];
+  /** 多选语义：and=全部命中（交集）/ or=任一命中（并集）。 */
+  facetMode: "and" | "or";
+}
+
+/** 侧栏可筛选的维度。 */
+export type FacetKey = "tag" | "genre" | "series" | "region" | "decade";
+
+/**
+ * 从 releaseDate 取十年段标签（如 "2010s"）。
+ * 数据格式不统一（"2013-10-25" / "2023-8-25" / "2013-10" / "2013"），所以只取开头 4 位数字。
+ * 取不到（空值、非数字开头）返回 null。
+ */
+export function decadeOf(releaseDate?: string): string | null {
+  const m = /^(\d{4})/.exec((releaseDate ?? "").trim());
+  if (!m) return null;
+  const year = Number(m[1]);
+  if (!Number.isFinite(year) || year < 1000) return null;
+  return `${Math.floor(year / 10) * 10}s`;
+}
+
+/** 取某游戏在某维度上的所有值（decade 最多 1 个；无值返回空数组）。 */
+export function facetValuesOf(game: Game, facet: FacetKey): string[] {
+  switch (facet) {
+    case "tag":
+      return (game.tags ?? []).filter(Boolean);
+    case "genre":
+      return (game.genre ?? []).filter(Boolean);
+    case "series":
+      return (game.series ?? []).filter(Boolean);
+    case "region":
+      return (game.region ?? []).filter(Boolean);
+    case "decade": {
+      const d = decadeOf(game.releaseDate);
+      return d ? [d] : [];
+    }
+  }
 }
 
 const normalize = (s: string) =>
@@ -48,9 +86,16 @@ export function filterGames(games: Game[], opts: ViewOptions): Game[] {
     out = out.filter((g) => g.developer.includes(opts.developerFilter));
   }
 
-  // Tag filter (AND): keep games whose tags include every selected tag.
-  if (opts.selectedTags.length > 0) {
-    out = out.filter((g) => opts.selectedTags.every((t: string) => g.tags.includes(t)));
+  // 侧栏维度筛选：在同一维度内按 AND（交集）或 OR（并集）匹配。
+  // 注意：AND 语义下，该维度没有任何值的游戏会被排除（与原有标签筛选行为一致）。
+  if (opts.facetValues.length > 0) {
+    const want = new Set(opts.facetValues);
+    out = out.filter((g) => {
+      const vals = facetValuesOf(g, opts.facet);
+      return opts.facetMode === "or"
+        ? vals.some((v) => want.has(v))
+        : [...want].every((w) => vals.includes(w));
+    });
   }
 
   // Search: matches the primary name, localized/alternate names, metadata
@@ -98,9 +143,9 @@ export function sortGames(games: Game[], key: SortKey, direction: "ascending" | 
 
 export type GroupKey =
   | "none"
+  | FacetKey
   | "platform"
   | "category"
-  | "genre"
   | "developer"
   | "source"
   | "favorite";
@@ -143,14 +188,28 @@ export function groupGames(games: Game[], groupBy: GroupKey, labels?: Partial<Gr
   for (const g of games) {
     let values: string[] = [];
     switch (groupBy) {
+      case "tag":
+        values = g.tags.length ? g.tags : [L.unknown];
+        break;
+      case "genre":
+        values = g.genre.length ? g.genre : [L.unknown];
+        break;
+      case "series":
+        values = g.series.length ? g.series : [L.unknown];
+        break;
+      case "region":
+        values = g.region.length ? g.region : [L.unknown];
+        break;
+      case "decade": {
+        const d = decadeOf(g.releaseDate);
+        values = d ? [d] : [L.unknown];
+        break;
+      }
       case "platform":
         values = g.platform.length ? g.platform : [L.unknown];
         break;
       case "category":
         values = g.category.length ? g.category : [L.uncategorized];
-        break;
-      case "genre":
-        values = g.genre.length ? g.genre : [L.unknown];
         break;
       case "developer":
         values = g.developer.length ? g.developer : [L.unknown];
@@ -162,7 +221,9 @@ export function groupGames(games: Game[], groupBy: GroupKey, labels?: Partial<Gr
         values = g.favorite ? [L.favorites] : [L.other];
         break;
       default:
-        values = [];
+        // 兜底归"未知"而不是空数组 —— 空数组会让游戏不进入任何分组，
+        // 在界面上"凭空消失"。
+        values = [L.unknown];
     }
     for (const v of values) add(v, g);
   }

@@ -42,19 +42,10 @@ export function configRoot(): string {
   return path.resolve(__dirname, "..", "..", "..");
 }
 
-// 判断当前是否管理端模式：`--admin` 参数，或当前运行的 exe 文件名是 Playday.Admin。
-// 管理端与客户端用不同位置的数据库，见 databasePath()。
-export function isAdminMode(): boolean {
-  try {
-    const exeName = path.basename(process.execPath, ".exe").toLowerCase();
-    return process.argv.includes("--admin") || exeName === "playday.admin";
-  } catch {
-    return process.argv.includes("--admin");
-  }
-}
-
-// 权威库路径（管理端 + 下发来源）：<数据根>/Admin/library.db
-export function adminDatabasePath(): string {
+// 源库路径：<数据根>/Admin/library.db
+// 管理端应用已移除，这个库现在由"手工维护的 games.json + 批处理/脚本"写入
+// （import-games.bat → playday-db.mjs），是数据的唯一来源。
+export function sourceDatabasePath(): string {
   return path.join(configRoot(), "Admin", "library.db");
 }
 
@@ -63,46 +54,70 @@ export function runtimeDatabasePath(): string {
   return path.join(configRoot(), "library", "library.db");
 }
 
-// 数据库文件路径。
-// 管理端读权威库 <数据根>/Admin/library.db（管理端直接改这个，改完下发）；
-// 客户端读运行时副本 <数据根>/library/library.db（每次启动由 openDb 从 Admin 复制过来）。
+// 数据库文件路径（不做配置，固定"源库 → 运行时库"两级）：
+//   源库 <数据根>/Admin/library.db —— 数据来源（手工/脚本维护）；
+//   运行时库 <数据根>/library/library.db —— 客户端每次启动从源库复制一份再用，
+//   这样运行中的数据不会被外部改动影响，重启即拿到最新数据。
+// 为什么不做成可配置：一旦允许自定义，复制目标就会指向另一个文件，
+// 出现"配置的库 / 被复制的库"两个不同的数据库，数据来源就不唯一了。
 export function databasePath(): string {
-  return isAdminMode() ? adminDatabasePath() : runtimeDatabasePath();
+  return runtimeDatabasePath();
 }
 
-// 应用设置文件路径：<数据根>/config.json
+// 主程序所在目录（config.json 的家）：
+//   打包版 = exe 所在目录（config.json 与主程序同级，方便用户直接找到改）；
+//   开发态 = 项目根（Playday/）。
+// 注意与 configRoot() 的区别：configRoot 可被 YUNGAME_DATA_DIR 重定向到数据目录，
+// 而 config.json 始终跟主程序走，不进数据目录。
+export function appRoot(): string {
+  if (isPackaged()) {
+    return path.dirname(process.execPath);
+  }
+  // 开发环境：项目根（__dirname 在打包后是 resources/app.asar/electron/core，往上三级到项目根）。
+  return path.resolve(__dirname, "..", "..", "..");
+}
+
+// 应用设置文件路径：<主程序目录>/config.json（不再放数据目录里）。
 export function configPath(): string {
+  return path.join(appRoot(), "config.json");
+}
+
+// 旧版 config.json 位置（<数据根>/config.json），用于一次性自动迁移。
+export function legacyConfigPath(): string {
   return path.join(configRoot(), "config.json");
 }
 
-// 封面图目录：<数据根>/CoverImages（用户把图片按游戏名丢这里，程序自动匹配）
+// 封面图目录：默认 <数据根>/CoverImages（图片按游戏名同名丢进去，程序自动匹配）。
+// 可通过 config.json 的 settings.coverImagesDir 自定义；
+// 支持绝对路径或相对路径（相对路径以数据根为基准解析）。
 export function coverImagesDir(): string {
-  return path.join(configRoot(), "CoverImages");
+  return configuredPath("coverImagesDir") ?? path.join(configRoot(), "CoverImages");
 }
 
-// 读取 config.json 里用户自定义的"游戏静态详情页目录"（settings.gameDetailsDir）。
-// 返回绝对路径字符串；未配置或配置不是有效绝对路径时返回 null（用默认）。
+// 读取 config.json 里 settings 下某个"自定义路径"字段（目录或文件都适用）。
+// 支持：绝对路径原样使用；相对路径以数据根为基准解析；未配置（含空串）返回 null（用默认）。
 // 注意：这里直接解析 config.json，不 import settings.ts，避免 paths ↔ settings 循环依赖。
-function configuredDetailsDir(): string | null {
+export function configuredPath(field: string): string | null {
   try {
     const raw = fs.readFileSync(configPath(), "utf-8");
-    const parsed = JSON.parse(raw) as { settings?: { gameDetailsDir?: string } };
-    const dir = parsed?.settings?.gameDetailsDir;
-    if (dir && typeof dir === "string" && path.isAbsolute(dir)) {
-      return dir;
+    const parsed = JSON.parse(raw) as { settings?: Record<string, unknown> };
+    const p = parsed?.settings?.[field];
+    if (p && typeof p === "string" && p.trim() !== "") {
+      // path.resolve：绝对路径原样返回，相对路径以数据根为基准补全。
+      return path.resolve(configRoot(), p.trim());
     }
     return null;
   } catch {
-    // config.json 不存在或损坏：没有自定义目录，用默认。
+    // config.json 不存在或损坏：没有自定义路径，用默认。
     return null;
   }
 }
 
 // 游戏静态详情页目录。
 // 默认是 <数据根>/Game_Details；如果用户设置了 gameDetailsDir（config.json），
-// 则整体替换为该绝对路径（HTML + 视频都由内置 HTTP 服务器托管该目录）。
+// 则整体替换为该目录（支持相对路径，以数据根为基准；HTML + 视频都由内置 HTTP 服务器托管）。
 export function gamesHtmlDir(): string {
-  return configuredDetailsDir() ?? path.join(configRoot(), "Game_Details");
+  return configuredPath("gameDetailsDir") ?? path.join(configRoot(), "Game_Details");
 }
 
 // 公告目录：<数据根>/announcements
@@ -113,4 +128,10 @@ export function announcementsDir(): string {
 // 公告文件名：<公告目录>/announcement.html
 export function announcementFile(): string {
   return path.join(announcementsDir(), "announcement.html");
+}
+
+// 存档备份工具 GameSaveHelper.exe 的路径（<主程序目录>/config.json 的
+// settings.gameSaveHelperPath）。绝对路径原样；相对路径以数据根为基准；未配置返回 null。
+export function gameSaveHelperExePath(): string | null {
+  return configuredPath("gameSaveHelperPath");
 }

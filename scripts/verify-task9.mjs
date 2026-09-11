@@ -9,8 +9,7 @@ const ROOT = "d:/AI/Code/Playnite/Playday";
 const build = fs.readFileSync(path.join(ROOT, "build.config.ts"), "utf-8");
 const appName = build.match(/APP_NAME = "([^"]+)"/)?.[1];
 const clientExe = build.match(/CLIENT_EXE_NAME = "([^"]+)"/)?.[1];
-const adminExe = build.match(/ADMIN_EXE_NAME = "([^"]+)"/)?.[1];
-console.log("APP_NAME:", appName, "| CLIENT_EXE:", clientExe, "| ADMIN_EXE:", adminExe);
+console.log("APP_NAME:", appName, "| CLIENT_EXE:", clientExe);
 
 // ---- 版本号（读 package.json）----
 const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf-8"));

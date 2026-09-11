@@ -40,8 +40,9 @@ export function invoke<T>(cmd: string, args?): Promise<T> {
 api.getGames()          // → call("get_games")
 api.readImage(path)     // → call("read_image", { path })
 api.loginPersonal(...)  // → call("login_personal", {...})
-api.adminListUsers()    // → call("admin_list_users")
 ```
+
+（管理端命令 `admin_*` 已随管理端应用移除，见下方"网站端后端"。）
 
 ## 网站端后端：`server/server.mjs`
 

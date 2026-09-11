@@ -91,6 +91,8 @@ export interface Game {
   coverImage?: string;
   icon?: string;
   description?: string;
+  /** 简介：Playday 用户维护的简短介绍（与 description「描述/版本信息」区分开）。 */
+  intro?: string;
   notes?: string;
   version?: string;
   platform: string[];
@@ -155,59 +157,10 @@ export interface CurrentUser {
 
 // 应用设置（存 config.json，不在数据库里）。
 
-// 卡片文字样式：完整自定义——颜色/描边/发光/阴影/背景填充。
-// 所有字段都有默认值；缺字段时前端用 DEFAULT_CARD_TEXT 兜底。
-export interface CardTextStyle {
-  /** 主文字颜色（hex，如 "#fff8e7"） */
-  color: string;
-  /** 描边启用开关 */
-  stroke: boolean;
-  /** 描边颜色 hex */
-  strokeColor: string;
-  /** 描边粗细 px（0..3） */
-  strokeWidth: number;
-  /** 文字发光启用 */
-  glow: boolean;
-  /** 发光颜色 hex */
-  glowColor: string;
-  /** 发光模糊半径 px（0..30） */
-  glowBlur: number;
-  /** 文字阴影启用 */
-  shadow: boolean;
-  /** 阴影颜色 hex */
-  shadowColor: string;
-  /** 阴影水平偏移 px（-10..10） */
-  shadowOffsetX: number;
-  /** 阴影垂直偏移 px（-10..10） */
-  shadowOffsetY: number;
-  /** 阴影模糊 px（0..20） */
-  shadowBlur: number;
-  /** 文字背景填充启用（卡在卡面上的色块底） */
-  bg: boolean;
-  /** 背景颜色 hex */
-  bgColor: string;
-  /** 背景不透明度 0..1 */
-  bgOpacity: number;
-}
-
-/** 默认卡片文字样式：暖白 + 紫光 + 黑色描边（接近"史诗紫金"预设） */
-export const DEFAULT_CARD_TEXT: CardTextStyle = {
-  color: "#fff8e7",
-  stroke: true,
-  strokeColor: "#000000",
-  strokeWidth: 1.5,
-  glow: true,
-  glowColor: "#a040c8",
-  glowBlur: 10,
-  shadow: true,
-  shadowColor: "#000000",
-  shadowOffsetX: 0,
-  shadowOffsetY: 1,
-  shadowBlur: 2,
-  bg: false,
-  bgColor: "#000000",
-  bgOpacity: 0.5,
-};
+// CardTextStyle 与 DEFAULT_CARD_TEXT 的单一事实来源在 shared/models.ts，
+// 这里 re-export，保持后端引用方（AppSettings.cardText 等）无感知。
+export { CardTextStyle, DEFAULT_CARD_TEXT } from "../../shared/models";
+import type { CardTextStyle, DesignerConfig, ErrorReportConfig } from "../../shared/models";
 
 export interface AppSettings {
   startupBehavior: string;
@@ -218,6 +171,9 @@ export interface AppSettings {
   showBatConsole: boolean;
   language: string;
   firstTimeWizardComplete: boolean;
+  // 【已废弃，不再读取】数据库路径曾一度支持配置，现固定为双库机制
+  // （管理端 <数据根>/Admin/library.db、客户端 <数据根>/library/library.db）。
+  // 读取配置时会主动剔除该键，保留类型仅为兼容旧组件编译。
   databasePath?: string;
   autoBackupEnabled: boolean;
   gridViewImage: string;
@@ -278,10 +234,26 @@ export interface AppSettings {
   // 用户选择的风格 id（对应 styleLibrary 的某个 style id）。
   styleId?: string;
   // 游戏静态详情页目录。留空/未设置时用默认 <数据根>/Game_Details；
-  // 设置了绝对路径则详情页全部改从该目录读（HTML + 视频都由内置 HTTP 服务器托管）。
+  // 支持绝对路径或相对路径（相对路径以数据根为基准解析）。
+  // 设置后详情页全部改从该目录读（HTML + 视频都由内置 HTTP 服务器托管）。
   gameDetailsDir?: string;
+  // 封面图目录。留空/未设置时用默认 <数据根>/CoverImages；
+  // 支持绝对路径或相对路径（相对路径以数据根为基准解析）。
+  // 封面按"游戏名同名文件"自动匹配；读图白名单跟随该目录（covers.ts isInCoverDir）。
+  coverImagesDir?: string;
+  // 存档备份工具 GameSaveHelper.exe 的路径（config.json → settings.gameSaveHelperPath）。
+  // 空 / 未设置 = 未配置（备份时返回明确错误）。绝对路径原样；相对路径以数据根为基准。
+  gameSaveHelperPath?: string;
   // 网格卡片上是否显示简介（description）。true=显示，false=隐藏。持久化到 config.json。
   showCardDescription: boolean;
+  // 综合主题/配色/字体设计器配置（见 shared/models.ts DesignerConfig）。
+  designer?: DesignerConfig;
+  // 社区氛围：是否开启"多人氛围"（在线/弹幕/活动流）。默认 false。
+  communityEnabled: boolean;
+  // 氛围来源：mock（随机模拟）/ real（真实后端，预留）。默认 mock。
+  communitySource: string;
+  // 错误上报/崩溃报告（SMTP 发邮件到收件人邮箱），默认关。
+  errorReport: ErrorReportConfig;
 }
 
 // 库统计信息（library_stats 命令返回）。
@@ -306,49 +278,5 @@ export interface LibraryPluginInfo {
 }
 
 // 应用的默认设置（config.json 不存在时用这份默认值）。
-export const DEFAULT_SETTINGS: AppSettings = {
-  startupBehavior: "StartNormal",
-  enableTray: true,
-  minimizeToTray: false,
-  closeToTray: false,
-  showBatConsole: false,
-  language: "en-US",
-  firstTimeWizardComplete: false,
-  databasePath: undefined,
-  autoBackupEnabled: true,
-  gridViewImage: "Cover",
-  detailsViewImage: "Background",
-  listViewImage: "Icon",
-  showInstalledOnly: false,
-  showHidden: false,
-  showFavorites: false,
-  sortOrder: "Name",
-  sortDirection: "Ascending",
-  fullscreenMode: false,
-  controllerSupport: false,
-  loginEnabled: false,
-  loginType: "wechat",
-  loggedIn: false,
-  username: undefined,
-  trackPlaytime: true,
-  cardWidth: 180,
-  cardGap: 8,
-  cardRowGap: 8,
-  sidebarWidth: 210,
-  enterpriseConfigPath: "D:/1.json",
-  currentUserKind: "",
-  currentUserName: "",
-  currentUserLevel: 3,
-  fontFamily: "",
-  cardFontSize: 15,
-  cardDescFontSize: 11,
-  cardFontBold: false,
-  cardText: DEFAULT_CARD_TEXT,
-  // 主题/风格默认空 = 用内置静态主题（dark/light 等），不额外套动态调色板。
-  themeId: undefined,
-  styleId: undefined,
-  // 详情页目录默认空 = 用 <数据根>/Game_Details；设置后覆盖到指定绝对路径。
-  gameDetailsDir: undefined,
-  // 网格卡片默认显示简介。
-  showCardDescription: true,
-};
+// 单一事实来源在 shared/models.ts 的 DEFAULT_SETTINGS，这里 re-export。
+export { DEFAULT_SETTINGS } from "../../shared/models";

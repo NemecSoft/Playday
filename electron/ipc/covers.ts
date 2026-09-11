@@ -9,7 +9,7 @@ import { ipcMain } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { coverImagesDir } from "../core/paths";
-import { applyCoversToDb } from "../core/covers";
+import { applyCoversToLibrary, isInCoverDir } from "../core/covers";
 import { getGames } from "../core/db";
 import type { Game } from "../core/models";
 import { registerCommand } from "./registry";
@@ -41,16 +41,11 @@ function toPayload(bytes: Buffer, p: string): { data: string; mime: string } {
   return { data: bytes.toString("base64"), mime: mimeFromExt(p) };
 }
 
-// 只允许读 CoverImages 和内部 images 目录下的图片，避免任意路径泄露。
+// 只允许读"当前配置的封面目录"下的图片，避免任意路径泄露。
+// 判断逻辑统一在 core/covers.ts isInCoverDir（与"封面是否有效"共用同一事实来源，
+// 否则会出现"文件存在但读不出来"，或"换了封面目录后老路径仍然被沿用"的错位）。
 function isAllowed(p: string): boolean {
-  let canonical: string;
-  try {
-    canonical = fs.realpathSync(p);
-  } catch {
-    return false;
-  }
-  const cover = coverImagesDir();
-  return canonical.startsWith(cover);
+  return isInCoverDir(p);
 }
 
 // 读单张图（带缓存）。无效/不允许/缺失的路径返回 null（合法业务结果，不是异常）。
@@ -70,9 +65,9 @@ function readImageBytes(p: string | undefined): { data: string; mime: string } |
 }
 
 export function registerCoversIpc(ipc: typeof ipcMain) {
-  // 重新扫描目录、给所有游戏套封面并写回库，返回更新后的游戏列表 + 摘要。
+  // 重新扫描目录、给所有游戏套封面（读时计算，不写回库），返回游戏列表 + 摘要。
   registerCommand(ipc, "scan_covers", async () => {
-    const { games, result } = applyCoversToDb();
+    const { games, result } = applyCoversToLibrary();
     return {
       games,
       outcome: {

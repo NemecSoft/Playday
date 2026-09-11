@@ -50,7 +50,9 @@ const emptyOpts: ViewOptions = {
   categoryFilter: "all",
   genreFilter: "all",
   developerFilter: "all",
-  selectedTags: [],
+  facet: "tag",
+  facetValues: [],
+  facetMode: "and",
 };
 
 describe("filterGames", () => {
@@ -85,12 +87,44 @@ describe("filterGames", () => {
     expect(r.map((g) => g.name)).toEqual(["A"]);
   });
 
-  it("多标签 AND 过滤", () => {
+  it("多标签 AND 过滤（交集）", () => {
     const games = [
       makeGame({ name: "A", tags: ["t1", "t2"] }),
       makeGame({ name: "B", tags: ["t1"] }),
     ];
-    const r = filterGames(games, { ...emptyOpts, selectedTags: ["t1", "t2"] });
+    const r = filterGames(games, { ...emptyOpts, facetValues: ["t1", "t2"] });
+    expect(r.map((g) => g.name)).toEqual(["A"]);
+  });
+
+  it("多标签 OR 过滤（并集）", () => {
+    const games = [
+      makeGame({ name: "A", tags: ["t1"] }),
+      makeGame({ name: "B", tags: ["t2"] }),
+      makeGame({ name: "C", tags: ["t3"] }),
+    ];
+    const r = filterGames(games, {
+      ...emptyOpts,
+      facetValues: ["t1", "t2"],
+      facetMode: "or",
+    });
+    expect(r.map((g) => g.name)).toEqual(["A", "B"]);
+  });
+
+  it("按地区维度筛选", () => {
+    const games = [
+      makeGame({ name: "A", region: ["日本"] }),
+      makeGame({ name: "B", region: ["美国"] }),
+    ];
+    const r = filterGames(games, { ...emptyOpts, facet: "region", facetValues: ["日本"] });
+    expect(r.map((g) => g.name)).toEqual(["A"]);
+  });
+
+  it("按年代维度筛选（releaseDate → 十年段）", () => {
+    const games = [
+      makeGame({ name: "A", releaseDate: "2013-10-25" }),
+      makeGame({ name: "B", releaseDate: "2023-8-25" }),
+    ];
+    const r = filterGames(games, { ...emptyOpts, facet: "decade", facetValues: ["2010s"] });
     expect(r.map((g) => g.name)).toEqual(["A"]);
   });
 

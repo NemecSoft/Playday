@@ -9,6 +9,7 @@ import type {
   Game,
   LibraryStats,
   Platform,
+  CrashReport,
 } from "../types/models";
 
 // —— 客户端可见的小类型（对齐原 client.ts）——
@@ -72,8 +73,10 @@ export const api = {
 
   // —— 设置 ——
   getSettings: () => call<AppSettings>("get_settings"),
-  // 原 saveSettings 接完整 settings → 新版接 patch（部分），内部展开成完整。
-  saveSettings: (settings: AppSettings) => call<AppSettings>("save_settings", settings),
+  // 只提交"改动的字段"（patch）：主进程读盘后再合并，避免覆盖用户手改的 config.json。
+  // 返回值是合并后的完整设置。
+  saveSettings: (settings: Partial<AppSettings>) =>
+    call<AppSettings>("save_settings", settings as Record<string, unknown>),
 
   // —— 平台 / 插件（Playday 暂未实现，返回空；管理端单独有命令） ——
   getPlatforms: () => call<Platform[]>("get_platforms").catch(() => [] as Platform[]),
@@ -111,46 +114,8 @@ export const api = {
       configExists: boolean;
     }>("get_status_bar"),
 
-  // —— 管理端（客户端窗口通常不调用，但 API 类型保持一致） ——
-  adminListUsers: () => call<PublicUser[]>("admin_list_users"),
-  adminSaveUser: (args: { id?: string; account: string; name: string; level: number; kind: string; password: string }) =>
-    call<PublicUser>("admin_save_user", args),
-  adminDeleteUser: (id: string) => call<void>("admin_delete_user", { id }),
-  adminRestoreUser: (id: string) => call<PublicUser>("admin_restore_user", { id }),
-  adminGetSettings: () => call<AppSettings>("admin_get_settings"),
-  adminSetEnterpriseConfig: (configPath: string) =>
-    call<AppSettings>("admin_set_enterprise_config", { configPath }),
-  adminPreviewEnterprise: (configPath: string) =>
-    call<EnterprisePreview>("admin_preview_enterprise", { configPath }),
-  adminImportEnterpriseUsers: (jsonPath: string) =>
-    call<{ imported: number; skippedEmpty: number }>("admin_import_enterprise_users", { jsonPath }),
-  adminListEnterpriseUsers: () => call<PublicUser[]>("admin_list_enterprise_users"),
-  adminDeleteEnterpriseUser: (id: string) => call<void>("admin_delete_enterprise_user", { id }),
-  adminSetGameLevel: (gameId: string, level: number) =>
-    call<void>("admin_set_game_level", { gameId, level }),
-  adminGetAllGames: () => call<Game[]>("admin_get_all_games"),
-  adminGetGameLibraries: () =>
-    call<{ id: string; name: string; path: string }[]>("admin_get_game_libraries"),
-  adminSaveGameLibrary: (lib: { id: string; name: string; path: string }) =>
-    call<{ id: string; name: string; path: string }[]>("admin_save_game_library", lib),
-  adminDeleteGameLibrary: (id: string) =>
-    call<{ id: string; name: string; path: string }[]>("admin_delete_game_library", { id }),
-  adminValidateAction: (p: string, type?: string) =>
-    call<{ valid: boolean; resolved: string; reason: string; extension: string }>(
-      "admin_validate_action",
-      { p, type: type ?? null }
-    ),
-  validateSelectedActions: (gameIds: string[]) =>
-    call<
-      {
-        gameId: string;
-        gameName: string;
-        actionName: string;
-        exePath: string;
-        exists: boolean;
-        reason: string;
-      }[]
-    >("validate_selected_actions", { gameIds }),
+  // 说明：管理端相关命令（admin_*）已随管理端应用一并移除——
+  // 数据改由手工维护的 games.json + 脚本写入源库（import-games.bat）。
 
   // —— 公告 ——
   // 原版返回 {html, fromFile}，新版本返回 html 字符串，统一返回 {html: string}。
@@ -177,20 +142,34 @@ export const api = {
   launchTrainer: (exePath: string) =>
     call<{ launched: boolean; error?: string }>("launch_trainer", { exePath }),
 
+  // —— 应用存档（与修改器同逻辑，目录换成"游戏存档"）——
+  // 列出某游戏的"应用存档"exe（含图标 dataURL）；无则返回空数组。
+  getGameSaves: (gameId: string, gameName: string) =>
+    call<{ name: string; exePath: string; icon: string }[]>("get_game_saves", {
+      gameId,
+      gameName: gameName ?? null,
+    }),
+  // 直接启动某个"应用存档"exe（不做等级校验、不计时长）。
+  launchSave: (exePath: string) =>
+    call<{ launched: boolean; error?: string }>("launch_save", { exePath }),
+
   // —— 存档备份 ——
-  // 检测本机是否有 NSIS 编译器（生成备份 exe 的前提）。
-  getNsisAvailable: () => call<boolean>("nsis_available"),
-  // 备份某游戏的存档：生成自解压 exe，默认放桌面。
-  backupGameSave: (gameId: string, outDir?: string) =>
-    call<{ ok: boolean; file?: string; fileName?: string; error?: string }>(
-      "backup_game_save",
-      outDir ? { gameId, outDir } : { gameId }
-    ),
+  // 备份某游戏的存档：启动 GameSaveHelper.exe，由它生成自解压恢复包。
+  // 返回的 ok 只表示"工具已启动"；备份是否成功由工具窗口自己呈现。
+  backupGameSave: (gameId: string) =>
+    call<{ ok: boolean; error?: string }>("backup_game_save", { gameId }),
 
   // —— 系统 ——
   getAppInfo: () =>
     call<{ appName: string; version: string; os: string; arch: string; dataDir: string; configDir: string }>("get_app_info"),
   minimizeWindow: () => call<void>("minimize_window"),
+
+  // —— 崩溃报告 ——
+  callCrashReport: () => call<CrashReport | null>("get_crash_report"),
+  sendCrashReport: (report: CrashReport) =>
+    call<{ ok: boolean; error?: string }>("send_crash_report", { report }),
+  saveCrashLocally: (report: CrashReport) =>
+    call<{ ok: boolean }>("save_crash_locally", { report }),
   maximizeWindow: () => call<boolean>("maximize_window"),
   isMaximized: () => call<boolean>("is_maximized"),
   isFullscreen: () => call<boolean>("is_fullscreen"),

@@ -456,18 +456,26 @@ body.theme-reactbits::before {
 }
 
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+/* 滚动条用"跟随主题文字色"的半透明滑块：浅色主题不再出现硬编码的蓝色滑块，
+   也不会在深色主题里像一根实心柱子。 */
 ::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: 5px;
+  background: color-mix(in srgb, var(--text-primary) 18%, transparent);
+  border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #46506a;
+  background: color-mix(in srgb, var(--text-primary) 34%, transparent);
+}
+/* 键盘可达性底线：所有可交互元素在键盘聚焦时都有统一的 focus 环。
+   用 :where() 保持零特异性，组件自己的 focus 样式仍然优先。 */
+:where(button, a, input, textarea, select, [role="button"], [tabindex]):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 85%, transparent);
+  outline-offset: 2px;
 }
 
 button {
@@ -737,6 +745,36 @@ textarea {
 }
 
 /* Browser-style top bar */
+/* ============================================================
+   设计令牌（Design tokens）
+   ------------------------------------------------------------
+   设计方向：「放映厅」。封面是银幕——界面其余部分保持安静，
+   只在"停留在一张卡上"时给一次聚光。因此：
+     - 所有强调都用低透明度 accent（≤55%），不用实色霓虹；
+     - 阴影用中性黑（不是 accent 发光），让 38 套配色都不串味；
+     - 动效统一时长与缓动，位移只做"轻微上浮 + 封面缓推"。
+   仅使用主题变量与 color-mix 派生色，保证所有配色下都成立。
+   ============================================================ */
+:root {
+  /* 动效 */
+  --dur-fast: 130ms;
+  --dur-base: 200ms;
+  --dur-slow: 420ms;
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1); /* 收得住，不弹跳 */
+  /* 圆角 */
+  --radius-card: 14px;
+  --radius-cover: 10px;
+  /* 极淡描边（跟随主题文字色，浅色主题自动变深、深色主题自动变浅） */
+  --hairline: color-mix(in srgb, var(--text-primary) 14%, transparent);
+  --hairline-strong: color-mix(in srgb, var(--text-primary) 24%, transparent);
+  /* 分层阴影：中性黑，深浅主题通用 */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.28), 0 6px 16px -8px rgba(0, 0, 0, 0.4);
+  --shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.3), 0 18px 34px -14px rgba(0, 0, 0, 0.5);
+  --shadow-pop: 0 10px 30px -8px rgba(0, 0, 0, 0.5);
+  /* 键盘焦点环（可访问性，别用 outline:none 抹掉） */
+  --ring-focus: 0 0 0 2px var(--bg-base), 0 0 0 4px color-mix(in srgb, var(--accent) 75%, transparent);
+}
+
 .topbar {
   height: var(--top-height);
   background: var(--bg-top);
@@ -786,32 +824,31 @@ textarea {
 .topbar-tab {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
+  gap: 6px;
+  padding: 4px 12px;
+  margin: 0 2px;
   font-size: 13px;
   font-weight: 500;
-  /* tab 文字默认用 text-primary（最亮），保证所有配色下都清晰可读。
-     之前用 text-dim 在中国红/赭红等红色底上对比度偏弱，"主页"等 tab 几乎看不见。 */
+  /* tab 文字默认用 text-primary（最亮），保证所有配色下都清晰可读。 */
   color: var(--text-primary);
   background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
-  border-radius: 8px 8px 0 0;
+  /* 胶囊式（原来是"下划线 tab"）：和顶栏右侧的主题下拉、缩放气泡同为圆角胶囊，
+     顶栏里三种控件形状统一，视觉噪音更低。 */
+  border-radius: 999px;
   cursor: pointer;
-  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  transition:
+    color var(--dur-fast),
+    background var(--dur-fast);
 }
 .topbar-tab:hover {
-  /* hover 时保持 text-primary 颜色，加 accent 浅底作为反馈，不变字色（更稳定）。
-     之前 hover 用的 var(--text) 是坏引用（无 fallback），实际不生效。 */
   color: var(--text-primary);
   background: var(--bg-item-hover);
 }
 .topbar-tab.active {
-  /* 激活 tab 文字/下边框用全局统一变量 --ui-accent。
-     和卡片标题、侧栏按钮、简介等所有按钮文字用同一个变量，将来"统一改"只改 --ui-accent 一处。 */
-  color: var(--ui-accent);
-  background: var(--bg-base);
-  border-bottom-color: var(--ui-accent);
+  /* 选中 = accent 淡底 + accent 文字，不做下划线、不加阴影。 */
+  color: var(--accent-hover, var(--accent));
+  background: var(--accent-soft);
 }
 
 /* Right of the tabs: edition label (YunGame——黄金版) */
@@ -830,6 +867,190 @@ textarea {
   white-space: nowrap;
   -webkit-app-region: drag;
   cursor: default;
+}
+
+/* ---- 底部提示栏（内嵌在状态栏同一行；数据在 src/data/tips.json） ----
+   占满网络信息之后的剩余宽度，文字超长自动省略号，不换行、不撑高状态栏。 */
+.tips-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  margin-left: 6px;
+  padding-left: 10px;
+  border-left: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  user-select: none;
+  transition: color var(--dur-fast);
+}
+.tips-bar:hover {
+  color: var(--text-secondary);
+}
+.tips-icon {
+  color: color-mix(in srgb, var(--accent) 85%, var(--text-dim));
+  flex-shrink: 0;
+}
+/* 说明：原"分类标签"胶囊已去掉（不显示"本工具/本平台"这类自称）。 */
+.tips-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  animation: tips-fade var(--dur-slow) var(--ease-soft);
+}
+.tips-index {
+  flex-shrink: 0;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+.tips-next {
+  flex-shrink: 0;
+  opacity: 0.5;
+}
+.tips-bar:hover .tips-next {
+  opacity: 1;
+}
+@keyframes tips-fade {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tips-text {
+    animation: none;
+  }
+}
+
+/* ---- 缩放指示气泡（仿浏览器 Ctrl+滚轮缩放提示） ---- */
+.zoom-indicator {
+  position: fixed;
+  top: calc(var(--top-height) + 10px);
+  right: 16px;
+  z-index: 3500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.zoom-pct {
+  min-width: 46px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.zoom-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.zoom-btn:hover {
+  border-color: var(--border-strong);
+}
+.zoom-reset {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 13px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-panel);
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+}
+.zoom-reset:hover {
+  background: var(--bg-item-hover);
+}
+
+/* ---- 顶栏主题下拉（预设一键切换，无自定义） ---- */
+.theme-top-picker {
+  position: relative;
+  -webkit-app-region: no-drag;
+  z-index: 2;
+  flex-shrink: 0;
+}
+.theme-top-picker-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.theme-top-picker-btn:hover {
+  border-color: var(--border-strong);
+}
+.theme-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+.theme-top-picker-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 220px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 4px;
+  z-index: 3000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.theme-top-picker-item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+}
+.theme-top-picker-item:hover {
+  background: var(--bg-item-hover);
+}
+.theme-top-picker-item.active {
+  background: var(--bg-item-active);
+}
+.theme-top-picker-item-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Dropdown menu (settings / regen tags / reload) */
@@ -1120,6 +1341,23 @@ textarea {
   height: 32px;
   font-size: 12px;
 }
+/* 侧栏顶部两个下拉行（筛选维度 / 匹配语义）。 */
+.sidebar-facet-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 4px 8px;
+  flex-shrink: 0;
+}
+.sidebar-facet-label {
+  flex: none;
+  font-size: 12px;
+  opacity: 0.72;
+}
+.sidebar-select {
+  height: 30px;
+  font-size: 12px;
+}
 .sidebar-clear-row {
   display: flex;
   flex-direction: column;
@@ -1384,6 +1622,24 @@ textarea {
   gap: 6px;
   padding: 0 8px;
   flex-shrink: 0;
+}
+
+/* 工具栏分组下拉（不分组 / 类型 / 系列 / 地区 / 年代）。 */
+.toolbar-group-by {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+}
+.toolbar-group-label {
+  font-size: 12px;
+  opacity: 0.72;
+  white-space: nowrap;
+}
+.toolbar-select {
+  height: 30px;
+  width: 132px;
+  font-size: 12px;
 }
 
 /* 视图切换按钮（网格 / 星球） */
@@ -1659,106 +1915,53 @@ textarea {
 .grid-card {
   cursor: pointer;
   position: relative;
-  border-radius: var(--radius);
-  /* uiverse slimy-pug 卡片风格：顶部白色 inset 柔光，营造"卡片被光从下方照亮"的立体感。
-     颜色用 18% 白色（比原版 25% 略淡），适配深色卡片背景。 */
-  box-shadow: inset 0 -14px 24px -6px rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-card);
+  /* 安静的卡片：不发光、不泛白，用中性分层阴影立起来。 */
+  box-shadow: var(--shadow-card);
   /* 左右各 6px padding 让卡片视觉边界更明显；
   // 下方 padding 用 CSS 变量 --card-row-gap，由 settings.cardRowGap 驱动（默认 6px = 跟原来一致），
   // cardRowGap=0 时两行紧贴，避免"固定 6px 上下 padding 永远叠加成 12px 行间距"。
   // measureElement 用 getBoundingClientRect.height 含 padding，因此行间距真实反映给虚拟列表。 */
   padding: 6px 6px var(--card-row-gap, 6px) 6px;
-  /* transform 以卡片中心为轴（3D 倾斜时不会整体歪出边界） */
   transform-origin: center;
-  /* 上浮 transform + 阴影 + hover 背景色一起过渡；只过渡 transform 会丢掉背景渐变 */
   transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
-    background 0.13s;
+    transform var(--dur-base) var(--ease-soft),
+    box-shadow var(--dur-base) var(--ease-soft),
+    background var(--dur-fast);
 }
+/* 唯一的"高光时刻"：停在一张卡上时，轻微上浮 + 阴影加深 + 1px accent 描边。
+   不做发光、不做缩放抖动——聚光靠封面自身的缓推（见 .cover img）。 */
 .grid-card:hover {
   background: var(--bg-item-hover);
-  /* 卡片 hover 只做轻微上浮 + accent 发光描边（静态荧光，无倾斜/无流光扫过）。 */
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   box-shadow:
-    0 10px 24px rgba(0, 0, 0, 0.35),
-    0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent),
-    0 0 16px color-mix(in srgb, var(--accent) 35%, transparent),
-    /* 保留顶部柔光（uiverse 风格） */
-    inset 0 -14px 24px -6px rgba(255, 255, 255, 0.18);
+    var(--shadow-lift),
+    0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
 }
 .grid-card.selected {
   background: var(--accent-soft);
-  /* 选中态也带 accent 描边，突出当前卡片 */
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent),
-    0 0 12px color-mix(in srgb, var(--accent) 30%, transparent),
-    inset 0 -14px 24px -6px rgba(255, 255, 255, 0.18);
+    var(--shadow-card),
+    0 0 0 1px color-mix(in srgb, var(--accent) 65%, transparent);
 }
-/* 系统减弱动效偏好：连轻微上浮也去掉，只保留荧光边框，避免任何位移动效 */
+/* 键盘可达性：焦点可见（之前没有任何 focus 样式，纯键盘用户会迷路）。 */
+.grid-card:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-card), var(--ring-focus);
+}
+/* 系统减弱动效偏好：去掉所有位移与推拉，只保留颜色/描边反馈。 */
 @media (prefers-reduced-motion: reduce) {
   .grid-card:hover {
     transform: none;
   }
+  .grid-card .cover img {
+    transform: none !important;
+  }
 }
-/* 静态荧光边框（强发光版）：
-   参考 freefrontend 的 "Neon Glow Border Button" —— 用 linear-gradient + mask
-   把彩色渐变裁成 2px 厚的描边环，再叠加 filter: drop-shadow 形成多层霓虹光晕。
-   实现要点：
-     1) 挂在 .grid-card::before（不是 .cover::before），让外发光能从卡片溢出（.cover 有 overflow:hidden 会裁掉）。
-     2) padding:2px + background:linear-gradient(accent...) 形成渐变色；
-        -webkit-mask + mask-composite:exclude 把渐变裁剪成只显示 padding 那圈，
-        内部 content-box 透明、外部 0 内容可见——得到一圈彩色描边。
-     3) 双层 filter:drop-shadow 不同模糊半径，营造强霓虹光晕。
-     4) z-index:0 在卡片内容之下，pointer-events:none 不拦截点击。
-     5) hover 时通过 opacity 增强发光强度（保持 transition 平滑）。
-*/
-.grid-card::before {
-  content: "";
-  position: absolute;
-  /* 荧光边框覆盖整个 grid-card（含 padding）。padding-bottom/card-row-gap 也会有
-     外发光，让两行卡片的发光环自然过渡（强化"卡片是整体"的语义）。 */
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  padding: 2px; /* 描边厚度 */
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--accent) 100%, transparent) 0%,
-    color-mix(in srgb, var(--accent) 65%, transparent) 50%,
-    color-mix(in srgb, var(--accent) 100%, transparent) 100%
-  );
-  /* mask 把整个元素裁剪为"只显示 padding 那圈"，内部 content 透明 */
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  /* 多层 drop-shadow 形成霓虹光晕（双层：近光 + 远光） */
-  filter:
-    drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 95%, transparent))
-    drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 55%, transparent))
-    drop-shadow(0 0 14px color-mix(in srgb, var(--accent) 30%, transparent));
-  opacity: 0.85;
-  transition: opacity 0.18s ease, filter 0.18s ease;
-}
-/* Recordly 主题：卡片描边改为 Recordly 标志性的"蓝→橙→黄"渐变描边（替代单色 accent 荧光）。
-   渐变取自 Recordly 的 linear-gradient(111.6deg, rgba(114,167,232) 9.4%, rgba(253,129,82) 43.9%, rgba(249,202,86) 86.3%)。
-   Recordly 是克制 SaaS 风，因此减弱外发光、保持清爽的彩色细描边。 */
-:root[data-fx="recordly"] .grid-card::before {
-  background: linear-gradient(
-    111.6deg,
-    #72a7e8 9.4%,
-    #fd8152 43.9%,
-    #f9ca56 86.3%
-  );
-  filter: drop-shadow(0 0 2px rgba(37, 99, 235, 0.35));
-}
-:root[data-fx="recordly"] .grid-card:hover::before {
-  opacity: 1;
-  filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.45));
-}
+/* 说明：原来的"静态霓虹渐变描边 + 多层 drop-shadow 光晕"已移除。
+   理由：一层渐变描边 + 三层光晕 + 卡片白色内泛光 + 标题药丸 + 简介渐变底，
+   五个装饰同时在抢注意力，封面反而被压住（也是典型的"AI 生成的浓妆"）。
+   现在强调只保留一处：hover 时 1px accent 描边 + 底部细线（见上面的 ::after）。 */
 /* Recordly 主题特殊覆盖：
    Recordly 是浅色 SaaS 风（accent #2563EB 蓝色），如果统一按钮文字色继续用 var(--accent)，
    蓝字 + 淡蓝背景会"同色系看不清"（对比度仅 3.3 左右）。
@@ -1767,28 +1970,14 @@ textarea {
 :root[data-fx="recordly"] {
   --ui-accent: var(--text-primary);
 }
-/* hover 时荧光更强 */
-.grid-card:hover::before {
-  opacity: 1;
-  filter:
-    drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 100%, transparent))
-    drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 70%, transparent))
-    drop-shadow(0 0 18px color-mix(in srgb, var(--accent) 40%, transparent));
-}
-/* selected 状态荧光最强 */
-.grid-card.selected::before {
-  opacity: 1;
-  filter:
-    drop-shadow(0 0 5px var(--accent))
-    drop-shadow(0 0 12px color-mix(in srgb, var(--accent) 80%, transparent))
-    drop-shadow(0 0 22px color-mix(in srgb, var(--accent) 50%, transparent));
-}
 
 .grid-card .cover {
   aspect-ratio: 16 / 9;
-  background: var(--bg-panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  background: var(--bg-base);
+  /* 内描边代替原来的实线边框：图片边缘和卡片之间有一道极淡的"银幕边"，
+     深色主题下不显脏、浅色主题下也不会太硬。 */
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  border-radius: var(--radius-cover);
   /* Use relative positioning so the <img> can absolutely fill the whole
      cover area. Grid + place-items:center can keep the img at its intrinsic
      size on some webview builds, which leaves parts of the picture cut off
@@ -1807,6 +1996,13 @@ textarea {
   object-fit: fill;
   /* Fade in progressively as lazy images load, avoiding a flash / pop-in. */
   animation: cover-fade-in 0.35s ease;
+  /* 聚光的落点：hover 时封面缓慢缓推（4% 放大），像镜头轻微推近。
+     只做 scale，不做位移，避免和卡片的 translateY 叠加出"抖动"。 */
+  transition: transform var(--dur-slow) var(--ease-soft);
+  will-change: transform;
+}
+.grid-card:hover .cover img {
+  transform: scale(1.04);
 }
 @keyframes cover-fade-in {
   from {
@@ -1816,13 +2012,32 @@ textarea {
     opacity: 1;
   }
 }
-.grid-card .cover .placeholder {
-  color: var(--text-dim);
-  font-size: 26px;
+.grid-card .cover .placeholder svg {
+  width: 28px;
+  height: 28px;
+  opacity: 0.85;
 }
 
-/* 说明：已移除 Cover sheen（hover 时白光带扫过封面的动态光效），
-   卡片只保留静态荧光边框（见 .cover::before）。 */
+/* 无封面占位：不是"空白洞"，而是明确的"缺图"状态——
+   斜纹底 + 虚线内框 + 居中的图片图标，让人一眼知道该丢一张图进 CoverImages。 */
+.grid-card .cover .placeholder {
+  position: absolute;
+  inset: 6px;
+  display: grid;
+  place-items: center;
+  color: var(--text-dim);
+  border: 1px dashed var(--hairline-strong);
+  border-radius: calc(var(--radius-cover) - 4px);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--text-primary) 4%, transparent) 0 8px,
+    transparent 8px 16px
+  );
+  transition: color var(--dur-fast);
+}
+.grid-card:hover .cover .placeholder {
+  color: var(--text-secondary);
+}
 
 /* Hover actions on the card cover: Play + Details */
 .grid-card .cover-actions {
@@ -1832,10 +2047,11 @@ textarea {
   align-items: flex-end;
   justify-content: center;
   gap: 8px;
-  padding: 10px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.78), transparent 55%);
+  padding: 12px;
+  /* 下沉式暗角：只压底部 40%，让封面主体仍清晰（原来压到 55% 且更黑）。 */
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.62), transparent 40%);
   opacity: 0;
-  transition: opacity 0.18s ease;
+  transition: opacity var(--dur-base) var(--ease-soft);
 }
 .grid-card:hover .cover-actions,
 .grid-card:focus-within .cover-actions {
@@ -1845,25 +2061,36 @@ textarea {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  border: none;
-  border-radius: 20px;
-  padding: 6px 13px;
+  border-radius: 999px;
+  padding: 6px 14px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.15s, filter 0.15s;
+  transition:
+    transform var(--dur-fast) var(--ease-soft),
+    background var(--dur-fast),
+    border-color var(--dur-fast);
 }
+/* 主按钮跟随主题强调色（原来是写死的绿色，换了主题就出戏）。 */
 .cover-btn.play {
-  background: #3ecf8e;
-  color: #06231a;
+  background: var(--accent);
+  color: var(--primary-foreground, #fff);
+  border: 1px solid color-mix(in srgb, var(--accent) 70%, #000);
 }
+.cover-btn.play:hover {
+  transform: translateY(-1px);
+  background: var(--accent-hover, var(--accent));
+}
+/* 次按钮做成"玻璃"质感：半透明 + 模糊，落在任何封面上都能读。 */
 .cover-btn.details {
-  background: rgba(255, 255, 255, 0.92);
-  color: #222;
+  background: rgba(20, 20, 20, 0.55);
+  color: #f5f5f5;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(6px);
 }
-.cover-btn:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.08);
+.cover-btn.details:hover {
+  transform: translateY(-1px);
+  background: rgba(20, 20, 20, 0.72);
 }
 .grid-card .fav-flag {
   position: absolute;
@@ -1885,7 +2112,7 @@ textarea {
 }
 .grid-card .title {
   font-size: var(--card-title-size, 15px);
-  font-weight: var(--card-title-weight, 500);
+  font-weight: var(--card-title-weight, 600);
   margin-top: 7px;
   text-align: center;
   /* 文字可被鼠标选中并复制（覆盖 body 的 user-select: none）。 */
@@ -1893,38 +2120,30 @@ textarea {
   -webkit-user-select: text;
   /* 完全由用户在"外观"里自定义的卡片文字样式。
      所有 CSS 变量都由 applyCardTextStyles() 从 settings.cardText 注入。
-     关闭某项（如描边/发光/阴影/背景）= 该变量 blur=0 + color=transparent，
+     关闭某项（如描边/发光/阴影）= 该变量 blur=0 + color=transparent，
      CSS 自然不渲染，效果开关无需额外条件分支。*/
-  /* 标题文字色统一用 --ui-accent（用户要求的"统一变量"）。
-     不再用 --card-text-color 覆盖，避免用户自定义破坏"统一改"的目标。 */
+  /* 标题文字色统一用 --ui-accent（用户要求的"统一变量"）。 */
   color: var(--ui-accent);
   /* 描边：-webkit-text-stroke 支持纯透明描边"关" */
   -webkit-text-stroke: var(--card-stroke-width, 0px) var(--card-stroke-color, transparent);
   paint-order: stroke fill;
-  /* 发光：text-shadow 第一层（中心 + 模糊半径），用 var 控开关 */
+  /* 发光/阴影仍由用户预设控制（保留变量，但不再叠加默认 accent 柔光，
+     避免和封面抢注意力）。 */
   text-shadow:
-    /* 阴影层（偏移 + 模糊） */
     var(--card-shadow-offset-x, 0px) var(--card-shadow-offset-y, 0px) var(--card-shadow-blur, 0px) var(--card-shadow-color, transparent),
-    /* 发光层（中心对称，由用户"卡片文字预设"控制强度/颜色） */
-    0 0 var(--card-glow-blur, 0px) var(--card-glow-color, transparent),
-    /* 卡片底色是 accent 渐变（button 风格），文字不再需要 accent 柔光——去掉之前
-       0 0 6px 和 0 0 14px 那两层，避免白字糊掉。保留 1 层极轻 accent 描边光。 */
-    0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
-  /* 标题底座与侧栏 toggle 按钮（收起态）统一：accent-soft 淡底 + accent 紫字 + 圆角矩形。
-     原来是 accent 实色底，紫字在上面同色系看不清；改回淡底让紫字清晰，视觉也与侧栏一致。 */
-  background: var(--accent-soft);
+    0 0 var(--card-glow-blur, 0px) var(--card-glow-color, transparent);
+  /* 去掉 accent-soft 药丸底：标题不再是"按钮"，而是封面下方的名牌——
+     没有底色，靠字重和字距建立层级。 */
+  background: none;
   border: 0;
-  /* 圆角矩形（横条高度小所以圆角看起来仍有"圆润按钮"感），不再是胶囊 */
-  border-radius: 12px;
   padding: 4px 10px;
-  /* 横条式：宽度 100%，占满 .title-wrap（贴卡片左右，仅留 grid-card 的 6px padding）*/
   display: block;
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
 }
 /* 当背景填充启用（opacity>0）时，文字标题元素铺满一行：用 inline-block + 父容器 flex 居中。
    通过容器 .grid-card .title-wrap 包一层（HTML 改动见 GridView.tsx）。
@@ -1947,24 +2166,24 @@ textarea {
   padding: 0 10px;
   font-size: 11px;
   line-height: 14px;
-  /* 副标题统一为 --ui-accent，和侧栏 toggle 按钮、主标题一致。 */
-  color: var(--ui-accent);
+  /* 副标题降到次级灰：建立"中文名 > 原名 > 简介"的三级层次。 */
+  color: var(--text-dim);
   text-align: center;
   letter-spacing: 0.2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* 网格卡片简介：默认 2-3 行省略，点击展开完整。受工具栏"简介"开关控制。
-   套用 uiverse button 风格的"轻量化版"：浅 accent 渐变背景 + 圆角胶囊 + inset 白色高光。 */
+/* 网格卡片简介：默认 3 行省略，点击展开完整。受工具栏"简介"开关控制。
+   排版策略：与标题之间用一道极淡分隔线+更大行距分隔（结构化分隔），
+   不再用 accent 渐变底 + 白色内高光（那层"按钮感"让整卡像仪表盘）。 */
 .grid-card .grid-desc {
-  margin-top: 4px;
-  padding: 2px 10px;
+  margin-top: 6px;
+  padding: 6px 10px 2px;
   /* 字号由 settings.cardDescFontSize 注入（默认 11px）。*/
   font-size: var(--card-desc-font-size, 11px);
-  line-height: 1.5;
-  /* 简介统一为 --ui-accent，和侧栏 toggle 按钮、主标题一致。 */
-  color: var(--ui-accent);
+  line-height: 1.55;
+  color: var(--text-secondary);
   text-align: center;
   /* 简介文字可被鼠标选中复制（即使展开后也能选中）。 */
   user-select: text;
@@ -1975,26 +2194,16 @@ textarea {
   -webkit-box-orient: vertical;
   overflow: hidden;
   cursor: pointer;
-  transition: color 0.12s;
+  transition: color var(--dur-fast);
   word-break: break-word;
-  /* button 风格：浅 accent 渐变 + 圆角 + inset 白高光（比 .title 弱，避免太显眼） */
-  background-image: linear-gradient(
-    0deg,
-    color-mix(in srgb, var(--accent) 22%, transparent) 0%,
-    color-mix(in srgb, var(--accent) 12%, transparent) 100%
-  );
-  /* 横条式：宽度 100%（贴边），圆角矩形 12px */
-  width: calc(100% + 4px);
-  margin-left: -2px;
-  margin-right: -2px;
+  background: none;
   box-sizing: border-box;
-  border-radius: 12px;
-  box-shadow: inset 0 -2px 14px -4px rgba(255, 255, 255, 0.35);
-  text-align: center;
+  /* 分隔线：只做一道发丝线，比彩色底安静得多。 */
+  border-top: 1px solid var(--hairline);
 }
-/* 简介 hover：保持 --ui-accent 紫字，只做轻微强调（不再变淡以免降低对比度） */
+/* 简介 hover：只提亮一档（用正文色到主文字色），不做颜色跳变。 */
 .grid-card .grid-desc:hover {
-  color: color-mix(in srgb, var(--ui-accent) 80%, #000);
+  color: var(--text-primary);
 }
 /* 展开：显示完整文字，去掉省略号 */
 .grid-card .grid-desc.expanded {
@@ -2143,27 +2352,31 @@ textarea {
   font-size: 11px;
 }
 
-/* Group headers: 胶囊背景，和卡片明显分隔，避免视觉挤压。 */
+/* Group headers：改为"编辑部式"栏目题头——小号标签 + 延伸发丝线 + 末尾计数。
+   原来是一个通栏填充药丸，体积和卡片一样大，喧宾夺主；
+   现在它只做一件事：告诉你在哪一组，然后让开。 */
 .group-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--text-primary);
-  /* 背景胶囊 + 圆角 + 与卡片拉开间距（垂直 + 横向都留白） */
-  background: var(--bg-item-hover);
-  border-radius: var(--radius);
-  padding: 7px 14px;
-  margin: 2px 4px 14px;
-  letter-spacing: 0.02em;
-  box-shadow: inset 0 0 0 1px var(--border);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: none;
+  padding: 2px 4px;
+  margin: 4px 4px 12px;
+  letter-spacing: 0.08em;
+  /* 发丝线：从标题之后延展到行尾（结构分隔，不是装饰块） */
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 7px;
 }
 .group-header .count {
-  font-size: 12px;
+  order: -1; /* 计数放在最前，作为"这一组有多少"的量化标签 */
+  font-size: 11px;
   color: var(--text-dim);
-  font-weight: 400;
-  margin-left: auto;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
 }
 /* Details view */
 .details-view {
@@ -2245,19 +2458,30 @@ textarea {
   font-weight: 700;
 }
 
-/* Empty state */
+/* Empty state：空屏是"邀请行动"，不是"气氛"。给清晰的层次和克制的图标。 */
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
+  color: var(--text-secondary);
+  gap: 12px;
+}
+.empty-state h2 {
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.empty-state p {
   color: var(--text-dim);
-  gap: 14px;
+  font-size: 13px;
 }
 .empty-state .big-icon {
-  font-size: 52px;
-  opacity: 0.4;
+  font-size: 44px;
+  opacity: 0.28;
+  margin-bottom: 2px;
 }
 
 /* Buttons */
@@ -2293,49 +2517,87 @@ textarea {
   background: rgba(229, 72, 77, 0.12);
 }
 
-/* Modal */
+/* ============================================================
+   模态窗口（Modal）
+   ------------------------------------------------------------
+   设计要点：
+   - 遮罩半透明黑 + 轻微模糊：明确"背景被阻断"，视觉上把注意力收进面板；
+   - 面板固定尺寸、可拖动（拖动逻辑在组件里，改 translate）；
+   - 头部有标题 + 抓取感（cursor: grab），头/底固定、中间内容独立滚动；
+   - 关闭方式：ESC、点遮罩、点右上角 ×。
+   ============================================================ */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  z-index: 1000;
   display: grid;
   place-items: center;
-  z-index: 1000;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(3px);
+  /* 阻断滚轮穿透到背景页面 */
+  overscroll-behavior: contain;
 }
 .modal {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-strong);
-  border-radius: 10px;
-  min-width: 460px;
-  max-width: 640px;
-  max-height: 86vh;
-  /* 用 flex column 布局：header 固定不滚，内容区独立滚动。
-     overflow: hidden 禁止 modal 自身滚动，避免"滑下来标题也跟着滚没了"。 */
+  position: relative;
   display: flex;
   flex-direction: column;
+  max-height: 86vh;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-pop);
   overflow: hidden;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+  /* 面板内不选中文字（拖动时更自然）；输入控件内部单独放开 */
+  user-select: none;
+}
+.modal input,
+.modal textarea {
+  user-select: text;
 }
 .modal-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  flex-shrink: 0; /* 标题栏始终固定在顶部，不随内容滚动 */
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 12px 12px 12px 18px;
+  background: var(--bg-top);
+  border-bottom: 1px solid var(--border);
+  /* 拖动把手：整条头部可抓 */
+  cursor: grab;
+}
+.modal-header:active {
+  cursor: grabbing;
 }
 .modal-header h2 {
-  font-size: 16px;
   flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+}
+/* 头部左侧的"抓取点"提示，暗示可以拖动 */
+.modal-grip {
+  display: inline-flex;
+  gap: 2px;
+  color: var(--text-dim);
+  opacity: 0.45;
 }
 .modal-body {
-  padding: 20px;
+  padding: 18px 20px;
+  overflow-y: auto;
 }
 .modal-footer {
-  padding: 14px 20px;
-  border-top: 1px solid var(--border);
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+/* 头部按钮不显示抓取光标，避免误导 */
+.modal-header button {
+  cursor: pointer;
 }
 
 /* Form controls */
@@ -2379,26 +2641,153 @@ textarea {
   margin: 0;
 }
 
-/* Settings layout */
+/* ============================================================
+   设置面板
+   ------------------------------------------------------------
+   左导航 + 右内容；内容是"区块（set-block）"的纵向堆叠，
+   每块一张小标题 + 发丝线，行（set-row）统一左侧标签、右侧控件，
+   整行可点 + hover 反馈，避免之前"复选框和文案挤成一团"。
+   ============================================================ */
 .settings-layout {
   display: flex;
-  /* 占满 modal 剩余高度（flex column 下 flex:1 生效），并允许内部滚动 */
   flex: 1;
   min-height: 0;
 }
+/* 只有一个分区时不显示左导航列（避免孤零零一个条目占一整列） */
+.settings-nav:has(> :only-child) {
+  display: none;
+}
 .settings-nav {
-  width: 190px;
-  border-right: 1px solid var(--border);
-  padding: 12px 8px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 176px;
   flex-shrink: 0;
+  padding: 12px 10px;
+  border-right: 1px solid var(--border);
+  background: var(--bg-sidebar);
+  overflow-y: auto;
+}
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.settings-nav-item:hover {
+  background: var(--bg-item-hover);
+  color: var(--text-primary);
+}
+.settings-nav-item.active {
+  background: var(--accent-soft);
+  color: var(--accent-hover, var(--accent));
+  font-weight: 600;
 }
 .settings-content {
   flex: 1;
-  /* min-height:0 让 flex:1 在 flex column 容器里真正生效，内容区独立滚动不撑破 header */
   min-height: 0;
   overflow-y: auto;
-  padding: 20px 24px;
+  padding: 4px 22px 26px;
+}
+/* 区块 */
+.set-block {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hairline);
+}
+.set-block:first-child {
+  margin-top: 8px;
+  padding-top: 0;
+  border-top: 0;
+}
+.set-block > h4 {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+/* 行：标签 + 右侧控件 */
+.set-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 36px;
+  padding: 4px 8px;
+  margin: 0 -8px;
+  border-radius: 8px;
+  transition: background var(--dur-fast);
+}
+.set-row:hover {
+  background: var(--bg-item-hover);
+}
+.set-row.is-clickable {
+  cursor: pointer;
+}
+.set-row .set-label {
+  min-width: 0;
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+.set-row .set-hint {
+  display: block;
+  margin-top: 1px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.set-row .set-control {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* 纵向行：标签在上、控件在下（滑块这类需要整行宽度的） */
+.set-stack {
+  padding: 6px 8px 8px;
+  margin: 0 -8px;
+  border-radius: 8px;
+}
+.set-stack .set-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+.set-stack .set-value {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.set-stack .set-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+/* 设置里的下拉固定宽度，避免整行拉伸后视觉过重 */
+.set-select {
+  width: 220px;
+}
+/* 设置页里的小提示文案 */
+.set-note {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.5;
 }
 
 /* 全局"正在启动游戏"醒目横幅：固定在屏幕顶部中央，高 z-index，
@@ -2569,13 +2958,13 @@ textarea {
   box-shadow: var(--glow);
 }
 
-/* Cover cards get softer rounded corners in cartoon, glowing border in cyberpunk */
+/* Cover cards 圆角统一走 --radius-cover（原来是 --radius-lg，会覆盖卡片自己的圆角） */
 .grid-card .cover {
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-cover);
 }
 :root[data-theme="cyberpunk"] .grid-card .cover {
   border-color: var(--accent);
-  box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+  box-shadow: var(--hairline-cover, inset 0 0 0 1px var(--hairline));
 }
 :root[data-theme="cyberpunk"] .grid-card.selected .cover {
   box-shadow: 0 0 16px rgba(0, 240, 255, 0.6);
@@ -3627,4 +4016,328 @@ textarea {
   border: none;
   display: block;
   background: #000;
+}
+
+/* ================= 综合主题/配色/字体设计器 ================= */
+
+/* 主背景渐变：data-bg-mode="gradient" 时把 --bg-base 覆盖成渐变。
+   由于 body/侧栏等大量用 var(--bg-base)，覆盖变量即让整体背景渐变。 */
+:root[data-bg-mode="gradient"] {
+  --bg-base: var(--bg-base-gradient, var(--bg-base));
+}
+/* 面板渐变：data-panel-mode="gradient" 时覆盖 --bg-panel */
+:root[data-panel-mode="gradient"] {
+  --bg-panel: var(--bg-panel-gradient, var(--bg-panel));
+  --bg-top: var(--bg-panel-gradient, var(--bg-top));
+  --bg-sidebar: var(--bg-panel-gradient, var(--bg-sidebar));
+}
+
+/* 卡片背景：data-card-bg 控制 solid/gradient/panel 三种模式 */
+:root[data-card-bg="solid"] .grid-card {
+  background: var(--card-bg-solid, var(--bg-panel));
+}
+:root[data-card-bg="gradient"] .grid-card {
+  background: var(--card-bg-gradient, var(--bg-panel));
+}
+
+/* 卡片边框：data-card-border-enabled=1 时显示边框，否则隐藏 */
+:root[data-card-border-enabled="1"] .grid-card {
+  border: 1px solid var(--border-strong);
+}
+:root[data-card-border-enabled="0"] .grid-card {
+  border: none;
+}
+
+/* ---- 设计器 UI ---- */
+.designer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.designer-preset-card {
+  position: relative;
+  width: 96px;
+  height: 64px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  padding: 6px 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  transition: border-color 0.15s, transform 0.15s;
+}
+.designer-preset-card:hover {
+  transform: translateY(-2px);
+}
+.designer-preset-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.designer-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.designer-chip {
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+.designer-chip:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+.designer-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text-primary);
+  color: #fff;
+}
+
+/* ================= 社区氛围 ================= */
+/* 侧栏"谁在玩" */
+.who-online {
+  padding: 8px 10px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.who-online-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.who-online-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 5px rgba(34, 197, 94, 0.8);
+}
+.who-online-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.who-online-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  min-width: 0;
+}
+.who-online-avatar {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.who-online-name {
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
+.who-online-playing {
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  flex: 1;
+}
+
+/* 顶部弹幕层 */
+.danmaku-overlay {
+  position: fixed;
+  top: 56px;
+  left: 0;
+  right: 0;
+  height: 0;
+  z-index: 60;
+  pointer-events: none;
+}
+.danmaku-item {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-input) 80%, transparent);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+.danmaku-avatar {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.danmaku-nick {
+  color: var(--text-secondary);
+}
+.danmaku-text {
+  color: var(--text-primary);
+}
+
+/* 活动流 toast */
+.activity-toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 70;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.activity-toast-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+.activity-toast-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.activity-toast-body {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+}
+.activity-toast-nick {
+  color: var(--accent);
+  font-weight: 500;
+}
+.activity-toast-text {
+  color: var(--text-primary);
+}
+
+/* ================= 崩溃处理器窗口（UnityCrashHandler64 风格） ================= */
+.crash-window {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh;
+  padding: 28px 32px;
+  gap: 10px;
+  box-sizing: border-box;
+  text-align: center;
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+.crash-icon {
+  font-size: 40px;
+  line-height: 1;
+  color: #e74856;
+}
+.crash-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+.crash-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0 0 6px;
+  max-width: 520px;
+}
+.crash-report {
+  width: 100%;
+  max-width: 560px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--bg-panel);
+  text-align: left;
+  font-size: 12px;
+  max-height: 240px;
+  overflow: auto;
+  box-sizing: border-box;
+}
+.crash-type {
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.crash-msg {
+  color: var(--text-primary);
+  word-break: break-word;
+  margin-bottom: 2px;
+}
+.crash-meta {
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+.crash-stack {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.crash-empty {
+  color: var(--text-dim);
+  text-align: center;
+  padding: 20px;
+}
+.crash-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.crash-btn {
+  padding: 8px 20px;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+}
+.crash-btn:hover {
+  border-color: var(--accent);
+}
+.crash-btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.crash-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.crash-result {
+  font-size: 12px;
+  color: var(--accent);
+  margin-top: 6px;
 }
