@@ -242,15 +242,6 @@ export function imageUrl(src?: string): string | undefined {
   return getBlob(s);
 }
 
-/** Async variant: returns the blob URL once the bytes are loaded. */
-export async function imageUrlAsync(src?: string): Promise<string | undefined> {
-  if (!src || !src.trim()) return undefined;
-  const s = src.trim();
-  if (isRemote(s)) return s;
-  if (!isLocalPath(s)) return undefined;
-  return ensureLocal(s);
-}
-
 /** Begin loading a single path; resolves when the bytes are decoded into a blob URL. */
 export function ensureImageLoaded(path: string): Promise<string | undefined> {
   return ensureLocal(path);

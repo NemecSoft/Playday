@@ -37,6 +37,11 @@ export interface CardTextStyle {
   bgColor: string;
   /** 背景不透明度 0..1 */
   bgOpacity: number;
+  /** 标题配色模式：
+   *  - "theme"：标题字色跟随主题（--ui-accent），描边色用 strokeColor。
+   *  - "random"：每行从 utils/titlePalette 的预设里取一组彩色（字色 + 描边色）。
+   *  可选字段：老 config.json 没有它，缺省按 "theme" 处理。 */
+  colorMode?: "theme" | "random";
 }
 
 /** 默认卡片文字样式：暖白 + 紫光 + 黑色描边（接近"史诗紫金"预设） */
@@ -56,6 +61,7 @@ export const DEFAULT_CARD_TEXT: CardTextStyle = {
   bg: false,
   bgColor: "#000000",
   bgOpacity: 0.5,
+  colorMode: "theme",
 };
 
 /** 应用的默认设置（config.json 缺失字段时用的兜底值）。
@@ -110,6 +116,10 @@ export const DEFAULT_SETTINGS = {
   // 存档备份工具 GameSaveHelper.exe 的路径（空 = 未配置，备份不可用）。
   // 绝对路径原样使用；相对路径以数据根为基准解析。
   gameSaveHelperPath: "",
+  // 游戏根目录：游戏按「相对路径」存放时的基准（生产 X:\YunGame\Playnite，
+  // 测试 D:\YunGame\Playnite —— 靠这项配置解耦，代码里不写死）。
+  // 空 = 回退到数据根（保持旧行为）。绝对路径原样；相对路径以数据根为基准。
+  defaultGameRootPath: "",
   showCardDescription: true,
   // 社区氛围：默认关（避免打扰），用户在设置里开启
   communityEnabled: false,

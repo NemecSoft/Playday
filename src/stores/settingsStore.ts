@@ -87,7 +87,12 @@ export function applyCardTextStyles(s: Partial<AppSettings>) {
   ds.cardStroke = stroke ? "1" : "0";
   ds.cardGlow = glow ? "1" : "0";
   ds.cardShadow = shadow ? "1" : "0";
-  ds.cardBg = bg ? "1" : "0";
+  // 属性名注意：这里原来是 ds.cardBg，和 designerApply 写的 data-card-bg
+  // （"solid"/"gradient"/"panel" = 卡片背景模式）**撞在同一个属性上**，谁后写谁生效。
+  // 结果每次启动 applyCardTextStyles 都会把它冲成 "0"/"1"，
+  // 使 CSS 的 :root[data-card-bg="solid"|"gradient"] 永不匹配（卡片背景模式失灵）。
+  // 改用独立的 data-card-text-bg（文字的底片开关）。
+  ds.cardTextBg = bg ? "1" : "0";
 }
 
 interface SettingsState {

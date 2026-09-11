@@ -191,6 +191,12 @@ export interface AppSettings {
   coverImagesDir?: string;
   /** Path to GameSaveHelper.exe (save backup tool). Empty/unset = not configured. */
   gameSaveHelperPath?: string;
+  /**
+   * Game root: the base for game paths stored as *relative* paths
+   * (production `X:\YunGame\Playnite`, test `D:\YunGame\Playnite`) — decoupled
+   * via config instead of hard-coded. Empty/unset = fall back to the data root.
+   */
+  defaultGameRootPath?: string;
   /** Whether to show the description (简介) on grid cards. Persisted in config.json. */
   showCardDescription: boolean;
   /** 综合主题/配色/字体设计器配置（见 shared/models.ts DesignerConfig）。 */

@@ -6,8 +6,8 @@
 // so the user can start typing a pinyin search at any time.
 
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { LayoutGrid, Globe, FileText } from "lucide-react";
-import { useGamesStore } from "../stores/gamesStore";
+import { FileText, ArrowDown, ArrowUp } from "lucide-react";
+import { useGamesStore, type SortOrder } from "../stores/gamesStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { useI18n } from "../i18n";
 import { Input } from "./ui/input";
@@ -23,10 +23,11 @@ import {
 export default function Toolbar() {
   const searchQuery = useGamesStore((s) => s.searchQuery);
   const setSearch = useGamesStore((s) => s.setSearch);
-  const viewMode = useGamesStore((s) => s.viewMode);
-  const setViewMode = useGamesStore((s) => s.setViewMode);
   const groupBy = useGamesStore((s) => s.groupBy);
   const setGroupBy = useGamesStore((s) => s.setGroupBy);
+  const sortOrder = useGamesStore((s) => s.sortOrder);
+  const sortDirection = useGamesStore((s) => s.sortDirection);
+  const setSort = useGamesStore((s) => s.setSort);
   const loading = useGamesStore((s) => s.loading);
   const games = useGamesStore((s) => s.games);
   // 网格卡片简介显示开关：持久化到 config.json。
@@ -120,24 +121,35 @@ export default function Toolbar() {
             </SelectContent>
           </Select>
         </div>
-        <button
-          type="button"
-          className={`view-btn ${viewMode === "grid" ? "active" : ""}`}
-          title={t("view_grid")}
-          onClick={() => setViewMode("grid")}
-        >
-          <LayoutGrid size={15} />
-          <span>{t("view_grid")}</span>
-        </button>
-        <button
-          type="button"
-          className={`view-btn ${viewMode === "planet" ? "active" : ""}`}
-          title={t("view_planet")}
-          onClick={() => setViewMode("planet")}
-        >
-          <Globe size={15} />
-          <span>{t("view_planet")}</span>
-        </button>
+        {/* 排序下拉 + 方向按钮：默认「添加时间 / 倒序」。 */}
+        <div className="toolbar-sort">
+          <span className="toolbar-group-label">{t("toolbar_sort")}</span>
+          <Select
+            value={sortOrder}
+            onValueChange={(v) => setSort(v as SortOrder, sortDirection)}
+          >
+            <SelectTrigger className="toolbar-select" aria-label={t("toolbar_sort")}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="added">{t("sort_added")}</SelectItem>
+              <SelectItem value="name">{t("sort_name")}</SelectItem>
+              <SelectItem value="rating">{t("sort_rating")}</SelectItem>
+            </SelectContent>
+          </Select>
+          {/* 方向按钮：一键翻转。图标本身就是状态（↑ 正序 / ↓ 倒序）。 */}
+          <button
+            type="button"
+            className="sort-dir-btn"
+            title={sortDirection === "ascending" ? t("sort_asc") : t("sort_desc")}
+            aria-label={sortDirection === "ascending" ? t("sort_asc") : t("sort_desc")}
+            onClick={() =>
+              setSort(sortOrder, sortDirection === "ascending" ? "descending" : "ascending")
+            }
+          >
+            {sortDirection === "ascending" ? <ArrowUp size={14} /> : <ArrowDown size={14} />}
+          </button>
+        </div>
         {/* 简介开关：iOS 风格大圆头 Switch + 图标 + 文字标签。checked=显示简介。
             checked=false 时文字显示"隐藏简介"，true 时显示"显示简介"——跟随状态。 */}
         <div

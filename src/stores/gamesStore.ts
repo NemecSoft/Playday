@@ -5,7 +5,7 @@ import { api } from "../api/client";
 import { useAuthStore } from "./authStore";
 import { preloadImages } from "../utils/assets";
 import type { Game, GameAction } from "../types/models";
-import type { FacetKey } from "../utils/selectors";
+import type { FacetKey, SortKey } from "../utils/selectors";
 
 // 模块级变量：控制"正在启动游戏"横幅至少展示多久。
 // 启动流程可能几百毫秒就完成，如果不强制最短展示时间，横幅会一闪而过看不清。
@@ -13,9 +13,9 @@ import type { FacetKey } from "../utils/selectors";
 let launchingTimer: ReturnType<typeof setTimeout> | null = null;
 let launchingStartedAt = 0;
 const MIN_LAUNCH_BANNER_MS = 3000; // 至少显示 3 秒
-
-export type ViewMode = "grid" | "list" | "details" | "planet";
-export type SortOrder = "name" | "added" | "lastPlayed" | "playtime" | "releaseDate";
+// 排序键直接复用 selectors 的 SortKey：以前这里是一份重复的字面量联合类型，
+// 两边各自漂移（加 rating 时差点只改了一边），所以收敛成别名。
+export type SortOrder = SortKey;
 export type SortDirection = "ascending" | "descending";
 
 /** Top-level page shown in the main area: the game library or the news page. */
@@ -28,7 +28,6 @@ interface GamesState {
 
   activePage: ActivePage;
   selectedGameIds: string[];
-  viewMode: ViewMode;
   searchQuery: string;
   sortOrder: SortOrder;
   sortDirection: SortDirection;
@@ -36,6 +35,8 @@ interface GamesState {
   showHidden: boolean;
   showFavorites: boolean;
   groupBy: string;
+  /** 已折叠的分组 key（仅本次会话记忆，不写 config.json）。 */
+  collapsedGroups: string[];
   activePlatformFilter: string;
   activeCategoryFilter: string;
   activeGenreFilter: string;
@@ -62,13 +63,13 @@ interface GamesState {
   // actions
   load: () => Promise<void>;
   setPage: (p: ActivePage) => void;
-  setViewMode: (m: ViewMode) => void;
   setSearch: (q: string) => void;
   setSort: (o: SortOrder, d: SortDirection) => void;
   toggleInstalledOnly: () => void;
   toggleHidden: () => void;
   toggleFavorites: () => void;
   setGroupBy: (g: string) => void;
+  toggleGroupCollapsed: (key: string) => void;
   setPlatformFilter: (p: string) => void;
   setCategoryFilter: (c: string) => void;
   setGenreFilter: (g: string) => void;
@@ -102,7 +103,6 @@ export const useGamesStore = create<GamesState>((set, get) => ({
 
   activePage: "library",
   selectedGameIds: [],
-  viewMode: "grid",
   searchQuery: "",
   sortOrder: "added",
   sortDirection: "descending",
@@ -110,6 +110,7 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   showHidden: false,
   showFavorites: false,
   groupBy: "none",
+  collapsedGroups: [],
   activePlatformFilter: "all",
   activeCategoryFilter: "all",
   activeGenreFilter: "all",
@@ -137,7 +138,6 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   },
 
   setPage: (p) => set({ activePage: p }),
-  setViewMode: (m) => set({ viewMode: m }),
   // Search and tag filters are mutually exclusive: typing in the search box
   // clears the selected tags, and picking a tag clears the search query.
   setSearch: (q) => set({ searchQuery: q, facetValues: [] }),
@@ -146,6 +146,13 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   toggleHidden: () => set((s) => ({ showHidden: !s.showHidden })),
   toggleFavorites: () => set((s) => ({ showFavorites: !s.showFavorites })),
   setGroupBy: (g) => set({ groupBy: g }),
+  // 折叠/展开某个分组；key 就是分组的 label（groupGames 的 Group.key）。
+  toggleGroupCollapsed: (key) =>
+    set((s) => ({
+      collapsedGroups: s.collapsedGroups.includes(key)
+        ? s.collapsedGroups.filter((k) => k !== key)
+        : [...s.collapsedGroups, key],
+    })),
   setPlatformFilter: (p) => set({ activePlatformFilter: p }),
   setCategoryFilter: (c) => set({ activeCategoryFilter: c }),
   setGenreFilter: (g) => set({ activeGenreFilter: g }),
@@ -252,27 +259,32 @@ export const useGamesStore = create<GamesState>((set, get) => ({
         return false;
       }
     }
-    // 有多个可启动指令且未指定具体指令时，弹窗让用户选择。
-    if (!actionId && game) {
-      const playable = game.actions.filter(
-        (a) => a.type === "File" && (a.path ?? "").trim() !== ""
-      );
-      if (playable.length > 1) {
-        set({ pendingLaunch: { game, actions: playable } });
-        return false;
-      }
+    // 候选启动项只取「游玩指令」（isPlayAction === true）。
+    // 存档备份之类的辅助动作虽然也是 File 类型，但不用来开游戏；混进候选列表会导致
+    // 几乎每个游戏都弹出选择窗（实测 1276 个游戏里有 1245 个因此被误弹）。
+    const playActions = (game?.actions ?? []).filter(
+      (a) => a.isPlayAction === true && (a.path ?? "").trim() !== ""
+    );
+    // 只有 1 个就直接用它（显式传 id，不依赖后端的 playTask 兜底，保证「默认第一个」
+    // 的行为可预期）；多于 1 个才让用户选。
+    const targetActionId = actionId ?? playActions[0]?.id;
+    if (!actionId && game && playActions.length > 1) {
+      set({ pendingLaunch: { game, actions: playActions } });
+      return false;
     }
     // 进入启动流程：先给出醒目的"正在启动《游戏名》…"反馈（可能要先跑前置脚本
     // / spawn 进程，耗时几百毫秒到几秒，不能让用户感觉"点了没反应"）。
     const launchName = game?.name ?? "";
     if (launchName) get().setLaunching(id, launchName);
 
-    let launched: boolean;
+    // launch_game 返回的是 { launched, error } 对象，不是裸 boolean。
+    // 历史上这里把它当 boolean 用——对象永远 truthy，于是后端返回的
+    // "文件不存在 / 不是可执行文件"等错误被完全吞掉，表现就是"点了没反应"。
+    let res: { launched: boolean; error?: string } | undefined;
     try {
-      launched = await api.launchGame(id, actionId);
+      res = await api.launchGame(id, targetActionId);
     } catch (e) {
-      // 后端"运行前检测"未通过时会返回错误（如"文件不存在"），这里弹出提示，
-      // 而不是让未捕获的 Promise rejection 悄悄失败。
+      // 只有 IPC 本身失败（后端抛异常）才会走到这里。
       get().clearLaunching(); // 启动失败也要清除"正在启动"（会延迟到最少展示 3 秒）
       void api.showNotification(
         "无法启动",
@@ -282,15 +294,20 @@ export const useGamesStore = create<GamesState>((set, get) => ({
     }
     // 启动流程结束（无论成功失败）都清除"正在启动"反馈（会延迟到最少展示 3 秒）。
     get().clearLaunching();
-    if (launched) {
-      // Signal to App.tsx to navigate to the detail page (so the user can read
-      // the guide / instructions while playing).
-      set({ lastLaunchedId: id });
-      // 注意：这里不再调用 maximize_window。之前调用它时，这个命令实际上是
-      // "最大化/还原"切换，窗口本来就是最大化时会把它还原，导致"点开始游戏
-      // 窗口被恢复"的怪异表现。启动游戏不应该改变用户的窗口状态，保持原样即可。
+    if (!res?.launched) {
+      // 后端"启动前检测"未通过（文件不存在 / 不是可执行文件 / 等级不足等）：
+      // 必须把原因告诉用户，否则表现就是"点了没反应"。
+      const reason = res?.error || "未知错误";
+      void api.showNotification("无法启动", game ? `《${game.name}》：${reason}` : reason);
+      return false;
     }
-    return launched;
+    // Signal to App.tsx to navigate to the detail page (so the user can read
+    // the guide / instructions while playing).
+    set({ lastLaunchedId: id });
+    // 注意：这里不再调用 maximize_window。之前调用它时，这个命令实际上是
+    // "最大化/还原"切换，窗口本来就是最大化时会把它还原，导致"点开始游戏
+    // 窗口被恢复"的怪异表现。启动游戏不应该改变用户的窗口状态，保持原样即可。
+    return true;
   },
 
   saveGame: async (game) => {

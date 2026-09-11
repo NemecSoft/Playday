@@ -6,7 +6,7 @@
 // additionally load lazily via IntersectionObserver (useLazyImage), so neither
 // the IPC bridge nor layout is flooded at startup.
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGamesStore } from "../../stores/gamesStore";
 import { useScrollStore } from "../../stores/scrollStore";
@@ -20,6 +20,7 @@ import { Image as ImageIcon, Play, Info } from "lucide-react";
 import GameContextMenu from "../GameContextMenu";
 import { useLazyImage } from "../../hooks/useLazyImage";
 import { useVirtualGrid, type VirtualGridRow } from "../../hooks/useVirtualGrid";
+import { isDarkBackground, paletteForRow } from "../../utils/titlePalette";
 import { clampCardDescFontSize } from "../../utils/cardText";
 
 interface Props {
@@ -39,8 +40,21 @@ export default function GridView({ groups }: Props) {
   const showCardDescription = useSettingsStore((s) => s.settings.showCardDescription);
   // 网格卡片简介字号（独立于标题字号，可在"设置-外观"里调）。
   const cardDescFontSize = useSettingsStore((s) => s.settings.cardDescFontSize);
+  // 标题配色模式："random" 时按行注入 --title-fill
+  // （每组配色见 utils/titlePalette）。默认 "theme" = 跟随主题。
+  const titleColorMode = useSettingsStore((s) => s.settings.cardText?.colorMode) ?? "theme";
+  const themeId = useSettingsStore((s) => s.settings.themeId);
+  // 主题明暗决定用哪套预设：深色主题用亮填充，浅色主题用暗填充。
+  // 依赖 themeId 重算：切主题时 applyPaletteTheme 先注入 CSS 变量、再 saveSettings，
+  // 所以这次重算读到的一定是新主题的值。
+  const darkBg = useMemo(() => isDarkBackground(), [themeId]);
 
   const [menu, setMenu] = useState<{ game: Game; x: number; y: number } | null>(null);
+
+  const collapsedGroups = useGamesStore((s) => s.collapsedGroups);
+  const toggleGroupCollapsed = useGamesStore((s) => s.toggleGroupCollapsed);
+  // Set 的引用必须稳定，否则 useVirtualGrid 的拍平 memo 每次渲染都会重算。
+  const collapsedSet = useMemo(() => new Set(collapsedGroups), [collapsedGroups]);
 
   const saveGridScroll = useScrollStore((s) => s.saveGridScroll);
   const takeGridScroll = useScrollStore((s) => s.takeGridScroll);
@@ -88,7 +102,14 @@ export default function GridView({ groups }: Props) {
     origNameHeight + // 副标题（英文原名）行高
     (showCardDescription ? 4 + descFontSize * 1.5 * 3 : 0); // 简介：margin-top + 3 行截断(line-height 1.5)
   const { scrollRef, cols, totalSize, items, virtualizer, rowStartIndex, measureRow } =
-    useVirtualGrid({ groups, cardWidth, cardGap, cardRowGap, titleHeight: titlePlusDesc });
+    useVirtualGrid({
+      groups,
+      cardWidth,
+      cardGap,
+      cardRowGap,
+      titleHeight: titlePlusDesc,
+      collapsedGroups: collapsedSet,
+    });
 
   // 滚轮约定（与浏览器一致）：
   //   Ctrl+滚轮 → 整页缩放（全局处理在 ZoomIndicator，这里不再管）；
@@ -156,22 +177,48 @@ export default function GridView({ groups }: Props) {
 
   const renderRow = (row: VirtualGridRow, startIndex: number) => {
     if (row.type === "header") {
+      // 标题栏可点击折叠/展开；它同时是"分组方框"的顶边（样式见 global.css）。
+      // 外面这层 wrap 负责组间距（用 padding，避免外边距折叠导致实测行高偏小）。
       return (
-        <div className="group-header">
-          {row.label}
-          <span className="count">{row.count}</span>
+        <div className="group-header-wrap">
+          <button
+            type="button"
+            className={`group-header ${row.collapsed ? "collapsed" : ""}`}
+            onClick={() => toggleGroupCollapsed(row.groupKey)}
+            aria-expanded={!row.collapsed}
+            title={row.label}
+          >
+            <span className="group-chev">{row.collapsed ? "▸" : "▾"}</span>
+            <span className="group-title">{row.label}</span>
+            <span className="count">{row.count}</span>
+          </button>
         </div>
       );
     }
     // 水平间距（卡片左右之间）用 cardGap；上下间距由 .grid-card 的 padding-bottom 承担
     // （CSS 变量 --card-row-gap，0 时两行紧贴）。
+    // "随机彩色"模式下整行统一一种配色：按行 key 哈希取，所以同一行永远是同一个颜色
+    // （滚动、重渲染、切视图回来都不变），不会像"每次现算随机"那样在滚动时乱闪。
+    const palette =
+      titleColorMode === "random" ? paletteForRow(row.key, darkBg) : null;
+    // 标题底片（nameplate）的颜色：一个中性色，深浅随主题 ——
+    // 深色主题用半透明黑、浅色主题用半透明白。只在"文字背景"开关打开时才画
+    // （开关映射到 :root[data-card-text-bg="1"]，见 global.css）。
+    const scrim = darkBg ? "rgba(0, 0, 0, 0.5)" : "rgba(255, 255, 255, 0.66)";
     const gridStyle = {
       gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
       columnGap: `${gap}px`,
       width: "100%",
-    } as React.CSSProperties;
+      "--title-bg": scrim,
+      ...(palette ? { "--title-fill": palette.fill } : {}),
+    } as unknown as React.CSSProperties;
     return (
-      <div className="game-grid" style={gridStyle}>
+      <div
+        className={`game-grid group-rows ${row.isLastInGroup ? "group-last" : ""} ${
+          row.seq % 2 === 1 ? "row-stripe" : ""
+        }`}
+        style={gridStyle}
+      >
         {row.games.map((game, i) => (
           <GridCard
             key={game.id}
@@ -384,7 +431,7 @@ function GridCard({
         </div>
       </div>
       <div className="title-wrap">
-        {/* 主标题：name（显示名，中文名） */}
+        {/* 主标题：name（显示名，中文名）。 */}
         <div className="title">{displayName(game)}</div>
         {/* 副标题：原始英文名（origin_name）。仅当有 origin_name 且与主标题不同才显示。
             老游戏 origin_name 为空则不显示副标题。 */}

@@ -37,6 +37,8 @@ export type VirtualGridRow =
       games: Game[];
       /** 是否是该组的最后一行（画下边框 + 下圆角，给分组框封底）。 */
       isLastInGroup: boolean;
+      /** 组内第几行（从 0 开始）。斑马纹按它的奇偶铺底；分组标题行不参与计数。 */
+      seq: number;
     };
 
 export interface VirtualizedItem {
@@ -175,12 +177,14 @@ export function useVirtualGrid({
         const rowCount = Math.ceil(group.games.length / cols);
         for (let i = 0; i < group.games.length; i += cols) {
           const key = `r:${group.key}:${i}`;
+          const seq = Math.floor(i / cols);
           flat.push({
             type: "cards",
             key,
             groupKey: group.key,
             games: group.games.slice(i, i + cols),
-            isLastInGroup: Math.floor(i / cols) === rowCount - 1,
+            isLastInGroup: seq === rowCount - 1,
+            seq,
           });
           meta.push(rowHeight);
           starts.set(key, cardIndex);
@@ -264,4 +268,24 @@ export function useVirtualGrid({
   // NOTE: do NOT memoize `getVirtualItems()` here. The virtualizer is an
   // external store that triggers re-renders on scroll/resize, but the items
   // list itself depends on the current scroll offset, which changes without
-  // any of our R
+  // any of our React deps changing. Computing it inline during render keeps
+  // the visible window in sync with the scrollbar.
+  const vItems = virtualizer.getVirtualItems();
+  const items: VirtualizedItem[] = vItems.map((v) => ({
+    row: allRows[v.index],
+    offset: v.start,
+    index: v.index,
+  }));
+
+  return {
+    scrollRef,
+    cols,
+    rowHeight,
+    totalSize: virtualizer.getTotalSize(),
+    items,
+    virtualizer,
+    allRows,
+    rowStartIndex,
+    measureRow,
+  };
+}

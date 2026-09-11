@@ -354,6 +354,33 @@ export default function AppearanceSection() {
         </label>
       </div>
 
+      {/* 标题配色模式：跟随主题（全文统一）/ 随机彩色（每行一种，见 utils/titlePalette）。 */}
+      <div className="mb-3.5">
+        <label className="mb-1.5 block text-xs text-secondary-text">
+          {t("settings_titleColorMode", { defaultValue: "标题配色" })}
+        </label>
+        <Select
+          value={settings.cardText?.colorMode ?? "theme"}
+          onValueChange={(v) =>
+            save({
+              cardText: { ...settings.cardText, colorMode: v as "theme" | "random" },
+            })
+          }
+        >
+          <SelectTrigger className="h-9">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="theme">
+              {t("settings_titleColorTheme", { defaultValue: "跟随主题" })}
+            </SelectItem>
+            <SelectItem value="random">
+              {t("settings_titleColorRandom", { defaultValue: "随机彩色（每行一种）" })}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* 6 种卡片文字预设按钮（点一下切换整个 cardText）：
          正常 / 描边 / 荧光 / 半透明 / 阴影 / 便利贴。
          按钮缩略文字用对应的 CardTextStyle 实时渲染（所见即所得）。 */}

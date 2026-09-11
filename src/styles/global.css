@@ -65,6 +65,12 @@
   --font-ui: "Segoe UI", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
   --radius: 6px;
   --radius-lg: 10px;
+  /* 网格视图"斑马纹"行底色：用主题主文字色做 8% 叠加 ——
+     深色主题下 --text-primary 近白，得到"发亮"的横带；
+     浅色主题下它是深色，得到"发暗"的横带。
+     所以不用给每个主题单独配色；想按主题微调就在这里或该主题块里覆盖这一条。
+     （3% 实测太淡、隔着卡片看不出来，调到 8%。） */
+  --row-stripe: color-mix(in srgb, var(--text-primary) 8%, transparent);
   --top-height: 36px;
   --sidebar-width: 210px;
 }
@@ -1331,6 +1337,28 @@ textarea {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* 侧栏标题右侧的「重置」按钮：常驻显示，无勾选时禁用。 */
+.sidebar-reset {
+  margin-left: auto;
+  flex: none;
+  padding: 3px 9px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  background: var(--bg-item-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 6px);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+}
+.sidebar-reset:hover:not(:disabled) {
+  color: var(--text-primary);
+  background: var(--bg-item-active);
+}
+.sidebar-reset:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 
 /* Sidebar tag (checkbox) list */
 .sidebar-tag-search {
@@ -1447,8 +1475,10 @@ textarea {
   color: var(--card-text-color, var(--text-primary));
   font-size: min(calc(var(--card-title-size, 15px) * 0.75), 15px);
   font-weight: var(--card-title-weight, 500);
-  -webkit-text-stroke: var(--card-stroke-width, 0px) var(--card-stroke-color, transparent);
-  paint-order: stroke fill;
+  /* 主动把描边归零：有些主题在 body 上设了全局 --text-stroke（0.5px），不显式覆盖
+     的话这些文字会继承到那条细描边 —— 小字发虚的来源之一。
+     （曾经用"双层文字"模拟外侧描边，实测在 15px 下会产生亚像素重影，已废弃。） */
+  -webkit-text-stroke: 0;
   text-shadow:
     var(--card-shadow-offset-x, 0px) var(--card-shadow-offset-y, 0px) var(--card-shadow-blur, 0px) var(--card-shadow-color, transparent),
     0 0 var(--card-glow-blur, 0px) var(--card-glow-color, transparent);
@@ -1642,33 +1672,38 @@ textarea {
   font-size: 12px;
 }
 
-/* 视图切换按钮（网格 / 星球） */
+/* 工具栏排序：字段下拉 + 升/降方向按钮。 */
+.toolbar-sort {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+}
+.sort-dir-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.sort-dir-btn:hover {
+  background: var(--bg-item-hover, rgba(128, 128, 128, 0.15));
+  color: var(--text-primary, inherit);
+}
+
+/* 工具栏右侧控件容器（分组 / 排序 / 简介开关）。 */
 .view-switcher {
   display: flex;
   align-items: center;
   gap: 4px;
   margin-left: 4px;
-}
-.view-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-muted, inherit);
-  cursor: pointer;
-  font-size: 12px;
-  transition: background 0.15s ease, color 0.15s ease;
-  white-space: nowrap;
-}
-.view-btn:hover {
-  background: var(--surface-hover, rgba(128, 128, 128, 0.15));
-}
-.view-btn.active {
-  background: var(--accent);
-  color: var(--accent-contrast, #fff);
 }
 
 /* 工具栏简介开关：iOS 风 Switch + 图标 + 文字标签一行排布。 */
@@ -1740,70 +1775,6 @@ textarea {
   transform: translateX(22px);
 }
 
-/* 3D 星球视图 */
-.planet-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-.planet-zone-label {
-  padding: 3px 12px;
-  border-radius: 999px;
-  background: var(--accent);
-  color: var(--accent-contrast, #fff);
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-  user-select: none;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  pointer-events: none;
-}
-.planet-zone-label.clickable {
-  pointer-events: auto;
-  cursor: pointer;
-}
-.planet-zone-label.clickable:hover {
-  filter: brightness(1.15);
-}
-.planet-empty,
-.planet-fallback {
-  display: grid;
-  height: 100%;
-  place-items: center;
-  color: var(--text-muted, inherit);
-  font-size: 14px;
-}
-
-/* 恐怖谷地图 */
-.valley-back-btn {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 10;
-  padding: 6px 14px;
-  border-radius: 999px;
-  border: none;
-  background: var(--accent);
-  color: var(--accent-contrast, #fff);
-  cursor: pointer;
-  font-size: 13px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-}
-.valley-hint {
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  padding: 4px 12px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
-  font-size: 12px;
-  pointer-events: none;
-}
-
 .toolbar .spacer {
   flex: 1;
 }
@@ -1851,32 +1822,6 @@ textarea {
 }
 .search-box input::placeholder {
   color: var(--text-dim);
-}
-
-/* View mode toggle */
-.view-toggle {
-  display: flex;
-  gap: 2px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 2px;
-  background: var(--bg-input);
-}
-.view-toggle button {
-  width: 30px;
-  height: 26px;
-  border-radius: 4px;
-  display: grid;
-  place-items: center;
-  color: var(--text-secondary);
-}
-.view-toggle button:hover {
-  background: var(--bg-item-hover);
-  color: var(--text-primary);
-}
-.view-toggle button.active {
-  background: var(--accent-soft);
-  color: var(--accent-hover);
 }
 
 /* Content area */
@@ -2122,11 +2067,13 @@ textarea {
      所有 CSS 变量都由 applyCardTextStyles() 从 settings.cardText 注入。
      关闭某项（如描边/发光/阴影）= 该变量 blur=0 + color=transparent，
      CSS 自然不渲染，效果开关无需额外条件分支。*/
-  /* 标题文字色统一用 --ui-accent（用户要求的"统一变量"）。 */
-  color: var(--ui-accent);
-  /* 描边：-webkit-text-stroke 支持纯透明描边"关" */
-  -webkit-text-stroke: var(--card-stroke-width, 0px) var(--card-stroke-color, transparent);
-  paint-order: stroke fill;
+  /* 标题文字色默认跟随主题（--ui-accent）；"随机彩色"模式下由所在行注入
+     --title-fill 覆盖它（见 GridView 的 rowStyle）。 */
+  color: var(--title-fill, var(--ui-accent));
+  /* 主动把描边归零：有些主题在 body 上设了全局 --text-stroke（0.5px），不显式覆盖
+     的话标题会继承到那条细描边 —— 小字发虚的来源之一。
+     （曾经用"双层文字"模拟外侧描边，实测在 15px 下会产生亚像素重影，已废弃。） */
+  -webkit-text-stroke: 0;
   /* 发光/阴影仍由用户预设控制（保留变量，但不再叠加默认 accent 柔光，
      避免和封面抢注意力）。 */
   text-shadow:
@@ -2145,6 +2092,18 @@ textarea {
   white-space: nowrap;
   letter-spacing: 0.2px;
 }
+/* 标题底片（nameplate）：把标题和卡片底色隔开，标题字色就不用再迁就主题背景，
+   也让"黑字白框"这类配色在任何主题下都立得住。
+   颜色由 GridView 按行注入的 --title-bg（中性色，深浅随主题）决定；
+   没注入时回落到设置里的 cardText.bgColor（applyCardTextStyles 已合成好 rgba）。
+   开关是 :root[data-card-text-bg="1"]（注意不是 data-card-bg —— 那个是"卡片背景模式"，
+   两个属性曾经撞名，见 settingsStore 里的说明）。
+   画满整行（横条），四角小圆角；高度不变，所以不影响虚拟列表的行高公式。 */
+:root[data-card-text-bg="1"] .grid-card .title {
+  background: var(--title-bg, var(--card-bg-color, transparent));
+  border-radius: var(--radius, 6px);
+}
+
 /* 当背景填充启用（opacity>0）时，文字标题元素铺满一行：用 inline-block + 父容器 flex 居中。
    通过容器 .grid-card .title-wrap 包一层（HTML 改动见 GridView.tsx）。
    父层 center 对齐下 inline-block 自然居中，无需额外。 */
@@ -2352,31 +2311,81 @@ textarea {
   font-size: 11px;
 }
 
-/* Group headers：改为"编辑部式"栏目题头——小号标签 + 延伸发丝线 + 末尾计数。
-   原来是一个通栏填充药丸，体积和卡片一样大，喧宾夺主；
-   现在它只做一件事：告诉你在哪一组，然后让开。 */
+/* 标题栏外层的组间距。
+   这里必须用 padding 而不是 margin：标题栏外层就是 CardRowMeasurer 的 div，
+   margin 会与它发生外边距折叠 → 实测行高少算这 22px → 下一行会压上来。 */
+.group-header-wrap {
+  padding-top: 22px;
+}
+
+/* 分组标题栏：可点击折叠/展开，同时充当"分组方框"的顶边。
+   方框由标题栏（四边 + 上圆角）+ 组内卡片行（左右边框）+ 组内末行（左右 + 下边框 + 下圆角）
+   拼成 —— 因为相邻虚拟行的上下边缘严丝合缝，边框能连成一条闭合的线。 */
 .group-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-weight: 600;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  /* <button> 默认不继承字体，必须显式继承，否则主题字体对它不生效。 */
+  font-family: inherit;
   font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   color: var(--text-secondary);
-  background: none;
-  padding: 2px 4px;
-  margin: 4px 4px 12px;
-  letter-spacing: 0.08em;
-  /* 发丝线：从标题之后延展到行尾（结构分隔，不是装饰块） */
-  border-bottom: 1px solid var(--hairline);
-  padding-bottom: 7px;
+  background: var(--bg-item-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 10px) var(--radius-lg, 10px) 0 0;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.group-header:hover {
+  color: var(--text-primary);
+  background: var(--bg-item-active);
+}
+/* 折叠时该组只剩这一行，改成四角圆角自成一条闭合的框。 */
+.group-header.collapsed {
+  border-radius: var(--radius-lg, 10px);
+}
+.group-chev {
+  flex: none;
+  width: 12px;
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.75;
+}
+.group-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .group-header .count {
-  order: -1; /* 计数放在最前，作为"这一组有多少"的量化标签 */
+  margin-left: auto;
+  flex: none;
   font-size: 11px;
   color: var(--text-dim);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.04em;
+}
+
+/* 组内卡片行的左右边框，与该组标题栏连成一体。 */
+.game-grid.group-rows {
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+/* 组内最后一行：封底 + 下圆角。 */
+.game-grid.group-rows.group-last {
+  border-bottom: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-lg, 10px) var(--radius-lg, 10px);
+}
+
+/* 斑马纹：整行 vs 整行交替铺底（组内第 2、4、6… 行）。
+   底色铺在整行上，卡片自身有底会盖住大部分，真正看得见的是
+   卡片之间的横向缝隙与行间距那一圈 —— 读起来就是"这一行颜色略不同"。 */
+.game-grid.row-stripe {
+  background: var(--row-stripe);
 }
 /* Details view */
 .details-view {

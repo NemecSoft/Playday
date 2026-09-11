@@ -1,0 +1,5082 @@
+[
+  {
+    "Gameid": "d44b2d09a5906bf1aa45e9e8af73691e",
+    "InstallDirectory": "..\\W\\shf"
+  },
+  {
+    "Gameid": "973f5ea3a5a5b85823b4a34477744399",
+    "InstallDirectory": "..\\Z\\PVZ2Gardendless"
+  },
+  {
+    "Gameid": "bd5a58c7b47a864ec854ff2840b0254e",
+    "InstallDirectory": "..\\Z\\Oxygen Train"
+  },
+  {
+    "Gameid": "957b797dda2ac1e3b55d877b977946ee",
+    "InstallDirectory": "..\\Z\\Halo Campaign Evolved"
+  },
+  {
+    "Gameid": "50791c163de60ad865090e18eec78273",
+    "InstallDirectory": "..\\2025\\Hospital 666"
+  },
+  {
+    "Gameid": "c5e7a5f0eefb88824f920e08feb6f400",
+    "InstallDirectory": "..\\Z\\Supermarket Simulator"
+  },
+  {
+    "Gameid": "75522de0261d9db5befe2907f1b381f8",
+    "InstallDirectory": "..\\Z\\ACS"
+  },
+  {
+    "Gameid": "b25b5f82b75f43d5ef38d10ebc53039b",
+    "InstallDirectory": "..\\Z\\FirefightingSimulator"
+  },
+  {
+    "Gameid": "7f97ef186f63694754b432298aef1df3",
+    "InstallDirectory": "..\\Z\\Climber Animals Together"
+  },
+  {
+    "Gameid": "2f2914cdbbf00cc82e8e2f7c2942d982",
+    "InstallDirectory": "..\\Z\\DrainSim"
+  },
+  {
+    "Gameid": "229199510e7c5d8ab5787b7801118ce9",
+    "InstallDirectory": "..\\Z\\MECCHACHAMELEON"
+  },
+  {
+    "Gameid": "ef00a873e799092e4b7915856d6c73d9",
+    "InstallDirectory": "..\\Z\\DaemonXMachinaTitanicScion"
+  },
+  {
+    "Gameid": "ddcb7afe5450bbcca3c751aa5b7f86f4",
+    "InstallDirectory": "..\\Z\\Need for Speed Carbon"
+  },
+  {
+    "Gameid": "040243deb3dfb6047de60b283ed87f85",
+    "InstallDirectory": "..\\Z\\LittleNightmares1Enhanced"
+  },
+  {
+    "Gameid": "2f10a4c2b0ddec0c9d866dbddcf6ad65",
+    "InstallDirectory": "..\\Z\\PAC-MAN MUSEUM+"
+  },
+  {
+    "Gameid": "ffc131e6b2d3ae97910eebe03c4c8f5f",
+    "InstallDirectory": "..\\Z\\007FirstLight"
+  },
+  {
+    "Gameid": "dcc9b472af76f2bcee79cadaa0c90fc5",
+    "InstallDirectory": "..\\Z\\Romestead"
+  },
+  {
+    "Gameid": "09e5a372228d736e7d319fe81ae4114f",
+    "InstallDirectory": "..\\2023\\MedalofHonor\\MedalofHonorAlliedAssault"
+  },
+  {
+    "Gameid": "b6ae2c0c87bef15c24b00d6f58e86d57",
+    "InstallDirectory": "..\\2023\\MedalofHonor\\MedalofHonorAlliedAssault"	
+  },
+  {
+    "Gameid": "6bc5beffcf666da983879e1483f8061f",
+    "InstallDirectory": "..\\Z\\LOTDK"
+  },
+  {
+    "Gameid": "a6a4c92d2ffd8e0559c3c9b013a37695",
+    "InstallDirectory": "..\\Z\\MTOC"
+  },
+  {
+    "Gameid": "5266a914c693df7cb3d0856a117d2b90",
+    "InstallDirectory": "..\\W\\Go-Go Town"
+  },
+  {
+    "Gameid": "361e32e7db333f9fe6cf8328a1c4098a",
+    "InstallDirectory": "..\\X\\KIBORG"
+  },
+  {
+    "Gameid": "8fd6167786e3288f3d39ed99368e684c",
+    "InstallDirectory": "..\\V\\Subnautica2"
+  },
+  {
+    "Gameid": "37e2bc9c2fe3c7b8308b88bd87498c98",
+    "InstallDirectory": "..\\2023\\MedalofHonor\\MedalofHonorThePacificAssault"
+  },
+  {
+    "Gameid": "c78582430c0e80a97a6a432c8ce5e99f",
+    "InstallDirectory": "..\\2023\\MedalofHonor\\MedalofHonorAlliedAssault"
+  },
+  {
+    "Gameid": "57222369dbebf9adea4a6b050d1e16aa",
+    "InstallDirectory": "..\\2023\\MedalofHonor\\MedalofHonor2010"
+  },
+  {
+    "Gameid": "e5c4a69f0e3a5c61a69d4a65a695a8f0",
+    "InstallDirectory": "..\\W\\SBE"
+  },
+  {
+    "Gameid": "4b36c9ae87fa3bfdcb8adc228b724ff6",
+    "InstallDirectory": "..\\Y\\FarFarWest"
+  },
+  {
+    "Gameid": "615c083af07ba5cddf0adba4b9005ae6",
+    "InstallDirectory": "..\\V\\ScapeGoat"
+  },
+  {
+    "Gameid": "c4ca1bdf7625662f0a69a259bac035d3",
+    "InstallDirectory": "..\\V\\Moria"
+  },
+  {
+    "Gameid": "319a549d42a773f940bd012470049b69",
+    "InstallDirectory": "..\\W\\CozyIsland"
+  },
+  {
+    "Gameid": "ea2a221b185b5081eeb3122d07e045f6",
+    "InstallDirectory": "..\\Resident.Evil\\RER9"
+  },
+  {
+    "Gameid": "6320beb1618f816621b9331525c2129c",
+    "InstallDirectory": "..\\W\\TotalChaos"
+  },
+  {
+    "Gameid": "6040e7d13336c152245aa5fcf8eba8bc",
+    "InstallDirectory": "..\\X\\Vein"
+  },
+  {
+    "Gameid": "d758e1b9afeb337894275e823675611f",
+    "InstallDirectory": "..\\W\\DS2"
+  },
+  {
+    "Gameid": "8806cd90b0fcc0234b7d0a5d6e8ad558",
+    "InstallDirectory": "..\\V\\StarshipTroopers_UBW"
+  },
+  {
+    "Gameid": "8c89edf90778919724e4ef401e198ad5",
+    "InstallDirectory": "..\\X\\GOD FORSAKEN"
+  },
+  {
+    "Gameid": "9fb8197479f5885158a8e9760da9da95",
+    "InstallDirectory": "..\\W\\SlayTheSpire2"
+  },
+  {
+    "Gameid": "3a57a0ea251b8deffbe89e4320fee5d7",
+    "InstallDirectory": "..\\W\\zhenxie2"
+  },
+  {
+    "Gameid": "96ee6cad842c80eeae5846e627ce9fb1",
+    "InstallDirectory": "..\\X\\Circle Empires 2"
+  },
+  {
+    "Gameid": "4d8cfc6857f0a16d951541d5164114b8",
+    "InstallDirectory": "..\\Diablo\\Diablo2Resurrected"
+  },
+  {
+    "Gameid": "cf67a02797f834a7d7915295405fc345",
+    "InstallDirectory": "..\\X\\REANIMAL"
+  },
+  {
+    "Gameid": "f502c2855f5a7388f3ce1bbdcdd73614",
+    "InstallDirectory": "..\\V\\Total War Pharaoh Dynasties"
+  },
+  {
+    "Gameid": "9cb1cf93755cb130ecdc2cba54c32b9c",
+    "InstallDirectory": "..\\V\\Nioh3"
+  },
+  {
+    "Gameid": "284f073adb8a3d64a31d63a2aa1247c3",
+    "InstallDirectory": "..\\W\\Cubic Odyssey"
+  },
+  {
+    "Gameid": "44bab572879d84e1333a395da51d46d1",
+    "InstallDirectory": "..\\X\\DragonSongTavern"
+  },
+  {
+    "Gameid": "a0ca52105cd32897cbc036b3c84bf32d",
+    "InstallDirectory": "..\\X\\QZSim"
+  },
+  {
+    "Gameid": "18af9ff2e02ab1d819f26499c0cbf858",
+    "InstallDirectory": "..\\Y\\BattlefleetGothic2"
+  },
+  {
+    "Gameid": "c50ee17ed4c3d05aedcda13aed654eb2",
+    "InstallDirectory": "..\\X\\DeadSpace2023"
+  },
+  {
+    "Gameid": "eb825c44180d0f5f3c34ea8c9b52aaa3",
+    "InstallDirectory": "..\\X\\No One Survived"
+  },
+  {
+    "Gameid": "e20150677a1e792ee3e5245c7166106c",
+    "InstallDirectory": "..\\X\\GONEFishing"
+  },
+  {
+    "Gameid": "15dd87e60514115eb1fdd7e814973702",
+    "InstallDirectory": "..\\V\\hbmame"
+  },
+  {
+    "Gameid": "f91702c00f469a5b80f817a2ba2a6a9a",
+    "InstallDirectory": "..\\X\\Aloft"
+  },
+  {
+    "Gameid": "ecd22eb5f9d137283db3ab8ab0a688fa",
+    "InstallDirectory": "..\\X\\Supreme Commander 2"
+  },
+  {
+    "Gameid": "1edcf181f6e7155412b050f2c107112b",
+    "InstallDirectory": "..\\X\\Salt 2"
+  },
+  {
+    "Gameid": "23268d12fad493ad0528bf5aa5be2250",
+    "InstallDirectory": "..\\X\\NFS11Remastered"
+  },
+  {
+    "Gameid": "e824cfdc439a216993472dca8920df4d",
+    "InstallDirectory": "..\\W\\YK2"
+  },
+  {
+    "Gameid": "bd678e6816e117a1f6f8e2b0cceb716b",
+    "InstallDirectory": "..\\W\\YK1"
+  },
+  {
+    "Gameid": "af61461eb130872c4f4528410f4b202b",
+    "InstallDirectory": "..\\X\\P5R"
+  },
+  {
+    "Gameid": "6ddfdde6a24e7e70f4a62623b70587cc",
+    "InstallDirectory": "..\\X\\LockdownProtocol"
+  },
+  {
+    "Gameid": "ae2f53bb571be0bb509c8507dbd28c92",
+    "InstallDirectory": "..\\X\\Netherworld Covenant"
+  },
+  {
+    "Gameid": "f55d3d76c2fc8b376c18d8e393cd516f",
+    "InstallDirectory": "..\\X\\Cloudheim"
+  },
+  {
+    "Gameid": "34e48121321eb57e70faad6bd5b90811",
+    "InstallDirectory": "..\\X\\Y0DC"
+  },
+  {
+    "Gameid": "d198845fd6a4c809463cbabcbe307547",
+    "InstallDirectory": "..\\W\\Ride"
+  },
+  {
+    "Gameid": "99d21044333f774527016c3b6ee327ee",
+    "InstallDirectory": "..\\X\\TheOuterWorlds2"
+  },
+  {
+    "Gameid": "14726de5e02faaff1e690fa6c04ea284",
+    "InstallDirectory": "..\\BF6"
+  },
+  {
+    "Gameid": "26a63a217ecffce1361be17ad4ab7b92",
+    "InstallDirectory": "..\\X\\PVZ Replanted"
+  },
+  {
+    "Gameid": "75ba990e7edc7f0cc26aed2b93895375",
+    "InstallDirectory": "..\\W\\Ra2web"
+  },
+  {
+    "Gameid": "2ff577deb863bf6f1eef51a239bd91f6",
+    "InstallDirectory": "..\\Y\\Duckov"
+  },
+  {
+    "Gameid": "878f8e84d36515c599c511971a1cc24e",
+    "InstallDirectory": "..\\X\\Painkiller"
+  },
+  {
+    "Gameid": "27c7f133b708f0af35833f4c0c50a442",
+    "InstallDirectory": "..\\X\\NINJAGAIDEN4"
+  },
+  {
+    "Gameid": "0b7ffda9b5af1807ca05049256aa70a9",
+    "InstallDirectory": "..\\X\\Nightingale"
+  },
+  {
+    "Gameid": "e628e87cd7d05070f6c674d541031964",
+    "InstallDirectory": "..\\X\\LittleNightmaresIII"
+  },
+  {
+    "Gameid": "92988c45e8ddbe239042dc6a994eb986",
+    "InstallDirectory": "..\\X\\RoadCraft"
+  },
+  {
+    "Gameid": "1d7c951a86c41f6b266bdc7316a08e6e",
+    "InstallDirectory": "..\\X\\Survive the Fall"
+  },
+  {
+    "Gameid": "3577a3b717a25644e34f696ad95ce5ef",
+    "InstallDirectory": "..\\X\\DyingLight_TheBeast"
+  },
+  {
+    "Gameid": "67ac3ff754793f5883a0bcbed17b8194",
+    "InstallDirectory": "..\\X\\Shape of Dreams"
+  },
+  {
+    "Gameid": "a8567f45689745c3d7a393840b99fb1e",
+    "InstallDirectory": "..\\X\\KeepDigging"
+  },
+  {
+    "Gameid": "2518f00682a2d47c1b1e970ea2aa5d78",
+    "InstallDirectory": "..\\X\\Shamania"
+  },
+  {
+    "Gameid": "ef7656b6a8e68b164dfbadfa9d2922e4",
+    "InstallDirectory": "..\\X\\Titan Quest II"
+  },
+  {
+    "Gameid": "27b12e36e25a737aaf08426885e395bd",
+    "InstallDirectory": "..\\V\\SkyForceReloaded"
+  },
+  {
+    "Gameid": "2f65919c3d90638b3f9f883165043914",
+    "InstallDirectory": "..\\II\\ShadowGambit_TCC"
+  },
+  {
+    "Gameid": "4e3de1e2132a5fce5ae7ccd83bcf67bc",
+    "InstallDirectory": "..\\III\\TwoPointCampusYuZU"
+  },
+  {
+    "Gameid": "8bc01e7a120c563a2ba8f2e494442962",
+    "InstallDirectory": "..\\Y\\TemtemSwarm"
+  },
+  {
+    "Gameid": "3723ea1c-3727-425a-81f9-513eddb0eb9a",
+    "InstallDirectory": "..\\IndieGame2\\Stardew.Valley"
+  },
+  {
+    "Gameid": "e8ac7a191704583a58951440271b7131",
+    "InstallDirectory": "..\\X\\Sultans Game"
+  },
+  {
+    "Gameid": "24f77cb3f58113e72d9c30bf2d1e65cf",
+    "InstallDirectory": "..\\X\\LumaIsland"
+  },
+  {
+    "Gameid": "322a89997fbab9895c8772b46267f653",
+    "InstallDirectory": "..\\V\\Lovecraft on Rails"
+  },
+  {
+    "Gameid": "509bb2db-7fd0-4cd1-9f80-6671fbbf3c02",
+    "InstallDirectory": "..\\Inversion\\"
+  },
+  {
+    "Gameid": "831ed919-9ceb-4061-afac-bb97fb204dec",
+    "InstallDirectory": "..\\Wolfenstein\\Wolfenstein.TheNewOrder"
+  },
+  {
+    "Gameid": "049ae9fb-5730-4a21-800e-253de9130f6c",
+    "InstallDirectory": "..\\Naruto\\Ultimate.Ninja.Storm.4"
+  },
+  {
+    "Gameid": "2976266af4fa29cf527f34797d49d4d7",
+    "InstallDirectory": "..\\X\\GoWR"
+  },
+  {
+    "Gameid": "86e23e7db894cea0dc97f6c0117dc625",
+    "InstallDirectory": "..\\IIII\\A Dance of Fire and Ice"
+  },
+  {
+    "Gameid": "9a0e0bc1-9355-4e9f-a3d5-b5271f7a21ab",
+    "InstallDirectory": "..\\IndieGame\\shanghai"
+  },
+  {
+    "Gameid": "5a6077a4-f423-4497-90ed-2d21edd4063c",
+    "InstallDirectory": "..\\2023\\Dome.Keeper"
+  },
+  {
+    "Gameid": "0219a065f654b2d0ff379a304f4dd7dc",
+    "InstallDirectory": "..\\II\\ARMORED CORE VI FIRES OF RUBICON"
+  },
+  {
+    "Gameid": "994d8cf46bd550b51172068869222d44",
+    "InstallDirectory": "..\\W\\NordicAshes"
+  },
+  {
+    "Gameid": "0eb27c75c1ffbc635f515194ad499d28",
+    "InstallDirectory": "..\\V\\Against the Storm"
+  },
+  {
+    "Gameid": "5e43cd01-d4dc-4573-93b5-e4f56a1c86c8",
+    "InstallDirectory": "..\\Dead.Rising\\Dead.Rising.3"
+  },
+  {
+    "Gameid": "de4d8181b4ec0bdc782d31a05ac39b37",
+    "InstallDirectory": "..\\X\\Ronin"
+  },
+  {
+    "Gameid": "0e9fbb27-d1cb-4eb6-84ec-4632cb8712bb",
+    "InstallDirectory": "..\\2023\\Pal6"
+  },
+  {
+    "Gameid": "72bceb1a2b1b6646351d62c03af52737",
+    "InstallDirectory": "..\\III\\TOTK"
+  },
+  {
+    "Gameid": "c31327b0-d32f-4a42-84ad-62d7273bf88f",
+    "InstallDirectory": "..\\IndieGame3\\Streets.of.Rogue"
+  },
+  {
+    "Gameid": "db6aa425-001c-4a09-9e45-ed9208bf4d7d",
+    "InstallDirectory": "..\\Saints.Row\\Saints.Row.4"
+  },
+  {
+    "Gameid": "178cfe224ed89c6ecc5f4c41aba4bb67",
+    "InstallDirectory": "..\\V\\Lethal Company"
+  },
+  {
+    "Gameid": "ad9268417f025c9aeae3affad68dde33",
+    "InstallDirectory": "..\\W\\AbioticFactor"
+  },
+  {
+    "Gameid": "26db550fb65cca0f5e1e0567ab8c471c",
+    "InstallDirectory": "..\\II\\CommandoHero"
+  },
+  {
+    "Gameid": "0afc73f9a6908d6b544440b4e47dbc31",
+    "InstallDirectory": "..\\IIII\\Spidersaurs"
+  },
+  {
+    "Gameid": "f2300f32e1ed9b77dc8eb044c462047e",
+    "InstallDirectory": "..\\II\\GunsGoreandCannoli1"
+  },
+  {
+    "Gameid": "936afd4632b6c2c3eb3680917677923b",
+    "InstallDirectory": "..\\III\\Trine 5"
+  },
+  {
+    "Gameid": "b1c0a25e-7ab4-466a-94a5-4cc633a97588",
+    "InstallDirectory": "..\\III\\WDC"
+  },
+  {
+    "Gameid": "e120bc41cdb5ad6af433e471ccdbcc99",
+    "InstallDirectory": "..\\X\\The Scouring"
+  },
+  {
+    "Gameid": "baf202e9-0a68-40da-8fa7-e7816a7d3bcf",
+    "InstallDirectory": "..\\2023\\ShadowOfMordor"
+  },
+  {
+    "Gameid": "5d60c7ac-7e5d-408c-8373-f4ba7a3ca687",
+    "InstallDirectory": "..\\2023\\KatanaZERO"
+  },
+  {
+    "Gameid": "0bbddc75-2ed9-482e-a656-4acf1a3f6191",
+    "InstallDirectory": "..\\Minecraft\\Minecraft.Story.Mode"
+  },
+  {
+    "Gameid": "d8b60251-cd30-4123-b451-910733944b86",
+    "InstallDirectory": "..\\The.Witcher\\The.Witcher.2"
+  },
+  {
+    "Gameid": "181ed3f65c617bd400ef933a672ca758",
+    "InstallDirectory": "..\\V\\Castlevania Lords of Shadow 2"
+  },
+  {
+    "Gameid": "2da2b94c-2dd1-4e1e-bb7d-519a439a0896",
+    "InstallDirectory": "..\\Ra2-China"
+  },
+  {
+    "Gameid": "b177e65d-ab40-43c6-851d-4693bb318ccb",
+    "InstallDirectory": "..\\Sniper\\Sniper.GhostWarriorContracts2"
+  },
+  {
+    "Gameid": "b349fd5053102d5e017a0e96c56d8469",
+    "InstallDirectory": "..\\X\\MSM2"
+  },
+  {
+    "Gameid": "e68b7e3bdbeea02f079204b176175a08",
+    "InstallDirectory": "..\\II\\KingdomCome2"
+  },
+  {
+    "Gameid": "eed51a192de4f17e24909939d37d737c",
+    "InstallDirectory": "..\\II\\GYLT"
+  },
+  {
+    "Gameid": "0696ee12b32441e45928f38775488348",
+    "InstallDirectory": "..\\III\\Sherlock Holmes Chapter One"
+  },
+  {
+    "Gameid": "f7479d2d4d98335ab83eb4d4cfa4e8a0",
+    "InstallDirectory": "..\\IIII\\SongOfNunu"
+  },
+  {
+    "Gameid": "6bdd5409d9f6c3b28d4bc47c3b3add7c",
+    "InstallDirectory": "..\\W\\TBC2\\TBC2"
+  },
+  {
+    "Gameid": "58ad62f1b9aecc02ef15532263a117f1",
+    "InstallDirectory": "..\\III\\Escape the Backrooms"
+  },
+  {
+    "Gameid": "3cc77a6e57fc683b2dcac9984ff8ed4b",
+    "InstallDirectory": "..\\V\\TEKKEN8"
+  },
+  {
+    "Gameid": "15919bec-8be6-4742-8fca-742db0d0e0cd",
+    "InstallDirectory": "..\\The.Forest"
+  },
+  {
+    "Gameid": "4dd5424e8372219f2ed495b2bd2458cc",
+    "InstallDirectory": "..\\X\\StudentAge"
+  },
+  {
+    "Gameid": "76e5db06-bc11-4121-a93a-327a8b45bffa",
+    "InstallDirectory": "..\\Sekiro.ShadowsDieTwice"
+  },
+  {
+    "Gameid": "1a3b9fec468df6ca2b77475ab2e68ff5",
+    "InstallDirectory": "..\\III\\三国群英传7演义版"
+  },
+  {
+    "Gameid": "f8cd9dc4-a1e9-43e9-8417-e1d59fcaef22",
+    "InstallDirectory": "..\\CoD\\CoD12"
+  },
+  {
+    "Gameid": "e39206daf8c95eb97ac175a91216db20",
+    "InstallDirectory": "..\\W\\Frontier_Hunter"
+  },
+  {
+    "Gameid": "7aba0c8f-25c2-4db2-aeff-1ad714e4c789",
+    "InstallDirectory": "..\\Battlefield\\Battlefield.4"
+  },
+  {
+    "Gameid": "858727e716c065b7f818d3f02f543bf7",
+    "InstallDirectory": "..\\V\\Voidtrain"
+  },
+  {
+    "Gameid": "f53f10d2412015021a181a4f95e4b0f3",
+    "InstallDirectory": "..\\W\\sins2"
+  },
+  {
+    "Gameid": "0c8acbc2-4015-40dc-8dc6-6d05e75217d3",
+    "InstallDirectory": "..\\III\\MetroExodus"
+  },
+  {
+    "Gameid": "a156945d60ff98067577201a619d4238",
+    "InstallDirectory": "..\\II\\Layers of Fear 1"
+  },
+  {
+    "Gameid": "a58e80a8-8e60-4fd7-83d3-bb0a81f75872",
+    "InstallDirectory": "..\\Mafia\\Mafia.2.Definitive.Edition"
+  },
+  {
+    "Gameid": "c7562a2d-bd66-4873-8df2-5c4fdf732282",
+    "InstallDirectory": "..\\Orcs.Must.Die\\Orcs.Must.Die.1"
+  },
+  {
+    "Gameid": "dd52357c-ff45-4fdb-b6a9-e361889d0751",
+    "InstallDirectory": "..\\HalfLife\\Half-Life2.3in1"
+  },
+  {
+    "Gameid": "c5dff178-ec66-4dc2-9f3e-576c892788b0",
+    "InstallDirectory": "..\\DARKSOULS\\DarkSouls.3"
+  },
+  {
+    "Gameid": "3a45dcb3959add329dd2917c4c7cf586",
+    "InstallDirectory": "..\\W\\HighriseCity"
+  },
+  {
+    "Gameid": "c3dbeb9dd5921ad82529298cc29800e6",
+    "InstallDirectory": "..\\W\\SWJS"
+  },
+  {
+    "Gameid": "878ce19cb58f2fa3bf94675208a4b951",
+    "InstallDirectory": "..\\IIII\\Oxygen Not Included"
+  },
+  {
+    "Gameid": "8844e12c95fd46214ab7ab17be46b094",
+    "InstallDirectory": "..\\2023\\Batman.ArkhamOrigins"
+  },
+  {
+    "Gameid": "04ac0a87-52e8-44d2-b81b-0f88fb70465e",
+    "InstallDirectory": "..\\IndieGame3\\ELEX2"
+  },
+  {
+    "Gameid": "06e2a885-d712-4d87-9500-262c2d024adc",
+    "InstallDirectory": "..\\IndieGame2\\Days.Gone"
+  },
+  {
+    "Gameid": "2a59107b-78eb-4018-ae89-32be76dbe232",
+    "InstallDirectory": "..\\IndieGame\\Medieval.Dynasty"
+  },
+  {
+    "Gameid": "13f9d090-3b82-41b0-af8b-56e809274098",
+    "InstallDirectory": "..\\IndieGame3\\the.Hunter.Call.of.the.Wild"
+  },
+  {
+    "Gameid": "2bade15a997b26e7887f077ef379b815",
+    "InstallDirectory": "..\\V\\Palworld"
+  },
+  {
+    "Gameid": "ad86f96cae7dcf4c345e6adfeb3d61ff",
+    "InstallDirectory": "..\\X\\SILENT HILL 2 Remake"
+  },
+  {
+    "Gameid": "694b3aec-5b41-413c-a12a-bc9e4187695d",
+    "InstallDirectory": "..\\DARKSOULS\\DarkSouls.Remastered"
+  },
+  {
+    "Gameid": "1b1b20fc-dd3c-4f26-9136-1948f454c3ca",
+    "InstallDirectory": "..\\Mount&Blade\\Mount&Blade2"
+  },
+  {
+    "Gameid": "9e641a99c2df2618fdec466dcb49020e",
+    "InstallDirectory": "..\\V\\ChenXiang"
+  },
+  {
+    "Gameid": "d7124a2f-a99d-490a-a54c-6e44e2308e09",
+    "InstallDirectory": "..\\Destroy.All.Humans\\Destroy.All.Humans.HD"
+  },
+  {
+    "Gameid": "59452627-2b6d-4be8-b9b5-09b9d40c1f32",
+    "InstallDirectory": "..\\CoD\\CoD1"
+  },
+  {
+    "Gameid": "6110fe93-6a3f-418e-b3e1-ec769fbb2495",
+    "InstallDirectory": "..\\2023\\DeadIsland2"
+  },
+  {
+    "Gameid": "81c305a4a2fa9da5183ddda535eae386",
+    "InstallDirectory": "..\\W\\CrimeBossRockayCity"
+  },
+  {
+    "Gameid": "66bf6e64754a430d0c59771f3444b471",
+    "InstallDirectory": "..\\X\\Assassins Creed Mirage"
+  },
+  {
+    "Gameid": "087c2822-e6bc-42e7-806d-5c9d4f979038",
+    "InstallDirectory": "..\\Devil.May.Cry\\Devil.May.Cry.5"
+  },
+  {
+    "Gameid": "9eff332a-9e7e-4db5-a521-8ae38c23b6e8",
+    "InstallDirectory": "..\\TheDarkPictures\\TheDarkPictures.ManofMedan"
+  },
+  {
+    "Gameid": "9844a3b77971a0ec7948701a4cc7e03d",
+    "InstallDirectory": "..\\IIII\\NomNomGalaxy"
+  },
+  {
+    "Gameid": "2b86077388c06cabb5553fba0aa6bbfd",
+    "InstallDirectory": "..\\W\\WelcometoParadiZe"
+  },
+  {
+    "Gameid": "cb2c808e-9f74-4f4b-8a26-f7e19e4b5ee3",
+    "InstallDirectory": "..\\Shin.Sangokumusou\\Shin.Sangokumusou.6.Moushouden"
+  },
+  {
+    "Gameid": "277b43dc8a927c88048dee39be3cf49d",
+    "InstallDirectory": "..\\W\\ERSOTE"
+  },
+  {
+    "Gameid": "bc06284528d7e5a3e3f66da3de8fb2e3",
+    "InstallDirectory": "..\\W\\Kingdom Rush Alliance"
+  },
+  {
+    "Gameid": "96950aac-05e4-4ea0-b742-1f93d903e153",
+    "InstallDirectory": "..\\Wolcen.Lords.of.Mayhem"
+  },
+  {
+    "Gameid": "765801a95abe31a3c3be6dba328ed89f",
+    "InstallDirectory": "..\\V\\DRGSurvivor"
+  },
+  {
+    "Gameid": "61ba2f4b-e7c6-4315-9ecb-2938d1b2c30e",
+    "InstallDirectory": "..\\Mass.Effect\\Mass.Effect.3"
+  },
+  {
+    "Gameid": "b18cffd4-ddbc-44c1-93aa-a262e63b69a4",
+    "InstallDirectory": "..\\Halo\\Halo.Wars.Definitive"
+  },
+  {
+    "Gameid": "cff97d83b17d159fc7ecb89c5a11ff44",
+    "InstallDirectory": "..\\X\\DWORIGINS"
+  },
+  {
+    "Gameid": "63131a2b924e15523dcff92f8224c1b6",
+    "InstallDirectory": "..\\II\\Tiny Tina's Wonderlands"
+  },
+  {
+    "Gameid": "d90a050316900f3b59056d09bff3f612",
+    "InstallDirectory": "..\\Y\\Monster Train 2"
+  },
+  {
+    "Gameid": "1616ee8f38b86115ff434867c9bb7f76",
+    "InstallDirectory": "..\\Y\\LegendOfHeros"
+  },
+  {
+    "Gameid": "6b72ee35-ece7-4c91-b8d6-1cfa07855f69",
+    "InstallDirectory": "..\\Doom\\DOOM2"
+  },
+  {
+    "Gameid": "3ee8600e-2d33-4d4e-8d50-8f9f30c266a9",
+    "InstallDirectory": "..\\Resident.Evil\\Resident.Evil.7"
+  },
+  {
+    "Gameid": "b5664162-1063-47bb-821e-334609ceadc8",
+    "InstallDirectory": "..\\2023\\SAN14PK"
+  },
+  {
+    "Gameid": "a076b852-0899-4c58-bea8-78a17b3b33a1",
+    "InstallDirectory": "..\\Conan\\Conan.Unconquered"
+  },
+  {
+    "Gameid": "94c59fab-4124-4fc3-9cd0-99c4e6e343f1",
+    "InstallDirectory": "..\\2023\\GoatSimulator3"
+  },
+  {
+    "Gameid": "7355c91f-fee9-4ec3-a479-928f6e8c1968",
+    "InstallDirectory": "..\\IndieGame3\\9MonkeysofShaolin"
+  },
+  {
+    "Gameid": "c89b230318b2a034f823be50bf256908",
+    "InstallDirectory": "..\\V\\Scourge of the village"
+  },
+  {
+    "Gameid": "d2c0bf010c5fb5c54a26f28259a99d29",
+    "InstallDirectory": "..\\IIII\\AlanWake2"
+  },
+  {
+    "Gameid": "f8b5f953074a64e03999500ad36d26b6",
+    "InstallDirectory": "..\\W\\Killing Sun"
+  },
+  {
+    "Gameid": "8d6debd2629d67afdb4d041f4d5a8ee7",
+    "InstallDirectory": "..\\III\\Forged In Shadow Torch"
+  },
+  {
+    "Gameid": "7c7f497ea9545549045a732e3999c73b",
+    "InstallDirectory": "..\\II\\TheScrollOfTaiwu"
+  },
+  {
+    "Gameid": "a6c0be2ae0727c3e6652cfe880ed2f9b",
+    "InstallDirectory": "..\\II\\RIDE5"
+  },
+  {
+    "Gameid": "fdae0f462e6fc8b633aaa0f02a7c9826",
+    "InstallDirectory": "..\\III\\Starfield"
+  },
+  {
+    "Gameid": "ec7ffda542296c82e2e0ba7dc6f5f090",
+    "InstallDirectory": "..\\IndieGame3\\JaggedAlliance3"
+  },
+  {
+    "Gameid": "b71c7d4c7c5838692e54c108ee8ea673",
+    "InstallDirectory": "..\\V\\SchoolLabyrinth"
+  },
+  {
+    "Gameid": "decd54878fb12e97155c2ead22bd0241",
+    "InstallDirectory": "..\\III\\Cyberpunk2077V2"
+  },
+  {
+    "Gameid": "dca135bb-7704-42aa-b033-8051b118972e",
+    "InstallDirectory": "..\\Alien.Shooter\\Alien.Shooter.LastHope"
+  },
+  {
+    "Gameid": "e5a9fdd7-506e-4069-b0ec-88c559c27063",
+    "InstallDirectory": "..\\GTA\\GTA4\\EFLC"
+  },
+  {
+    "Gameid": "e0e726c2a4260d9e527c66828f71d0d5",
+    "InstallDirectory": "..\\IIII\\Ghostrunner2"
+  },
+  {
+    "Gameid": "9a635897-83b6-45a7-b79c-c465f598ce3b",
+    "InstallDirectory": "..\\Bayonetta\\Bayonetta.2.US.CEMU"
+  },
+  {
+    "Gameid": "d36b547d-a436-465a-b983-670c6f71a23e",
+    "InstallDirectory": "..\\IndieGame2\\ParanormalHK"
+  },
+  {
+    "Gameid": "4c2e9358-ad91-4c66-bd59-9a5200f20eb8",
+    "InstallDirectory": "..\\Raiden\\RaidenIII"
+  },
+  {
+    "Gameid": "d2dce679faf5c35c297cf3bb9bf4a490",
+    "InstallDirectory": "..\\III\\Maneater"
+  },
+  {
+    "Gameid": "0e8ac411-5d6e-45fa-9caa-9f5e5e12e852",
+    "InstallDirectory": "..\\Resident.Evil\\Resident.Evil.5.GoldEdition"
+  },
+  {
+    "Gameid": "fb4e54286a690efb2e67b6731fe59669",
+    "InstallDirectory": "..\\II\\THE KING OF FIGHTERS XV"
+  },
+  {
+    "Gameid": "74b8bc17-73f2-40c4-8ce6-da1c4d81766f",
+    "InstallDirectory": "..\\Saints.Row\\Saints.Row.3"
+  },
+  {
+    "Gameid": "1d3c01479812fd44c2036ac697996018",
+    "InstallDirectory": "..\\II\\Gord"
+  },
+  {
+    "Gameid": "c3adb3eb-648f-48ff-bedc-0b6bff9c800c",
+    "InstallDirectory": "..\\Total.War\\Total.War.ROME.Remastered"
+  },
+  {
+    "Gameid": "0d8f2a84-836a-4f73-ba66-3c334f71683d",
+    "InstallDirectory": "..\\Torchlight\\Torchlight.3"
+  },
+  {
+    "Gameid": "feddf4e8b36f763ba79114c1b431c331",
+    "InstallDirectory": "..\\III\\Journey"
+  },
+  {
+    "Gameid": "e990872e-4a66-404c-adc1-87e346d176c8",
+    "InstallDirectory": "..\\Griftlands"
+  },
+  {
+    "Gameid": "180facd3-53c2-4ab6-8a4f-4917a9e204a9",
+    "InstallDirectory": "..\\Rage\\RAGE.2"
+  },
+  {
+    "Gameid": "8fa72f883976c9a35ee95fbe41aab59b",
+    "InstallDirectory": "..\\W\\DDS2"
+  },
+  {
+    "Gameid": "7da6aab49c713643c34933cd8f4b98c4",
+    "InstallDirectory": "..\\W\\Guoyin"
+  },
+  {
+    "Gameid": "2f2cd057-a67f-419d-9477-50d8be296b04",
+    "InstallDirectory": "..\\Age.of.Empires\\Age.of.Empires.IV"
+  },
+  {
+    "Gameid": "135bb519a4b27627011922ba9d02ea67",
+    "InstallDirectory": "..\\W\\Commandos Origins"
+  },
+  {
+    "Gameid": "0bb72d0ba9722fa4f27d65f37200a077",
+    "InstallDirectory": "..\\IndieGame3\\Stellaris"
+  },
+  {
+    "Gameid": "10db33533f0c6960b10135ce1c68d472",
+    "InstallDirectory": "..\\III\\Moncage"
+  },
+  {
+    "Gameid": "5fbc409c9c3ffd6ca78b8fceec3925df",
+    "InstallDirectory": "..\\X\\Everspace2"
+  },
+  {
+    "Gameid": "0626adf5-7ad5-4e2c-875e-73a7abbd6578",
+    "InstallDirectory": "..\\Kingdom.Rush\\Kingdom Rush Origins"
+  },
+  {
+    "Gameid": "7b89a0e9-239c-4a93-b00f-88533b31bb34",
+    "InstallDirectory": "..\\IndieGame3\\Farm.Together"
+  },
+  {
+    "Gameid": "ddb6bb0d-508e-406c-8a6f-b3976912bb07",
+    "InstallDirectory": "..\\Battlefield\\Battlefield.3"
+  },
+  {
+    "Gameid": "faba60858b25995932c09254a47c96c2",
+    "InstallDirectory": "..\\III\\GTA5ModA"
+  },
+  {
+    "Gameid": "5227e956e3c5c3cc79036025b7967b01",
+    "InstallDirectory": "..\\V\\HumanitZ"
+  },
+  {
+    "Gameid": "53cb34339bf6a48701fcd0ef5e59a0ab",
+    "InstallDirectory": "..\\X\\TheLasTofUs2"
+  },
+  {
+    "Gameid": "cfad287c-9ec9-4ef8-a291-761d697abe97",
+    "InstallDirectory": "..\\IndieGame\\Shadow.Tactics.Aiko's.Choice"
+  },
+  {
+    "Gameid": "da1a6b66-d1c9-4ce5-8a5f-0ac4f5459b28",
+    "InstallDirectory": "..\\Tropico\\Tropico.5"
+  },
+  {
+    "Gameid": "c716599c-716e-4b4e-b1b7-aac585bebff9",
+    "InstallDirectory": "..\\The.Sims\\The.Sims.4"
+  },
+  {
+    "Gameid": "459eb16a-c52d-47c5-bdf7-50e223decd66",
+    "InstallDirectory": "..\\Persona\\Persona5S"
+  },
+  {
+    "Gameid": "ecba5e8a-8b85-4ecc-becf-03eeb500a5f4",
+    "InstallDirectory": "..\\IndieGame3\\Humankind"
+  },
+  {
+    "Gameid": "0df11209e84b5ec9e2ef83b9e0d194df",
+    "InstallDirectory": "..\\X\\DarkestDungeon2"
+  },
+  {
+    "Gameid": "ecc1e8a5b2db3c9d7f4b082f3913833c",
+    "InstallDirectory": "..\\II\\Disco Elysium"
+  },
+  {
+    "Gameid": "1940a5305e6b5a715fdde6f34515d043",
+    "InstallDirectory": "..\\X\\KLETKA"
+  },
+  {
+    "Gameid": "56a3f1e552283c76d72d497e602b3f88",
+    "InstallDirectory": "..\\III\\ResidentEvil6Goldberg"
+  },
+  {
+    "Gameid": "3b21dec247c8032dc519e24f2632c541",
+    "InstallDirectory": "..\\X\\SparkingZERO"
+  },
+  {
+    "Gameid": "0506c44f-38c8-41cd-98db-8bdbcdf18b58",
+    "InstallDirectory": "..\\EarthDefense\\EarthDefenseForce4"
+  },
+  {
+    "Gameid": "7b2cd8b3ccecb505e6fd924cdf0096ca",
+    "InstallDirectory": "..\\V\\Torment"
+  },
+  {
+    "Gameid": "4e83ecedeca31db3b96e6d11682efc7b",
+    "InstallDirectory": "..\\V\\SecretsOfGrindea"
+  },
+  {
+    "Gameid": "0e13169fc3e934b55818568948a1d100",
+    "InstallDirectory": "..\\X\\MiSide"
+  },
+  {
+    "Gameid": "04daf5682a0e81d2062f568d2433b221",
+    "InstallDirectory": "..\\V\\Murky Divers"
+  },
+  {
+    "Gameid": "b8b2aa820e574628ad74abf7a2820579",
+    "InstallDirectory": "..\\X\\Liar's Bar"
+  },
+  {
+    "Gameid": "6d26c5ac3745969e97a2b194bcba3074",
+    "InstallDirectory": "..\\II\\Layers of Fear 3"
+  },
+  {
+    "Gameid": "e1d6f106-a074-4e63-80e7-9f9f0f09bcba",
+    "InstallDirectory": "..\\2023\\PlantsVsZombies3D"
+  },
+  {
+    "Gameid": "a5c11da4-852f-4235-8b4f-7126369298e7",
+    "InstallDirectory": "..\\III\\Celeste"
+  },
+  {
+    "Gameid": "a2be79ba3a8aee6f5d90161f36c9b37c",
+    "InstallDirectory": "..\\X\\Cassette Beasts"
+  },
+  {
+    "Gameid": "83561bf711d56e15817bea5ac2beda3f",
+    "InstallDirectory": "..\\V\\DeadIslandDefinitiveEdition"
+  },
+  {
+    "Gameid": "4b70cdd7-0837-4b53-b005-5b23e9929b8f",
+    "InstallDirectory": "..\\Alien.Shooter\\Alien.Shooter.TD"
+  },
+  {
+    "Gameid": "f460e980cf6e103657eeee5b15159b00",
+    "InstallDirectory": "..\\V\\BannerlordModVer"
+  },
+  {
+    "Gameid": "7f75ddb3cd92d891e837f99eeb09313c",
+    "InstallDirectory": "..\\IndieGame3\\ELEX1"
+  },
+  {
+    "Gameid": "a8dfb2b12af54be9de7026c1504f23e7",
+    "InstallDirectory": "..\\X\\Rebrushed"
+  },
+  {
+    "Gameid": "defd8b2dd7a91004f5137db08d8203d1",
+    "InstallDirectory": "..\\Y\\Mycopunk"
+  },
+  {
+    "Gameid": "1a82d6921906af5729e821181df5eb92",
+    "InstallDirectory": "..\\X\\Headliners"
+  },
+  {
+    "Gameid": "02199faf-d0d8-49e9-95ab-96fc03ddf49d",
+    "InstallDirectory": "..\\IndieGame\\Hades"
+  },
+  {
+    "Gameid": "e5a51445-fc1e-4cc1-a552-928fa0dacca6",
+    "InstallDirectory": "..\\2023\\InsectSwarm"
+  },
+  {
+    "Gameid": "4fc8d67e-0db2-4933-b8bd-f24e04e8f6af",
+    "InstallDirectory": "..\\2023\\sdhdship"
+  },
+  {
+    "Gameid": "dc0a8972-7f16-4391-9ffa-1301252a97ab",
+    "InstallDirectory": "..\\The.Witcher\\Cyberpunk2077"
+  },
+  {
+    "Gameid": "89e19eaa9e321a4d1dbce993445b675d",
+    "InstallDirectory": "..\\X\\Men of War II"
+  },
+  {
+    "Gameid": "b859c6c9-0910-481a-8d62-9560b832a069",
+    "InstallDirectory": "..\\2023\\SAN13PK"
+  },
+  {
+    "Gameid": "60b39f62e0e123d1b70a274b79f6987d",
+    "InstallDirectory": "..\\IIII\\TheSmurfs2"
+  },
+  {
+    "Gameid": "c5d1b752f0a7213b279d5d86fe2f41a2",
+    "InstallDirectory": "..\\W\\PanicInTheWoods"
+  },
+  {
+    "Gameid": "2613fd68-45b5-4072-8f41-1d092eb42ecd",
+    "InstallDirectory": "..\\2023\\AtomicHeart"
+  },
+  {
+    "Gameid": "3a8f3e27-6184-48df-8dba-581dcb674489",
+    "InstallDirectory": "..\\IndieGame3\\Deathloop"
+  },
+  {
+    "Gameid": "78f9db5f-1154-4d93-a576-60bb2cf9a7ec",
+    "InstallDirectory": "..\\GTA\\Bully.Scholarship.Edition"
+  },
+  {
+    "Gameid": "f5f51b9e2b18ac5f24e17ea21d54e711",
+    "InstallDirectory": "..\\IndieGame3\\Kenshi"
+  },
+  {
+    "Gameid": "c27268efe71c05ab250172b1fca976bf",
+    "InstallDirectory": "..\\V\\KSP"
+  },
+  {
+    "Gameid": "e6e38a46b31b29b0f89758807a6e5592",
+    "InstallDirectory": "..\\X\\Squirreled Away"
+  },
+  {
+    "Gameid": "00dfef41-6fd0-4f8c-aac8-e5cdb3294d2b",
+    "InstallDirectory": "..\\2023\\EasternExorcist"
+  },
+  {
+    "Gameid": "6d31bb9c-b580-4b2d-bd02-129f86bbc192",
+    "InstallDirectory": "..\\A.Plague.Tale.Innocence"
+  },
+  {
+    "Gameid": "296a35e2-3287-432c-af31-457030c2573e",
+    "InstallDirectory": "..\\Yakuza\\Yakuza4Remastered"
+  },
+  {
+    "Gameid": "5ce09f36bf9218979cc1e40bb20ef09b",
+    "InstallDirectory": "..\\III\\Monument.Valley.2"
+  },
+  {
+    "Gameid": "a8fd4e88e5c90f917f835f7ed7ad728f",
+    "InstallDirectory": "..\\IIII\\Tactics Ogre Reborn"
+  },
+  {
+    "Gameid": "7a5ac537-0a2b-418b-9577-e74f0892aca4",
+    "InstallDirectory": "..\\2023\\NOBU16"
+  },
+  {
+    "Gameid": "c148b22f-c6b2-42c8-bc01-476ab6222750",
+    "InstallDirectory": "..\\Tomb.Raider\\Rise.of.the.Tomb.Raider"
+  },
+  {
+    "Gameid": "2f14db31-d932-4740-8dae-447308d7be5f",
+    "InstallDirectory": "..\\IndieGame2\\Vampyr"
+  },
+  {
+    "Gameid": "fa886674b2722cc9c47523861c7480ac",
+    "InstallDirectory": "..\\W\\AleandTaleTavern"
+  },
+  {
+    "Gameid": "682faf27e405a3a174061206e1e29034",
+    "InstallDirectory": "..\\V\\Cult of the Lamb"
+  },
+  {
+    "Gameid": "b0916ba2-7e19-42a8-9ade-e5e87dcc869c",
+    "InstallDirectory": "..\\Total.War\\Total.War.Rome.II"
+  },
+  {
+    "Gameid": "0598c18f-b881-479e-ab5d-32ca0b6f693b",
+    "InstallDirectory": "..\\Resident.Evil\\Resident.Evil.3.Remake"
+  },
+  {
+    "Gameid": "18b7e28efb613f4c79071f44cbcd430e",
+    "InstallDirectory": "..\\X\\KARMATheDarkWorld"
+  },
+  {
+    "Gameid": "ef10c6ae95f808c76b87f530825562a1",
+    "InstallDirectory": "..\\IIII\\RoboCop"
+  },
+  {
+    "Gameid": "4d96c4c34e8f2cbdc2d0d5be13beb83b",
+    "InstallDirectory": "..\\V\\Hollow Cocoon"
+  },
+  {
+    "Gameid": "3ae1cc967e33baa649e53e233b323949",
+    "InstallDirectory": "..\\IIII\\Border Officer"
+  },
+  {
+    "Gameid": "35418d19-db20-478c-89ef-8c5545cb1fdf",
+    "InstallDirectory": "..\\Kingdom.Rush\\Kingdom Rush Frontiers"
+  },
+  {
+    "Gameid": "33618ebe80ed1c133acaaf9ba3628a56",
+    "InstallDirectory": "..\\V\\Tomb123"
+  },
+  {
+    "Gameid": "8dd9f139-72b7-4cb4-9346-da1afae95f31",
+    "InstallDirectory": "..\\2023\\isaac-ng"
+  },
+  {
+    "Gameid": "b77954d92b977527712fd82651d1d974",
+    "InstallDirectory": "..\\IndieGame3\\TKS3"
+  },
+  {
+    "Gameid": "6beaeb16831f2379009b12f4c8331ec4",
+    "InstallDirectory": "..\\IIII\\Metal.Hellsinger"
+  },
+  {
+    "Gameid": "841d33440d8ac15b0390457fac47bb03",
+    "InstallDirectory": "..\\V\\FarCry3BloodDragon"
+  },
+  {
+    "Gameid": "551aa479-bc98-4997-9411-5f7da8720701",
+    "InstallDirectory": "..\\IndieGame3\\Prison.Simulator"
+  },
+  {
+    "Gameid": "cb83edc6-8357-434f-a406-3895ba686fa8",
+    "InstallDirectory": "..\\III\\SOPFFO"
+  },
+  {
+    "Gameid": "7e5f22ac1cbbacbb6fb3f2db0dd6b724",
+    "InstallDirectory": "..\\IIII\\Spelunky 2"
+  },
+  {
+    "Gameid": "b21068c10d2c945c1958ab4bfa31a9af",
+    "InstallDirectory": "..\\V\\AloneInTheDark"
+  },
+  {
+    "Gameid": "a9f0136bbbaa09c4a6f23c377bd86c33",
+    "InstallDirectory": "..\\W\\PacificDrive"
+  },
+  {
+    "Gameid": "12c63ca929c7a10953eb0968a19a7f3a",
+    "InstallDirectory": "..\\V\\TaxiLife"
+  },
+  {
+    "Gameid": "e28095ec-e0c4-4d07-8415-29984855a9f0",
+    "InstallDirectory": "..\\II\\MonsterHunterIceborne"
+  },
+  {
+    "Gameid": "150e7af58b50e403ad9aa5f4b8d0f54d",
+    "InstallDirectory": "..\\II\\EscapeFromTarkov"
+  },
+  {
+    "Gameid": "edcf04e4b7e29a7760579909b039a0ba",
+    "InstallDirectory": "..\\II\\UEBS2"
+  },
+  {
+    "Gameid": "a5db28bef9eea6fcfa69c1a4a58deb90",
+    "InstallDirectory": "..\\W\\Mortal"
+  },
+  {
+    "Gameid": "09f197eb-a8a2-450e-a9eb-81dc2c70fcc6",
+    "InstallDirectory": "..\\Company.of.Heroes\\Company of Heroes"
+  },
+  {
+    "Gameid": "f0660378-07ec-4e34-a853-8d41a4c3dc74",
+    "InstallDirectory": "..\\Blizzard\\Warcraft3R"
+  },
+  {
+    "Gameid": "d735aa317ddd74e99c53ab04ead7d24f",
+    "InstallDirectory": "..\\II\\Sea of Stars"
+  },
+  {
+    "Gameid": "b29c3174-f945-4fb1-b738-15caead4fced",
+    "InstallDirectory": "..\\III\\Cossacks3"
+  },
+  {
+    "Gameid": "4161f054146a05c22b4339fcfb1e3ba1",
+    "InstallDirectory": "..\\IIII\\Unepic"
+  },
+  {
+    "Gameid": "32995247ad40868388dbc5c4a71973dd",
+    "InstallDirectory": "..\\X\\Empire of the Ants"
+  },
+  {
+    "Gameid": "3df43e11cae46043dd35713ccf2633b2",
+    "InstallDirectory": "..\\X\\RSDragonwilds"
+  },
+  {
+    "Gameid": "d5cc0227-e28d-42c6-99bd-b90d5850410e",
+    "InstallDirectory": "..\\2023\\DynastyWarriors8"
+  },
+  {
+    "Gameid": "8b36b1d4-9edf-4bdf-8a96-42540bb81c12",
+    "InstallDirectory": "..\\Zombie.Army\\Zombie.Army.Trilogy"
+  },
+  {
+    "Gameid": "e844f23a6760b7ac0fba715752ee5cb9",
+    "InstallDirectory": "..\\2023\\MedalofHonor\\MedalofHonorWarfighter"
+  },
+  {
+    "Gameid": "337aa637dc555a739cba10ba1f593adf",
+    "InstallDirectory": "..\\IndieGame3\\JurassicWorldEvolution1"
+  },
+  {
+    "Gameid": "c0645cff-a05c-49e4-8f8c-432e227e5d15",
+    "InstallDirectory": "..\\Sniper\\Sniper.Ghost.Warrior.3"
+  },
+  {
+    "Gameid": "9d137f17d94e78cc81fed43ef5458961",
+    "InstallDirectory": "..\\X\\steep"
+  },
+  {
+    "Gameid": "979efbdb3f35602fdf5b83b2a168d4ef",
+    "InstallDirectory": "..\\III\\eFootballPES2021"
+  },
+  {
+    "Gameid": "daa822a9-ef81-48a1-a714-64e29b5ca8d2",
+    "InstallDirectory": "..\\Resident.Evil\\Resident.Evil.6"
+  },
+  {
+    "Gameid": "6fc7d3c0-c0ce-44e6-a5e9-f508b7e5051c",
+    "InstallDirectory": "..\\Kingdom.Rush\\Iron.Marines"
+  },
+  {
+    "Gameid": "638a96e83574ce8afc3aefa6391feea8",
+    "InstallDirectory": "..\\W\\Dread Tomb"
+  },
+  {
+    "Gameid": "b4aec36b-ff6b-48f1-af06-c77a63c7c09d",
+    "InstallDirectory": "..\\III\\Titanfall2"
+  },
+  {
+    "Gameid": "47f0d19b546b489c034e6684ae7d3193",
+    "InstallDirectory": "..\\V\\Enshrouded"
+  },
+  {
+    "Gameid": "fe554488-48df-4882-8974-cecef5d3e1ce",
+    "InstallDirectory": "..\\IndieGame3\\MAME"
+  },
+  {
+    "Gameid": "b1035a79a538023bb939edf0d326a1b6",
+    "InstallDirectory": "..\\IIII\\FromSpace"
+  },
+  {
+    "Gameid": "fb32531a-fc9d-4b5d-b972-a8dbd5cb4d85",
+    "InstallDirectory": "..\\II\\ChineseParent"
+  },
+  {
+    "Gameid": "776fa81cb54ab471793c66e4ea2b6217",
+    "InstallDirectory": "..\\II\\Disney Dreamlight Valley"
+  },
+  {
+    "Gameid": "7d4ad550524b47b01ecf3c623932bf6c",
+    "InstallDirectory": "..\\IIII\\Aliens.Fireteam.Elite"
+  },
+  {
+    "Gameid": "2d21ca2449842e9606b58ffcef76c9df",
+    "InstallDirectory": "..\\IIII\\Rebel Inc Escalation"
+  },
+  {
+    "Gameid": "27dcd5fc-cfa1-45c3-8231-e16d2f25ac6c",
+    "InstallDirectory": "..\\Battlefield\\Battlefield.2"
+  },
+  {
+    "Gameid": "7b2342f2-f3b6-42c0-9390-6d32d822d823",
+    "InstallDirectory": "..\\Resident.Evil\\RE4HD"
+  },
+  {
+    "Gameid": "18a844f68a267b6d38fdfff54e2e650b",
+    "InstallDirectory": "..\\W\\Soulmask"
+  },
+  {
+    "Gameid": "5fe13c64-a8c1-441e-9743-b93c4bff2c0e",
+    "InstallDirectory": "..\\Total.War\\Total.War.ATTILA"
+  },
+  {
+    "Gameid": "20c5680b-900d-48e6-b816-82b03afe8b09",
+    "InstallDirectory": "..\\Heluo.Legend\\The.Books.of.Dragon"
+  },
+  {
+    "Gameid": "9f9850e2-5058-4605-a601-fe01425246bf",
+    "InstallDirectory": "..\\IndieGame3\\Blasphemous"
+  },
+  {
+    "Gameid": "3f49e09485f5987613ea7ca9482bad15",
+    "InstallDirectory": "..\\IIII\\Fable Anniversary"
+  },
+  {
+    "Gameid": "07edac88-26b3-495e-83f6-669d97d88d3b",
+    "InstallDirectory": "..\\2023\\Rogue.Legacy.2"
+  },
+  {
+    "Gameid": "7eff134c-aad1-43ef-8398-910981cd1424",
+    "InstallDirectory": "..\\III\\Northgard"
+  },
+  {
+    "Gameid": "c52e53d7cb7e80165452d6b92674b56f",
+    "InstallDirectory": "..\\II\\Quantum Break"
+  },
+  {
+    "Gameid": "2cefcfed-c2c3-44c2-b35b-eb0e9b9d0653",
+    "InstallDirectory": "..\\Sudden.Strike\\Sudden.Strike.4"
+  },
+  {
+    "Gameid": "47f8d24afe59dcb2ce202bb84d2414a4",
+    "InstallDirectory": "..\\V\\GranblueFantasyRelink"
+  },
+  {
+    "Gameid": "444b65a6-99bb-4231-a9f1-1f8f7733c3de",
+    "InstallDirectory": "..\\Dishonored\\Dishonored.Death.of.the.Outsider"
+  },
+  {
+    "Gameid": "017628dc-99ee-427b-a81f-343e86bd77d5",
+    "InstallDirectory": "..\\IndieGame2\\The.Treasures.of.Montezuma.4"
+  },
+  {
+    "Gameid": "02e877a0-d698-482b-8866-89ba6201b43c",
+    "InstallDirectory": "..\\Age.of.Empires\\Age.of.Empires.III.Definitive.Edition"
+  },
+  {
+    "Gameid": "ca1f84274f4531f6ea6afc4e25767a03",
+    "InstallDirectory": "..\\2023\\Batman.ShadowsEdition"
+  },
+  {
+    "Gameid": "9cddaf0e-e654-4617-83d3-f59e49fd960c",
+    "InstallDirectory": "..\\IndieGame3\\minecraft-ASongofIceandFire"
+  },
+  {
+    "Gameid": "03c691803c34ea6b411e18e32bb47eb0",
+    "InstallDirectory": "..\\Y\\Stronghold Crusader Definitive Edition"
+  },
+  {
+    "Gameid": "5603a6b1-db62-45eb-aa36-3171abf413ec",
+    "InstallDirectory": "..\\IndieGame\\Overcooked.2"
+  },
+  {
+    "Gameid": "2eb113e1-fe4d-404f-91af-77d258f60623",
+    "InstallDirectory": "..\\Alien.Shooter\\Alien.Shooter.2.Reloaded"
+  },
+  {
+    "Gameid": "6a48f0d3-0e1b-4957-ba9a-b9abb75bae44",
+    "InstallDirectory": "..\\III\\BatmanAC"
+  },
+  {
+    "Gameid": "16ff9fb4f57c5aca906e172b5f2722e2",
+    "InstallDirectory": "..\\V\\MythofEmpires"
+  },
+  {
+    "Gameid": "281a2b3629cf075120b19bde6b9bca0d",
+    "InstallDirectory": "..\\X\\I Am Future"
+  },
+  {
+    "Gameid": "e52b23fc-bf30-4039-82fa-2bc6c372a3b5",
+    "InstallDirectory": "..\\Far.Cry\\Far.Cry.New.Dawn"
+  },
+  {
+    "Gameid": "29413a2f08ab74016929f7239a192f3e",
+    "InstallDirectory": "..\\II\\KingdomCome"
+  },
+  {
+    "Gameid": "b8e05d855680067dfd674ff5f6b07716",
+    "InstallDirectory": "..\\V\\Carrier Command 2"
+  },
+  {
+    "Gameid": "a0fa621b71e1807244f013590754f541",
+    "InstallDirectory": "..\\2023\\Batman.GothamKnights"
+  },
+  {
+    "Gameid": "3c30ba27-a5e7-4a74-9ef7-ccf2c702ca40",
+    "InstallDirectory": "..\\2023\\ItTakesTwo"
+  },
+  {
+    "Gameid": "e420033c1bb1bfe16f501cbaffb23bcc",
+    "InstallDirectory": "..\\V\\MadFather"
+  },
+  {
+    "Gameid": "c0fd9fa2-64be-4540-9811-10e8bbd1322a",
+    "InstallDirectory": "..\\IndieGame3\\Ikaruga"
+  },
+  {
+    "Gameid": "5d70b338-d25a-40c8-945f-ecc7398684ce",
+    "InstallDirectory": "..\\Yakuza\\YakuzaKiwami"
+  },
+  {
+    "Gameid": "8283d31d14214ca5a7ba70aae48e3bf4",
+    "InstallDirectory": "..\\W\\ThePlanetCrafter"
+  },
+  {
+    "Gameid": "c5b8a921c69d52af62665ee4a686eb17",
+    "InstallDirectory": "..\\W\\Silent Rain"
+  },
+  {
+    "Gameid": "fad02da4-00b5-4512-bb60-0264ce2cd8bc",
+    "InstallDirectory": "..\\2023\\WAR2"
+  },
+  {
+    "Gameid": "d39d60136e0dda9998550e3ffb8e90b8",
+    "InstallDirectory": "..\\IIII\\Otherworld Legends"
+  },
+  {
+    "Gameid": "11818493ba908cf13359185a87b1244a",
+    "InstallDirectory": "..\\IIII\\20.Minutes.Till.Dawn"
+  },
+  {
+    "Gameid": "fbf5c49a488f52161c02e0a6425313c9",
+    "InstallDirectory": "..\\II\\Ballance"
+  },
+  {
+    "Gameid": "7b5f2a80-1f4d-40e7-8103-f82fea9bda02",
+    "InstallDirectory": "..\\2023\\DeadorAlive6"
+  },
+  {
+    "Gameid": "7e5b680b-5944-4b8d-8e85-860e0d4bf235",
+    "InstallDirectory": "..\\Wolfenstein\\Wolfenstein2"
+  },
+  {
+    "Gameid": "a945efb386d0a2e0e88ca30eaea8a6e7",
+    "InstallDirectory": "..\\II\\Frozen Flame"
+  },
+  {
+    "Gameid": "5c658d58-ba54-4aed-bd81-2eb543bb01ff",
+    "InstallDirectory": "..\\Total.War\\Total.War.Troy"
+  },
+  {
+    "Gameid": "ca768214d4431d7a272cdfb31e31b3c3",
+    "InstallDirectory": "..\\W\\VCP"
+  },
+  {
+    "Gameid": "bbd8564a-8b5c-40a4-8c06-ca463cb6cddf",
+    "InstallDirectory": "..\\Alien.Shooter\\Alien.Shooter.2.Conscription"
+  },
+  {
+    "Gameid": "f51b5361323d8666c87144ae30b5e263",
+    "InstallDirectory": "..\\W\\CSC"
+  },
+  {
+    "Gameid": "53003ce19bb9b6d32fae75773982dfd8",
+    "InstallDirectory": "..\\III\\StarshipTroopersTerranCommand"
+  },
+  {
+    "Gameid": "ae73a4eca58f147041bb96d690630bf5",
+    "InstallDirectory": "..\\V\\CoJGunslinger"
+  },
+  {
+    "Gameid": "335d9b7709a8c9358c12c3393a69f027",
+    "InstallDirectory": "..\\V\\KaMRemake"
+  },
+  {
+    "Gameid": "fa61c95b613fa3ce3f246522a9208f2d",
+    "InstallDirectory": "..\\X\\Strike Force Heroes"
+  },
+  {
+    "Gameid": "8ab39ea706b6b2a3c5e6507b134ba670",
+    "InstallDirectory": "..\\IIII\\Asterigos"
+  },
+  {
+    "Gameid": "46d3d5154536262df7da8c64d9a9a1d8",
+    "InstallDirectory": "..\\IIII\\Men of War Assault Squad 2"
+  },
+  {
+    "Gameid": "3abd3527f670c09d269392a31b8bcbc8",
+    "InstallDirectory": "..\\COD\\COD17"
+  },
+  {
+    "Gameid": "71e0f33b521889f84224ca0fe9aff6c1",
+    "InstallDirectory": "..\\II\\Dragon Age Inquisition"
+  },
+  {
+    "Gameid": "8c1af7a3-ee8b-4b65-8cff-e536dfb50f66",
+    "InstallDirectory": "..\\Civilization\\Civilization5"
+  },
+  {
+    "Gameid": "69aa47db-1da6-441e-882f-b21ea4baf358",
+    "InstallDirectory": "..\\Mass.Effect\\Mass.Effect.1"
+  },
+  {
+    "Gameid": "255475592972e14f888d565c93a90fba",
+    "InstallDirectory": "..\\V\\DRAGON QUEST BUILDERS"
+  },
+  {
+    "Gameid": "99074459cef8f63b09002a61a251a70f",
+    "InstallDirectory": "..\\IIII\\Deadpool"
+  },
+  {
+    "Gameid": "7c15d8ca-b203-423f-99aa-c5f861092e44",
+    "InstallDirectory": "..\\LifeIsStrange\\LifeIsStrange2"
+  },
+  {
+    "Gameid": "d532748e-eaa4-4edb-a306-ff5ee7ff9918",
+    "InstallDirectory": "..\\Race\\Hotshot.Racing"
+  },
+  {
+    "Gameid": "ac7040ccf3e11443c3aa9513346feda8",
+    "InstallDirectory": "..\\III\\The Red Solstice 2 Survivors"
+  },
+  {
+    "Gameid": "d4d1c3ff7e6af92a46d1db42a12cd01b",
+    "InstallDirectory": "..\\Y\\Derail Valley"
+  },
+  {
+    "Gameid": "0bc5f6d0825a3f748155b4dc2cb38645",
+    "InstallDirectory": "..\\IIII\\Contraband Police"
+  },
+  {
+    "Gameid": "90d26d62-980b-4297-9f1d-dbf8314213ab",
+    "InstallDirectory": "..\\EarthDefense\\EarthDefenseForce5"
+  },
+  {
+    "Gameid": "4422a7eb-86d9-49c7-aead-ed9957b8a0c7",
+    "InstallDirectory": "..\\Serious.Sam\\Serious.Sam.4"
+  },
+  {
+    "Gameid": "ba7adba2985a626749c135c47d96ed3e",
+    "InstallDirectory": "..\\W\\Grounded"
+  },
+  {
+    "Gameid": "ab755604-9b94-4959-b3c3-62b33520c1e3",
+    "InstallDirectory": "..\\Outlast\\Outlast.Whistleblower"
+  },
+  {
+    "Gameid": "4211ed0e-16f6-43a6-a195-50138d3b4e63",
+    "InstallDirectory": "..\\IndieGame2\\guigubahuang"
+  },
+  {
+    "Gameid": "2b04a63a-9066-4630-9efb-f78f7895c121",
+    "InstallDirectory": "..\\IndieGame2\\ModernStoryteller"
+  },
+  {
+    "Gameid": "464966f0a6828bc6c80136bb9afd52d4",
+    "InstallDirectory": "..\\W\\The road of Jianghu"
+  },
+  {
+    "Gameid": "5ffff078052f62f3a3cf07124f80c544",
+    "InstallDirectory": "..\\II\\FIFA23"
+  },
+  {
+    "Gameid": "ee07db33637f805743d80031e75079a7",
+    "InstallDirectory": "..\\IIII\\Dungeons.of.S"
+  },
+  {
+    "Gameid": "796e2c87ad2ebd69982656257eb933b7",
+    "InstallDirectory": "..\\II\\Age of Wonders 4"
+  },
+  {
+    "Gameid": "d9f1a605-6dbd-44ba-a4f9-6452fdea43f5",
+    "InstallDirectory": "..\\II\\Gunfire.Reborn"
+  },
+  {
+    "Gameid": "1d37309384d426a32d397854a4c47d77",
+    "InstallDirectory": "..\\X\\Chorus"
+  },
+  {
+    "Gameid": "ec698d07-ea29-4da4-881c-f3cf99542366",
+    "InstallDirectory": "..\\Darksiders\\Darksiders.Genesis"
+  },
+  {
+    "Gameid": "84580fca940528e6ed2d0478dc067008",
+    "InstallDirectory": "..\\II\\Only Climb Better Together"
+  },
+  {
+    "Gameid": "66def19d-a157-4d35-b0b9-2f88d1527fd8",
+    "InstallDirectory": "..\\Green.Hell"
+  },
+  {
+    "Gameid": "0d77369466e28317c269db6a7945b42f",
+    "InstallDirectory": "..\\V\\Diplomacy is Not an Option"
+  },
+  {
+    "Gameid": "a0e28694a59fe0826375dfb97e64e234",
+    "InstallDirectory": "..\\V\\Max Payne 3"
+  },
+  {
+    "Gameid": "e908f1fa-80c9-4cdc-80ce-5e0027938e8a",
+    "InstallDirectory": "..\\2023\\FIFA19"
+  },
+  {
+    "Gameid": "dac0867f9cdf9671b80571ec20b34c28",
+    "InstallDirectory": "..\\V\\Feed The Cups"
+  },
+  {
+    "Gameid": "efe33439e25363aa853093505e126399",
+    "InstallDirectory": "..\\IIII\\INVITATION.To.FEAR"
+  },
+  {
+    "Gameid": "409b7c92-f190-4f7b-af6c-18ff4dbc2d6a",
+    "InstallDirectory": "..\\Zombie.Army\\Zombie.Army.4"
+  },
+  {
+    "Gameid": "c0903a4d7a5f6c1243ea73e4a6aa3d77",
+    "InstallDirectory": "..\\IIII\\TerminatorResistance"
+  },
+  {
+    "Gameid": "2596e6f0063b9f1d7ada7a31aa45fc4c",
+    "InstallDirectory": "..\\V\\GarrysMod"
+  },
+  {
+    "Gameid": "ecd8e149-1161-4215-823d-0023b7484e20",
+    "InstallDirectory": "..\\Orcs.Must.Die\\Orcs.Must.Die.3"
+  },
+  {
+    "Gameid": "613b9163e6ce9a53e5a51328be0f4903",
+    "InstallDirectory": "..\\IIII\\ARK.Survival.Ascended"
+  },
+  {
+    "Gameid": "da3c1b80-4d5b-4de0-a2c9-1b47963d7bbd",
+    "InstallDirectory": "..\\State.of.Decay\\State.of.Decay.2.Juggernaut.Edition"
+  },
+  {
+    "Gameid": "453f0346ca4d598aba50cff8cf845dea",
+    "InstallDirectory": "..\\IIII\\MusouOrochiZ"
+  },
+  {
+    "Gameid": "7870c49fbf3c4cdc2d2ca28ace88967b",
+    "InstallDirectory": "..\\IIII\\Volcanoids"
+  },
+  {
+    "Gameid": "3649e8497a7af655a7b1b7bfb4736a6b",
+    "InstallDirectory": "..\\X\\Saleblazers"
+  },
+  {
+    "Gameid": "25ea9b723e46f97399d9712ca917fe73",
+    "InstallDirectory": "..\\V\\FSB"
+  },
+  {
+    "Gameid": "35db13bc-0462-47bd-a022-c61d53cd0e17",
+    "InstallDirectory": "..\\IndieGame\\Inscryption"
+  },
+  {
+    "Gameid": "cf50aa6af9744b218d954c2d4a7c2072",
+    "InstallDirectory": "..\\IIII\\DayZ"
+  },
+  {
+    "Gameid": "0d097317-5cc0-4aeb-b9f7-04f84c179d55",
+    "InstallDirectory": "..\\IndieGame2\\TrainSimWorld2"
+  },
+  {
+    "Gameid": "c932df84-354f-410a-8eef-558c56ec4538",
+    "InstallDirectory": "..\\2023\\thefriendsofringoishikawa"
+  },
+  {
+    "Gameid": "47fe414c74743c123b67d401f3d791ad",
+    "InstallDirectory": "..\\V\\MadMax"
+  },
+  {
+    "Gameid": "97bdcbfd-7ab6-4865-b0b2-76a9a907fef8",
+    "InstallDirectory": "..\\We\\We8China"
+  },
+  {
+    "Gameid": "59f16715a9c108e1e3440041b3f64fe6",
+    "InstallDirectory": "..\\V\\BatmanArkhamAsylum"
+  },
+  {
+    "Gameid": "7f9718ba-6dd6-492c-a5b9-f606a03c68c7",
+    "InstallDirectory": "..\\Company.of.Crime"
+  },
+  {
+    "Gameid": "05916597b0564d95136fe1260118143a",
+    "InstallDirectory": "..\\2023\\MedalofHonor\\MedalofHonorAirborne"
+  },
+  {
+    "Gameid": "249ef319-fff5-496f-9d72-8601eacc832d",
+    "InstallDirectory": "..\\Warhammer40K\\Warhammer40K.Dawn.Of.War2"
+  },
+  {
+    "Gameid": "7e465d290d6e69e70c233351eaebc013",
+    "InstallDirectory": "..\\IIII\\PC.Building.Simulator"
+  },
+  {
+    "Gameid": "db7c4b3e-2010-49e7-9f5f-e56fa92c1134",
+    "InstallDirectory": "..\\HalfLife\\Half-Life2.3in1"
+  },
+  {
+    "Gameid": "74f17604cbad918eea5fe0605a78e99c",
+    "InstallDirectory": "..\\III\\HengGe"
+  },
+  {
+    "Gameid": "9ae5fad178a86297d6e9878a9817838b",
+    "InstallDirectory": "..\\X\\Orcs Must Die Deathtrap"
+  },
+  {
+    "Gameid": "9b6e7d50-8595-4a1c-9ea4-d44bb40e0987",
+    "InstallDirectory": "..\\Sanguo.Heroes\\Sanguo2.God"
+  },
+  {
+    "Gameid": "a3143df4-33c8-4476-8774-41db3a243701",
+    "InstallDirectory": "..\\2023\\Evil.West"
+  },
+  {
+    "Gameid": "b2bb24e2-ce5a-4da3-bc43-d5b4d27e102e",
+    "InstallDirectory": "..\\Commandos\\Commandos.2.HD"
+  },
+  {
+    "Gameid": "145b4d82-3060-48b3-bc0b-4b77f62fb2da",
+    "InstallDirectory": "..\\GTA\\GTAsa"
+  },
+  {
+    "Gameid": "23d01d81-87bd-4ed4-b34f-20a4187a78df",
+    "InstallDirectory": "..\\Sanguo.Heroes\\Sanguo2"
+  },
+  {
+    "Gameid": "a7125203-7afa-4168-824f-a92058e0b5c8",
+    "InstallDirectory": "..\\Metal.Gear\\Metal.Gear.Rising.Revengeance"
+  },
+  {
+    "Gameid": "b8db9da3-26ed-4187-b496-b09c4c1d95d0",
+    "InstallDirectory": "..\\Watch.Dogs\\Watch.Dogs.Legion"
+  },
+  {
+    "Gameid": "da4164bc-e32a-4380-9aa9-8709f708a8a4",
+    "InstallDirectory": "..\\Far.Cry\\Far.Cry.3"
+  },
+  {
+    "Gameid": "5104acab-3691-431f-98f2-6a1f4f8174b0",
+    "InstallDirectory": "..\\MotoGP\\MotoGP.20"
+  },
+  {
+    "Gameid": "d9e894ec-8215-409d-a18b-4199d1e524de",
+    "InstallDirectory": "..\\III\\ImmortalsFenyxRising"
+  },
+  {
+    "Gameid": "4216cf0e145b9cad871ac4d52b5d37f7",
+    "InstallDirectory": "..\\II\\LOP"
+  },
+  {
+    "Gameid": "6af35726579814a787f719db565b1172",
+    "InstallDirectory": "..\\Y\\House of Legacy"
+  },
+  {
+    "Gameid": "e8a797ee-88d7-4f7c-a7d2-a4beb4d558d2",
+    "InstallDirectory": "..\\Mafia\\Mafia.3"
+  },
+  {
+    "Gameid": "0acb461e-4398-4624-80be-d66a49c60357",
+    "InstallDirectory": "..\\IndieGame3\\BloodySpell"
+  },
+  {
+    "Gameid": "ac96afe4-361e-46ef-a819-d22c85f88890",
+    "InstallDirectory": "..\\CoD\\CoD6.Remastered"
+  },
+  {
+    "Gameid": "89ac1d147aac03faa74d1399b2e7a526",
+    "InstallDirectory": "..\\IIII\\WARRIORS OROCHI 4"
+  },
+  {
+    "Gameid": "5edc9c66-ca3d-4c0a-8fd8-49eba896ee17",
+    "InstallDirectory": "..\\Total.War\\Total.War.Medieval.II"
+  },
+  {
+    "Gameid": "92b749f7-d1c0-4433-b214-33f266785ea1",
+    "InstallDirectory": "..\\IndieGame3\\Kena"
+  },
+  {
+    "Gameid": "16e6e5b9ce7f9ef5054fbf58afbf1d34",
+    "InstallDirectory": "..\\V\\BuckshotRoulette"
+  },
+  {
+    "Gameid": "6ba3d406-271e-4bfd-879d-e86ae823d63b",
+    "InstallDirectory": "..\\Shin.Sangokumusou\\Shin.Sangokumusou.8.Dynasty.Warriors"
+  },
+  {
+    "Gameid": "e009c2884efb9397cc177b2524e2ca8e",
+    "InstallDirectory": "..\\X\\CartOfGlory"
+  },
+  {
+    "Gameid": "46aba636040d3293f77cda3ec4740f5e",
+    "InstallDirectory": "..\\W\\dotAGE"
+  },
+  {
+    "Gameid": "ba9bb9746ce423fc1d52684249d752e2",
+    "InstallDirectory": "..\\X\\Techtonica"
+  },
+  {
+    "Gameid": "f9d1584c-c2aa-4a35-9bba-3faa959eab4a",
+    "InstallDirectory": "..\\Dishonored\\Dishonored.2"
+  },
+  {
+    "Gameid": "6dddb42c27bff508cc516ce072a7d25c",
+    "InstallDirectory": "..\\III\\San11PK"
+  },
+  {
+    "Gameid": "d36d4879973664b25bf4c1c3b27331d4",
+    "InstallDirectory": "..\\W\\VLADiKBRUTAL"
+  },
+  {
+    "Gameid": "14da2989-0d64-4343-8c4a-39b23e958784",
+    "InstallDirectory": "..\\2023\\WoLongFallenDynasty"
+  },
+  {
+    "Gameid": "af17770e2b9546af35f2207bcfad3c46",
+    "InstallDirectory": "..\\IIII\\Roots of Pacha"
+  },
+  {
+    "Gameid": "cf910365885e5e377ea6045d5802fe1c",
+    "InstallDirectory": "..\\W\\Ratopia"
+  },
+  {
+    "Gameid": "10357d31645fd501450f308f08b0b4c9",
+    "InstallDirectory": "..\\V\\EmpireEarth2"
+  },
+  {
+    "Gameid": "e82447fe4eb39dd3fff19138dc69b8be",
+    "InstallDirectory": "..\\W\\RenMei"
+  },
+  {
+    "Gameid": "8f82eccc77eb48925964d1d9afe2c22c",
+    "InstallDirectory": "..\\IndieGame3\\TouhouMystiaIzakaya"
+  },
+  {
+    "Gameid": "aaf157bc921da7e6e9938d82ec142a32",
+    "InstallDirectory": "..\\V\\Project Zero 2"
+  },
+  {
+    "Gameid": "a6525a947de637cab486bd7a5573c4d6",
+    "InstallDirectory": "..\\II\\Turbo Overkill"
+  },
+  {
+    "Gameid": "12207152-9807-4655-94ab-a5f2ffe5c2e0",
+    "InstallDirectory": "..\\2023\\Uncharted.Legacy.of.Thieves.Collection"
+  },
+  {
+    "Gameid": "9655f0f469572ad1431a149775051fd0",
+    "InstallDirectory": "..\\V\\Bravery and Greed"
+  },
+  {
+    "Gameid": "caf9f51f-b461-4e92-b181-9bd0c6ee7a8f",
+    "InstallDirectory": "..\\HighonLife"
+  },
+  {
+    "Gameid": "cc0dd5528b755cd5c54fbdf232c68bf8",
+    "InstallDirectory": "..\\V\\ForeverSkies"
+  },
+  {
+    "Gameid": "5df4f402cfe8452ae9013575cdb16891",
+    "InstallDirectory": "..\\W\\PingKouZhi"
+  },
+  {
+    "Gameid": "45ababe1466778df4bf9120826e7b1b2",
+    "InstallDirectory": "..\\IndieGame3\\三国群英传7重制版"
+  },
+  {
+    "Gameid": "a895c552-581c-42ca-a84e-77438cc88c1a",
+    "InstallDirectory": "..\\Ra2"
+  },
+  {
+    "Gameid": "7bdf13ccc3efabf7a7626e22d4c8e751",
+    "InstallDirectory": "..\\III\\0AD"
+  },
+  {
+    "Gameid": "746117ab-05f4-4abc-b739-4d0531c7f9a9",
+    "InstallDirectory": "..\\CoD\\CoD8"
+  },
+  {
+    "Gameid": "53d55ced78dfbea4ba8bac282d2f0966",
+    "InstallDirectory": "..\\V\\TiberiumCrisis2"
+  },
+  {
+    "Gameid": "7fa389ebbaec21415cc873e48eecd2c9",
+    "InstallDirectory": "..\\IndieGame3\\ReadyOrNot"
+  },
+  {
+    "Gameid": "b7a47ca49b9cb88a74908c09ff8ad01e",
+    "InstallDirectory": "..\\V\\A Difficult Game About Climbing"
+  },
+  {
+    "Gameid": "ddec5e54bbb1f1650d5bd87d2e2e870e",
+    "InstallDirectory": "..\\X\\Star Wars Battlefront II"
+  },
+  {
+    "Gameid": "5f5574ed-12f7-4095-83f5-e05d0f1881fb",
+    "InstallDirectory": "..\\2023\\Cricket"
+  },
+  {
+    "Gameid": "df8e72625ae8d1df037d995dfc630927",
+    "InstallDirectory": "..\\III\\三国群英传7两宋风云"
+  },
+  {
+    "Gameid": "dd4c4dd0-62b6-4c83-a834-c505c63f6573",
+    "InstallDirectory": "..\\IndieGame3\\Divinity.Original.Sin.2"
+  },
+  {
+    "Gameid": "ac6c1ae3-92d9-45df-88ee-92f2d80e27e0",
+    "InstallDirectory": "..\\2023\\ForestVillage"
+  },
+  {
+    "Gameid": "9db394b9223f7cedb92965ab8edcf837",
+    "InstallDirectory": "..\\II\\KAKU.Ancient.Seal"
+  },
+  {
+    "Gameid": "a0ba11326a03390ccc946b285819661e",
+    "InstallDirectory": "..\\V\\Future Soldier"
+  },
+  {
+    "Gameid": "5a7cbd2eaff4f49b046a489519f30e40",
+    "InstallDirectory": "..\\II\\Atelier_Ryza_3"
+  },
+  {
+    "Gameid": "85742554dedd7294c59b64cbc9d4b90d",
+    "InstallDirectory": "..\\X\\SixDays"
+  },
+  {
+    "Gameid": "f7e372a798064b189e0f2c4a2a1f3bc4",
+    "InstallDirectory": "..\\V\\1 Million Zombies"
+  },
+  {
+    "Gameid": "ef4380be93661aed046d5b7ab7dc76dc",
+    "InstallDirectory": "..\\IIII\\EU4"
+  },
+  {
+    "Gameid": "27d5300c7912b3fc5afb0e9e5ba265c6",
+    "InstallDirectory": "..\\II\\FORSPOKEN"
+  },
+  {
+    "Gameid": "2a9e23257450907cb85f9de3440d79e1",
+    "InstallDirectory": "..\\Yakuza\\Yakuza7LikeADragon"
+  },
+  {
+    "Gameid": "9e39777b-02e7-4955-8d39-70cea1d2a59e",
+    "InstallDirectory": "..\\IndieGame\\Ghost.Recon.Wildlands"
+  },
+  {
+    "Gameid": "bffcf569433b9749a2767cbb81f7cb67",
+    "InstallDirectory": "..\\IIII\\RimWorld"
+  },
+  {
+    "Gameid": "184c31af42a3c5ce57afb182b935d7db",
+    "InstallDirectory": "..\\V\\Mad Games Tycoon 2"
+  },
+  {
+    "Gameid": "104ad6c2-233b-403a-b8a1-ae4ece9e483c",
+    "InstallDirectory": "..\\NBA\\NBA2K22"
+  },
+  {
+    "Gameid": "6a52a2fe-4552-4d66-881d-f90ee3f6fc79",
+    "InstallDirectory": "..\\2023\\Anno1800"
+  },
+  {
+    "Gameid": "3cf849f53d4ecfefbaaeb566b0423d4a",
+    "InstallDirectory": "..\\X\\InternetCafeSupermarketSimulator2024"
+  },
+  {
+    "Gameid": "be27f2b743a8cf8a51011f2f37340ce2",
+    "InstallDirectory": "..\\X\\Maniac"
+  },
+  {
+    "Gameid": "1e855213e1c954ab989f02044347b949",
+    "InstallDirectory": "..\\V\\Broforce"
+  },
+  {
+    "Gameid": "8f31df45-32de-4039-8be6-1563789861b1",
+    "InstallDirectory": "..\\Age.of.Empires\\Age.of.Empires.II.Definitive.Edition"
+  },
+  {
+    "Gameid": "f73399a71e5b6368a7a1ac0b62ae300a",
+    "InstallDirectory": "..\\IIII\\Crusader Kings III"
+  },
+  {
+    "Gameid": "0604169d1b96c6d64c7f6d4acb529550",
+    "InstallDirectory": "..\\II\\Powerwash Simulator"
+  },
+  {
+    "Gameid": "d175e5678fe6a1d5b93dc0fa58cf72db",
+    "InstallDirectory": "..\\W\\Ballex2TheHangingGardens"
+  },
+  {
+    "Gameid": "c7bd553a-1ea9-4d42-b56d-3364a325819c",
+    "InstallDirectory": "..\\Tomb.Raider\\Tomb.8.Underworld"
+  },
+  {
+    "Gameid": "8d1dd0137eb2ee6ce44939af3b6c5953",
+    "InstallDirectory": "..\\Y\\MindsEye"
+  },
+  {
+    "Gameid": "162655143465742efd24a5fa19e46038",
+    "InstallDirectory": "..\\W\\ContractVille"
+  },
+  {
+    "Gameid": "9bd05865252159c3d01800c264f9a397",
+    "InstallDirectory": "..\\IIII\\FaeFarm"
+  },
+  {
+    "Gameid": "0248e203-7e11-41aa-8e0e-8ea938db2a9d",
+    "InstallDirectory": "..\\2023\\Prodeus"
+  },
+  {
+    "Gameid": "d4c2f6894fd50caa0582eb3c9f8a0309",
+    "InstallDirectory": "..\\X\\SongsofSilence"
+  },
+  {
+    "Gameid": "e6ace5a83f5c8138b48e7b8016e9b8aa",
+    "InstallDirectory": "..\\II\\NieR Replicant ver 1 22474487139"
+  },
+  {
+    "Gameid": "d928ba1ab8310476a4d3032b2124dcca",
+    "InstallDirectory": "..\\X\\Paleo Pines"
+  },
+  {
+    "Gameid": "9e940bc8-2979-40b1-b575-ab0abfb00427",
+    "InstallDirectory": "..\\Age.of.Empires\\Age.of.Empires.II.HD"
+  },
+  {
+    "Gameid": "fed24c84-82bf-4cb3-b17f-e8a8f0f1847d",
+    "InstallDirectory": "..\\2023\\JianghuSurvivors"
+  },
+  {
+    "Gameid": "930225c3a2493cdca0ca97d1e0695ce5",
+    "InstallDirectory": "..\\COD\\COD16"
+  },
+  {
+    "Gameid": "9dfa57b29243a503b27c46ee189dacb8",
+    "InstallDirectory": "..\\V\\Disgaea7"
+  },
+  {
+    "Gameid": "1dddda60e274ba6341504b6b9d6adac9",
+    "InstallDirectory": "..\\III\\Sekiro"
+  },
+  {
+    "Gameid": "362d1dcbe3f6b20597a0c571a454c21b",
+    "InstallDirectory": "..\\Y\\植物大战僵尸无双版"
+  },
+  {
+    "Gameid": "604f1d08-e986-46f7-b667-f4e15d4cda83",
+    "InstallDirectory": "..\\Iron.Harvest"
+  },
+  {
+    "Gameid": "f9d2edb9-6c81-4403-a00a-c6fd9babc390",
+    "InstallDirectory": "..\\IndieGame2\\Among.Us"
+  },
+  {
+    "Gameid": "8c253e3f-b5bf-4fc1-b447-b5746b35a916",
+    "InstallDirectory": "..\\Wolfenstein\\Wolfenstein.Youngblood"
+  },
+  {
+    "Gameid": "8083a6e7762385655a79eab5f64cda06",
+    "InstallDirectory": "..\\III\\DREDGE"
+  },
+  {
+    "Gameid": "52c9f6340188a05406e7850cb2be52d1",
+    "InstallDirectory": "..\\III\\Desynced"
+  },
+  {
+    "Gameid": "014d2d6e-a3d3-4d1c-b754-f1555c7ca774",
+    "InstallDirectory": "..\\Yakuza\\Yakuza6"
+  },
+  {
+    "Gameid": "bfa3e898e966ca3f9a73b27372e81b75",
+    "InstallDirectory": "..\\IIII\\TheSmurfs1"
+  },
+  {
+    "Gameid": "947a4a7de2e3c4721bc021a1212cc097",
+    "InstallDirectory": "..\\IIII\\SlimeRancher2"
+  },
+  {
+    "Gameid": "c39895a47c185dddff17669b5d31627e",
+    "InstallDirectory": "..\\COD\\COD21"
+  },
+  {
+    "Gameid": "885a5483bc79420607a32df6fca15f27",
+    "InstallDirectory": "..\\V\\Flooded"
+  },
+  {
+    "Gameid": "1ecd7546-a809-49ad-a3f8-79db49dfa044",
+    "InstallDirectory": "..\\CTS\\Euro Truck Simulator 2"
+  },
+  {
+    "Gameid": "663edee0-6898-454a-b3dc-94d6d4f547ec",
+    "InstallDirectory": "..\\Detroit.Become.Human"
+  },
+  {
+    "Gameid": "0e216472-66e3-416c-a422-3be6c974505c",
+    "InstallDirectory": "..\\IndieGame2\\Dragon.Spear"
+  },
+  {
+    "Gameid": "19929f50-1810-40a4-8ddd-799a9ca1f591",
+    "InstallDirectory": "..\\Assassins.Creed\\Assassins.Creed.Syndicate"
+  },
+  {
+    "Gameid": "ada4d531-83c2-4a6f-b839-fa08839876d8",
+    "InstallDirectory": "..\\EarthDefense\\EarthDefenseForceFIR"
+  },
+  {
+    "Gameid": "8fb968011aa3cc051feb521b4be0d988",
+    "InstallDirectory": "..\\V\\Infection Free Zone"
+  },
+  {
+    "Gameid": "d2aad954-5194-42ac-95ff-40abeb8c99ce",
+    "InstallDirectory": "..\\IndieGame3\\NinjaRemastered"
+  },
+  {
+    "Gameid": "e1897ff9-4fd7-4315-a072-91deba1a5284",
+    "InstallDirectory": "..\\GTA\\GTA3"
+  },
+  {
+    "Gameid": "656a0852-b9a3-4807-a159-7f01182e8bf4",
+    "InstallDirectory": "..\\CoD\\COD10"
+  },
+  {
+    "Gameid": "2f19823fb9c6a1d0ac609572151c84dc",
+    "InstallDirectory": "..\\W\\CoralIsland"
+  },
+  {
+    "Gameid": "347f3b781b95eab972ea9c1d2e43792d",
+    "InstallDirectory": "..\\X\\DW7XLCE"
+  },
+  {
+    "Gameid": "d2ae46102a4c601e28e36beb33d2fe9f",
+    "InstallDirectory": "..\\X\\inZOI"
+  },
+  {
+    "Gameid": "1fa05ba5-7a7b-4aba-b718-2cc688211d70",
+    "InstallDirectory": "..\\GTA\\GTA5"
+  },
+  {
+    "Gameid": "bc17ad076a04f8c5ab22fed7e879530f",
+    "InstallDirectory": "..\\W\\DBXV2"
+  },
+  {
+    "Gameid": "f2446a59-b2ff-4710-8d0c-a12ab2ad98d2",
+    "InstallDirectory": "..\\III\\NFS21"
+  },
+  {
+    "Gameid": "a4eaae1f42a6b04847586d0c62bd93a5",
+    "InstallDirectory": "..\\IIII\\ASTRONEER"
+  },
+  {
+    "Gameid": "c8d47e0c3bd510f4a562a74c40e93be2",
+    "InstallDirectory": "..\\IIII\\Cities Skylines II"
+  },
+  {
+    "Gameid": "f2963cf08b4fd0cc15c95b186b7a0dc6",
+    "InstallDirectory": "..\\X\\PlantsVsZombiesRH"
+  },
+  {
+    "Gameid": "b9c1969504425b1b5ed3b0a4451f3cb4",
+    "InstallDirectory": "..\\Y\\Helldivers"
+  },
+  {
+    "Gameid": "ac88f90ebe8880a0fd3450a0a081f1e5",
+    "InstallDirectory": "..\\Resident.Evil\\RE1HD"
+  },
+  {
+    "Gameid": "836ff7ad-4e25-4fec-86bf-f3b51f817d54",
+    "InstallDirectory": "..\\Hitman\\Hitman.3"
+  },
+  {
+    "Gameid": "49b74634-3b3f-48f8-83ee-2421b629873d",
+    "InstallDirectory": "..\\IndieGame3\\CraftWorld"
+  },
+  {
+    "Gameid": "0fe818c8-05dd-42b0-96fa-c3df709d712e",
+    "InstallDirectory": "..\\IndieGame2\\BrightMemoryInfinite"
+  },
+  {
+    "Gameid": "f9a3ef23-6083-40fd-8274-d032ea03b76e",
+    "InstallDirectory": "..\\CoD\\COD14"
+  },
+  {
+    "Gameid": "b5ec9feec0c3c8cf8d91cb7d0b75e29e",
+    "InstallDirectory": "..\\III\\Satisfactory"
+  },
+  {
+    "Gameid": "26998f07-7de1-4eb6-9acd-86aefe21f2d3",
+    "InstallDirectory": "..\\III\\Calico"
+  },
+  {
+    "Gameid": "e7f8807b51c29bb872186fa34797e302",
+    "InstallDirectory": "..\\IIII\\TheTalosPrinciple 2"
+  },
+  {
+    "Gameid": "b4bb2cb94e5783639d9e59dcaac14f44",
+    "InstallDirectory": "..\\X\\CluckmechOasis"
+  },
+  {
+    "Gameid": "da54713d93526a05dd7ffa0560b68719",
+    "InstallDirectory": "..\\W\\Warhammer 40000 Space Marine 2"
+  },
+  {
+    "Gameid": "5c8a4c2b-76af-4f18-b87e-e163e7989dcc",
+    "InstallDirectory": "..\\Kingdom.Rush\\Kingdom Rush"
+  },
+  {
+    "Gameid": "39f4c7e8-1731-46e8-90fb-0cc6341f4e7d",
+    "InstallDirectory": "..\\III\\PlanetCoaster"
+  },
+  {
+    "Gameid": "cc331c50-9a60-4aee-ba2d-7b857f826ee7",
+    "InstallDirectory": "..\\IndieGame3\\Terraria"
+  },
+  {
+    "Gameid": "f67a8259-6c0a-4524-8e3b-f41d3c395a5f",
+    "InstallDirectory": "..\\Kingdom.Rush\\Kingdom.Rush.Vengeance"
+  },
+  {
+    "Gameid": "aa2502b2-1112-401e-b126-f4a5cc61ce7f",
+    "InstallDirectory": "..\\CoD\\COD13"
+  },
+  {
+    "Gameid": "dee17610ce36fe8a510e62703680137a",
+    "InstallDirectory": "..\\IIII\\Portal 2"
+  },
+  {
+    "Gameid": "405c8601-194e-4a4b-9762-44288092c3f5",
+    "InstallDirectory": "..\\TheDarkPictures\\TheDarkPictures.AnthologyLittleHope"
+  },
+  {
+    "Gameid": "ddf88991-4077-489e-904d-8ca2a0e052c6",
+    "InstallDirectory": "..\\Commandos\\CommCP"
+  },
+  {
+    "Gameid": "58a2d3c19f6f13419936c157b460ff54",
+    "InstallDirectory": "..\\W\\In search of you"
+  },
+  {
+    "Gameid": "e50dc801-0833-4379-968e-0b0c0351ccf7",
+    "InstallDirectory": "..\\III\\GettingOverIt"
+  },
+  {
+    "Gameid": "debc899b94292a92f986b1ba79dab4f4",
+    "InstallDirectory": "..\\II\\One Military Camp"
+  },
+  {
+    "Gameid": "8229a8e8e7f4d96c001e8f45457318b8",
+    "InstallDirectory": "..\\II\\Smalland"
+  },
+  {
+    "Gameid": "d23f31f7-461f-48e1-b9d2-ba4f796789d0",
+    "InstallDirectory": "..\\Total.War\\Total.War.Empire"
+  },
+  {
+    "Gameid": "f5f6730d-3193-43ed-8262-7c62b0131b24",
+    "InstallDirectory": "..\\III\\War3"
+  },
+  {
+    "Gameid": "1cc25718385036e683b7b83f22092711",
+    "InstallDirectory": "..\\Y\\GangsOfSherwood"
+  },
+  {
+    "Gameid": "484f29938cecffe5fd1824a0cc5f4e1d",
+    "InstallDirectory": "..\\V\\LostPlanet3"
+  },
+  {
+    "Gameid": "db6fad92-9930-4e63-8125-cc217fa9f013",
+    "InstallDirectory": "..\\The.Evil.Within\\The.Evil.Within.2"
+  },
+  {
+    "Gameid": "b2bf8aeb030e929eddcf52137f133d5a",
+    "InstallDirectory": "..\\V\\FFXVI"
+  },
+  {
+    "Gameid": "8b2a7693-1393-46d9-8c33-68d450ca7c03",
+    "InstallDirectory": "..\\IndieGame\\Left4Dead2"
+  },
+  {
+    "Gameid": "712047b0-6bc1-41ff-a247-0406637bf029",
+    "InstallDirectory": "..\\We\\We82012"
+  },
+  {
+    "Gameid": "04c46962ab3ed3cdd2ba892a1112d9ca",
+    "InstallDirectory": "..\\W\\Hades II"
+  },
+  {
+    "Gameid": "76b37f37-4f6c-445e-85b7-1004d3a2beb5",
+    "InstallDirectory": "..\\IndieGame3\\Don't Starve Together"
+  },
+  {
+    "Gameid": "7aa72ef66872c5d94e15b4ebe350a767",
+    "InstallDirectory": "..\\V\\Mining Mechs"
+  },
+  {
+    "Gameid": "3264f3d0-3cff-48b3-bcc8-781319dea99e",
+    "InstallDirectory": "..\\III\\ConanExiles"
+  },
+  {
+    "Gameid": "3279d1f633973eedd88993d53a4885c7",
+    "InstallDirectory": "..\\V\\UNDERWARD"
+  },
+  {
+    "Gameid": "a9f4d8c01bfe5215c3516dc67a88189e",
+    "InstallDirectory": "..\\III\\Total.War.Three.Kingdoms_DLC"
+  },
+  {
+    "Gameid": "69c29818-a71c-46df-a8ee-01199a16f2b0",
+    "InstallDirectory": "..\\Persona\\Persona4Golden"
+  },
+  {
+    "Gameid": "cf9df91f-e843-4744-93ac-47be039c5247",
+    "InstallDirectory": "..\\Trine\\Trine.1"
+  },
+  {
+    "Gameid": "e7e89f09-76ac-4d90-a0a1-4db998609735",
+    "InstallDirectory": "..\\III\\Cuphead"
+  },
+  {
+    "Gameid": "34c677f8-c42e-4ea2-9e8c-76f3a959e1b4",
+    "InstallDirectory": "..\\III\\ARK"
+  },
+  {
+    "Gameid": "a9003918-f9c4-4d7b-9484-6e8677209893",
+    "InstallDirectory": "..\\PayDay\\PAYDAY.2"
+  },
+  {
+    "Gameid": "e6c53842-1afa-4778-a0c0-5cf3d2f8e770",
+    "InstallDirectory": "..\\Assassins.Creed\\Assassins.Creed.IV.Black.Flag"
+  },
+  {
+    "Gameid": "dc220ada-b69f-492c-9a71-83f5cdbdabb2",
+    "InstallDirectory": "..\\2023\\A.Plague.Tale.Requiem"
+  },
+  {
+    "Gameid": "7dee6fdac7b036c40f2def6db46b4ecf",
+    "InstallDirectory": "..\\W\\PVZ_BT"
+  },
+  {
+    "Gameid": "b51bd8c2-a5af-4cc1-af56-7b1cc59c5324",
+    "InstallDirectory": "..\\IndieGame2\\Ori.and.the.Will.of.the.Wisps"
+  },
+  {
+    "Gameid": "b08502c5472cd22da5cfac08645ab71b",
+    "InstallDirectory": "..\\X\\Everspace"
+  },
+  {
+    "Gameid": "ad967552-64ae-4313-8f59-1ae1411f215f",
+    "InstallDirectory": "..\\2023\\MiddleEarthShadowofWar"
+  },
+  {
+    "Gameid": "61a24300-3688-40b9-a26b-82b19c614aff",
+    "InstallDirectory": "..\\IndieGame2\\Ori.and.the.Blind.Forest.Definitive.Edition"
+  },
+  {
+    "Gameid": "935109cee6c3262d52dc5985db4e5183",
+    "InstallDirectory": "..\\II\\Risk of Rain 2"
+  },
+  {
+    "Gameid": "dc7481b21b84973760b4039fc16b2401",
+    "InstallDirectory": "..\\V\\The Quarry"
+  },
+  {
+    "Gameid": "f037ea3aafd0a0b4a9c8904908d55bd1",
+    "InstallDirectory": "..\\W\\Dungeon 100"
+  },
+  {
+    "Gameid": "6b0c9f8d37244e0d021274751e0b4e90",
+    "InstallDirectory": "..\\V\\PICO PARK 2"
+  },
+  {
+    "Gameid": "16a5495a-6318-48fa-aaa7-fe41a0cc760a",
+    "InstallDirectory": "..\\Sniper\\Sniper.Ghost.Warrior.1"
+  },
+  {
+    "Gameid": "680e0caaa6ed732fdcdc5bb07ca5d3ed",
+    "InstallDirectory": "..\\Richman\\Rich4"
+  },
+  {
+    "Gameid": "10f26c5a-cd90-4f20-be26-ae0b9826aaf9",
+    "InstallDirectory": "..\\IndieGame3\\TeenageMutantNinjaTurtles"
+  },
+  {
+    "Gameid": "ac83a072dcafa4f8159f4bf8e34f1752",
+    "InstallDirectory": "..\\Y\\IntoTheDeadOurDarkestDays"
+  },
+  {
+    "Gameid": "4418b70b-71ad-4c51-a1e2-d6184092ee9b",
+    "InstallDirectory": "..\\Prototype\\Prototype"
+  },
+  {
+    "Gameid": "75bb3d967ea3da1d1ea02a6e3ff140b7",
+    "InstallDirectory": "..\\II\\XIYOUSurvivor"
+  },
+  {
+    "Gameid": "ad810fcf-0859-4dac-ad03-eb74944c4281",
+    "InstallDirectory": "..\\III\\AmazingCultivationSimulator"
+  },
+  {
+    "Gameid": "8d486e44-d962-4bb7-9055-919a1191e3c8",
+    "InstallDirectory": "..\\Dishonored\\Dishonored.1"
+  },
+  {
+    "Gameid": "db884e0e5932aca7ca772d3e4192d1fc",
+    "InstallDirectory": "..\\W\\Gunmetal"
+  },
+  {
+    "Gameid": "71a4d6b8-0c1f-4e4e-933a-c5ec02b56c90",
+    "InstallDirectory": "..\\Sanguo.Heroes\\Sanguo4"
+  },
+  {
+    "Gameid": "36a51ec6813167982b8b17c4390c5744",
+    "InstallDirectory": "..\\COD\\CoD9SP"
+  },
+  {
+    "Gameid": "90cc10a244f1be15de36f7d2dc7e28ce",
+    "InstallDirectory": "..\\IndieGame3\\Big.Ambitions"
+  },
+  {
+    "Gameid": "eaae9c79cf6de1354487feccf6efb747",
+    "InstallDirectory": "..\\V\\Bread&Fred"
+  },
+  {
+    "Gameid": "3e76dd69-6a93-4b53-8116-d826324bbf3e",
+    "InstallDirectory": "..\\Arma\\Arma3"
+  },
+  {
+    "Gameid": "eb086b3f-f074-4dbf-9af8-d66c6714749d",
+    "InstallDirectory": "..\\Race\\RoadRash"
+  },
+  {
+    "Gameid": "2ec67011-3c55-4ebe-b984-70c95f4b2e16",
+    "InstallDirectory": "..\\2023\\SED"
+  },
+  {
+    "Gameid": "9777f09c-b4de-4530-a890-105875bef388",
+    "InstallDirectory": "..\\Nioh\\Nioh1"
+  },
+  {
+    "Gameid": "30cf76f81007ec0a014a36b8e3f7cb9b",
+    "InstallDirectory": "..\\V\\HorizonForbiddenWest"
+  },
+  {
+    "Gameid": "56e8d7d39cc399b89d537b27ee933437",
+    "InstallDirectory": "..\\V\\Manhunt 2"
+  },
+  {
+    "Gameid": "b88bc9cb-efc3-4983-b78a-bb561486c35e",
+    "InstallDirectory": "..\\Battlefield\\Battlefield.5"
+  },
+  {
+    "Gameid": "12774b36b079603d3d2e75b854583c3f",
+    "InstallDirectory": "..\\III\\Visage"
+  },
+  {
+    "Gameid": "9551f429592a3428c90f620e8bf558ea",
+    "InstallDirectory": "..\\III\\MudRunner"
+  },
+  {
+    "Gameid": "b64648a25140230fa5b7d03a73b26dc4",
+    "InstallDirectory": "..\\II\\Demonologist"
+  },
+  {
+    "Gameid": "902b97ae-56ca-4fca-a922-f25a863f01a3",
+    "InstallDirectory": "..\\III\\TitanQuest"
+  },
+  {
+    "Gameid": "2125ad6d-938d-4b54-ab74-730770f1ac5d",
+    "InstallDirectory": "..\\Age.of.Empires\\Age.of.Mythology.Extended.Edition"
+  },
+  {
+    "Gameid": "2cbd3bae-9020-40de-bbf8-1f21fa547bd6",
+    "InstallDirectory": "..\\Pathfinder.Kingmaker"
+  },
+  {
+    "Gameid": "40c7ae726aae4a1602ce56b006f87d3a",
+    "InstallDirectory": "..\\IIII\\Yet Another Zombie Survivors"
+  },
+  {
+    "Gameid": "d99bf55064ace14a46862152297d17dc",
+    "InstallDirectory": "..\\GTA\\GTA5Enhanced"
+  },
+  {
+    "Gameid": "9600fe29-ef34-4c1c-ab80-24772b271ce9",
+    "InstallDirectory": "..\\Sniper\\SniperElite3"
+  },
+  {
+    "Gameid": "91a23be93bad7edb53bf966df127a924",
+    "InstallDirectory": "..\\III\\Kallax"
+  },
+  {
+    "Gameid": "be496c5f-cb47-4ab2-b95b-63f30f70bc00",
+    "InstallDirectory": "..\\2023\\DeepRockGalactic"
+  },
+  {
+    "Gameid": "4f097ac4-0c1d-4493-ac71-f147d573dd2b",
+    "InstallDirectory": "..\\Observer\\Observer.System.Redux.Deluxe.Edition"
+  },
+  {
+    "Gameid": "6c6e3aa202f266782fa74253bf767078",
+    "InstallDirectory": "..\\II\\Layers of Fear 2\\LOF2\\Binaries\\Win64"
+  },
+  {
+    "Gameid": "11efec93f281d33102688a8b7608b98e",
+    "InstallDirectory": "..\\II\\WeirdRPG"
+  },
+  {
+    "Gameid": "e1e71af4-1922-4bdf-9d3e-c7bd14c2bad1",
+    "InstallDirectory": "..\\Far.Cry\\Far.Cry.4"
+  },
+  {
+    "Gameid": "577401be-aa3b-48cc-a5f4-ed8b2f39c7de",
+    "InstallDirectory": "..\\V\\MGS_TPP"
+  },
+  {
+    "Gameid": "46c556b60c152c1405ae1e6d8e6be911",
+    "InstallDirectory": "..\\IIII\\Ultraman'sBattlegrounds"
+  },
+  {
+    "Gameid": "ea2c2cd3-d9e6-4735-b5f8-2c0d7fc7d00d",
+    "InstallDirectory": "..\\IndieGame3\\HOSP"
+  },
+  {
+    "Gameid": "07da026f8b9218039ea50f35eb6ea5c3",
+    "InstallDirectory": "..\\V\\TEVI"
+  },
+  {
+    "Gameid": "41e2f20adcefb14484b02db5af2d4978",
+    "InstallDirectory": "..\\V\\The.Last.Faith"
+  },
+  {
+    "Gameid": "645548e3-aedc-46b4-b07b-2aa8035e1098",
+    "InstallDirectory": "..\\IndieGame3\\TheClosingShift"
+  },
+  {
+    "Gameid": "ca46f6f6-9499-4d83-b421-f2e5adac85de",
+    "InstallDirectory": "..\\IndieGame3\\Rustler"
+  },
+  {
+    "Gameid": "ab570c4c-9746-46a0-a7d5-0ba7c3c7a60a",
+    "InstallDirectory": "..\\2023\\Warhammer40k-DawnofWar3"
+  },
+  {
+    "Gameid": "50f6f219026bee597abd8ab6ec04bdee",
+    "InstallDirectory": "..\\V\\Blitzkrieg2"
+  },
+  {
+    "Gameid": "5d2005b9-b2a0-4c00-9af5-b08384e27130",
+    "InstallDirectory": "..\\Crysis\\Crysis.2"
+  },
+  {
+    "Gameid": "4abeaab620d797d246d241dfcd06d749",
+    "InstallDirectory": "..\\V\\TFOC"
+  },
+  {
+    "Gameid": "cf7c347c05839a2f827f1f1560d7c70b",
+    "InstallDirectory": "..\\W\\FlintlockTheSiegeofDawn"
+  },
+  {
+    "Gameid": "c5d3d809-02d4-45ec-94f1-64136e3eee97",
+    "InstallDirectory": "..\\Assassins.Creed\\Assassin's.Creed.3"
+  },
+  {
+    "Gameid": "be375f41a54b9891bf7242901eb27aa0",
+    "InstallDirectory": "..\\III\\Monument.Valley.1"
+  },
+  {
+    "Gameid": "3727b6fc780b548dbb59577595830b1c",
+    "InstallDirectory": "..\\II\\SoulOfBlade"
+  },
+  {
+    "Gameid": "2bdb5e7e-7d32-4c98-87dc-d55016ae8984",
+    "InstallDirectory": "..\\2023\\DemonSlayer"
+  },
+  {
+    "Gameid": "2d12183a-0a67-4bca-9ed2-2a39acf564d4",
+    "InstallDirectory": "..\\IndieGame2\\Frostpunk.1"
+  },
+  {
+    "Gameid": "026d7495e644a4c5b4893461e60311a6",
+    "InstallDirectory": "..\\W\\MinishootAdventures"
+  },
+  {
+    "Gameid": "376bf89c90de471083f56b5e9fb15273",
+    "InstallDirectory": "..\\IIII\\NFS16"
+  },
+  {
+    "Gameid": "657bfdddad32991e51e0ca3f11ceea9b",
+    "InstallDirectory": "..\\II\\Tom Clancy's Splinter Cell Blacklist"
+  },
+  {
+    "Gameid": "31c4763ae32e1fce84d0c58aa3e1d1b4",
+    "InstallDirectory": "..\\II\\Judgment"
+  },
+  {
+    "Gameid": "121e84ae-ecdd-4a74-9855-56213b6b6f5f",
+    "InstallDirectory": "..\\IndieGame3\\Weird.West"
+  },
+  {
+    "Gameid": "c89eb81c5c59feba1501b9597f162273",
+    "InstallDirectory": "..\\W\\Tempest Rising"
+  },
+  {
+    "Gameid": "574c617acfba0ad1016acd595c61afd2",
+    "InstallDirectory": "..\\IndieGame3\\ScrapMechanic"
+  },
+  {
+    "Gameid": "a9193c62db607793e82eb4d40dc1f8b5",
+    "InstallDirectory": "..\\V\\Tomb456"
+  },
+  {
+    "Gameid": "607a3423-3a2d-47ef-877f-cde30fa00614",
+    "InstallDirectory": "..\\IndieGame\\Raft"
+  },
+  {
+    "Gameid": "47e31e90cd85357fe408b16a29fda51d",
+    "InstallDirectory": "..\\V\\VVVVVV"
+  },
+  {
+    "Gameid": "177195b2-0743-4d08-884f-0e981c81e313",
+    "InstallDirectory": "..\\Sniper\\Sniper.Ghost.Warrior.2"
+  },
+  {
+    "Gameid": "6723f07bf5c93f3f4eac162bfedd8be8",
+    "InstallDirectory": "..\\IIII\\UNDEFEATED"
+  },
+  {
+    "Gameid": "fe6546d209989a57cba74e47e61f922b",
+    "InstallDirectory": "..\\W\\DeTechtive 2112"
+  },
+  {
+    "Gameid": "54ab104f-5b71-4e5f-a5eb-9ad0c16476b4",
+    "InstallDirectory": "..\\Far.Cry\\Far.Cry.1"
+  },
+  {
+    "Gameid": "c78f30619f2a5397a7a693801fcbc8fa",
+    "InstallDirectory": "..\\V\\KebabChefs"
+  },
+  {
+    "Gameid": "b1719d8f-0ecf-4eb3-85c6-cac726a10f3d",
+    "InstallDirectory": "..\\Serious.Sam\\Serious.Sam.HD.The.First.Encounter"
+  },
+  {
+    "Gameid": "1a5f95b8-0f44-499a-9bcb-51b9ea67e014",
+    "InstallDirectory": "..\\IndieGame2\\TLSA"
+  },
+  {
+    "Gameid": "a47d481931d30b393b62af36568eef4a",
+    "InstallDirectory": "..\\III\\The Matchless KungFu"
+  },
+  {
+    "Gameid": "9dcadecc-5c3a-43ee-8ef5-a23446475292",
+    "InstallDirectory": "..\\Raiden\\RaidenV"
+  },
+  {
+    "Gameid": "2fa5fa03c8678ba487cd49cfc2323cb7",
+    "InstallDirectory": "..\\W\\TheRoguePrinceofPersia"
+  },
+  {
+    "Gameid": "c55b4287-0a23-4a85-a878-5814dab4930e",
+    "InstallDirectory": "..\\Kandagawa.Jet.Girls"
+  },
+  {
+    "Gameid": "843a03ef1d39bd0e8962072e74c93ffc",
+    "InstallDirectory": "..\\V\\KatanaKami"
+  },
+  {
+    "Gameid": "6ce0f4a0-c8d8-49e1-9479-35dc28d2f92f",
+    "InstallDirectory": "..\\GuJian\\GuJian.2"
+  },
+  {
+    "Gameid": "9cab8379b6a9c5cecb8d7d65172acaaf",
+    "InstallDirectory": "..\\III\\TrainSimulator2022"
+  },
+  {
+    "Gameid": "696c0918399d042682f070e4aec3704e",
+    "InstallDirectory": "..\\IIII\\SAOLR"
+  },
+  {
+    "Gameid": "695bf486d1f308c8061468ab529fe49f",
+    "InstallDirectory": "..\\X\\Precinct"
+  },
+  {
+    "Gameid": "f650a2e5-e860-48d0-ae6f-cb3dcdef8766",
+    "InstallDirectory": "..\\2023\\Ninja2"
+  },
+  {
+    "Gameid": "4768e93a5eeb8d0ad525d5baa07e7374",
+    "InstallDirectory": "..\\II\\Blasphemous 2"
+  },
+  {
+    "Gameid": "bab793d23cc4f044504146caeb72aa80",
+    "InstallDirectory": "..\\X\\RDR1"
+  },
+  {
+    "Gameid": "5d031241-130a-4d77-aeb1-10fc0d0ac071",
+    "InstallDirectory": "..\\IndieGame2\\FernbusSimulator"
+  },
+  {
+    "Gameid": "b0c700d658533fdd3de98b8d70e027ed",
+    "InstallDirectory": "..\\V\\Turmoil"
+  },
+  {
+    "Gameid": "2723f77c52591a4065c40cc47253ba9b",
+    "InstallDirectory": "..\\III\\EmberKnights"
+  },
+  {
+    "Gameid": "1db9b88fbaf2c3c2d4879720dfe0797a",
+    "InstallDirectory": "..\\X\\Elin"
+  },
+  {
+    "Gameid": "d620031d-e0de-421e-b787-3e2e8554b9d6",
+    "InstallDirectory": "..\\Bayonetta\\Bayonetta1"
+  },
+  {
+    "Gameid": "3a28bfc77164cc0eb810d99326f3e336",
+    "InstallDirectory": "..\\IIII\\Strange Brigade"
+  },
+  {
+    "Gameid": "c6714405d7df9a0814d5a588572e7a08",
+    "InstallDirectory": "..\\II\\DOOM4"
+  },
+  {
+    "Gameid": "0b2f819d-49bb-4957-8d5a-7f58eeee81ca",
+    "InstallDirectory": "..\\BaldursGate\\BaldursGate3"
+  },
+  {
+    "Gameid": "8e8f66dcb1d69aed268365e5e42595aa",
+    "InstallDirectory": "..\\W\\Farthest Frontier"
+  },
+  {
+    "Gameid": "7b15bfa000fd5ae080c96289f96e67dc",
+    "InstallDirectory": "..\\V\\VR2"
+  },
+  {
+    "Gameid": "9cc82c56-91a5-442a-966e-882c6c28a3ad",
+    "InstallDirectory": "..\\2023\\Brotato"
+  },
+  {
+    "Gameid": "3a5d08eb-91c8-4cc9-9638-6724d6c48b78",
+    "InstallDirectory": "..\\Ni.no.Kuni\\Ni.no.Kuni.2.Revenant.Kingdom"
+  },
+  {
+    "Gameid": "324fb720-4c08-4e62-942f-2569717a2ce8",
+    "InstallDirectory": "..\\2023\\Scorn"
+  },
+  {
+    "Gameid": "0f70ffced182d05d44d290ac884d5709",
+    "InstallDirectory": "..\\W\\Superscout"
+  },
+  {
+    "Gameid": "55812c90-9913-48f5-9731-a6f733ce991a",
+    "InstallDirectory": "..\\Assassins.Creed\\Assassin’s.Creed.3.Remastered"
+  },
+  {
+    "Gameid": "4d870a96343c08c21cadf16b59380687",
+    "InstallDirectory": "..\\V\\AnotherCrabsTreasure"
+  },
+  {
+    "Gameid": "60288713-6476-48ad-ad0a-5175ffa4947f",
+    "InstallDirectory": "..\\CoD\\CoD4.Remastered"
+  },
+  {
+    "Gameid": "5c186af55fa569faeea3818dabc4cd39",
+    "InstallDirectory": "..\\IIII\\Bang-On Balls Chronicles"
+  },
+  {
+    "Gameid": "e22ec559-ed3b-4b23-b9d7-9095244146f4",
+    "InstallDirectory": "..\\CoD\\CoD5"
+  },
+  {
+    "Gameid": "3e6e3dd8-78ec-4994-972d-22bf7aa01cf8",
+    "InstallDirectory": "..\\Alien.Shooter\\Alien.Shooter.2.TheLegend"
+  },
+  {
+    "Gameid": "b27a9552-ef00-44ff-879d-13e37761eec9",
+    "InstallDirectory": "..\\Saints.Row\\SaintsRowReboot"
+  },
+  {
+    "Gameid": "3eb8cdf3-2db7-4b19-864d-3d157d5f42d7",
+    "InstallDirectory": "..\\Empyrion.Galactic.Survival"
+  },
+  {
+    "Gameid": "0b1e2726-2bea-40c6-85cf-beaaf5c35425",
+    "InstallDirectory": "..\\III\\PlagueIncEvolved"
+  },
+  {
+    "Gameid": "6f193f2b-a536-4065-8df9-a1daecf4d97e",
+    "InstallDirectory": "..\\Just.Cause\\Just.Cause.3"
+  },
+  {
+    "Gameid": "79fe5d8fdf1f28855f275d35ab71cb91",
+    "InstallDirectory": "..\\II\\Reunion2023"
+  },
+  {
+    "Gameid": "052ee85c-4bad-4779-9505-616e086fe5cf",
+    "InstallDirectory": "..\\IndieGame3\\LIMBO"
+  },
+  {
+    "Gameid": "c7252db197a452cb74263ddbff713a6c",
+    "InstallDirectory": "..\\II\\WorldBox.God.Simulator"
+  },
+  {
+    "Gameid": "b5d9cb027dee6c03e97a625d24f9243d",
+    "InstallDirectory": "..\\IIII\\Bramble The Mountain King"
+  },
+  {
+    "Gameid": "d8418a88-a25d-41a1-9fe6-38ee7af750fe",
+    "InstallDirectory": "..\\II\\Pacify"
+  },
+  {
+    "Gameid": "8ad7421c54f51fedeb2d307de96b7e14",
+    "InstallDirectory": "..\\II\\BlazblueEntropyEffect"
+  },
+  {
+    "Gameid": "f6fe3927-f4cd-4e60-94f5-aabc1042fc74",
+    "InstallDirectory": "..\\DRAGON.BALL\\DRAGON.BALL.Z.KAKAROT"
+  },
+  {
+    "Gameid": "45c2b373-24b2-4fcf-9d5c-9f6f4a84e811",
+    "InstallDirectory": "..\\Assassins.Creed\\Assassins.Creed.Odyssey"
+  },
+  {
+    "Gameid": "8ab1245c-6972-40d0-b29b-b6e5c91b3e51",
+    "InstallDirectory": "..\\Crysis\\Crysis.1.Remastered"
+  },
+  {
+    "Gameid": "2332d49b-caa2-492e-8cea-a6d3ed937159",
+    "InstallDirectory": "..\\2023\\SCUM"
+  },
+  {
+    "Gameid": "5af7d3b8-9f59-4857-8365-5f1e7b897c1f",
+    "InstallDirectory": "..\\IndieGame\\Untitled.Goose"
+  },
+  {
+    "Gameid": "5d6e7d63b4e40ab54a44e8345c031cff",
+    "InstallDirectory": "..\\X\\Pocket.City.2"
+  },
+  {
+    "Gameid": "cc2e41c01bab9f501cb437fe2581e8fa",
+    "InstallDirectory": "..\\II\\Shift Happens"
+  },
+  {
+    "Gameid": "ac54b0736cca37abf8d4baf25055bd40",
+    "InstallDirectory": "..\\III\\Machinarium"
+  },
+  {
+    "Gameid": "ee1b4e76-df0d-4d0e-b2d4-8c7ee6cffc5a",
+    "InstallDirectory": "..\\Darksiders\\Darksiders.3"
+  },
+  {
+    "Gameid": "b1248766-4b5d-404e-862f-f04bfb39fb25",
+    "InstallDirectory": "..\\2023\\MilesMorales"
+  },
+  {
+    "Gameid": "54a824e0-e8cb-42b5-b07a-4e9464a44524",
+    "InstallDirectory": "..\\Tomb.Raider\\Shadow.of.the.Tomb.Raider"
+  },
+  {
+    "Gameid": "0b878a9a871376fe6fe0c51cfafabbe2",
+    "InstallDirectory": "..\\IIII\\Desolate"
+  },
+  {
+    "Gameid": "62b3c514-59e5-4bcc-8f75-99a06aa6c474",
+    "InstallDirectory": "..\\Need.For.Speed\\Need.For.Speed.9"
+  },
+  {
+    "Gameid": "c53ffbf0-7397-4b25-98f7-7d1e92130d79",
+    "InstallDirectory": "..\\Rage\\RAGE.1"
+  },
+  {
+    "Gameid": "6f1aa9dacf449b320c30f2d76170911f",
+    "InstallDirectory": "..\\X\\WarGame3"
+  },
+  {
+    "Gameid": "f233cd3d-a321-4abd-b630-ee6c892db0ba",
+    "InstallDirectory": "..\\IndieGame3\\Internet.Cafe.Simulator.2"
+  },
+  {
+    "Gameid": "189d459f-7701-4b12-8973-2102229f81e1",
+    "InstallDirectory": "..\\Race\\Horizon.Chase.Turbo"
+  },
+  {
+    "Gameid": "6ea41691a1adb92cc4a0ef9a9b783df7",
+    "InstallDirectory": "..\\IIII\\Ravenswatch"
+  },
+  {
+    "Gameid": "df771909-d260-4db2-99ff-be95e4cea1af",
+    "InstallDirectory": "..\\XuanYuanSword\\XuanYuanSword.VII"
+  },
+  {
+    "Gameid": "c0a88b5a-acf5-4418-b1fb-94602129a1d5",
+    "InstallDirectory": "..\\2023\\Nobody"
+  },
+  {
+    "Gameid": "cc49dbd7-6c91-4bb0-8c12-f716aaedf0fb",
+    "InstallDirectory": "..\\IndieGame3\\SpellForce 3 - Soul Harvest"
+  },
+  {
+    "Gameid": "2e03fac5-e3a5-45ce-91f8-1abf5a03b2d3",
+    "InstallDirectory": "..\\Halo\\Halo.The.Master.Chief.Collection"
+  },
+  {
+    "Gameid": "55e70c93-f6fc-4b00-9169-2132b7e1422d",
+    "InstallDirectory": "..\\Ra2"
+  },
+  {
+    "Gameid": "906403cc60f3a6e024f06f4ed17be311",
+    "InstallDirectory": "..\\2023\\Anno\\Anno2205"
+  },
+  {
+    "Gameid": "ea8212f7-3605-4be8-a1ff-6b47a0d2c58c",
+    "InstallDirectory": "..\\IndieGame2\\Stronghold.Warlords"
+  },
+  {
+    "Gameid": "ab66950fbae8f619b43726aac8a49585",
+    "InstallDirectory": "..\\II\\MonsterHunterRise"
+  },
+  {
+    "Gameid": "88822076bb76c2567ad9258c246bd39e",
+    "InstallDirectory": "..\\III\\三国群英传7原版"
+  },
+  {
+    "Gameid": "2df66b511ef6da11a68264e82f3ee04c",
+    "InstallDirectory": "..\\W\\HallsOfTorment"
+  },
+  {
+    "Gameid": "6f64002a-0778-40b7-9178-4b892213f0cb",
+    "InstallDirectory": "..\\Total.War\\Total.War.Three.Kingdoms"
+  },
+  {
+    "Gameid": "b85a99f6-0022-46bc-8013-d0947770fbac",
+    "InstallDirectory": "..\\IndieGame3\\VRising"
+  },
+  {
+    "Gameid": "30ae532b-3968-4c64-b06a-e6c7e9f871b8",
+    "InstallDirectory": "..\\2023\\WarmSnow"
+  },
+  {
+    "Gameid": "3f2aab39-79c7-41a9-b307-3bdde29e2068",
+    "InstallDirectory": "..\\Civilization\\CivilizationBeyondEarth"
+  },
+  {
+    "Gameid": "1c2e47a7d2b2da24597750c967d6a2bf",
+    "InstallDirectory": "..\\X\\Ultimate Zombie Defense 2"
+  },
+  {
+    "Gameid": "31be21b9-a98d-4ebb-8b66-b4c4d3039ff5",
+    "InstallDirectory": "..\\HalfLife\\Half-Life1.Black.Mesa"
+  },
+  {
+    "Gameid": "a8d35f39-c23e-40d8-a852-acf5c7b5d33a",
+    "InstallDirectory": "..\\The.Wind.Road"
+  },
+  {
+    "Gameid": "870b6900-5cef-4f28-a940-58b841afab9a",
+    "InstallDirectory": "..\\IndieGame3\\GreedFall"
+  },
+  {
+    "Gameid": "36fa4dc2-4666-4828-8b65-66539666bd92",
+    "InstallDirectory": "..\\III\\Neighbours Back From Hell"
+  },
+  {
+    "Gameid": "3bbbc8f2-6fb7-4f92-bc92-b0cde7294b93",
+    "InstallDirectory": "..\\III\\PraeyfortheGods"
+  },
+  {
+    "Gameid": "5ee4b17f-0914-4644-8bc3-548b1e421e2b",
+    "InstallDirectory": "..\\CoD\\CoD2"
+  },
+  {
+    "Gameid": "a9800804-759d-4475-8086-fe468c708368",
+    "InstallDirectory": "..\\2023\\ONEPIECEODYSSEY"
+  },
+  {
+    "Gameid": "0e3b86c05f3d02cbc477797846df4913",
+    "InstallDirectory": "..\\II\\Ultimate.Admiral.Dreadnoughts"
+  },
+  {
+    "Gameid": "88ac00587df58d6b5b8d60f7d7677c71",
+    "InstallDirectory": "..\\II\\TheSurge1"
+  },
+  {
+    "Gameid": "74b4301d-b3b7-4063-b67b-fec829c7c6e9",
+    "InstallDirectory": "..\\Darksiders\\Darksiders.Warmastered.Edition"
+  },
+  {
+    "Gameid": "4ce990a5f84fc1bb3e5f026391bdd6fa",
+    "InstallDirectory": "..\\IIII\\WinKawaks"
+  },
+  {
+    "Gameid": "d7a6f244-16e4-405c-b5b4-bfbfa442f29e",
+    "InstallDirectory": "..\\IndieGame\\Human.Fall.Flat"
+  },
+  {
+    "Gameid": "752754b8-2be1-49cd-bfa6-7b3625d30d59",
+    "InstallDirectory": "..\\Paper\\Paper.Dolls.Original"
+  },
+  {
+    "Gameid": "0fda54033788aa0022fe06d676298692",
+    "InstallDirectory": "..\\IndieGame\\AstroColony"
+  },
+  {
+    "Gameid": "3fd0596a9b06cb81df57a11e9fee3700",
+    "InstallDirectory": "..\\V\\Barotrauma"
+  },
+  {
+    "Gameid": "b5684764381f3bf1a2d5fe9230d99d35",
+    "InstallDirectory": "..\\X\\NINJAGAIDEN2BLACK"
+  },
+  {
+    "Gameid": "b326fdea-c76d-43ee-ba29-86d30c70896c",
+    "InstallDirectory": "..\\Devotion"
+  },
+  {
+    "Gameid": "81d41c5bfe79e904e59f727476f3a34e",
+    "InstallDirectory": "..\\V\\Company of Heroes 3"
+  },
+  {
+    "Gameid": "10c98837-5518-4390-bb00-252b996247d0",
+    "InstallDirectory": "..\\Total.War\\Total.War.WARHAMMER.II"
+  },
+  {
+    "Gameid": "9973cde82de024c82c6bb108a133c960",
+    "InstallDirectory": "..\\IIII\\TerraTech"
+  },
+  {
+    "Gameid": "b765efa50e770adcf1add355857414e7",
+    "InstallDirectory": "..\\III\\Victoria3"
+  },
+  {
+    "Gameid": "b33f4c80-b85b-4b20-a3e4-1930e474146b",
+    "InstallDirectory": "..\\Silent.Hill\\Silent.Hill.4.The.Room"
+  },
+  {
+    "Gameid": "4e73977f-0e05-45c0-a839-8544ad9777e0",
+    "InstallDirectory": "..\\II\\TEKKEN7"
+  },
+  {
+    "Gameid": "62a378f66abeb0f9dd6bae82291084e4",
+    "InstallDirectory": "..\\II\\Marvels Avengers"
+  },
+  {
+    "Gameid": "0cb0fb39da0f4fc6ccfeebe0eb1dedd0",
+    "InstallDirectory": "..\\III\\StarshipTroopers"
+  },
+  {
+    "Gameid": "40694ba65619c55edf6b42378be88d4e",
+    "InstallDirectory": "..\\IIII\\For The King II"
+  },
+  {
+    "Gameid": "2f6b963e-7525-471f-9425-42ee63aea4f7",
+    "InstallDirectory": "..\\IndieGame2\\Stray"
+  },
+  {
+    "Gameid": "384b0b0d-36df-41f2-a7ab-2c5aaec6f5a9",
+    "InstallDirectory": "..\\TheDarkPictures\\TheDarkPictures.AnthologyHouseofAshes"
+  },
+  {
+    "Gameid": "e146fc6bdaf1f6df7b8fd6978371cbb8",
+    "InstallDirectory": "..\\IIII\\ALTF4"
+  },
+  {
+    "Gameid": "2bacb525-874e-4498-a637-4550c93bf00e",
+    "InstallDirectory": "..\\2023\\Batman.Arkham.Knight"
+  },
+  {
+    "Gameid": "03134f67fce8c5706dd6c8a66dc9ab08",
+    "InstallDirectory": "..\\X\\DEVOUR"
+  },
+  {
+    "Gameid": "4d021e4ef7fab9d7798eb03446642113",
+    "InstallDirectory": "..\\X\\The Hungry Lamb"
+  },
+  {
+    "Gameid": "4109dfd846fb8c71fc545dc49e0a8e7f",
+    "InstallDirectory": "..\\IIII\\ChildrenOfMorta"
+  },
+  {
+    "Gameid": "cae8f1e156f78aa2d34957b8cfa62d62",
+    "InstallDirectory": "..\\X\\Survivalist Invisible Strain"
+  },
+  {
+    "Gameid": "03202681-b3c4-4f81-8cae-5a3d0a531a56",
+    "InstallDirectory": "..\\2023\\InsideTheBackrooms"
+  },
+  {
+    "Gameid": "1d34d84de1b4751cc5636cc6e59efbf1",
+    "InstallDirectory": "..\\II\\Re3HD"
+  },
+  {
+    "Gameid": "5afe6171-7675-4b33-baac-ffa652c89838",
+    "InstallDirectory": "..\\Paper\\Paper.Dolls.2"
+  },
+  {
+    "Gameid": "21fd215a-db8f-4245-94af-c39b890429b0",
+    "InstallDirectory": "..\\Total.War\\Total.War.Shogun.2"
+  },
+  {
+    "Gameid": "9f49711f-09fb-4c75-805e-6a82b3de24a0",
+    "InstallDirectory": "..\\Three.Kingdoms\\Three.Kingdoms.The.Last.Warlord"
+  },
+  {
+    "Gameid": "5ad87970a5b014d6a22067e66d9b41a0",
+    "InstallDirectory": "..\\II\\The.Legend.of.Tianding"
+  },
+  {
+    "Gameid": "9d95f89d6148ab61d210da7e837d7678",
+    "InstallDirectory": "..\\V\\Ranch Simulator"
+  },
+  {
+    "Gameid": "33e63cf27f3ac8c6a741ba724aed44d9",
+    "InstallDirectory": "..\\V\\Bellwright"
+  },
+  {
+    "Gameid": "8d83e69d7757b1f6088f27d55666b54b",
+    "InstallDirectory": "..\\V\\Lysfanga The Time Shift Warrior"
+  },
+  {
+    "Gameid": "80d671dba13ff21fee2029bd18a7db5f",
+    "InstallDirectory": "..\\IIII\\Force of Nature 2"
+  },
+  {
+    "Gameid": "e7da7fa05d34903965c6b68f5c207fdc",
+    "InstallDirectory": "..\\IIII\\Trine3"
+  },
+  {
+    "Gameid": "b0d4fa3d-e18a-469a-981a-eb1cfa1d2dc3",
+    "InstallDirectory": "..\\BeyondTwoSouls"
+  },
+  {
+    "Gameid": "d1e7c98e6f74751edee22f0c53881956",
+    "InstallDirectory": "..\\Command.and.Conquer\\Command.and.Conquer.Remastered"
+  },
+  {
+    "Gameid": "68d6f9d8-da4b-4b4c-a0e4-eb15e8a00428",
+    "InstallDirectory": "..\\Nioh\\Nioh2"
+  },
+  {
+    "Gameid": "f5fbf4fa-b1fc-430f-abe8-0d50cecb2950",
+    "InstallDirectory": "..\\IndieGame\\Death.Stranding"
+  },
+  {
+    "Gameid": "d12beae3c88dcdbffc1f675b02c97604",
+    "InstallDirectory": "..\\III\\Wildmender"
+  },
+  {
+    "Gameid": "5f47a8ad-e88d-4c5f-968d-6aa19bddf173",
+    "InstallDirectory": "..\\IndieGame\\Vampire.Survivors"
+  },
+  {
+    "Gameid": "4162d48602b12f97093304c5e12b7b2a",
+    "InstallDirectory": "..\\W\\ChainedTogether"
+  },
+  {
+    "Gameid": "875f416339426520453cd9f3c995262d",
+    "InstallDirectory": "..\\II\\Thief Simulator"
+  },
+  {
+    "Gameid": "8df8387d-e6fb-4e89-a774-d6a9c8bb4292",
+    "InstallDirectory": "..\\GuJian\\Gujian.3"
+  },
+  {
+    "Gameid": "08d75df3-7ef7-45ee-b86d-185966e70c06",
+    "InstallDirectory": "..\\2023\\pal4"
+  },
+  {
+    "Gameid": "237b2fef214f80681ffa6509be51aeb7",
+    "InstallDirectory": "..\\V\\Homeworld"
+  },
+  {
+    "Gameid": "e6d3650b0bba21f9c9975abba60ac36d",
+    "InstallDirectory": "..\\III\\Five.Nights.at.Freddys.Security.Breach"
+  },
+  {
+    "Gameid": "22fa3908-482b-41a4-9531-4c77539f4232",
+    "InstallDirectory": "..\\2023\\TheBridgeCurse"
+  },
+  {
+    "Gameid": "de5f5b3ddec4a4d751df3a9b001418fe",
+    "InstallDirectory": "..\\X\\UntilDawn"
+  },
+  {
+    "Gameid": "3290afd6784c63582fc9b75ccfc46191",
+    "InstallDirectory": "..\\COD\\COD18"
+  },
+  {
+    "Gameid": "cf241582c55c269692ff1e3b881a4377",
+    "InstallDirectory": "..\\X\\SAN8R"
+  },
+  {
+    "Gameid": "b1675c27-04fa-46ac-97f0-ad9b1ef3dd93",
+    "InstallDirectory": "..\\2023\\ForzaHorizon4"
+  },
+  {
+    "Gameid": "a62a604a-dac7-4012-9c5b-3a420d098ce6",
+    "InstallDirectory": "..\\Heroes.of.Might.and.Magic\\Heroes.3.HD"
+  },
+  {
+    "Gameid": "4327d153-a823-42f3-90ce-03cf921b3610",
+    "InstallDirectory": "..\\Hitman\\Hitman.Blood.Money"
+  },
+  {
+    "Gameid": "4ffd049372e248d9d249ea2be470ca4a",
+    "InstallDirectory": "..\\IIII\\SuperMarioBrosWonder"
+  },
+  {
+    "Gameid": "ce948df86fdca1149f252cca51e4daad",
+    "InstallDirectory": "..\\V\\Sunset"
+  },
+  {
+    "Gameid": "6511d41ca6f1cad58bf098baa3dc3af8",
+    "InstallDirectory": "..\\III\\KingdomsReborn"
+  },
+  {
+    "Gameid": "a5536071f2eaf9625e21fcaecb2b48ff",
+    "InstallDirectory": "..\\V\\PaintTheTownRed"
+  },
+  {
+    "Gameid": "f7eee3ce047b15736daf6ba91862de12",
+    "InstallDirectory": "..\\IndieGame3\\Remnant2"
+  },
+  {
+    "Gameid": "c0f1ce61-792c-47b2-819b-9e80c561063d",
+    "InstallDirectory": "..\\Disgaea\\Disgaea.4"
+  },
+  {
+    "Gameid": "0a7926e0-af84-47ef-8057-c1f5542e6f2f",
+    "InstallDirectory": "..\\2023\\Spirits.of.the.Hellements.TD"
+  },
+  {
+    "Gameid": "2f89c064-c486-4350-991f-9f21db272d40",
+    "InstallDirectory": "..\\Mafia\\Mafia.1.Definitive.Edition"
+  },
+  {
+    "Gameid": "a8a0e6f4-0acc-4315-9f85-72b6d99f788f",
+    "InstallDirectory": "..\\HalfLife\\Half-Life2.3in1"
+  },
+  {
+    "Gameid": "89b4ee1f-991b-4521-8da5-265a71ef46a6",
+    "InstallDirectory": "..\\Silent.Hunter\\Silent.Hunter.5"
+  },
+  {
+    "Gameid": "7f203a150b88aedf350425c14c774870",
+    "InstallDirectory": "..\\W\\Besiege"
+  },
+  {
+    "Gameid": "bdd887bd-e433-4b55-985a-1be1c97282db",
+    "InstallDirectory": "..\\IndieGame\\CitiesSkylines"
+  },
+  {
+    "Gameid": "294b0196d30a43780ba536726d707915",
+    "InstallDirectory": "..\\Y\\Three.Kingdoms.Mushouden"
+  },
+  {
+    "Gameid": "3ed822fcd6556cf17db1dfc32cbf27ac",
+    "InstallDirectory": "..\\III\\The Long Drive"
+  },
+  {
+    "Gameid": "60ca08f165041fd8cb9a1162916fe760",
+    "InstallDirectory": "..\\V\\MindOverMagic"
+  },
+  {
+    "Gameid": "2bf6d07f-264a-4846-bf4c-46d1faa00b1f",
+    "InstallDirectory": "..\\2023\\Ballads.of.Hongye"
+  },
+  {
+    "Gameid": "edaa1d22d839df4c7f110d48073e935d",
+    "InstallDirectory": "..\\X\\Galacticare"
+  },
+  {
+    "Gameid": "595771bb49d5b0d69103015cdf5d4293",
+    "InstallDirectory": "..\\X\\TheSpellBrigade"
+  },
+  {
+    "Gameid": "0051d57f38490d3b3ef55cd706f7ad1c",
+    "InstallDirectory": "..\\IIII\\Dungeons 4"
+  },
+  {
+    "Gameid": "838155d6-f480-42f7-814c-9af823aa2f57",
+    "InstallDirectory": "..\\Devil.May.Cry\\Devil.May.Cry.4"
+  },
+  {
+    "Gameid": "958d777c-9ec3-45d2-8029-2f02f9c3e8be",
+    "InstallDirectory": "..\\Far.Cry\\Far.Cry.Primal"
+  },
+  {
+    "Gameid": "3053ebc5-09b2-4176-828f-5e99ed36b26b",
+    "InstallDirectory": "..\\IndieGame3\\Bulletstorm"
+  },
+  {
+    "Gameid": "69b589c8-c4ec-440f-8cff-fd9ff51c155d",
+    "InstallDirectory": "..\\DARKSOULS\\EldenRing"
+  },
+  {
+    "Gameid": "6fd02e98-96fb-4bbf-b43f-3148f64e881c",
+    "InstallDirectory": "..\\III\\Jedi Fallen Order"
+  },
+  {
+    "Gameid": "7f8e8e4020a04168ea4d998e1b0e8dc8",
+    "InstallDirectory": "..\\W\\Thriving City Song"
+  },
+  {
+    "Gameid": "f37e0045e6a80049aec1fbbfde627cf3",
+    "InstallDirectory": "..\\III\\三国群英传7上下五千年"
+  },
+  {
+    "Gameid": "b1dd0288-d4b2-40fc-874c-0517c478fca7",
+    "InstallDirectory": "..\\III\\Partisans1941"
+  },
+  {
+    "Gameid": "70308a1b6210b1e3e699f52f68b3ab32",
+    "InstallDirectory": "..\\W\\TheEmperorAndState"
+  },
+  {
+    "Gameid": "846e2233-34bf-4caa-a913-05f4242d84c4",
+    "InstallDirectory": "..\\2023\\NBA2K23"
+  },
+  {
+    "Gameid": "81b937a8-39d1-4617-928f-d21ec186a98f",
+    "InstallDirectory": "..\\II\\Valheim"
+  },
+  {
+    "Gameid": "1a2026c2b1f763e659df5531a6ec7aa9",
+    "InstallDirectory": "..\\V\\Mass Effect Legendary Edition\\"
+  },
+  {
+    "Gameid": "cf97eccee263bcb560579060583b7be3",
+    "InstallDirectory": "..\\W\\Atelier Yumia"
+  },
+  {
+    "Gameid": "53bd8499f7cb30ebdbfcd29bd2d62a8c",
+    "InstallDirectory": "..\\2023\\Batman.TheEnemyWithin"
+  },
+  {
+    "Gameid": "c4f0729f-fa14-4aad-85b0-c42d862382c9",
+    "InstallDirectory": "..\\IndieGame\\Stoneshard"
+  },
+  {
+    "Gameid": "b1bf42545313727aee605382fea0618e",
+    "InstallDirectory": "..\\III\\Horizon.Chase.2"
+  },
+  {
+    "Gameid": "83561412-8d36-4764-b2c2-6a1a08ad0310",
+    "InstallDirectory": "..\\Halo\\Halo.Infinite"
+  },
+  {
+    "Gameid": "9146d9bda15d641cf6d883137355f4c5",
+    "InstallDirectory": "..\\II\\DaveTheDiver"
+  },
+  {
+    "Gameid": "35e036d51968694395243b9e2b5092de",
+    "InstallDirectory": "..\\II\\RedAlert3Corona"
+  },
+  {
+    "Gameid": "64c22e29ba8670dd568036583d2eaa15",
+    "InstallDirectory": "..\\V\\Magicraft"
+  },
+  {
+    "Gameid": "096686e586ed49e732b3d29cbeeae77b",
+    "InstallDirectory": "..\\V\\TheHunterCotW"
+  },
+  {
+    "Gameid": "0b8c06958424fe6921f5d3cd79b1c538",
+    "InstallDirectory": "..\\V\\SANDLAND"
+  },
+  {
+    "Gameid": "ee0e2c4a-41ed-4a1f-9e92-dc26074cebc1",
+    "InstallDirectory": "..\\Crysis\\Crysis.1"
+  },
+  {
+    "Gameid": "e5030f57-ed13-4ca2-8091-84aea005987d",
+    "InstallDirectory": "..\\Street.Fighter\\StreetFighterHDM"
+  },
+  {
+    "Gameid": "c2c4d82e-3f93-4150-96f3-2dddf147714a",
+    "InstallDirectory": "..\\Resident.Evil\\Resident.Evil.2.Remake"
+  },
+  {
+    "Gameid": "bbba773a17f456ae7590b3e08c2ff0cd",
+    "InstallDirectory": "..\\IIII\\TheHouseoftheDeadRemake"
+  },
+  {
+    "Gameid": "39d317e0-a209-4e46-b187-f0cc1d56d2a2",
+    "InstallDirectory": "..\\Warhammer40K\\Warhammer40K.Space.Marine"
+  },
+  {
+    "Gameid": "c9a114f953e60024ed649fd075e5e9c8",
+    "InstallDirectory": "..\\IIII\\Postal4"
+  },
+  {
+    "Gameid": "9e303db8-2edb-4a5d-ab65-216118be13f0",
+    "InstallDirectory": "..\\2023\\TheDrainedGoddess"
+  },
+  {
+    "Gameid": "f4984c8e1303cc7031bbca173ebfaf71",
+    "InstallDirectory": "..\\V\\Necesse"
+  },
+  {
+    "Gameid": "5cb9bc44-99e1-44d3-934e-4354390e3576",
+    "InstallDirectory": "..\\Truck.Simulator\\Euro.Truck.Simulator.2"
+  },
+  {
+    "Gameid": "a3b159ba-f536-42bd-9be9-e8e0b9c86133",
+    "InstallDirectory": "..\\IndieGame3\\JurassicWorldEvolution2"
+  },
+  {
+    "Gameid": "831f7d99c7f225562df78d069250ea09",
+    "InstallDirectory": "..\\V\\Avowed"
+  },
+  {
+    "Gameid": "3cae98056478c6415100783287bb6d17",
+    "InstallDirectory": "..\\COD\\COD19"
+  },
+  {
+    "Gameid": "b5accb0507e5ea967207eaf39824e244",
+    "InstallDirectory": "..\\III\\Aliens vs Predator"
+  },
+  {
+    "Gameid": "b49bff89-bbeb-4970-a640-98e29bb4735e",
+    "InstallDirectory": "..\\IndieGame3\\ICARUS"
+  },
+  {
+    "Gameid": "2ea4c3d2-35c0-4a91-92ed-6f05cda5b6ea",
+    "InstallDirectory": "..\\LEGO\\LEGO.STAR.WARS.The.Force.Awakens"
+  },
+  {
+    "Gameid": "2b704d405bfdcfa7c9cf3237d157760f",
+    "InstallDirectory": "..\\III\\ZUMADELUXE"
+  },
+  {
+    "Gameid": "576756c6ec52d8e506e138f7f4a20fd1",
+    "InstallDirectory": "..\\X\\Hired2Die"
+  },
+  {
+    "Gameid": "53502297e81c34ddaca6d581c8f85f32",
+    "InstallDirectory": "..\\IIII\\The Front"
+  },
+  {
+    "Gameid": "961fdd0e35b9ddc4760cd82805c354d2",
+    "InstallDirectory": "..\\V\\SeriousSam2"
+  },
+  {
+    "Gameid": "7e12af753483b154bdabb4165f217047",
+    "InstallDirectory": "..\\X\\Ascension"
+  },
+  {
+    "Gameid": "93c8111f-83e2-4c28-a511-499f0a49bb0b",
+    "InstallDirectory": "..\\IndieGame2\\Cloudpunk"
+  },
+  {
+    "Gameid": "4c650ef0-9279-4430-8c88-678c6c5c0e64",
+    "InstallDirectory": "..\\IndieGame3\\Dyson.Sphere.Program.The.Icarus.Evolution"
+  },
+  {
+    "Gameid": "01f6046b-3aaa-417f-a066-95578928dbc8",
+    "InstallDirectory": "..\\2023\\TheLasTofUs"
+  },
+  {
+    "Gameid": "ace807d6ac11cd0c43e9339fa3640a53",
+    "InstallDirectory": "..\\III\\Return.of.the.Obra.Dinn"
+  },
+  {
+    "Gameid": "f8fa542c0a57e6bfc9ef3a8258f62fb4",
+    "InstallDirectory": "..\\V\\ShipOfFools"
+  },
+  {
+    "Gameid": "025f70a8-2f60-4f89-87c3-49fdda55155c",
+    "InstallDirectory": "..\\Company.of.Heroes\\Company of Heroes 2"
+  },
+  {
+    "Gameid": "a3c47f55-8645-4477-82f8-d3d734eb0ba0",
+    "InstallDirectory": "..\\Borderlands\\Borderlands3"
+  },
+  {
+    "Gameid": "9a2f47ed883a1fd5b886e8a60a34b2dd",
+    "InstallDirectory": "..\\V\\Foundation"
+  },
+  {
+    "Gameid": "3d7b28da710c143a7f657bec5abd0149",
+    "InstallDirectory": "..\\V\\PES2018"
+  },
+  {
+    "Gameid": "81827932-752c-4b54-b3b7-bd24bf5c9a22",
+    "InstallDirectory": "..\\III\\MetroLastLightRedux"
+  },
+  {
+    "Gameid": "9ce146e6-8cd9-4545-8de2-a6115e92ef9e",
+    "InstallDirectory": "..\\Watch.Dogs\\Watch.Dogs.2"
+  },
+  {
+    "Gameid": "8205a9b7108f8a964870ac877f54de2e",
+    "InstallDirectory": "..\\V\\Generation Zero"
+  },
+  {
+    "Gameid": "cb93f7bd-b87d-4093-92cf-1724772eb2e5",
+    "InstallDirectory": "..\\We\\We82016"
+  },
+  {
+    "Gameid": "5234c802-18e6-4b05-8988-d08ed58cfa84",
+    "InstallDirectory": "..\\Desert.Legend"
+  },
+  {
+    "Gameid": "6647bac32095ee0d540e1af2bcb9cc28",
+    "InstallDirectory": "..\\V\\HouseFlipper2"
+  },
+  {
+    "Gameid": "b558016d-a254-4fd1-8292-801ce03be394",
+    "InstallDirectory": "..\\Battlefield\\Battlefield.1"
+  },
+  {
+    "Gameid": "f682d37f-8e07-480c-b9c3-05b882b911ab",
+    "InstallDirectory": "..\\Steel.Division\\Steel.Division.2"
+  },
+  {
+    "Gameid": "857d45a75c30263ea317b52b3f410c04",
+    "InstallDirectory": "..\\III\\Easy Red 2"
+  },
+  {
+    "Gameid": "6f384d2ae087ae9519a8093992797083",
+    "InstallDirectory": "..\\W\\LittleKittyBigCity"
+  },
+  {
+    "Gameid": "8c81e19d2d4f6a8ff49857103eecbf3a",
+    "InstallDirectory": "..\\II\\TotalConflictResistance"
+  },
+  {
+    "Gameid": "0a2f0132-59ba-4d3a-a398-a08a8ef3a716",
+    "InstallDirectory": "..\\IndieGame3\\AirStrikeIIGulfThunder"
+  },
+  {
+    "Gameid": "6c9f9f11838d60943833de0a1cf60ea9",
+    "InstallDirectory": "..\\V\\NoRestForTheWicked"
+  },
+  {
+    "Gameid": "bb499630-653f-4f8b-b781-6db18ed96c45",
+    "InstallDirectory": "..\\Mount&Blade\\Mount&Blade1"
+  },
+  {
+    "Gameid": "1dadeed050b37b4164ac91889c81e958",
+    "InstallDirectory": "..\\IIII\\Embr"
+  },
+  {
+    "Gameid": "16ba38aa-295a-46db-8923-87104eac4246",
+    "InstallDirectory": "..\\IndieGame\\Two.Point.Hospital"
+  },
+  {
+    "Gameid": "e24dc848-0825-45bd-890f-0d8bedace8a9",
+    "InstallDirectory": "..\\CoD\\CoD6"
+  },
+  {
+    "Gameid": "2f48f5a6a1ed5e44c96ffe62dd0ee806",
+    "InstallDirectory": "..\\IIII\\NecroAttack"
+  },
+  {
+    "Gameid": "5228dfa3aa4ef5f60b6308b35a7688df",
+    "InstallDirectory": "..\\II\\Deadlink"
+  },
+  {
+    "Gameid": "293671eb2a1fc111074a7f8ac44db984",
+    "InstallDirectory": "..\\IIII\\SCP5K"
+  },
+  {
+    "Gameid": "b2900dc89a6bf9d6221e9f3ad423d85b",
+    "InstallDirectory": "..\\X\\SatGat"
+  },
+  {
+    "Gameid": "64878d084e58e7a588d1b20dc9c35acb",
+    "InstallDirectory": "..\\III\\FarmingSimulator22"
+  },
+  {
+    "Gameid": "952a595b-cb84-4970-a23c-6d927862c734",
+    "InstallDirectory": "..\\2023\\TheSaboteur"
+  },
+  {
+    "Gameid": "6adc2613273d346258d4ccb18b08fce3",
+    "InstallDirectory": "..\\GTA\\GTA4Complete"
+  },
+  {
+    "Gameid": "6c25f59286167db5eee6bf1cbba794ca",
+    "InstallDirectory": "..\\III\\IntotheBreach"
+  },
+  {
+    "Gameid": "ceb4e4b6-4dc1-490f-8ddb-9551b731997f",
+    "InstallDirectory": "..\\BioShock\\BioShock2"
+  },
+  {
+    "Gameid": "43c427a022de17f0c9a1566722a8bfd4",
+    "InstallDirectory": "..\\III\\三国群英传7幻想之圣战"
+  },
+  {
+    "Gameid": "b00d6a2f-80fd-4ef2-a0b8-f6827b35dd4d",
+    "InstallDirectory": "..\\CS\\CS1.6"
+  },
+  {
+    "Gameid": "e57cc11f-0af7-4966-a48c-634dc710ecb6",
+    "InstallDirectory": "..\\2023\\WO3"
+  },
+  {
+    "Gameid": "c7a5e148c8239a140549bab3497cebba",
+    "InstallDirectory": "..\\III\\Cod15"
+  },
+  {
+    "Gameid": "5683ce33aef5b1ab5ff58006b2902722",
+    "InstallDirectory": "..\\II\\Eastern Empire"
+  },
+  {
+    "Gameid": "3a558303dc87797ed5253fd4f5491f71",
+    "InstallDirectory": "..\\V\\HalfLife"
+  },
+  {
+    "Gameid": "ff3f3637f4bf9f0778fa160c7391a942",
+    "InstallDirectory": "..\\V\\KSP2"
+  },
+  {
+    "Gameid": "b497d85b-c905-492d-9feb-aadfd4ebd24a",
+    "InstallDirectory": "..\\IndieGame2\\ImmortalLife"
+  },
+  {
+    "Gameid": "ee1abab42fd26bacf3e2e4cceee5c7a0",
+    "InstallDirectory": "..\\W\\SovietRepublic"
+  },
+  {
+    "Gameid": "1f240be0b6fe09c56bb3a92c6d3eea77",
+    "InstallDirectory": "..\\V\\SWORN"
+  },
+  {
+    "Gameid": "9a0a7373-f76c-4355-8c08-c7d6bc6a0767",
+    "InstallDirectory": "..\\Richman\\RichMan8"
+  },
+  {
+    "Gameid": "ea8eb87513bf34e6d1390eb2f02f31d5",
+    "InstallDirectory": "..\\V\\Duke Nukem Forever Complete"
+  },
+  {
+    "Gameid": "915d5dd0-7e3a-44fc-b8c6-443ce1aeb8ce",
+    "InstallDirectory": "..\\III\\Re4R"
+  },
+  {
+    "Gameid": "2d82c168-83d2-4a64-954b-9fc57356be10",
+    "InstallDirectory": "..\\Crusader.Kings\\Crusader.Kings.III"
+  },
+  {
+    "Gameid": "ae4e0c26-714b-4677-a46e-51175706b1eb",
+    "InstallDirectory": "..\\Dying.Light\\DyingLight2"
+  },
+  {
+    "Gameid": "839154f4f8e65402a55cb5e4b00fb585",
+    "InstallDirectory": "..\\V\\Tales of Arise\\"
+  },
+  {
+    "Gameid": "fce7813b6e2f32cf981e3547532f04ed",
+    "InstallDirectory": "..\\IIII\\Stronghold.Definitive.Edition"
+  },
+  {
+    "Gameid": "fbabfb08-da48-4497-b565-2571d7fe8e2e",
+    "InstallDirectory": "..\\Alien.Shooter\\Alien.Shooter.2.NewEra"
+  },
+  {
+    "Gameid": "7c1444a4-2e81-44c3-a68a-86f2062d29c6",
+    "InstallDirectory": "..\\7.Days.To.Die"
+  },
+  {
+    "Gameid": "98a0fb78-c5b5-46fa-8ef6-02954a485e1a",
+    "InstallDirectory": "..\\Torchlight\\Torchlight.2"
+  },
+  {
+    "Gameid": "56d9371c5e6b69c45264a3264ac96c15",
+    "InstallDirectory": "..\\II\\RatchetAndClank"
+  },
+  {
+    "Gameid": "df7a496f-adba-4c1a-bb56-fcca1f0fdc56",
+    "InstallDirectory": "..\\III\\FateSeeker"
+  },
+  {
+    "Gameid": "ffe1057d376d690fa43be2c2fabe1527",
+    "InstallDirectory": "..\\II\\Atlas Fallen"
+  },
+  {
+    "Gameid": "603586353c75b02c0b34eb3270a59dcf",
+    "InstallDirectory": "..\\X\\ChineseDating"
+  },
+  {
+    "Gameid": "3ebe6ed4-71d1-4070-8ec4-33274c65af19",
+    "InstallDirectory": "..\\Darksiders\\Darksiders.2.Deathinitive"
+  },
+  {
+    "Gameid": "03646a76-98b7-4ea1-9672-e4f63109facd",
+    "InstallDirectory": "..\\Horizon.Zero.Dawn"
+  },
+  {
+    "Gameid": "102da9c6a0e2e76a9f041cb2bd5811ae",
+    "InstallDirectory": "..\\IIII\\EldenRing-Lan"
+  },
+  {
+    "Gameid": "e8869fc16ac233d8d263450a0acbbb75",
+    "InstallDirectory": "..\\II\\Slay the Spire"
+  },
+  {
+    "Gameid": "962cb33c-28f4-4b5e-ae21-4278c74bdc8e",
+    "InstallDirectory": "..\\CoD\\CoD7"
+  },
+  {
+    "Gameid": "806dabc8-f245-4637-b6f2-c445be424d3e",
+    "InstallDirectory": "..\\III\\Gears5"
+  },
+  {
+    "Gameid": "366252b42e6d2f8b6e5aa5ad455a809f",
+    "InstallDirectory": "..\\IIII\\Trine2"
+  },
+  {
+    "Gameid": "ef386d91-d827-4dac-995d-d340e6e1eeb6",
+    "InstallDirectory": "..\\CoD\\CoD1"
+  },
+  {
+    "Gameid": "4d66b5970aefec5f65ae870087fea97a",
+    "InstallDirectory": "..\\III\\Anomaly"
+  },
+  {
+    "Gameid": "94684f2bf27d42b32d641445454bc189",
+    "InstallDirectory": "..\\COD\\COD20"
+  },
+  {
+    "Gameid": "c3622629-9d3f-4219-92b8-d0db0f89cf16",
+    "InstallDirectory": "..\\IndieGame\\PlantsVsZombies1.Plus"
+  },
+  {
+    "Gameid": "37846dffe0666b17d9e07b090d719b44",
+    "InstallDirectory": "..\\X\\Lunch Lady"
+  },
+  {
+    "Gameid": "6bacee24b94f2ca8a9b30d935cc34458",
+    "InstallDirectory": "..\\V\\KiWF2"
+  },
+  {
+    "Gameid": "5d461f21-d42c-4e2a-80f9-a1ccb7679071",
+    "InstallDirectory": "..\\Age.of.Empires\\Age.of.Empires.I"
+  },
+  {
+    "Gameid": "13ce5b112bbfe397e20eed6b6486e172",
+    "InstallDirectory": "..\\X\\Grocery Store Simulator"
+  },
+  {
+    "Gameid": "505e1b50-5d85-4110-9a5d-8418ba3b076f",
+    "InstallDirectory": "..\\IndieGame3\\The Amazing Spider-Man 2"
+  },
+  {
+    "Gameid": "8aa8816d-1019-4f43-a8d4-04bcb7e413d2",
+    "InstallDirectory": "..\\III\\MyTimeAtPortia"
+  },
+  {
+    "Gameid": "95bfd63c-5fac-4846-9ee3-6f57c47bd6cf",
+    "InstallDirectory": "..\\II\\Marvel's Spider-Man Remastered"
+  },
+  {
+    "Gameid": "ee183d19ac860bde9f62df719484c9d9",
+    "InstallDirectory": "..\\W\\Sea Power"
+  },
+  {
+    "Gameid": "fff7ec04-e71c-4b74-a34e-84ccfc961da4",
+    "InstallDirectory": "..\\Silent.Hunter\\Silent.Hunter.3"
+  },
+  {
+    "Gameid": "2203fa95f3859258919676ac3dbe5ba5",
+    "InstallDirectory": "..\\V\\PES2019"
+  },
+  {
+    "Gameid": "dadc7b20b84ed83544164477eb03096b",
+    "InstallDirectory": "..\\X\\FS25"
+  },
+  {
+    "Gameid": "a4bc793b-2614-405d-a5eb-7a019b019769",
+    "InstallDirectory": "..\\Yakuza\\YakuzaKiwami2"
+  },
+  {
+    "Gameid": "ae67466a3ada9f7e1c7a4e36c31be52d",
+    "InstallDirectory": "..\\II\\Assassins Creed Chronicles China"
+  },
+  {
+    "Gameid": "4aa1cb91-9934-4b3f-beb2-2ceea261034a",
+    "InstallDirectory": "..\\Assassins.Creed\\Assassins.Creed.Origins"
+  },
+  {
+    "Gameid": "1b9b95c2b5cb0646f27aa0c07affc022",
+    "InstallDirectory": "..\\IndieGame3\\天地归虚"
+  },
+  {
+    "Gameid": "f5e39c59ef31c62e3eeda7ecb6dcda97",
+    "InstallDirectory": "..\\V\\TheSinkingCity"
+  },
+  {
+    "Gameid": "75b6b8d0a3464594ca181b3d675cea75",
+    "InstallDirectory": "..\\V\\Overlord.II"
+  },
+  {
+    "Gameid": "ce397fd10d84bc00ec2673ef2154c1a9",
+    "InstallDirectory": "..\\IIII\\MUSYNX"
+  },
+  {
+    "Gameid": "9703fbadc61bd1f083e2a86bce1e4d12",
+    "InstallDirectory": "..\\IIII\\8-bit Hordes"
+  },
+  {
+    "Gameid": "0687a707aa64558385eb7b99f56466df",
+    "InstallDirectory": "..\\2023\\Batman.BlackGate"
+  },
+  {
+    "Gameid": "f98bcd99ca98aff1b96b134ca0fa1ec9",
+    "InstallDirectory": "..\\Y\\Len's Island"
+  },
+  {
+    "Gameid": "b36eec7b-1fd2-4d30-bb71-9c4b7e35fbf3",
+    "InstallDirectory": "..\\Watch.Dogs\\Watch.Dogs.1"
+  },
+  {
+    "Gameid": "308b6936a98669a5f0e91096e41cb100",
+    "InstallDirectory": "..\\II\\WWE 2K23"
+  },
+  {
+    "Gameid": "d1be9d61842fd4242814dd11d78c805c",
+    "InstallDirectory": "..\\II\\Sanctum2"
+  },
+  {
+    "Gameid": "09edba378fad6268f9ce7908562c8a6a",
+    "InstallDirectory": "..\\X\\Revenge of the Savage Planet"
+  },
+  {
+    "Gameid": "edafb54d-0a73-456a-a920-7fad33fd2bc0",
+    "InstallDirectory": "..\\Resident.Evil\\Resident.Evil.Revelations"
+  },
+  {
+    "Gameid": "6e4db119ceff7f6fba296e73848dd594",
+    "InstallDirectory": "..\\II\\Marvel's Guardians of the Galaxy"
+  },
+  {
+    "Gameid": "f17224e1-484b-428e-9e78-4a4b3239e861",
+    "InstallDirectory": "..\\Total.War\\Total.War.Napoleon"
+  },
+  {
+    "Gameid": "d8b392e4d7b45e8b93159a1618b92440",
+    "InstallDirectory": "..\\IIII\\Last Epoch"
+  },
+  {
+    "Gameid": "121e30ac-4dfa-4b27-b984-921cef7bbbba",
+    "InstallDirectory": "..\\2023\\ProjectZomboid"
+  },
+  {
+    "Gameid": "efe9272aea683819d26080d858a9332f",
+    "InstallDirectory": "..\\V\\Pummel Party"
+  },
+  {
+    "Gameid": "4de6dd89-9bc7-45e4-971e-ffe709d2f939",
+    "InstallDirectory": "..\\Night.of.the.Dead"
+  },
+  {
+    "Gameid": "349a467c4b22c744425365e1a060b037",
+    "InstallDirectory": "..\\IIII\\Risk of Rain Returns"
+  },
+  {
+    "Gameid": "ed7e2b9b-d8c2-4abc-adc2-f05e1d6828a0",
+    "InstallDirectory": "..\\IndieGame2\\Just.Die.Already"
+  },
+  {
+    "Gameid": "6d221a7e-7cc0-49d9-9bb4-eaa6c2a584c1",
+    "InstallDirectory": "..\\Wasteland\\Wasteland.3"
+  },
+  {
+    "Gameid": "d845b63a783927677dadd42af914f168",
+    "InstallDirectory": "..\\II\\Just.Cause.2"
+  },
+  {
+    "Gameid": "e46da40b740e78238049c5034f94fc93",
+    "InstallDirectory": "..\\V\\PrinceofPersiaTheLostCrown"
+  },
+  {
+    "Gameid": "fb81d9628a1a4b273422408a050a7ea2",
+    "InstallDirectory": "..\\II\\ZhenXie"
+  },
+  {
+    "Gameid": "173e468c-1b27-4a10-9406-6240b04a7fc4",
+    "InstallDirectory": "..\\II\\Guild3"
+  },
+  {
+    "Gameid": "bed7f7b9f67dda192875c944dd6ede08",
+    "InstallDirectory": "..\\V\\ASTLIBRARevision"
+  },
+  {
+    "Gameid": "7f2496927066fdc070642fa22ebfd415",
+    "InstallDirectory": "..\\V\\Labyrinthine"
+  },
+  {
+    "Gameid": "726d2604-fa40-4e52-a1a1-00549aa3813a",
+    "InstallDirectory": "..\\Dying.Light\\Dying.Light"
+  },
+  {
+    "Gameid": "9eddbda6-93c5-4273-900b-d57c8292ec97",
+    "InstallDirectory": "..\\Sniper\\SniperElite2.Remastered"
+  },
+  {
+    "Gameid": "c3f839b8d40f6e63c19a62438bf2f9b5",
+    "InstallDirectory": "..\\X\\Old Market Simulator"
+  },
+  {
+    "Gameid": "d882541a-ffc7-40e8-a084-a87af3b06e7e",
+    "InstallDirectory": "..\\Crysis\\Crysis.3"
+  },
+  {
+    "Gameid": "601c33f5-2ee3-4c22-8145-09e1cb3d5250",
+    "InstallDirectory": "..\\IndieGame3\\Ready.Or.Not"
+  },
+  {
+    "Gameid": "31c3e46e97efa3b3872edf5a7c6520ea",
+    "InstallDirectory": "..\\V\\PixARK"
+  },
+  {
+    "Gameid": "f9719c8c95a5ac19e16419d5d0cb7e45",
+    "InstallDirectory": "..\\V\\TheCallistoProtocol"
+  },
+  {
+    "Gameid": "fc6d97d2-62da-487a-a85d-e234ceeedd82",
+    "InstallDirectory": "..\\CoD\\CoD11"
+  },
+  {
+    "Gameid": "e8f65cd7bdbc62ab894705205443a2f1",
+    "InstallDirectory": "..\\IIII\\Rust"
+  },
+  {
+    "Gameid": "66ddfbd5c851be6ff59b9301aebc6737",
+    "InstallDirectory": "..\\IIII\\FateSamuraiRemnant"
+  },
+  {
+    "Gameid": "16c4f0d4-bb2c-41d7-bf2a-92864455a86a",
+    "InstallDirectory": "..\\IndieGame3\\SIFU"
+  },
+  {
+    "Gameid": "c95e165271780da80925c96cade15b5d",
+    "InstallDirectory": "..\\III\\Welcome to Kowloon"
+  },
+  {
+    "Gameid": "f6d05dac-5e16-4548-a3d1-9d650c4bfef9",
+    "InstallDirectory": "..\\Alien.Shooter\\AlienShooter2"
+  },
+  {
+    "Gameid": "d40a0af05f150c234304df8362a1033c",
+    "InstallDirectory": "..\\III\\SPORE"
+  },
+  {
+    "Gameid": "1ce05108-6d6e-4fbc-8b85-10b727311ba7",
+    "InstallDirectory": "..\\Assassins.Creed\\Assassins.Creed.Valhalla"
+  },
+  {
+    "Gameid": "588a2381-ee2e-4425-804d-be4e88aae408",
+    "InstallDirectory": "..\\2023\\SkulTheHeroSlayer"
+  },
+  {
+    "Gameid": "9fbc44ef-0069-4ce0-9343-0df20410b14c",
+    "InstallDirectory": "..\\Torchlight\\Torchlight.1"
+  },
+  {
+    "Gameid": "a44d3651-a61e-4a8f-a952-e81f7f07088f",
+    "InstallDirectory": "..\\Yakuza\\Yakuza3Remastered"
+  },
+  {
+    "Gameid": "e0528e146d4ed56f54bdc72429b78c5c",
+    "InstallDirectory": "..\\III\\FF7RCC"
+  },
+  {
+    "Gameid": "5e57861a-1a23-4fde-8cec-1ee4997a4dd0",
+    "InstallDirectory": "..\\IndieGame2\\DigimonSurvive"
+  },
+  {
+    "Gameid": "65743d65-6356-4147-8a6b-9e253bca3595",
+    "InstallDirectory": "..\\Trine\\Trine.4"
+  },
+  {
+    "Gameid": "a15b889c-c463-4f37-a20d-cf9ce5ce5e2e",
+    "InstallDirectory": "..\\REAE\\FEAR.3.Lan"
+  },
+  {
+    "Gameid": "fd8f158b-08df-4dde-8fa2-dcd5d48d6575",
+    "InstallDirectory": "..\\BioShock\\BioShock3.Infinite"
+  },
+  {
+    "Gameid": "639d1042-7171-4f1a-8344-a3d4512abc56",
+    "InstallDirectory": "..\\III\\NFS20"
+  },
+  {
+    "Gameid": "3eed4472-53a3-4040-a541-f1fcf2b2dfef",
+    "InstallDirectory": "..\\Just.Cause\\Just.Cause.4"
+  },
+  {
+    "Gameid": "5dcc57b8f19757ed29b71bf5c16538bc",
+    "InstallDirectory": "..\\W\\Senuas Saga Hellblade II"
+  },
+  {
+    "Gameid": "2f9b074e-ba15-452d-b8ce-c26b64c10678",
+    "InstallDirectory": "..\\Far.Cry\\Far.Cry.2"
+  },
+  {
+    "Gameid": "ea7e847397317924c9c906ecd36c12c0",
+    "InstallDirectory": "..\\II\\GunsGoreandCannoli2"
+  },
+  {
+    "Gameid": "657cfc48-a64c-4051-be9b-0ca70e723d3b",
+    "InstallDirectory": "..\\Sanguo.Heroes\\Sanguo3"
+  },
+  {
+    "Gameid": "22fc7f22fe8a35b6faaaa6a0b9db894a",
+    "InstallDirectory": "..\\V\\Styx Shards of Darkness"
+  },
+  {
+    "Gameid": "c2b0a8fb-635c-4197-850e-3c161fa387a7",
+    "InstallDirectory": "..\\DARKSOULS\\DarkSouls.2.ScholaroftheFirstSin"
+  },
+  {
+    "Gameid": "a3349365ceab929c251b0d885f30885b",
+    "InstallDirectory": "..\\IIII\\Monster Maker"
+  },
+  {
+    "Gameid": "53a0956a99e6302e1c5130ced9393272",
+    "InstallDirectory": "..\\X\\Incantation"
+  },
+  {
+    "Gameid": "e58a5b1e9c2a31a8ea3813081cb58911",
+    "InstallDirectory": "..\\X\\DarkestDungeon1"
+  },
+  {
+    "Gameid": "0ee843a2da6d24e48eb7b4c342a3c639",
+    "InstallDirectory": "..\\II\\SunHaven"
+  },
+  {
+    "Gameid": "302248ca-0ffe-4ae1-b35b-ae92af4e364a",
+    "InstallDirectory": "..\\CoD\\CoD4"
+  },
+  {
+    "Gameid": "688f100704656838c56b87d349a54ce7",
+    "InstallDirectory": "..\\V\\Sir Whoopass"
+  },
+  {
+    "Gameid": "00ec18f239309bf1092fb9b1effd3c79",
+    "InstallDirectory": "..\\III\\Hollow Knight"
+  },
+  {
+    "Gameid": "c03d7efc524f253dc0edaf3f6b280a8b",
+    "InstallDirectory": "..\\V\\BrothersATaleofTwoSonsRemake"
+  },
+  {
+    "Gameid": "ea22e92e-b7e4-4190-8769-9865e3f86691",
+    "InstallDirectory": "..\\NBA\\NBA2K21"
+  },
+  {
+    "Gameid": "3bf374c79fcad57bd7ab4c95a3280bf9",
+    "InstallDirectory": "..\\IIII\\8-bit Invaders"
+  },
+  {
+    "Gameid": "ff4efd440979fd610fa245fd9f975e5a",
+    "InstallDirectory": "..\\W\\Expedition33"
+  },
+  {
+    "Gameid": "fc267f8e-b75a-486e-b472-dea8d255f46d",
+    "InstallDirectory": "..\\Forza.Horizon\\Forza.Horizon.5"
+  },
+  {
+    "Gameid": "eda8909162bbb3910e7467229f142b07",
+    "InstallDirectory": "..\\W\\MMOSimulator"
+  },
+  {
+    "Gameid": "c39f787970d9d6992e21062a2a34689c",
+    "InstallDirectory": "..\\V\\MomodoraMoonlitFarewell"
+  },
+  {
+    "Gameid": "fe9efecb-ca16-4370-9108-2652b64b8a38",
+    "InstallDirectory": "..\\IndieGame3\\Craftopia"
+  },
+  {
+    "Gameid": "95ba26b631f2461cebf9d35d6d9c4d50",
+    "InstallDirectory": "..\\IndieGame3\\OnlyUp"
+  },
+  {
+    "Gameid": "a07a1ed0-859b-480e-b2a7-c45adfca4bf6",
+    "InstallDirectory": "..\\GTA\\GTA III - Definitive Edition"
+  },
+  {
+    "Gameid": "f2bbf1bde9fd90e8a3f0a09c36209f25",
+    "InstallDirectory": "..\\V\\HELLCARD"
+  },
+  {
+    "Gameid": "3aa7e85c-fd4c-4d7d-bc43-1c47c3288a9e",
+    "InstallDirectory": "..\\BioShock\\BioShock.Remastered"
+  },
+  {
+    "Gameid": "44f50e579537dba3e1917c5e0f872ae5",
+    "InstallDirectory": "..\\II\\Octopath Traveler II"
+  },
+  {
+    "Gameid": "75f9dd6f-1b19-4dbc-a5eb-de9c36583aa5",
+    "InstallDirectory": "..\\IndieGame3\\Mortal.Kombat.11"
+  },
+  {
+    "Gameid": "f26691a1adda1759b6e414621cfd546d",
+    "InstallDirectory": "..\\X\\Age of Mythology - Retold"
+  },
+  {
+    "Gameid": "cbb6240bc27d13ac5072e16db47457aa",
+    "InstallDirectory": "..\\IIII\\Outward"
+  },
+  {
+    "Gameid": "cadfda80d5be3d400afdaa4b2dfa8084",
+    "InstallDirectory": "..\\V\\ManorLords"
+  },
+  {
+    "Gameid": "eeb00c9b-fe70-46fd-b386-08280da05a74",
+    "InstallDirectory": "..\\GTA\\GTA4\\GTAIV"
+  },
+  {
+    "Gameid": "36e9a28d9243751d2d7724bd752b1160",
+    "InstallDirectory": "..\\Y\\DREADZONE"
+  },
+  {
+    "Gameid": "9581beb8-247a-454d-982c-1e13caa04f12",
+    "InstallDirectory": "..\\Tomb.Raider\\Tomb.9"
+  },
+  {
+    "Gameid": "f17ce826766eee1ba890ecd15590e0e2",
+    "InstallDirectory": "..\\V\\TheMobiusMachine"
+  },
+  {
+    "Gameid": "b01a0589ee2809ad20ae9e3fa01cc863",
+    "InstallDirectory": "..\\W\\EmperorRotMK"
+  },
+  {
+    "Gameid": "47105a86-e08f-4f7b-8e57-d5157febdfc2",
+    "InstallDirectory": "..\\IndieGame3\\WarhammerChaosbane"
+  },
+  {
+    "Gameid": "d39427bd0e2c53340c177d48fed0cea4",
+    "InstallDirectory": "..\\III\\WARNO"
+  },
+  {
+    "Gameid": "b6475c8e1340936cca2b840c0bb03448",
+    "InstallDirectory": "..\\X\\A Way Out"
+  },
+  {
+    "Gameid": "bf63fdbf6846f661bfd6a4cbad38265d",
+    "InstallDirectory": "..\\II\\DFBHD"
+  },
+  {
+    "Gameid": "82148b90723db7b08c830492a6f4f75f",
+    "InstallDirectory": "..\\W\\RabbitSteel"
+  },
+  {
+    "Gameid": "1c508861-99ce-4536-9125-aa975fadce1b",
+    "InstallDirectory": "..\\2023\\WILDHEARTS"
+  },
+  {
+    "Gameid": "676ee5c1-80cb-4446-bd84-2a3f1c773f68",
+    "InstallDirectory": "..\\GTA\\Red.Dead.Redemption.2"
+  },
+  {
+    "Gameid": "89ae526b1d3ad202966529ea94378dfe",
+    "InstallDirectory": "..\\IIII\\Hearts of Iron IV"
+  },
+  {
+    "Gameid": "083fa75b-fb87-4761-b573-ffdb9cde032a",
+    "InstallDirectory": "..\\Total.War\\Total.War.WARHAMMER"
+  },
+  {
+    "Gameid": "25bbb4a4d7b54627ccd00da5c80fa714",
+    "InstallDirectory": "..\\W\\NorthendTowerDefense"
+  },
+  {
+    "Gameid": "da295b3b-ee52-4dc5-b645-e7e8405db2e0",
+    "InstallDirectory": "..\\III\\RudeRacers"
+  },
+  {
+    "Gameid": "803266b78f43242b82eb8cbac39604f9",
+    "InstallDirectory": "..\\IIII\\FarmTogether"
+  },
+  {
+    "Gameid": "8b4ed270fedbd3bdab8ef1b83e3f105c",
+    "InstallDirectory": "..\\W\\TransportFever2"
+  },
+  {
+    "Gameid": "7be8d4a782255ba6021d8c88c3f73629",
+    "InstallDirectory": "..\\II\\SengokuDynasty"
+  },
+  {
+    "Gameid": "12977609-55a5-4105-b840-06473480d0b9",
+    "InstallDirectory": "..\\Blizzard\\StarCraft2"
+  },
+  {
+    "Gameid": "f7fdaf88b5629a53c4ac593d36ba4516",
+    "InstallDirectory": "..\\II\\VolcanoPrincess"
+  },
+  {
+    "Gameid": "e6056b27-70ec-4a20-ab71-8a9f34c63ca6",
+    "InstallDirectory": "..\\MMORPG.Tycoon.2"
+  },
+  {
+    "Gameid": "8c830da2eea5e329b1aef58401a2a60f",
+    "InstallDirectory": "..\\X\\Balatro"
+  },
+  {
+    "Gameid": "98235560-5172-40c0-8932-6352733cb47e",
+    "InstallDirectory": "..\\III\\Factorio"
+  },
+  {
+    "Gameid": "bdda6cd83b943b64b4f92fddd53ac214",
+    "InstallDirectory": "..\\W\\Frostpunk 2"
+  },
+  {
+    "Gameid": "02d68625-f31a-4e41-812f-53f2f8ee8804",
+    "InstallDirectory": "..\\Battlefield\\Battlefield.Bad.Company.2"
+  },
+  {
+    "Gameid": "483a87b3-af8a-49dd-92ff-0a7038073eff",
+    "InstallDirectory": "..\\Desperados\\Desperados.III"
+  },
+  {
+    "Gameid": "97de59bf-7c86-4c56-b7c5-725a38c9b9e8",
+    "InstallDirectory": "..\\Ride\\RIDE.4"
+  },
+  {
+    "Gameid": "0c6b244b-47d3-42df-86f4-c712aaa9946d",
+    "InstallDirectory": "..\\Microsoft.Flight.Simulator\\Microsoft.Flight.Simulator.X"
+  },
+  {
+    "Gameid": "90686a6c-ed61-48f3-a016-e318857f91b7",
+    "InstallDirectory": "..\\The.Heroes.of.JinYong.6in1"
+  },
+  {
+    "Gameid": "2cbf60ab-b0ad-4232-a17e-cfdabd469f73",
+    "InstallDirectory": "..\\GodOfWar\\GodOfWar4"
+  },
+  {
+    "Gameid": "1dab1074452dfa2cc74ac0b4c74e989e",
+    "InstallDirectory": "..\\V\\Wobbly Life"
+  },
+  {
+    "Gameid": "e6e4443268c0fae7284acc5c11ba2461",
+    "InstallDirectory": "..\\X\\Split Fiction"
+  },
+  {
+    "Gameid": "e00550c3-6922-45ac-8e86-cdb4a61c9582",
+    "InstallDirectory": "..\\Prey\\Prey.1"
+  },
+  {
+    "Gameid": "2e9ddfd9-55ac-473d-85f7-3a6be2235fa7",
+    "InstallDirectory": "..\\Assassins.Creed\\Assassins.Creed.Brotherhood"
+  },
+  {
+    "Gameid": "edb9d52b46755fc9eef38d16b4966e02",
+    "InstallDirectory": "..\\V\\LostCastle"
+  },
+  {
+    "Gameid": "40266225dbbaba155afb1cbe4ecdd5d8",
+    "InstallDirectory": "..\\V\\TheRiftbreaker"
+  },
+  {
+    "Gameid": "56c0e1a22d506607c85b3d7eae2a8ef5",
+    "InstallDirectory": "..\\V\\Death Must Die"
+  },
+  {
+    "Gameid": "eee9a59184ece0552777b61f4b02de0b",
+    "InstallDirectory": "..\\2025\\School 666"
+  },
+  {
+    "Gameid": "71125326-f306-4f6b-830e-a3e84325cc7f",
+    "InstallDirectory": "..\\IndieGame2\\EscapeSimulator"
+  },
+  {
+    "Gameid": "c0968c30-e8ed-4400-8363-ad3bd9f0ed38",
+    "InstallDirectory": "..\\IndieGame3\\GhostwireTokyo"
+  },
+  {
+    "Gameid": "e72dbaf5-7cf1-469d-9aac-8b1fcee1628c",
+    "InstallDirectory": "..\\Wolfenstein\\Wolfenstein.TheOldBlood"
+  },
+  {
+    "Gameid": "2515a45e6a603e3a0cdf9a18a8c04abc",
+    "InstallDirectory": "..\\V\\Entropy Survivors"
+  },
+  {
+    "Gameid": "071371de-f182-429b-81ea-a10454ac552c",
+    "InstallDirectory": "..\\GTA\\GTA Vice City - Definitive Edition"
+  },
+  {
+    "Gameid": "c3420772c870e38ee4b31b892610a7e0",
+    "InstallDirectory": "..\\X\\Jotunnslayer"
+  },
+  {
+    "Gameid": "a5b6b76da3e18c0e285bde62ecb1974c",
+    "InstallDirectory": "..\\III\\DaXia"
+  },
+  {
+    "Gameid": "fe853e04a883803eb02e67481c855f8a",
+    "InstallDirectory": "..\\V\\SaintSeiyaSoldiersSoul"
+  },
+  {
+    "Gameid": "d040a25a-b75c-47e3-97d5-acf9b98b0a55",
+    "InstallDirectory": "..\\World.War.Z"
+  },
+  {
+    "Gameid": "580361928aae9b0a9e8de04063efb983",
+    "InstallDirectory": "..\\V\\GOD EATER 3"
+  },
+  {
+    "Gameid": "d8afc6f2-5492-460a-a3fd-9eb112a563ec",
+    "InstallDirectory": "..\\Port.Royale\\Port.Royale.4"
+  },
+  {
+    "Gameid": "37947f6d-2444-437d-a346-8d6158d67fa6",
+    "InstallDirectory": "..\\Assassins.Creed\\Assassin's.Creed.Unity"
+  },
+  {
+    "Gameid": "897e1071-aa28-4e32-8192-9a599007ed62",
+    "InstallDirectory": "..\\IndieGame2\\Battle.City.Remake"
+  },
+  {
+    "Gameid": "c685d00cffaf13a28dec513b4566155f",
+    "InstallDirectory": "..\\II\\PlateUp"
+  },
+  {
+    "Gameid": "f9193fbba7707a933fc0480fd3b69087",
+    "InstallDirectory": "..\\IIII\\EverdreamValley"
+  },
+  {
+    "Gameid": "aaa837e5-3750-4433-a747-d8675a2a3d8d",
+    "InstallDirectory": "..\\aaRemnant"
+  },
+  {
+    "Gameid": "8eb55e87-214a-4d23-b572-74c2742afd29",
+    "InstallDirectory": "..\\Prototype\\Prototype.2"
+  },
+  {
+    "Gameid": "930b7ca88dc8067c3c66d0fe0018a2ef",
+    "InstallDirectory": "..\\V\\Red_Alert_WaW"
+  },
+  {
+    "Gameid": "eb8943a2-16ed-43cf-aaf9-861944d76d2b",
+    "InstallDirectory": "..\\IndieGame3\\GTFO"
+  },
+  {
+    "Gameid": "32cf128f-47ff-40d3-ba88-3807bcd28308",
+    "InstallDirectory": "..\\Blizzard\\StarCraftR"
+  },
+  {
+    "Gameid": "4a9a4191a5bd0b4b2a345985439fce4b",
+    "InstallDirectory": "..\\V\\Saw"
+  },
+  {
+    "Gameid": "650335e2a952fd5de01b2342bad2007e",
+    "InstallDirectory": "..\\W\\CommandoCollection"
+  },
+  {
+    "Gameid": "ea77bb4e72f2d5f497d9fef654a0a416",
+    "InstallDirectory": "..\\W\\Supernatural"
+  },
+  {
+    "Gameid": "b00ff5ea86648620519ddfe4f18d2ded",
+    "InstallDirectory": "..\\Y\\Oddsparks"
+  },
+  {
+    "Gameid": "520fe042-3c48-470f-be6b-94fde2be9a86",
+    "InstallDirectory": "..\\Sniper\\Sniper.GhostWarriorContracts"
+  },
+  {
+    "Gameid": "bcac85a606f7cb478f559383697a775e",
+    "InstallDirectory": "..\\IIII\\Sackboy"
+  },
+  {
+    "Gameid": "e880b2dc-a752-4f96-ae97-8bee6a7b861e",
+    "InstallDirectory": "..\\2023\\SonsOfTheForest"
+  },
+  {
+    "Gameid": "4d3c99c18a5e493a6a9048e0b16a7f22",
+    "InstallDirectory": "..\\V\\ManicMechanics"
+  },
+  {
+    "Gameid": "3963e34782f26d88adc6c46d8042de10",
+    "InstallDirectory": "..\\IIII\\SystemShock"
+  },
+  {
+    "Gameid": "938dcb20-a288-4817-8bed-40a31dfb7b4b",
+    "InstallDirectory": "..\\IndieGame3\\Grim.Dawn"
+  },
+  {
+    "Gameid": "baa65dd9-9a99-4bd1-93b0-01c9c9720968",
+    "InstallDirectory": "..\\The.Outer.Worlds"
+  },
+  {
+    "Gameid": "5eff0eb6-039a-410e-9ab8-eb87119522f1",
+    "InstallDirectory": "..\\Resident.Evil\\Resident.Evil.5"
+  },
+  {
+    "Gameid": "67a75ace-f939-4e06-8ed3-94aeb16c3e3c",
+    "InstallDirectory": "..\\2023\\Pal7"
+  },
+  {
+    "Gameid": "d62085fbd48ec76c659c53064846866a",
+    "InstallDirectory": "..\\II\\GrannyRemake"
+  },
+  {
+    "Gameid": "b0cd7ea4a4336a8df18d9e087c8681d6",
+    "InstallDirectory": "..\\IIII\\Ikonei Island"
+  },
+  {
+    "Gameid": "b7deaa08-e022-43ea-a1b6-932ec780e78f",
+    "InstallDirectory": "..\\Civilization\\Civilization.6"
+  },
+  {
+    "Gameid": "58beabc9-b79b-4db7-b7ba-4e2f52223007",
+    "InstallDirectory": "..\\RA\\RA3_Small"
+  },
+  {
+    "Gameid": "312f75589a83c4a2956258285c4dfd78",
+    "InstallDirectory": "..\\IIII\\Achilles"
+  },
+  {
+    "Gameid": "cbab1022-3269-463d-af0b-3eee59dd8ef5",
+    "InstallDirectory": "..\\III\\FFXV"
+  },
+  {
+    "Gameid": "9cd15b48-825a-4fcf-b6d3-c8f1e555bb4b",
+    "InstallDirectory": "..\\II\\TheyAreBillions"
+  },
+  {
+    "Gameid": "e39bc3f4b55d5de5354feda49795ba07",
+    "InstallDirectory": "..\\III\\Sunkenland"
+  },
+  {
+    "Gameid": "ef80012b-b4f8-4d57-a010-4cad6ba3651f",
+    "InstallDirectory": "..\\III\\Control"
+  },
+  {
+    "Gameid": "aa1cb352cba6762078481e09907a8715",
+    "InstallDirectory": "..\\IIII\\WizardWithAGun"
+  },
+  {
+    "Gameid": "f655b7a8afc742c082bd05aed5654e42",
+    "InstallDirectory": "..\\W\\Onimusha"
+  },
+  {
+    "Gameid": "3f6b9bee-4d00-4a9e-85e2-f0963ce378b2",
+    "InstallDirectory": "..\\IndieGame3\\Age.of.Darkness.Final.Stand"
+  },
+  {
+    "Gameid": "bab54b3fbdaa1c5afa969cd41d72f857",
+    "InstallDirectory": "..\\W\\Behind"
+  },
+  {
+    "Gameid": "721e7b436a1ebdc66dc29a4bc4644d35",
+    "InstallDirectory": "..\\V\\TWFC"
+  },
+  {
+    "Gameid": "2631f322a1409a4a857ef696d05390cf",
+    "InstallDirectory": "..\\II\\ZhaoYunZhuan"
+  },
+  {
+    "Gameid": "b2f8cf6cf9d70675ec31d5c57176272d",
+    "InstallDirectory": "..\\IIII\\The Matriarch"
+  },
+  {
+    "Gameid": "a5be7c32839e58ffaa3aafec55bb67ee",
+    "InstallDirectory": "..\\II\\UEBS"
+  },
+  {
+    "Gameid": "4b2cde80c21d4203ae5c878286165b86",
+    "InstallDirectory": "..\\W\\Dark Hours"
+  },
+  {
+    "Gameid": "c18fd95e-d922-46e3-943a-9ffc1d1db127",
+    "InstallDirectory": "..\\Orcs.Must.Die\\Orcs.Must.Die.2"
+  },
+  {
+    "Gameid": "b680e0f53d2d5e70f4ac890fe42aaf11",
+    "InstallDirectory": "..\\W\\CatQuest3"
+  },
+  {
+    "Gameid": "42f9a8a0-7a6c-4d0c-8e8b-94bbc75f820d",
+    "InstallDirectory": "..\\IndieGame\\PlantsVsZombies.2"
+  },
+  {
+    "Gameid": "fa093325893d05a244936b79b3d81cc7",
+    "InstallDirectory": "..\\X\\Citadelum"
+  },
+  {
+    "Gameid": "91945c99-7df5-4ac4-af35-3b9e788db436",
+    "InstallDirectory": "..\\Far.Cry\\Far.Cry.5"
+  },
+  {
+    "Gameid": "79e085cc10104f2e6dd4c3d7274dc59b",
+    "InstallDirectory": "..\\W\\pvzHE"
+  },
+  {
+    "Gameid": "dcb14d2d-6991-4a38-a833-dae6ab752052",
+    "InstallDirectory": "..\\NieR.Automata"
+  },
+  {
+    "Gameid": "0aa75be98c3ce95e5768f4d413273852",
+    "InstallDirectory": "..\\IIII\\Gargoyles Remastered"
+  },
+  {
+    "Gameid": "b877ffb2-db3a-4464-ba1b-b7b399639a1b",
+    "InstallDirectory": "..\\Age.of.Empires\\Age.of.Empires.Definitive.Edition"
+  },
+  {
+    "Gameid": "b4264bcc-c53a-4574-b66f-1067b896efc1",
+    "InstallDirectory": "..\\Heroes.of.Might.and.Magic\\Heroes.7"
+  },
+  {
+    "Gameid": "c60285ec-8edb-4660-bc2d-b94ff5c0b1cf",
+    "InstallDirectory": "..\\Company.of.Heroes\\Company of Heroes.Tales of Valor"
+  },
+  {
+    "Gameid": "b59a1f70fe0041851f7f1269f5c50528",
+    "InstallDirectory": "..\\II\\Gas Station Simulator"
+  },
+  {
+    "Gameid": "e6952fc865285c7cc2c85b787cc87761",
+    "InstallDirectory": "..\\X\\FHUOR"
+  },
+  {
+    "Gameid": "bb541157a7a9a0ab07b8f0f8b2c6519a",
+    "InstallDirectory": "..\\III\\OPPW4"
+  },
+  {
+    "Gameid": "ca2b071b-7034-4e06-8271-89db29cbbe46",
+    "InstallDirectory": "..\\2023\\FbStory"
+  },
+  {
+    "Gameid": "4d4a9d90-87d7-44a2-b8ba-f480465213ec",
+    "InstallDirectory": "..\\Yakuza\\Yakuza5Remastered"
+  },
+  {
+    "Gameid": "99e40f370285aa16716267559ca4ae61",
+    "InstallDirectory": "..\\II\\WayOfTheHunter"
+  },
+  {
+    "Gameid": "38cb6afcc9b52e56aaebb583bfcb881a",
+    "InstallDirectory": "..\\III\\Nights of Azure 2"
+  },
+  {
+    "Gameid": "da0b8b09cf0720610e1358934bcd7f8f",
+    "InstallDirectory": "..\\X\\EARTH DEFENSE FORCE 6"
+  },
+  {
+    "Gameid": "36405f27-9a31-4986-aed8-12f1382fcbee",
+    "InstallDirectory": "..\\IndieGame3\\Ghost.Hunters.Corp"
+  },
+  {
+    "Gameid": "1209a1c70dce815430cd06c48ff968bf",
+    "InstallDirectory": "..\\V\\WH40KRT"
+  },
+  {
+    "Gameid": "c5dacea8301d391f6762b4d1c83d409d",
+    "InstallDirectory": "..\\X\\TTH1DVD"
+  },
+  {
+    "Gameid": "5b6034d57eec0095068fc7c0b68f93a1",
+    "InstallDirectory": "..\\V\\The Ascent"
+  },
+  {
+    "Gameid": "354f4a924225488c14a0b8095634d72a",
+    "InstallDirectory": "..\\X\\Sephiria"
+  },
+  {
+    "Gameid": "4539bbc65f997a7ebfbfa7011e714f79",
+    "InstallDirectory": "..\\V\\graw2"
+  },
+  {
+    "Gameid": "306c9e6e2e76b11355a93ec9140c5b51",
+    "InstallDirectory": "..\\V\\RUSE"
+  },
+  {
+    "Gameid": "d3d0eb0d1b0b5c1df96e877c3ea84a41",
+    "InstallDirectory": "..\\II\\残秽的我们2"
+  },
+  {
+    "Gameid": "fe781dd4-04cb-4b06-91e7-41907462d541",
+    "InstallDirectory": "..\\Yakuza\\Yakuza0"
+  },
+  {
+    "Gameid": "11bf1658-5a16-48eb-b56d-99b44e965b98",
+    "InstallDirectory": "..\\IndieGame3\\HouseFlipper"
+  },
+  {
+    "Gameid": "c0206e28-db41-4c52-9cee-8931f2af49e4",
+    "InstallDirectory": "..\\IndieGame\\Shadow.Tactics"
+  },
+  {
+    "Gameid": "ea7e7d21-42f3-426b-8c26-48e3ae8c22f3",
+    "InstallDirectory": "..\\Three.Kingdoms\\Three.Kingdoms.Heros"
+  },
+  {
+    "Gameid": "ded04d59eb8c70fa7df97e98a7b1c059",
+    "InstallDirectory": "..\\IIII\\Thief Simulator 2"
+  },
+  {
+    "Gameid": "c9c9e1a1-3684-4f98-9c6b-043713198093",
+    "InstallDirectory": "..\\IndieGame2\\Little.Nightmares.II"
+  },
+  {
+    "Gameid": "62c5ce5f99c41564663a4c76cdc940e6",
+    "InstallDirectory": "..\\IIII\\Nightmare Incubo"
+  },
+  {
+    "Gameid": "3f245cbaab9058ba17b8b1cd552cf467",
+    "InstallDirectory": "..\\III\\ZEDZONE"
+  },
+  {
+    "Gameid": "dac35226f3086446a3b313c21c753c7f",
+    "InstallDirectory": "..\\V\\TransformersDevastation"
+  },
+  {
+    "Gameid": "bc1758344c9ef5914d6db52fc9bd9e88",
+    "InstallDirectory": "..\\V\\AssassinsCreedII"
+  },
+  {
+    "Gameid": "4019c6e9-d48f-4025-b2a7-2e7be1efe439",
+    "InstallDirectory": "..\\IndieGame2\\Call.to.Arms.Gates.of.Hell.Talvisota"
+  },
+  {
+    "Gameid": "4b16307145945d0fb6896d87f62e34e6",
+    "InstallDirectory": "..\\V\\Rotwood"
+  },
+  {
+    "Gameid": "b2ac7967634f9941e0d9b424fa29f497",
+    "InstallDirectory": "..\\III\\No Man's Sky"
+  },
+  {
+    "Gameid": "8077a16a-ee88-4831-9948-d6e8e95983ee",
+    "InstallDirectory": "..\\II\\DmCDevilMayCry"
+  },
+  {
+    "Gameid": "12c15b9e173b80aa14eff91d1bdbd51a",
+    "InstallDirectory": "..\\V\\LegendaryHoplite"
+  },
+  {
+    "Gameid": "cb65f863f754d749f0fac32822fef50c",
+    "InstallDirectory": "..\\Y\\Farm Manager World"
+  },
+  {
+    "Gameid": "a48a1a70-9165-4a4f-b144-9235a97873a7",
+    "InstallDirectory": "..\\IndieGame3\\teor"
+  },
+  {
+    "Gameid": "29ea21bd-dd59-4c0c-8d3f-bc31bc9d9ea4",
+    "InstallDirectory": "..\\IndieGame3\\INSIDE"
+  },
+  {
+    "Gameid": "10584f4e-f4e3-4159-ae9f-ffb373f7e394",
+    "InstallDirectory": "..\\2023\\HogwartsLegacy"
+  },
+  {
+    "Gameid": "c755cd8fc088df8a6c4381dd0fb1dcfd",
+    "InstallDirectory": "..\\X\\lollipop"
+  },
+  {
+    "Gameid": "8c708a3e1f2797e98d563a98f0ccdf85",
+    "InstallDirectory": "..\\II\\Assassins Creed Chronicles India"
+  },
+  {
+    "Gameid": "62ace085ce94c46f9f7cfd6968446576",
+    "InstallDirectory": "..\\II\\Assassins Creed Chronicles Russia"
+  },
+  {
+    "Gameid": "c8b4e96b91b9276869789cb6870abf02",
+    "InstallDirectory": "..\\IIII\\Railbound"
+  },
+  {
+    "Gameid": "444789c47e744c5b90776d6e4d96cb13",
+    "InstallDirectory": "..\\W\\NoReturn"
+  },
+  {
+    "Gameid": "f98cb27d-c44e-49de-b751-37ba6a3d53d7",
+    "InstallDirectory": "..\\2023\\WWE2K22"
+  },
+  {
+    "Gameid": "7d429222-cc92-492f-9427-dd53ea8e303f",
+    "InstallDirectory": "..\\Kingdoms.of.Amalur\\Kingdoms.of.Amalur.Re-Reckoning"
+  },
+  {
+    "Gameid": "f98f0724191e9c453466e1c8ad81287b",
+    "InstallDirectory": "..\\Y\\FANTASY LIFE i"
+  },
+  {
+    "Gameid": "70f940eb-0b93-4f45-80fb-83dcf677cac6",
+    "InstallDirectory": "..\\IndieGame3\\StarCraft"
+  },
+  {
+    "Gameid": "8d7e6c008e0f39e2da59f77d3cc193b4",
+    "InstallDirectory": "..\\III\\TotallyAccurateBattleSimulator"
+  },
+  {
+    "Gameid": "f9678284-0558-46a2-b8be-d10634b60cb5",
+    "InstallDirectory": "..\\2023\\BinginWonderland"
+  },
+  {
+    "Gameid": "3f6ea1a13af7d54ef8e507bee563b8e5",
+    "InstallDirectory": "..\\V\\Wukong"
+  },
+  {
+    "Gameid": "c46730b138407a86c8c7ff7d6949a63d",
+    "InstallDirectory": "..\\III\\FadingAfternoon"
+  },
+  {
+    "Gameid": "18f9c2505609bf732cc4cccf67cce6ce",
+    "InstallDirectory": "..\\IIII\\ALTF42"
+  },
+  {
+    "Gameid": "2169150c2e3aee042d488bb08b4151a5",
+    "InstallDirectory": "..\\V\\Duke3D"
+  },
+  {
+    "Gameid": "68634651480998bfe6c8a42903aa681c",
+    "InstallDirectory": "..\\W\\OutcastANewBeginning"
+  },
+  {
+    "Gameid": "bfde0edf-7dea-41b0-b203-071877e0bc73",
+    "InstallDirectory": "..\\Richman\\Richman.10"
+  },
+  {
+    "Gameid": "3a1d6c71-eff9-4320-a8b3-62bfcf794ab1",
+    "InstallDirectory": "..\\Assassins.Creed\\Assassin's.Creed.Rogue"
+  },
+  {
+    "Gameid": "a89187b1b885de01bae49825b793e2c1",
+    "InstallDirectory": "..\\IIII\\SOSAWL"
+  },
+  {
+    "Gameid": "cf97e6085af6271e663905f0f76dc8c1",
+    "InstallDirectory": "..\\II\\TheSurge2"
+  },
+  {
+    "Gameid": "d29fe8b4-96ea-4405-88f7-12d5d3d1246a",
+    "InstallDirectory": "..\\The.Wild.Eight\\The.Wild.Eight.Lan"
+  },
+  {
+    "Gameid": "068c27442da5625326cd10f4dddb0129",
+    "InstallDirectory": "..\\III\\OVERKILL's The Walking Dead"
+  },
+  {
+    "Gameid": "442e2343-84d2-4007-b3c7-cea307b04a84",
+    "InstallDirectory": "..\\IndieGame3\\BIOMUTANT"
+  },
+  {
+    "Gameid": "70cbffc3-e9e9-4e2e-994c-32d09c2028c4",
+    "InstallDirectory": "..\\Resident.Evil\\Resident.Evil.Revelations2"
+  },
+  {
+    "Gameid": "fd8339d5-d934-418f-8fd9-b14030216c05",
+    "InstallDirectory": "..\\Street.Fighter\\UltraStreetFighterIV"
+  },
+  {
+    "Gameid": "2a9dfb57-a908-4142-a718-b66e12cee844",
+    "InstallDirectory": "..\\Kingdoms.of.Amalur\\Kingdoms.of.Amalur.Reckoning"
+  },
+  {
+    "Gameid": "502433d4-b769-4b42-88fc-501f92cd8090",
+    "InstallDirectory": "..\\IndieGame3\\jynew3d"
+  },
+  {
+    "Gameid": "d43194ef-53b6-4977-82e9-59d39e1ce64d",
+    "InstallDirectory": "..\\Sniper\\SniperElite4"
+  },
+  {
+    "Gameid": "75515000-db84-4029-80b1-1b9a7f64bfea",
+    "InstallDirectory": "..\\Assassins.Creed\\Ancestors"
+  },
+  {
+    "Gameid": "b3d66a1e-2c03-41e6-a6a1-e127fef82257",
+    "InstallDirectory": "..\\2023\\ChooChooCharles"
+  },
+  {
+    "Gameid": "97d92078-1dc5-4b19-b32e-5c6326d8fb5c",
+    "InstallDirectory": "..\\Tropico\\Tropico.6"
+  },
+  {
+    "Gameid": "aae57fc9-be40-4903-affc-55b715b7886b",
+    "InstallDirectory": "..\\IndieGame3\\Dead.Cells"
+  },
+  {
+    "Gameid": "01c5638307e86be26343654b015c07d7",
+    "InstallDirectory": "..\\V\\XCom2"
+  },
+  {
+    "Gameid": "13e9f064-392e-4b62-8b5c-cb1e3e930b89",
+    "InstallDirectory": "..\\2023\\TheWitcher3Next"
+  },
+  {
+    "Gameid": "4707c086-5b54-498f-b28d-ec69dd6a50e5",
+    "InstallDirectory": "..\\Serious.Sam\\Serious.Sam.Siberian.Mayhem"
+  },
+  {
+    "Gameid": "def1eeb82146a426fc25cf6b251e413f",
+    "InstallDirectory": "..\\W\\DLZwin95"
+  },
+  {
+    "Gameid": "bbdb9a82-f3f6-4894-a502-0eba8e8bbac8",
+    "InstallDirectory": "..\\2023\\PoliceSimulatorPatrolOfficers"
+  },
+  {
+    "Gameid": "9846526d71613879be81433e08e5078c",
+    "InstallDirectory": "..\\IndieGame3\\30XX"
+  },
+  {
+    "Gameid": "5283d762-0e38-4eb0-81a7-b347059f8550",
+    "InstallDirectory": "..\\Devil.May.Cry\\Devil.May.Cry.4 Special Edition"
+  },
+  {
+    "Gameid": "537a0318-d880-4dcc-8429-0535ee9f5d83",
+    "InstallDirectory": "..\\CoD\\CoD9"
+  },
+  {
+    "Gameid": "eee92ce2-a9d4-46ef-bf00-56e77812fa57",
+    "InstallDirectory": "..\\Command.and.Conquer\\Command.and.Conquer.FiveStar"
+  },
+  {
+    "Gameid": "5809a1799de0d810c4f33f43457539ed",
+    "InstallDirectory": "..\\V\\WarForTheOverworld"
+  },
+  {
+    "Gameid": "6831b69508e849e325f5250fb0a4c443",
+    "InstallDirectory": "..\\W\\ANIMALWELL"
+  },
+  {
+    "Gameid": "eda96ae1-1519-4dc2-b6d7-d15f90f4627b",
+    "InstallDirectory": "..\\Wolfenstein\\RTCW"
+  },
+  {
+    "Gameid": "ff1127357cad1e480c063327951dc0f6",
+    "InstallDirectory": "..\\II\\NewGreedland"
+  },
+  {
+    "Gameid": "3775de2bdce921ae34222804b263f825",
+    "InstallDirectory": "..\\IIII\\PC.Building.Simulator.2"
+  },
+  {
+    "Gameid": "7eb94472-769b-42de-b962-644a89b49b87",
+    "InstallDirectory": "..\\2023\\SeasonALettertotheFuture"
+  },
+  {
+    "Gameid": "1c8c785def144ae55d4a8613753a4fa5",
+    "InstallDirectory": "..\\X\\Stalker2"
+  },
+  {
+    "Gameid": "245915e3-2170-4761-a6f5-aa611ba7a0f6",
+    "InstallDirectory": "..\\2023\\HeartsofIronIV"
+  },
+  {
+    "Gameid": "6c56de6b-86fe-498d-88ea-c4ae943d9d33",
+    "InstallDirectory": "..\\Heroes.of.Might.and.Magic\\Heroes.3.remake"
+  },
+  {
+    "Gameid": "db4674af-8441-4040-ac79-4b02238ad3ea",
+    "InstallDirectory": "..\\IndieGame\\Ghostrunner"
+  },
+  {
+    "Gameid": "0ba39274541d5d0afa1012dfb0829c4e",
+    "InstallDirectory": "..\\X\\Ship Graveyard Simulator 2"
+  },
+  {
+    "Gameid": "05cbb5c7-7c83-4ae2-a6e3-0c31de59cb63",
+    "InstallDirectory": "..\\IndieGame3\\Aragami2"
+  },
+  {
+    "Gameid": "9f76b2b9cd8162289341f74d0fd2fd27",
+    "InstallDirectory": "..\\IIII\\SplinterCell5Conviction"
+  },
+  {
+    "Gameid": "5a1840665b99187f297c6f7a4f8c0519",
+    "InstallDirectory": "..\\X\\TTH2DVD"
+  },
+  {
+    "Gameid": "1cc20402066b4358b8b201f9d4600749",
+    "InstallDirectory": "..\\IIII\\Tintin.Reporter.Cigars.of.the.Pharaoh"
+  },
+  {
+    "Gameid": "efaefebfaad5ed5e8bd809946eef327b",
+    "InstallDirectory": "..\\II\\DOOM.Eternal"
+  },
+  {
+    "Gameid": "3bfcbb02db3915f0fc9df84f65bbe3b3",
+    "InstallDirectory": "..\\X\\KarateSurvivor"
+  },
+  {
+    "Gameid": "71a05401-b0bd-4f22-9d25-c73e54f5c36b",
+    "InstallDirectory": "..\\GTA\\GTA San Andreas - Definitive Edition"
+  },
+  {
+    "Gameid": "41afcc90-450b-4af9-ba6b-2d4646acf0b2",
+    "InstallDirectory": "..\\Skyrim\\Skyrim.5.Special.Edition.Lan"
+  },
+  {
+    "Gameid": "5dd02fb174fd94e7f52e4fab90ce5606",
+    "InstallDirectory": "..\\W\\Amadis-lob"
+  },
+  {
+    "Gameid": "957a53f4-ab07-47b9-ba61-61bd3d788e97",
+    "InstallDirectory": "..\\IndieGame3\\Divinity.Original.Sin.2"
+  },
+  {
+    "Gameid": "d5a7e8e1f5067842deac41ef26bc8b19",
+    "InstallDirectory": "..\\W\\GhostOfTsushima"
+  },
+  {
+    "Gameid": "d3c01551-b8d7-4653-9726-25e69249b000",
+    "InstallDirectory": "..\\IndieGame3\\Kirby and the Forgotten Land"
+  },
+  {
+    "Gameid": "9b538984f30e62e31328828ed544248b",
+    "InstallDirectory": "..\\V\\CotWTheAngler"
+  },
+  {
+    "Gameid": "f13d1ee4b9457f2c1f2f82ce832b1c84",
+    "InstallDirectory": "..\\X\\DescendTheWoods"
+  },
+  {
+    "Gameid": "110a666eb986b8c469f783c4e23b2e36",
+    "InstallDirectory": "..\\V\\BeachHead2002"
+  },
+  {
+    "Gameid": "4be98c47-cd3c-4342-b409-cd72df74dbbe",
+    "InstallDirectory": "..\\2023\\TheDevilInMe"
+  },
+  {
+    "Gameid": "18b55602baf3c01fc84a4fe0970f6b1b",
+    "InstallDirectory": "..\\2023\\觅长生"
+  },
+  {
+    "Gameid": "1d1beeebd067d7343ef94673d875b04a",
+    "InstallDirectory": "..\\X\\Overthrown"
+  },
+  {
+    "Gameid": "fb87817813b6d59e4d98ff764e201e3f",
+    "InstallDirectory": "..\\V\\Tokyo Ghoul"
+  },
+  {
+    "Gameid": "1f50a739-faa2-4d4f-ae58-f87433c7ca24",
+    "InstallDirectory": "..\\SpiderMan\\SpiderMan.ShatteredDimensions"
+  },
+  {
+    "Gameid": "25fdc6c2-991d-4623-a2ed-eb71191abfb3",
+    "InstallDirectory": "..\\III\\FF7Remake"
+  },
+  {
+    "Gameid": "629da8e2a2de914a55b5aaafc2fb1b87",
+    "InstallDirectory": "..\\IIII\\Silent Hill 5 Homecoming"
+  },
+  {
+    "Gameid": "5883bcd5642d0de44417ac279d7b08e4",
+    "InstallDirectory": "..\\V\\RoadRedemption"
+  },
+  {
+    "Gameid": "4c0ed3ea4072d588bc9d4c12cb30d9b1",
+    "InstallDirectory": "..\\W\\JHL"
+  },
+  {
+    "Gameid": "82f1a0b6-f13f-4fae-81c6-f25ccae514f0",
+    "InstallDirectory": "..\\IndieGame\\ThisWarofMine"
+  },
+  {
+    "Gameid": "de4a1eb0-8fdf-4d09-a2a6-c1158195df2a",
+    "InstallDirectory": "..\\AttackonTitan\\AttackonTitan2"
+  },
+  {
+    "Gameid": "1ed6b8958332150ba68976548070869d",
+    "InstallDirectory": "..\\IIII\\NSUNSC"
+  },
+  {
+    "Gameid": "36a4244307ee0760dbb9ab22dda22902",
+    "InstallDirectory": "..\\W\\Bodycam"
+  },
+  {
+    "Gameid": "52645605-8ad2-4485-8656-6833898e7a26",
+    "InstallDirectory": "..\\Resident.Evil\\Resident.Evil.8.Village"
+  },
+  {
+    "Gameid": "a338d6e5-6745-4c5c-923a-5f1cf24d29ad",
+    "InstallDirectory": "..\\W\\DeadRising4"
+  },
+  {
+    "Gameid": "90661075-2218-4a55-9dd6-de3bd934f520",
+    "InstallDirectory": "..\\SW\\SW3"
+  },
+  {
+    "Gameid": "0a30debe4955e522bf85d0288560c5f5",
+    "InstallDirectory": "..\\X\\TTH3DVD"
+  },
+  {
+    "Gameid": "658ea379cf1f2f43331c9929dcd8bf88",
+    "InstallDirectory": "..\\II\\The.Lord.of.the.Rings.Gollum"
+  },
+  {
+    "Gameid": "4506f15c-249e-4dc6-b168-7fc29dcd290e",
+    "InstallDirectory": "..\\Hobo.Tough.Life\\Hobo.Tough.Life-Lan"
+  },
+  {
+    "Gameid": "c7e4a85653644538860a839571039c6a",
+    "InstallDirectory": "..\\II\\Dinkum"
+  },
+  {
+    "Gameid": "01c7e1e823b10d485b31164f9d6c8422",
+    "InstallDirectory": "..\\X\\KingdomTwoCrowns"
+  },
+  {
+    "Gameid": "dec6e503a3058f55d87335b88d488515",
+    "InstallDirectory": "..\\IIII\\MentalOmega"
+  },
+  {
+    "Gameid": "a503302f-38f0-47f4-91bf-11d3c9de9611",
+    "InstallDirectory": "..\\Serious.Sam\\Serious.Sam.HD.The.Second.Encounter"
+  },
+  {
+    "Gameid": "19e3afdf74c781af0f3b970cfacf9cab",
+    "InstallDirectory": "..\\V\\Warhammer.40000.Boltgun"
+  },
+  {
+    "Gameid": "7ef594dd-076a-488f-ad74-d61cd3047700",
+    "InstallDirectory": "..\\The.Evil.Within\\The.Evil.Within.1"
+  },
+  {
+    "Gameid": "ec270c47-3028-46c7-ad2e-d694a662a9e1",
+    "InstallDirectory": "..\\Age.of.Empires\\Age.of.Empires.III.Complete.Collection"
+  },
+  {
+    "Gameid": "5ab3970fdfef779ca1872da8582d19a8",
+    "InstallDirectory": "..\\III\\SaintsRow_Lan"
+  },
+  {
+    "Gameid": "3213bd12-9deb-46e3-b5d0-3e078426ee8a",
+    "InstallDirectory": "..\\Outlast\\Outlast.2"
+  },
+  {
+    "Gameid": "f4a4d4c7-bbb1-487a-9112-ff8e03dfd555",
+    "InstallDirectory": "..\\IndieGame3\\Core.Keeper"
+  },
+  {
+    "Gameid": "9188eed3-8a51-41c3-95c9-c14af228715e",
+    "InstallDirectory": "..\\III\\Metro2033Redux"
+  },
+  {
+    "Gameid": "349e2d681a0e65f5499d416148210bb4",
+    "InstallDirectory": "..\\V\\Fallout4GameoftheYearEdition"
+  },
+  {
+    "Gameid": "705c3c7b6fef96d80e02ac8e953afb8b",
+    "InstallDirectory": "..\\IIII\\FatalZone"
+  },
+  {
+    "Gameid": "877a304b3bc16475ccadeb0584e04bf3",
+    "InstallDirectory": "..\\V\\The Escapists 2"
+  },
+  {
+    "Gameid": "942b1ca0-0b0a-4528-bd80-8f8c17268e56",
+    "InstallDirectory": "..\\Ni.no.Kuni\\Ni.no.Kuni.Wrath.of.the.White.Witch.Remastered"
+  },
+  {
+    "Gameid": "53b316972642161dfdcb68ead9cf8f7e",
+    "InstallDirectory": "..\\W\\OutpostInfinitySiege"
+  },
+  {
+    "Gameid": "8ef5597e-80b2-4f1b-b00b-98bae711607c",
+    "InstallDirectory": "..\\IndieGame3\\Alan.Wake.Remastered"
+  },
+  {
+    "Gameid": "3968ff3e-b797-455c-bcdb-6a045f1c3cc1",
+    "InstallDirectory": "..\\2023\\TheLostVillage"
+  },
+  {
+    "Gameid": "bfd0c5fc-cad5-4dd2-a276-0d00023f94d9",
+    "InstallDirectory": "..\\IndieGame3\\AtelierRyza2"
+  },
+  {
+    "Gameid": "3dd59b38183be358fd5920bd0903748a",
+    "InstallDirectory": "..\\V\\ContraOG"
+  },
+  {
+    "Gameid": "72329fb65a73dbed008e47df6b4d8e6b",
+    "InstallDirectory": "..\\II\\Empires of the Undergrowth"
+  },
+  {
+    "Gameid": "3144e95c84fe8fee06b74b2b5e58b32a",
+    "InstallDirectory": "..\\IIII\\Lords of the Fallen"
+  },
+  {
+    "Gameid": "42044114b7c096a5e6952c6c6713692c",
+    "InstallDirectory": "..\\II\\The Long Dark"
+  }
+]

@@ -244,6 +244,10 @@ export interface AppSettings {
   // 存档备份工具 GameSaveHelper.exe 的路径（config.json → settings.gameSaveHelperPath）。
   // 空 / 未设置 = 未配置（备份时返回明确错误）。绝对路径原样；相对路径以数据根为基准。
   gameSaveHelperPath?: string;
+  // 游戏根目录（config.json → settings.defaultGameRootPath）：游戏按相对路径存放时的基准。
+  // 生产 X:\YunGame\Playnite、测试 D:\YunGame\Playnite，靠配置解耦。
+  // 空 / 未设置 = 回退数据根（保持旧行为）。
+  defaultGameRootPath?: string;
   // 网格卡片上是否显示简介（description）。true=显示，false=隐藏。持久化到 config.json。
   showCardDescription: boolean;
   // 综合主题/配色/字体设计器配置（见 shared/models.ts DesignerConfig）。

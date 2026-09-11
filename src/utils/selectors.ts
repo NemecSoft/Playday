@@ -108,7 +108,8 @@ export function filterGames(games: Game[], opts: ViewOptions): Game[] {
   return out;
 }
 
-export type SortKey = "name" | "added" | "lastPlayed" | "playtime" | "releaseDate";
+/** 排序键。工具栏目前只暴露 added / name / rating 三个，其余保留给集合视图扩展。 */
+export type SortKey = "name" | "added" | "lastPlayed" | "playtime" | "releaseDate" | "rating";
 
 export function sortGames(games: Game[], key: SortKey, direction: "ascending" | "descending"): Game[] {
   const dir = direction === "ascending" ? 1 : -1;
@@ -135,6 +136,19 @@ export function sortGames(games: Game[], key: SortKey, direction: "ascending" | 
       case "releaseDate":
         cmp = (a.releaseDate || "").localeCompare(b.releaseDate || "");
         break;
+      case "rating": {
+        // 评分取 criticScore：库里唯一有值的评分字段（实测 critic_score 443/1276，
+        // user_score 与 community_score 基本为空，所以不用它们）。
+        // 没有评分的游戏恒排末尾、不随方向翻转 —— 否则正序时那 800 多个无评分
+        // 游戏会整堆顶在最前面，看起来像排序失效。
+        const ra = typeof a.criticScore === "number" ? a.criticScore : null;
+        const rb = typeof b.criticScore === "number" ? b.criticScore : null;
+        if (ra === null && rb === null) return 0;
+        if (ra === null) return 1;
+        if (rb === null) return -1;
+        cmp = ra - rb;
+        break;
+      }
     }
     return cmp * dir;
   });

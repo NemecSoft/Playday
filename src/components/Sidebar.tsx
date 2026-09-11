@@ -155,9 +155,18 @@ export default function Sidebar() {
           className="sidebar-panel"
           style={{ width: `${liveWidth}px` } as CSSProperties}
         >
-          {/* 顶部：标题 */}
+          {/* 顶部：标题 + 重置（重置只清空已勾选的值，维度与 AND/OR 不变） */}
           <div className="sidebar-header">
             <span className="sidebar-header-title">{t("sidebar_title")}</span>
+            <button
+              type="button"
+              className="sidebar-reset"
+              onClick={clearFacetValues}
+              disabled={facetValues.length === 0}
+              title={t("sidebar_reset")}
+            >
+              {t("sidebar_reset")}
+            </button>
           </div>
 
           {/* 维度下拉：决定侧栏列什么、拿什么筛。默认「标签」。 */}
@@ -207,12 +216,10 @@ export default function Sidebar() {
               数字用 JS 模板字符串直接拼（不走 i18next 插值，"已选 N 个"这行现状就是硬编码中文）。 */}
           {facetValues.length > 0 && (
             <div className="sidebar-clear-row">
+              {/* 清空动作已移到标题右侧的「重置」按钮，这里只保留已选数量的提示。 */}
               <span className="sidebar-clear-info">
                 {`已选 ${facetValues.length} 个${t(facetLabelKey)}`}
               </span>
-              <button className="sidebar-clear-btn" onClick={clearFacetValues}>
-                {t("sidebar_clear")}
-              </button>
             </div>
           )}
 

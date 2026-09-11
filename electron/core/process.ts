@@ -6,9 +6,9 @@
 // 本次运行时长写回数据库。内存里维护一张"运行中游戏"表，供 running_games /
 // get_run_state 查询。
 
-import { spawn } from "child_process";
+import { spawn, type ChildProcess } from "child_process";
 import * as path from "path";
-import { configRoot } from "./paths";
+import { defaultGameRootPath } from "./paths";
 import { getGame, upsertGame } from "./db";
 import type { Game, GameAction, GameLibrary } from "./models";
 import { expandVariables, runScript } from "./scriptRunner";
@@ -35,7 +35,9 @@ const lastExit = new Map<string, number>();
 //   - 相对路径（. / ..）→ 相对应用数据根目录
 export function resolvePath(p: string, gameLibraries: GameLibrary[]): string {
   if (!p) return p;
-  const root = configRoot();
+  // 相对路径的基准 = 游戏根目录（config.json → settings.defaultGameRootPath；
+  // 生产 X:\YunGame\Playnite，测试 D:\YunGame\Playnite；未配置时回退数据根）。
+  const root = defaultGameRootPath();
   const lib = resolveLibraryPlaceholder(p, gameLibraries);
   if (lib) {
     const [rest, libRoot] = lib;
@@ -212,7 +214,35 @@ export function launchGame(
       const p = action.path || "";
       if (!p) return { launched: false, error: "启动指令路径为空" };
       const fs = require("fs");
-      const resolved = resolvePath(p, libs);
+      // 先展开 {InstallDir} 等占位符，再交给 resolvePath 解析 {游戏库名}。
+      // 设计上 {InstallDir} 就该在启动时展开（见 scripts/migrate-playnite/README.md
+      // 与 docs/design/data-models.md），但这里以前漏了这一步：字面的
+      // "{InstallDir}\game.exe" 会被 resolvePath 当成相对路径拼到数据根上，
+      // 导致所有用该占位符的游玩指令（实测 755 个）一律报"文件不存在"。
+      const installDirRaw = (game.installDirectory ?? "").trim();
+      if (/\{InstallDir\}/i.test(p) && !installDirRaw) {
+        return {
+          launched: false,
+          error: `该游戏未配置安装目录（install_directory 为空），无法解析启动路径：${p}`,
+        };
+      }
+      // 解析基准分三种：
+      //   1) {游戏库名}\... → 库根目录（交给 resolvePath）
+      //   2) 绝对路径       → 原样
+      //   3) 相对路径       → Playnite 语义是相对「安装目录」（如 "TPC.exe"、
+      //      "bin\Inversion.exe"），而不是数据根/游戏根。
+      // 注意：{InstallDir} 展开后的结果是「相对游戏根」的路径（installDirectory 本身
+      // 就是相对游戏根存的），所以那种情况必须走 resolvePath，不能再按安装目录拼。
+      const expanded = expandVariables(p, game);
+      const wasRelativeInData = !p.trim().startsWith("{") && !path.isAbsolute(p.trim());
+      // 解析后的安装目录：既用于拼相对动作路径，也用于后面的进程监控。
+      const installAbs = installDirRaw ? resolvePath(expandVariables(installDirRaw, game), libs) : "";
+      let resolved: string;
+      if (wasRelativeInData && installAbs) {
+        resolved = normalizePath(path.join(installAbs, expanded));
+      } else {
+        resolved = resolvePath(expanded, libs);
+      }
       // path 可能是目录（如安装目录），也可能是 exe 文件。若是目录，自动在其中找
       // 真正的可执行文件（兼容 path 配成目录的情况），并让工作目录跟随该 exe。
       let exeResolved = resolved;
@@ -242,7 +272,12 @@ export function launchGame(
       // 工作目录：永远 = exe 所在目录（自动切过去）。不再使用 action.workingDir 字段
       // （用户决定不用这个数据，cwd 统一跟随 exe）。脚本需要安装目录时由脚本系统
       // 用 install_directory 单独指定，与 exe 的 cwd 无关。
-      childStarted = doSpawn(game, exeResolved, args, exeDir, options.track, options.showBatConsole, options.monitorExe);
+      const spawned = doSpawn(game, exeResolved, args, exeDir, options.track, options.showBatConsole, options.monitorExe, installAbs);
+      if (!spawned.ok) {
+        // 把 spawn 的真实原因带出去，别再让前端只显示"未知错误"。
+        return { launched: false, error: `启动进程失败：${spawned.error ?? "未知原因"}（${exeResolved}）` };
+      }
+      childStarted = true;
     } else if (action.type === "URL") {
       const url = action.path;
       if (!url) return { launched: false, error: "URL 启动指令的地址为空" };
@@ -253,13 +288,19 @@ export function launchGame(
     }
   } else if (game.installDirectory) {
     // 没有启动动作：在安装目录里自动找 exe。
-    const found = findGameExecutable(game.installDirectory);
+    // 安装目录本身也可能是 {库名}\相对 或 {InstallDir} 写法，先展开占位符再解析。
+    const installDir = resolvePath(expandVariables(game.installDirectory, game), libs);
+    const found = findGameExecutable(installDir);
     if (found) {
-      childStarted = doSpawn(game, found.exe, [], found.wd, options.track, options.showBatConsole, options.monitorExe);
+      const spawned = doSpawn(game, found.exe, [], found.wd, options.track, options.showBatConsole, options.monitorExe, installDir);
+      if (!spawned.ok) {
+        return { launched: false, error: `启动进程失败：${spawned.error ?? "未知原因"}（${found.exe}）` };
+      }
+      childStarted = true;
     } else {
       return {
         launched: false,
-        error: `未配置启动指令，且在安装目录 ${game.installDirectory} 中也找不到可执行文件`,
+        error: `未配置启动指令，且在安装目录 ${installDir} 中也找不到可执行文件`,
       };
     }
   } else {
@@ -275,19 +316,40 @@ export function launchGame(
 // bat 脚本且脚本内部用 start 启动游戏后自身会提前退出——这时不能以 cmd 退出为计时
 // 终点（否则时长只算脚本那几秒）。改为：cmd 退出后继续每隔 3 秒用 tasklist /v 轮询
 // 目标进程（按进程名 + 可选窗口标题关键字判断），直到目标进程消失才结算时长。
-function doSpawn(game: Game, exe: string, args: string[], cwd: string, track: boolean, showBatConsole?: boolean, monitorExe?: string): boolean {
+function doSpawn(game: Game, exe: string, args: string[], cwd: string, track: boolean, showBatConsole?: boolean, monitorExe?: string, installDirAbs?: string): { ok: boolean; error?: string } {
   try {
-    // .bat/.cmd 作为游戏指令调用时，默认会弹出一个控制台黑窗（cmd.exe 的子窗口）。
-    // 默认隐藏（showBatConsole=false），符合多数玩家的幕后执行需求；
-    // 用户可在"设置-通用"里打开 showBatConsole，则 .bat/.cmd 显示控制台窗口
-    // （方便看脚本提示/进度）。真 exe（游戏主程序）正常显示窗口不受影响。
-    // windowsHide 是 Windows 专属选项，非 Windows 平台自动忽略，跨平台写安全。
+    // .bat/.cmd 作为游戏指令调用时的两种形态：
+    //   显示控制台（showBatConsole=true）：网吧脚本基本都带菜单（选单人/联机），
+    //     必须让玩家看到并操作那个窗口。
+    //   隐藏（false）：幕后执行，多见于纯启动包装脚本。
+    // 真 exe（游戏主程序）正常显示窗口，不受本开关影响。
     const isScript = /\.(bat|cmd)$/i.test(exe);
-    const child = spawn(exe, args, {
-      cwd,
-      stdio: "ignore",
-      windowsHide: isScript && !showBatConsole,
-    });
+    const isWin = process.platform === "win32";
+    const wantConsole = isScript && !!showBatConsole;
+
+    let child;
+    if (isScript && isWin && wantConsole) {
+      // 要显示窗口：用 `start` 启动脚本 —— 它会为目标进程请求 CREATE_NEW_CONSOLE
+      // （独立的新控制台窗口）。实测：直接把 bat 交给 `cmd /c` 跑，在 Electron
+      // 这种 GUI 进程里不会弹出窗口（窗口创建与否受父进程控制台状态影响），
+      // 而 `start` 显式新建控制台，稳定可见。
+      // /wait：让外层 cmd 等脚本结束，保持"脚本退出 = 计时结束"的原有语义；
+      // 外层 cmd 自己隐藏（windowsHide: true），免得再多出一个空白控制台窗口。
+      const comspec = process.env.ComSpec || "cmd.exe";
+      child = spawn(comspec, ["/d", "/s", "/c", "start", "", "/wait", exe, ...args], {
+        cwd,
+        stdio: "ignore",
+        windowsHide: true,
+      });
+    } else if (isScript && isWin) {
+      // 幕后执行：Windows 上 Node 不能直接 spawn .bat/.cmd —— CreateProcess 不认
+      // 脚本文件，会抛 EINVAL（实测所有用 bat 启动的游戏都卡在这里）。必须经
+      // cmd.exe：用 shell: true 让 Node 走 `cmd.exe /d /s /c "..."`，并把脚本路径
+      // 自带引号，避免路径含空格时被 cmd 拆成多个参数。
+      child = spawn(`"${exe}"`, args, { cwd, stdio: "ignore", windowsHide: true, shell: true });
+    } else {
+      child = spawn(exe, args, { cwd, stdio: "ignore" });
+    }
     // 游戏再次启动，清掉上次"最近退出"标记。
     lastExit.delete(game.id);
     const started = Date.now();
@@ -300,30 +362,124 @@ function doSpawn(game: Game, exe: string, args: string[], cwd: string, track: bo
       });
     }
 
-    // 是否启用"额外监控 exe"计时：只有脚本(bat/cmd)才可能提前退出，真 exe 不需要。
-    const useMonitor = isScript && !!monitorExe && process.platform === "win32";
+    child.on("error", (e) => {
+      console.error("[process] 游戏进程启动错误:", game.name, e.message);
+      onProcessExit(game, started);
+    });
 
-    // cmd 退出后的结算逻辑。若启用了 monitorExe，则等到目标进程消失才真正结算。
-    const onCmdExit = () => {
+    // ---- 计时（进程监控）策略，对齐 Playnite ----
+    //   1) 有安装目录（且没手工配 monitorExe）→ 组合监控：
+    //      启动器进程 或 安装目录内进程 任一还活着，就算在运行。
+    //      这样"关掉 bat 的控制台窗口"不会被误判成游戏退出。
+    //   2) 手工配了 monitorExe → 脚本退出后轮询该进程（历史行为，逐游戏可覆盖）。
+    //   3) 都没有 → 启动器进程退出即结算（旧行为）。
+    if (track && isWin && !monitorExe && installDirAbs) {
+      startCombinedPolling(game, started, child, installDirAbs);
+      return { ok: true };
+    }
+
+    const useMonitor = isScript && !!monitorExe && isWin;
+    child.on("exit", () => {
       if (!useMonitor || !track) {
         onProcessExit(game, started);
         return;
       }
       // 脚本已退出，但需要监控的目标进程可能还在（start 启动的游戏）。轮询它。
       startMonitorPolling(game, started, monitorExe!);
-    };
-
-    // 监听进程退出，把运行时长写回库。
-    child.on("exit", onCmdExit);
-    child.on("error", (e) => {
-      console.error("[process] 游戏进程启动错误:", game.name, e.message);
-      onProcessExit(game, started);
     });
-    return true;
+    return { ok: true };
   } catch (e) {
-    console.error("[process] 启动游戏失败:", game.name, (e as Error).message);
-    return false;
+    const message = (e as Error).message;
+    console.error("[process] 启动游戏失败:", game.name, message);
+    return { ok: false, error: message };
   }
+}
+
+// ---- 组合进程监控（对齐 Playnite 的进程监控思路）----
+//
+// 为什么需要：用 .bat 启动时，cmd.exe 只是"启动器"，真正的游戏是它拉起的另一个
+// 进程。只监听启动器的 exit，会在"玩家关掉控制台窗口"时误判成游戏退出（计时中断）。
+// Playnite 默认用 MonitorProcessTree（启动进程 + 全部子孙都退出才算退出）；在 Node
+// 里拿进程父子关系要走 WMI、还可能因权限读不到，所以这里用等价的、不需要提权的做法：
+//   启动器进程还活着                        → 仍在运行（bat 菜单阶段 / start 之前）
+//   或安装目录下任一 .exe 对应的进程在运行   → 仍在运行（游戏本体）
+// 两者都不成立才算退出。进程名用 tasklist 一次取全量（Playnite MonitorProcessNames）。
+
+// 安装目录 → 目录下所有 exe 文件名（小写）。按目录缓存，避免反复扫盘。
+const exeNameCache = new Map<string, string[]>();
+
+function installDirExeNames(dir: string): string[] {
+  const cached = exeNameCache.get(dir);
+  if (cached) return cached;
+  const nodeFs = require("fs");
+  const names = new Set<string>();
+  const walk = (d: string, depth: number): void => {
+    if (depth > 4 || names.size > 400) return;
+    let entries: Array<{ name: string; isDirectory(): boolean }>;
+    try {
+      entries = nodeFs.readdirSync(d, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      if (e.isDirectory()) walk(path.join(d, e.name), depth + 1);
+      else if (/\.exe$/i.test(e.name)) names.add(e.name.toLowerCase());
+    }
+  };
+  walk(dir, 0);
+  const list = [...names];
+  exeNameCache.set(dir, list);
+  return list;
+}
+
+// 一次 tasklist 拿到所有运行中进程的映像名（小写）。失败返回 null。
+function runningImageNames(): Set<string> | null {
+  try {
+    const { execSync } = require("child_process");
+    const text: string = execSync("tasklist /fo csv /nh", {
+      encoding: "utf8",
+      windowsHide: true,
+      timeout: 5000,
+    });
+    const out = new Set<string>();
+    for (const line of text.split(/\r?\n/)) {
+      const m = /^"([^"]+)"/.exec(line);
+      if (m) out.add(m[1].toLowerCase());
+    }
+    return out;
+  } catch {
+    // 拿不到进程列表（极少见）：让调用方保守处理，宁可多算也别误判退出。
+    return null;
+  }
+}
+
+// 安装目录里的 exe 是否有任意一个正在运行。
+function isAnyInstallExeRunning(exeNames: string[]): boolean {
+  const procs = runningImageNames();
+  if (procs === null) return true; // 查询失败：保守当作还在运行
+  return exeNames.some((n) => procs.has(n));
+}
+
+// 组合轮询：启动器进程与安装目录内进程都不在了，才判定游戏退出。
+function startCombinedPolling(game: Game, started: number, child: ChildProcess, installDir: string): void {
+  const exeNames = installDirExeNames(installDir);
+  let launcherAlive = true;
+  child.on("exit", () => {
+    launcherAlive = false;
+  });
+  const timer = setInterval(() => {
+    // 已被其它路径结算（例如手动停止游戏）：收工。
+    if (!running.has(game.id)) {
+      clearInterval(timer);
+      return;
+    }
+    if (launcherAlive) return;
+    if (exeNames.length > 0 && isAnyInstallExeRunning(exeNames)) return;
+    clearInterval(timer);
+    onProcessExit(game, started);
+  }, 3000);
+  // 不让定时器阻止进程退出。
+  if (typeof timer.unref === "function") timer.unref();
 }
 
 // 解析 monitorExe 字符串，得到进程名和可选的窗口标题关键字。

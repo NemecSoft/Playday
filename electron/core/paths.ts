@@ -135,3 +135,12 @@ export function announcementFile(): string {
 export function gameSaveHelperExePath(): string | null {
   return configuredPath("gameSaveHelperPath");
 }
+
+// 游戏根目录（<主程序目录>/config.json 的 settings.defaultGameRootPath）：
+// 游戏按「相对路径」存放时的基准目录，例如 `..\Z\Supermarket Simulator` 配合
+// `X:\YunGame\Playnite` 解析成 `X:\YunGame\Z\Supermarket Simulator`。
+// 生产环境是 X:\YunGame\Playnite、测试环境是 D:\YunGame\Playnite —— 靠配置解耦，
+// 不在代码里写死。未配置（含空串）时回退到数据根，保持旧行为。
+export function defaultGameRootPath(): string {
+  return configuredPath("defaultGameRootPath") ?? configRoot();
+}

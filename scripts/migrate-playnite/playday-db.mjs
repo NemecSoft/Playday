@@ -209,7 +209,9 @@ async function doImport(opts) {
     for (const g of games) {
       if (!g?.name) continue
       const existingForName = [...idToName.entries()].find(([id, n]) => n === g.name)
-      if (existingForName && existingForName[0] !== g.id) {
+      // 归一化：JSON 里缺 id 是 undefined，库里存的是 NULL。不归一化的话
+      // `null !== undefined` 恒为真，会把"同一条无 id 的记录"误判成改名冲突而中止导入。
+      if (existingForName && (existingForName[0] ?? null) !== (g.id ?? null)) {
         conflicts.push(`${g.name}（与库中 id=${existingForName[0]} 同名）`)
       }
     }
@@ -223,6 +225,9 @@ async function doImport(opts) {
     const placeholders = COLUMNS.map(() => '?').join(', ')
     const insertSql = `INSERT INTO games (${cols}) VALUES (${placeholders})`
     const updateSql = `UPDATE games SET ${COLUMNS.filter((c) => c !== 'id').map((c) => `${c} = ?`).join(', ')} WHERE id = ?`
+    // id 为 NULL 的行不能用 `id = ?`（SQL 里 NULL = NULL 恒不成立），必须用 IS NULL。
+    // 库里确实存在这种行：games.json 里有条目没有 id，首次导入会以 NULL 插入。
+    const updateSqlNullId = `UPDATE games SET ${COLUMNS.filter((c) => c !== 'id').map((c) => `${c} = ?`).join(', ')} WHERE id IS NULL`
 
     let inserted = 0
     let updated = 0
@@ -231,13 +236,20 @@ async function doImport(opts) {
       for (const g of games) {
         if (!g?.name) continue
         const row = gameToRow(g)
-        if (idToName.has(g.id)) {
-          const args = COLUMNS.filter((c) => c !== 'id').map((c) => row[c]).concat(g.id)
-          db.run(updateSql, args)
+        // 同冲突检测：把 undefined 归一化成 null，才能正确匹配到库里的 NULL id 行
+        // （否则每次导入都会重复 INSERT 一条无 id 的游戏）。
+        const gid = g.id ?? null
+        if (idToName.has(gid)) {
+          const args = COLUMNS.filter((c) => c !== 'id').map((c) => row[c])
+          if (gid === null) {
+            db.run(updateSqlNullId, args)
+          } else {
+            db.run(updateSql, args.concat(gid))
+          }
           updated++
         } else {
           db.run(insertSql, COLUMNS.map((c) => row[c]))
-          idToName.set(g.id, g.name)
+          idToName.set(gid, g.name)
           inserted++
         }
       }
