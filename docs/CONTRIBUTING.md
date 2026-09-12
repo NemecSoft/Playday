@@ -96,8 +96,10 @@
 > **`games_tags.json`（`D:/AI/games-web/`）是临时权威源，权威数据库是 `<数据根>/Admin/library.db`，运行时副本是 `<数据根>/library/library.db`，侧边栏按更新后数据库里的标签统计、显示。** json 有多少种标签类别，侧边栏就应该有多少种。
 
 **双库机制（务必分清，否则会改错库）**：
-- `paths.ts` 里 `sourceDatabasePath()` = `<数据根>/Admin/library.db`（**源库**：数据来源，由手工维护的 games.json + 脚本写入；客户端启动时复制成运行时库）。
-- `runtimeDatabasePath()` = `<数据根>/library/library.db`（**运行时副本**：客户端每次启动 `openDb()` 在 `db.ts` 把 Admin 权威库 `copyFileSync` 复制过来再用）。
+- `paths.ts` 里 `sourceDatabasePath()` = `<库根>/Admin/library.db`（**源库**：数据来源，由手工维护的 games.json + 脚本写入；客户端启动时复制成运行时库）。
+- `runtimeDatabasePath()` = `<库根>/library/library.db`（**运行时副本**：客户端每次启动 `openDb()` 在 `db.ts` 把 Admin 权威库 `copyFileSync` 复制过来再用）。
+- `<库根>` 默认是数据根（`settings.libraryDir`），权威库目录默认 `<库根>/Admin`（`settings.sourceLibraryDir`）—— 写脚本时别再把数据根拼死，也别写死 `Admin/`。
+- **为什么要两级**：玩家可能**正在游戏**，存档要读库里的存档路径；这时一旦"更新"破坏了 `library/library.db`，就存不了档。所以把它做成**可丢弃副本**（读写只在副本上，每次启动从权威库重建）。因此只开放**目录**配置，文件名恒为 `library.db`。
 - **所以同步/写标签一律针对 `Admin/library.db`**，改运行时副本是白费——下次启动会被 Admin 覆盖。
 - **游戏路径格式**：`installDirectory` 与 `actions[].path/workingDir` 存库时必须是 `{库占位符}\相对路径` 格式（如 `{Gamelibrary1}\game1\game.exe`），旧式 `.\Gamelibrary\...` 已废弃；`upsertGame()` 会自动规范化，详情见 `docs/design/data-models.md` 的「游戏路径与库占位符规范」。
 

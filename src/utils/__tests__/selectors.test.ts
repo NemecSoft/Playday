@@ -4,41 +4,11 @@
 import { describe, it, expect } from "vitest";
 import { filterGames, sortGames, groupGames, type ViewOptions } from "../selectors";
 import type { Game } from "../../types/models";
+import { makeGame as makeBaseGame } from "../../test/factories";
 
-function makeGame(over: Partial<Game>): Game {
-  return {
-    id: `g-${over.name ?? Math.random()}`,
-    name: over.name ?? "Test",
-    installed: false,
-    otherTasks: [],
-    playCount: 0,
-    playtime: 0,
-    added: "2024-01-01",
-    modified: "",
-    category: [],
-    genre: [],
-    developer: [],
-    publisher: [],
-    tags: [],
-    series: [],
-    ageRating: [],
-    region: [],
-    source: [],
-    features: [],
-    hidden: false,
-    favorite: false,
-    platform: [],
-    userScoreSet: false,
-    manualGame: false,
-    actions: [],
-    links: [],
-    featuresEnabled: false,
-    gameLevel: 1,
-    preLaunchEnabled: false,
-    postLaunchEnabled: false,
-    postExitEnabled: false,
-    ...over,
-  };
+// 字段补全交给共享工厂（Game 有 30+ 必填字段），这里只保留本文件要的默认值。
+function makeGame(over: Partial<Game> = {}): Game {
+  return makeBaseGame({ added: "2024-01-01", ...over });
 }
 
 const emptyOpts: ViewOptions = {

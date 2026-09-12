@@ -32,6 +32,7 @@ import {
   Coffee, // Catppuccin：咖啡杯（社区招牌昵称"猫咖"）
   Feather, // 水墨·夜：羽毛笔（夜写水墨）
   Cloud, // 仙侠：流云（御剑青冥）
+  Blocks, // 我的世界：方块
 } from "lucide-react";
 import { themeLibrary } from "../../utils/themeLibrary";
 import { styleLibrary } from "../../utils/styleLibrary";
@@ -66,6 +67,7 @@ const styleIconMap: Record<string, LucideIcon> = {
 // 注意：之前 key 写成"chinese-red"等短串，跟 themeLibrary 里的"p-cn-red"对不上，
 // 一直走 Palette 兜底。已修正为真实 id。
 const paletteIconMap: Record<string, LucideIcon> = {
+  "p-minecraft": Blocks, // 我的世界：方块
   "p-reactbits": Sparkles, // 紫色流光：闪光
   "p-light": Sun, // 明亮：太阳
   "p-dark": Moon, // 暗黑：月亮

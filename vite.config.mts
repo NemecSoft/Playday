@@ -13,8 +13,10 @@ export default defineConfig({
   },
   build: {
     outDir: "dist",
-    // emptyOutDir: true, // IDE 安全策略禁用：清空 >50 文件需要确认。改为手动删 dist。
-    emptyOutDir: false,
+    // 每次构建前清空 dist：之前是 false，导致 dist 里积了 496 个陈旧产物 / 45.88MB
+    // （含 107 个 HorrorValleyView 历史副本、一个 1.27MB 的已删依赖 chunk）。
+    // 陈旧产物不参与运行，但会让"这个 chunk 还在不在"这类判断失真（删依赖后以为没删干净）。
+    emptyOutDir: true,
     // 性能优先（不关心体积）：
     // 1. target: esnext —— Electron 的 Chromium 很新，原生支持最新 JS 语法。
     //    不再为老浏览器转译/打 polyfill，代码原样输出，运行时更快、更省内存。

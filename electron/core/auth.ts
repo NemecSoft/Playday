@@ -7,7 +7,7 @@
 import { createHash } from "crypto";
 import * as os from "os";
 import { getUserByAccount, getUserByIp } from "./db";
-import type { AppUser, CurrentUser } from "./models";
+import type { AppUser, SessionUser } from "./models";
 
 // 企业配置文件里的一条记录（兼容旧系统 PascalCase 键名）。
 export interface EnterpriseRecord {
@@ -111,7 +111,7 @@ export function cafeNameForPublicIp(records: EnterpriseRecord[], publicIp: strin
 }
 
 // 从配置里按本机 IP 解析当前用户（未命中返回 null）。
-export function resolveEnterpriseUser(records: EnterpriseRecord[], localIps: string[]): CurrentUser | null {
+export function resolveEnterpriseUser(records: EnterpriseRecord[], localIps: string[]): SessionUser | null {
   for (const rec of records) {
     if (localIps.includes(rec.user_ip_address)) {
       const level = Math.min(3, Math.max(1, rec.user_level));
@@ -124,7 +124,7 @@ export function resolveEnterpriseUser(records: EnterpriseRecord[], localIps: str
 }
 
 // 校验个人账号登录：密码匹配则返回用户，否则 null。
-export async function verifyPersonalLogin(account: string, password: string): Promise<CurrentUser | null> {
+export async function verifyPersonalLogin(account: string, password: string): Promise<SessionUser | null> {
   const user = getUserByAccount(account);
   if (!user) return null;
   if (hashPassword(password) !== user.passwordHash) return null;

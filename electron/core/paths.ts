@@ -9,6 +9,13 @@
 import { app } from "electron";
 import * as fs from "fs";
 import * as path from "path";
+import {
+  resolveAnnouncementFile,
+  resolveConfiguredDir,
+  resolveConfiguredPath,
+  resolveLibraryPaths,
+  type LibraryPaths,
+} from "../../shared/pathConfig";
 
 // 判断当前是否处于"打包后的生产环境"（electron-builder 会把资源放到 resources/app.asar）。
 function isPackaged(): boolean {
@@ -42,24 +49,41 @@ export function configRoot(): string {
   return path.resolve(__dirname, "..", "..", "..");
 }
 
-// 源库路径：<数据根>/Admin/library.db
-// 管理端应用已移除，这个库现在由"手工维护的 games.json + 批处理/脚本"写入
-// （import-games.bat → playday-db.mjs），是数据的唯一来源。
+// 数据库路径：权威库 → 运行时副本 的**复制关系固定**，两个**目录**都可配置：
+//   settings.sourceLibraryDir（权威库目录，默认 <库根>/Admin）—— 只读数据来源；
+//   settings.libraryDir      （库根，默认数据根）—— 运行时副本所在，也是权威库的默认父目录。
+//   权威库      <权威库目录>/library.db        —— 手工维护的 games.json + 脚本写入
+//                                                （import-games.bat → playday-db.mjs）；
+//   运行时副本  <库根>/library/library.db      —— 客户端每次启动从权威库复制一份再用。
+//
+// 为什么是"目录"而不是"db 文件路径"：
+//   核心原因是"玩家正在玩的时候被更新破坏库"—— 存档操作要读库里的存档路径，
+//   库被更新动作破坏就存不了档。所以权威库只读、运行时副本每次从它重建，写只落副本。
+//   只开放目录、文件名固定 library.db，是为了保住"副本永远由权威库复制而来"这条
+//   唯一性约束（否则可能配出一个跟权威库无关的库文件）。
+//
+// 解析规则在 shared/pathConfig.ts（零依赖纯函数 + 单测），网站端 server/paths.mjs 同语义
+// （有 parity 测试盯着）。
+export function libraryPaths(): LibraryPaths {
+  return resolveLibraryPaths({
+    // 留空时默认挂在数据根下；相对路径以 appRoot（exe 所在目录）为基准。
+    dataRoot: configRoot(),
+    baseDir: appRoot(),
+    libraryDir: readSettingsField("libraryDir"),
+    sourceLibraryDir: readSettingsField("sourceLibraryDir"),
+  });
+}
+
+// 源库路径（数据唯一来源，只读不写）。
 export function sourceDatabasePath(): string {
-  return path.join(configRoot(), "Admin", "library.db");
+  return libraryPaths().source;
 }
 
-// 运行时库路径（客户端每次启动用它）：<数据根>/library/library.db
+// 运行时库路径（客户端每次启动复制一份再用，读写都是它）。
 export function runtimeDatabasePath(): string {
-  return path.join(configRoot(), "library", "library.db");
+  return libraryPaths().runtime;
 }
 
-// 数据库文件路径（不做配置，固定"源库 → 运行时库"两级）：
-//   源库 <数据根>/Admin/library.db —— 数据来源（手工/脚本维护）；
-//   运行时库 <数据根>/library/library.db —— 客户端每次启动从源库复制一份再用，
-//   这样运行中的数据不会被外部改动影响，重启即拿到最新数据。
-// 为什么不做成可配置：一旦允许自定义，复制目标就会指向另一个文件，
-// 出现"配置的库 / 被复制的库"两个不同的数据库，数据来源就不唯一了。
 export function databasePath(): string {
   return runtimeDatabasePath();
 }
@@ -87,51 +111,59 @@ export function legacyConfigPath(): string {
   return path.join(configRoot(), "config.json");
 }
 
-// 封面图目录：默认 <数据根>/CoverImages（图片按游戏名同名丢进去，程序自动匹配）。
-// 可通过 config.json 的 settings.coverImagesDir 自定义；
-// 支持绝对路径或相对路径（相对路径以数据根为基准解析）。
+// ---- 可配置目录（config.json → settings.xxxDir）----
+// 统一语义（实现在 shared/pathConfig.ts，有单测）：
+//   未配置 / 空串 → 默认目录 <数据根>/<默认名>；绝对路径原样；
+//   相对路径 → 以 **appRoot()（exe 所在目录）** 为基准，不以数据根为基准。
+//
+// 目录清单（config.json 字段 → 默认）：
+//   coverImagesDir   → <数据根>/CoverImages    封面图（按游戏名同名匹配）
+//   gameDetailsDir   → <数据根>/Game_Details   详情页 HTML/视频 + 修改器/游戏存档子目录
+//   announcementsDir → <数据根>/announcements  公告 announcement.html
+//   libraryDir       → <数据根>                数据库库根（见上：库路径两级结构）
+
+// 封面图目录。
 export function coverImagesDir(): string {
-  return configuredPath("coverImagesDir") ?? path.join(configRoot(), "CoverImages");
+  return resolveConfiguredDir(readSettingsField("coverImagesDir"), configRoot(), "CoverImages", appRoot());
 }
 
 // 读取 config.json 里 settings 下某个"自定义路径"字段（目录或文件都适用）。
-// 支持：绝对路径原样使用；相对路径以数据根为基准解析；未配置（含空串）返回 null（用默认）。
-// 注意：这里直接解析 config.json，不 import settings.ts，避免 paths ↔ settings 循环依赖。
+// 支持：绝对路径原样使用；相对路径以 appRoot()（exe 所在目录）为基准解析；
+// 未配置（含空串）返回 null（用默认）。
 export function configuredPath(field: string): string | null {
+  return resolveConfiguredPath(readSettingsField(field), appRoot());
+}
+
+// 读取 config.json 里 settings 下的原始值（不做任何路径解析）。
+// 注意：这里直接解析 config.json，不 import settings.ts，避免 paths ↔ settings 循环依赖。
+function readSettingsField(field: string): unknown {
   try {
     const raw = fs.readFileSync(configPath(), "utf-8");
     const parsed = JSON.parse(raw) as { settings?: Record<string, unknown> };
-    const p = parsed?.settings?.[field];
-    if (p && typeof p === "string" && p.trim() !== "") {
-      // path.resolve：绝对路径原样返回，相对路径以数据根为基准补全。
-      return path.resolve(configRoot(), p.trim());
-    }
-    return null;
+    return parsed?.settings?.[field];
   } catch {
-    // config.json 不存在或损坏：没有自定义路径，用默认。
-    return null;
+    // config.json 不存在或损坏：视为未配置，走默认。
+    return undefined;
   }
 }
 
-// 游戏静态详情页目录。
-// 默认是 <数据根>/Game_Details；如果用户设置了 gameDetailsDir（config.json），
-// 则整体替换为该目录（支持相对路径，以数据根为基准；HTML + 视频都由内置 HTTP 服务器托管）。
+// 游戏静态详情页目录（HTML + 视频由内置 HTTP 服务器托管；修改器/游戏存档也在它下面）。
 export function gamesHtmlDir(): string {
-  return configuredPath("gameDetailsDir") ?? path.join(configRoot(), "Game_Details");
+  return resolveConfiguredDir(readSettingsField("gameDetailsDir"), configRoot(), "Game_Details", appRoot());
 }
 
-// 公告目录：<数据根>/announcements
+// 公告目录。
 export function announcementsDir(): string {
-  return path.join(configRoot(), "announcements");
+  return resolveConfiguredDir(readSettingsField("announcementsDir"), configRoot(), "announcements", appRoot());
 }
 
 // 公告文件名：<公告目录>/announcement.html
 export function announcementFile(): string {
-  return path.join(announcementsDir(), "announcement.html");
+  return resolveAnnouncementFile(readSettingsField("announcementsDir"), configRoot(), appRoot());
 }
 
 // 存档备份工具 GameSaveHelper.exe 的路径（<主程序目录>/config.json 的
-// settings.gameSaveHelperPath）。绝对路径原样；相对路径以数据根为基准；未配置返回 null。
+// settings.gameSaveHelperPath）。绝对路径原样；相对路径以应用 exe 所在目录为基准；未配置返回 null。
 export function gameSaveHelperExePath(): string | null {
   return configuredPath("gameSaveHelperPath");
 }

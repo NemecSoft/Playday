@@ -9,9 +9,16 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
+    // 增量编译：dev-client.bat 每次启动都会先编译主进程（见该脚本注释），
+    // 增量能把重复编译从 ~6 秒降到 ~1 秒。产物放 dist-electron（已在 .gitignore）。
+    "incremental": true,
+    "tsBuildInfoFile": "dist-electron/.tsbuildinfo",
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": ["electron", "build.config.ts"]
+  "include": ["electron", "build.config.ts"],
+  // 测试文件由 vitest 跑、由 tsconfig.json（含 shared/src 的测试）做类型检查，
+  // 不要编进 dist-electron —— 否则发布产物里会多出 __tests__ 目录。
+  "exclude": ["node_modules", "dist-electron", "**/__tests__/**", "**/*.test.ts", "**/*.test.tsx"]
 }

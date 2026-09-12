@@ -59,11 +59,11 @@ Playday/
 | --- | --- |
 | `api/ipc.ts` | 传输层：桌面走 `window.ipc`，网站走 `fetch /api/*` |
 | `api/client.ts` | 类型化命令封装（`api.getGames()` 等） |
-| `components/` | UI 组件（TopBar、Sidebar、Toolbar、GridView、PlanetView、AnnouncementWindow、设置弹窗等） |
+| `components/` | UI 组件（TopBar、Sidebar、Toolbar、GridView、AnnouncementWindow、设置弹窗等） |
 | `pages/` | 路由页面（`GameDetailPage`） |
 | `stores/` | Zustand 状态（games / settings / library / ui / auth / imageProgress / scroll） |
 | `hooks/` | 自定义 hooks（`useVirtualGrid`、`useLazyImage`） |
-| `utils/` | 纯逻辑（搜索、主题、封面、planet 分区、assets 图片缓存） |
+| `utils/` | 纯逻辑（搜索、主题、封面、assets 图片缓存） |
 | `i18n/` | 国际化配置 + `locales/` 三语字典 |
 | `lib/` | 工具库（`utils.ts` 等） |
 | `types/` | TypeScript 数据模型（与主进程返回结构一致） |
@@ -100,12 +100,55 @@ Playday/
 绿色便携模式：数据放 exe 同级的 `data/`，单一数据源。
 
 ```
-data/
-├── config.json           # 应用设置 { settings: {...} }
-├── library/library.db    # sql.js 数据库（games/users/game_libraries/platform）
+<主程序目录>/config.json   # 应用设置 { settings: {...} }（跟主程序走，不在数据目录里）
+
+<数据根>/
+├── Admin/library.db      # 源库：数据来源（手工维护的 games.json + 脚本写入）
+├── library/library.db    # 运行时库：每次启动从源库复制一份再用
 ├── CoverImages/          # 封面图（用户丢图自动匹配）
-├── Game_Details/         # 游戏静态详情页目录（可用 settings.gameDetailsDir 改到其它绝对路径）
-└── announcements/announcement.html  # 公告文件
+├── Game_Details/         # 详情页静态页 + 「修改器」「游戏存档」子目录
+├── announcements/        # 公告 announcement.html
+└── logs/                 # 崩溃日志 / 错误上报限流状态
 ```
 
-> 详情页目录可通过 `config.json` 的 `settings.gameDetailsDir` 覆盖（默认用这里的 `Game_Details`），由内置 HTTP 服务器惰性托管，详见 [游戏静态详情页](./game-details.md)。
+## 路径配置（config.json → settings）
+
+上述目录**都不写死在代码里**，都可以在 `config.json` 的 `settings` 段里改：
+
+| 字段 | 默认 | 作用 |
+| --- | --- | --- |
+| `coverImagesDir` | `<数据根>/CoverImages` | 封面图目录（读图白名单跟随它） |
+| `gameDetailsDir` | `<数据根>/Game_Details` | 详情页 HTML/视频 + 修改器 + 应用存档 |
+| `announcementsDir` | `<数据根>/announcements` | 公告目录（`announcement.html`） |
+| `libraryDir` | `<数据根>` | 数据库**库根**：运行时副本所在，也是权威库的默认父目录 |
+| `sourceLibraryDir` | `<库根>/Admin` | 权威库（源库）**目录**：只读数据来源，运行时副本由它复制 |
+| `defaultGameRootPath` | `<数据根>` | 游戏相对路径的基准（见 [启动与路径规则](./launch-and-paths.md)） |
+| `gameSaveHelperPath` | 未配置（备份不可用） | 存档备份工具 GameSaveHelper.exe |
+
+**统一语义**（所有 `xxxDir` 字段一致）：
+
+| 配置值 | 结果 |
+| --- | --- |
+| 未配置 / `""` / 纯空白 | 默认目录 `<数据根>/<默认名>` |
+| 绝对路径（`E:/x`、`E:\x`、`//NAS/share`、`\\NAS\share`） | 原样使用 |
+| 相对路径 | 以**应用 exe 所在目录**为基准（`electron/core/paths.ts::appRoot()`；开发态 = 工程根） |
+
+> ⚠️ 相对路径**不跟数据根**：数据根本身会被 `YUNGAME_DATA_DIR` / exe 位置改变，拿它当基准会让
+> "同一个相对路径"在不同启动方式下指到不同地方，用户没法预期。exe 所在目录才是能自己判断的锚点
+> （"就在程序旁边"），这也是绿色便携的本意。
+> 因此**同一个值在两种布局下会落到不同位置** —— 这正是"打包版读自己的 `config.json`"的原因：
+> 开发态写 `release/data`（相对工程根），打包版写 `data`（相对 exe 同级），两边指向同一份数据。
+
+**分隔符**：写的规范形式是 `/`（JSON 里不用转义，`//NAS/share/...` 直接写）；`\` 也照样认，
+库里现有数据不用改。详见 [启动与路径规则](./launch-and-paths.md) 的「分隔符约定」。
+
+实现是 `shared/pathConfig.ts`（零依赖纯函数 + 单测 `shared/pathConfig.test.ts`）；
+网站端 `server/paths.mjs` 是同一套语义的另一份实现，两者有一组 **parity 单测**逐项比对，
+改一边忘另一边会直接测失败。`scripts/check-architecture.mjs` 还禁止在解析器之外
+用 `path.join` 拼这些目录名。
+
+> ⚠️ 关于 `libraryDir`：只配置**库根**，`Admin/library.db` 与 `library/library.db` 两级
+> 结构固定挂在它下面 —— 这样"配置的库"和"被复制的库"永远是同一对文件，数据来源仍然唯一。
+> 直接暴露"运行时库文件路径"会破坏这条约束（复制目标可能指向另一个文件），所以不做。
+
+> 详情页目录由内置 HTTP 服务器惰性托管，详见 [游戏静态详情页](./game-details.md)。

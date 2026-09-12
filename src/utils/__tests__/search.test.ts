@@ -4,41 +4,10 @@
 import { describe, it, expect } from "vitest";
 import { matchSearch, gameNameVariants, pinyinInitials } from "../search";
 import type { Game } from "../../types/models";
+import { makeGame as makeBaseGame } from "../../test/factories";
 
-function makeGame(over: Partial<Game>): Game {
-  return {
-    id: "g",
-    name: "Test Game",
-    installed: false,
-    otherTasks: [],
-    playCount: 0,
-    playtime: 0,
-    added: "",
-    modified: "",
-    category: [],
-    genre: [],
-    developer: [],
-    publisher: [],
-    tags: [],
-    series: [],
-    ageRating: [],
-    region: [],
-    source: [],
-    features: [],
-    hidden: false,
-    favorite: false,
-    platform: [],
-    userScoreSet: false,
-    manualGame: false,
-    actions: [],
-    links: [],
-    featuresEnabled: false,
-    gameLevel: 1,
-    preLaunchEnabled: false,
-    postLaunchEnabled: false,
-    postExitEnabled: false,
-    ...over,
-  };
+function makeGame(over: Partial<Game> = {}): Game {
+  return makeBaseGame({ name: "Test Game", ...over });
 }
 
 describe("pinyinInitials", () => {

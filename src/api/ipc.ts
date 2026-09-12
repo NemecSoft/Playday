@@ -12,7 +12,9 @@ declare global {
     ipc?: {
       invoke: (channel: string, args?: unknown) => Promise<unknown>;
       send: (channel: string, args?: unknown) => void;
-      on?: (channel: string, listener: (payload: unknown) => void) => void;
+      // on 返回"取消订阅"函数（preload.ts 里 return () => ipcRenderer.off(...)）。
+      // 以前这里声明成 void，导致调用 unsubscribe() 报 TS2349「不可调用」。
+      on?: (channel: string, listener: (payload: unknown) => void) => () => void;
     };
     electronConfig?: {
       appName: string;

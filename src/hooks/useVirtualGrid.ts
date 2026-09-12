@@ -71,7 +71,7 @@ export interface UseVirtualGridOptions {
 
 export interface UseVirtualGridResult {
   /** Ref to attach to the scroll container (.content). */
-  scrollRef: React.RefObject<HTMLDivElement | null>;
+  scrollRef: React.RefObject<HTMLDivElement>;
   /** Columns per row for the current container width. */
   cols: number;
   /** Height of a card row (cover height + title + padding). */

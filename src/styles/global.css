@@ -10,6 +10,137 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  ⚠️ Tailwind v3 工具类的"变量初始化"层（等价于 preflight 里的 --tw-* 部分，只取变量、不取 reset）。
+
+  为什么必须补：Tailwind v3 的 transform / filter / backdrop-filter / ring 工具类**不是输出
+  固定值**，而是拼装 var(--tw-*)（下面是 CLI 实测产物，不是推测）：
+      .-translate-x-1\/2   { --tw-translate-x: -50%; transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)) }
+      .backdrop-blur-[2px] { --tw-backdrop-blur: blur(2px); backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) … }
+      .focus\:ring-2:focus { --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color); box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000) }
+  这些变量的初值由 preflight 的 `*, ::before, ::after { … }` 提供。本文件开头**故意没引
+  @tailwind base**（怕它的 reset 打乱这里调过的元素默认样式），于是变量等于未定义 →
+  **只要连写的变量里有一个取不到值，整条声明在"计算值阶段"就被判无效 → 静默退化成 none**，
+  不报任何错。实测被它坑掉的地方：
+    · ToastContainer 的 -translate-x-1/2  → 通知条从屏幕中线往右铺（用户报的"错误提示不在中间"）
+    · VideosView 的 hover:-translate-y-0.5 → 悬停不上浮
+    · ui/slider 的 hover:scale-110 / focus-visible:ring-2 → 不缩放、无焦点环
+      （ring 没兜底，还会把同一元素上的 box-shadow 一起带崩）
+    · ImageProgressBar 的 backdrop-blur-[2px] → 背景遮罩不虚化
+  **不受影响，别误伤**：shadow-*（自带 `var(--tw-ring-offset-shadow, 0 0 #0000)` 兜底）、
+  space-y-* / divide-*（在自己的规则里就地写 `--tw-space-y-reverse: 0`）、animate-*。
+
+  下面这段是 `npx tailwindcss` 对 `@tailwind base` 的真实产物**原样复制**（tailwindcss 3.4.17），
+  不是手抄 —— 升级 Tailwind 后请用同样方式重新生成；scripts/check-architecture.mjs 会校验
+  关键变量是否还在（防止有人"顺手"删掉这个块，或加回 @tailwind base 又删它）。
+*/
+*, ::before, ::after {
+  --tw-border-spacing-x: 0;
+  --tw-border-spacing-y: 0;
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  --tw-rotate: 0;
+  --tw-skew-x: 0;
+  --tw-skew-y: 0;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-pan-x:  ;
+  --tw-pan-y:  ;
+  --tw-pinch-zoom:  ;
+  --tw-scroll-snap-strictness: proximity;
+  --tw-gradient-from-position:  ;
+  --tw-gradient-via-position:  ;
+  --tw-gradient-to-position:  ;
+  --tw-ordinal:  ;
+  --tw-slashed-zero:  ;
+  --tw-numeric-figure:  ;
+  --tw-numeric-spacing:  ;
+  --tw-numeric-fraction:  ;
+  --tw-ring-inset:  ;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: rgb(59 130 246 / 0.5);
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-colored: 0 0 #0000;
+  --tw-blur:  ;
+  --tw-brightness:  ;
+  --tw-contrast:  ;
+  --tw-grayscale:  ;
+  --tw-hue-rotate:  ;
+  --tw-invert:  ;
+  --tw-saturate:  ;
+  --tw-sepia:  ;
+  --tw-drop-shadow:  ;
+  --tw-backdrop-blur:  ;
+  --tw-backdrop-brightness:  ;
+  --tw-backdrop-contrast:  ;
+  --tw-backdrop-grayscale:  ;
+  --tw-backdrop-hue-rotate:  ;
+  --tw-backdrop-invert:  ;
+  --tw-backdrop-opacity:  ;
+  --tw-backdrop-saturate:  ;
+  --tw-backdrop-sepia:  ;
+  --tw-contain-size:  ;
+  --tw-contain-layout:  ;
+  --tw-contain-paint:  ;
+  --tw-contain-style:  ;
+}
+::backdrop {
+  --tw-border-spacing-x: 0;
+  --tw-border-spacing-y: 0;
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  --tw-rotate: 0;
+  --tw-skew-x: 0;
+  --tw-skew-y: 0;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-pan-x:  ;
+  --tw-pan-y:  ;
+  --tw-pinch-zoom:  ;
+  --tw-scroll-snap-strictness: proximity;
+  --tw-gradient-from-position:  ;
+  --tw-gradient-via-position:  ;
+  --tw-gradient-to-position:  ;
+  --tw-ordinal:  ;
+  --tw-slashed-zero:  ;
+  --tw-numeric-figure:  ;
+  --tw-numeric-spacing:  ;
+  --tw-numeric-fraction:  ;
+  --tw-ring-inset:  ;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: rgb(59 130 246 / 0.5);
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-colored: 0 0 #0000;
+  --tw-blur:  ;
+  --tw-brightness:  ;
+  --tw-contrast:  ;
+  --tw-grayscale:  ;
+  --tw-hue-rotate:  ;
+  --tw-invert:  ;
+  --tw-saturate:  ;
+  --tw-sepia:  ;
+  --tw-drop-shadow:  ;
+  --tw-backdrop-blur:  ;
+  --tw-backdrop-brightness:  ;
+  --tw-backdrop-contrast:  ;
+  --tw-backdrop-grayscale:  ;
+  --tw-backdrop-hue-rotate:  ;
+  --tw-backdrop-invert:  ;
+  --tw-backdrop-opacity:  ;
+  --tw-backdrop-saturate:  ;
+  --tw-backdrop-sepia:  ;
+  --tw-contain-size:  ;
+  --tw-contain-layout:  ;
+  --tw-contain-paint:  ;
+  --tw-contain-style:  ;
+}
+
 /* Bundled fonts (served from /fonts/*). */
 @font-face {
   font-family: "FangZheng LiShu";
@@ -1380,7 +1511,10 @@ textarea {
 .sidebar-facet-label {
   flex: none;
   font-size: 12px;
-  opacity: 0.72;
+  /* 用主题的 --text-dim 表达"提示层级"，不要用 opacity 整体调淡：
+     透明度会把颜色和背景混起来，明亮主题下等于"淡灰叠白底"，12px 直接看不清。
+     直接用 dim 令牌，深浅主题都由主题自己保证可读性（见 themeContrast 测试）。 */
+  color: var(--text-dim);
 }
 .sidebar-select {
   height: 30px;
@@ -1468,20 +1602,26 @@ textarea {
   white-space: nowrap;
   min-width: 0;
   max-width: 100%;
-  /* 跟随"卡片文字样式"：颜色/描边/发光/阴影/字号/加粗，与 .grid-card .title
-     风格统一，让用户调过的文字样式在整个应用一致生效。
-     字号 = 卡片标题的 0.75 倍且最大 15px，兼顾 sidebar 布局不撑破，
-     又随 cardFontSize 滑杆一起变大变小（用户要求"一样变化大小"）。 */
-  color: var(--card-text-color, var(--text-primary));
-  font-size: min(calc(var(--card-title-size, 15px) * 0.75), 15px);
+  /* 字号 = max(12px, min(卡片标题字号 × 0.75, 15px))。
+     下限 12px 是用户明确要求的：「侧边栏的字再大一些，和上方的字号一样就行」——
+     侧栏上方的界面文字（按/匹配 标签、下拉框、搜索框）统一是 12px，
+     而这里以前是 15×0.75 = **11.25px**（比上方还小）→ 用户反馈看不清。
+     取 max 而不是写死 12px：卡片字号调大时仍然跟着变大（保留原有联动），
+     卡片字号调小时也不会算出 7.5px 这种荒唐值。
+     上限 15px 兼顾 sidebar 布局不撑破（标签格最小 86px，过长会省略号截断）。
+
+     ⚠️ 颜色和发光/阴影**不能**跟随卡片样式：那套样式是给"盖在封面图上的文字"调的
+     （默认 --card-text-color = 暖白 #fff8e7，因为封面总是深色），而这里是画在主题
+     表面上的界面文字 —— 明亮主题下就是**白字叠白底**，整列标签糊成一片（实测 bug）。
+     发光/阴影同理：小字 + 10px 光晕 = 发虚。
+     颜色交给 .sidebar-tag 的主题令牌，三态自然生效：
+     常态 --text-secondary / hover --text-primary / checked --accent-hover。 */
+  font-size: max(12px, min(calc(var(--card-title-size, 15px) * 0.75), 15px));
   font-weight: var(--card-title-weight, 500);
   /* 主动把描边归零：有些主题在 body 上设了全局 --text-stroke（0.5px），不显式覆盖
      的话这些文字会继承到那条细描边 —— 小字发虚的来源之一。
      （曾经用"双层文字"模拟外侧描边，实测在 15px 下会产生亚像素重影，已废弃。） */
   -webkit-text-stroke: 0;
-  text-shadow:
-    var(--card-shadow-offset-x, 0px) var(--card-shadow-offset-y, 0px) var(--card-shadow-blur, 0px) var(--card-shadow-color, transparent),
-    0 0 var(--card-glow-blur, 0px) var(--card-glow-color, transparent);
 }
 .sidebar-tag .sidebar-tag-meta {
   display: flex;
@@ -1497,9 +1637,10 @@ textarea {
   cursor: pointer;
 }
 .sidebar-tag .count {
-  font-size: 10px;
+  /* 计数比标签名小一档，但仍要看得清：10px 太小（用户反馈"数字也糊"），提到 11px。
+     颜色用 --text-dim（提示层级），不再吃 --text-glow —— 小字加光晕只会更糊。 */
+  font-size: 11px;
   color: var(--text-dim);
-  text-shadow: var(--text-glow, none);
 }
 .sidebar-tag.checked .count {
   color: var(--accent-hover);
@@ -1652,6 +1793,10 @@ textarea {
   gap: 6px;
   padding: 0 8px;
   flex-shrink: 0;
+  /* 与滚动区之间的这道缝放在工具栏**外侧**：滚动容器内部的 padding 会随内容滚走，
+     实测表现就是"一滚动，上面的间距就没了"（卡片直接贴着工具栏）。
+     margin 在滚动容器之外，永久保留。 */
+  margin-bottom: 6px;
 }
 
 /* 工具栏分组下拉（不分组 / 类型 / 系列 / 地区 / 年代）。 */
@@ -1828,7 +1973,9 @@ textarea {
 .content {
   flex: 1;
   overflow-y: auto;
-  padding: 6px 8px 8px;
+  /* 顶部不再留 padding：上方那道缝改由 .toolbar 的 margin-bottom 提供，
+     否则滚动时 padding 会跟着内容滚走（"滚动后上下间距没了"）。 */
+  padding: 0 8px 8px;
   position: relative;
 }
 
@@ -1839,9 +1986,10 @@ textarea {
      covers any other place that still relies on the plain auto-fill grid. */
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 10px;
-  /* 侧边栏折叠时的 handle 现在占布局流（flex 自动推开主内容），
-     网格本身不需要额外留左 padding 了，用默认小值即可。 */
-  padding: 2px;
+  /* 左右不留 padding：让卡片左边缘与上方工具栏、分组标题栏对齐
+     （用户要求"上面的搜索框等要和下面的游戏列表保持一致"）。
+     原来这里 2px + 卡片自身 6px padding 会一起把卡片推得比组标题栏更靠里。 */
+  padding: 0;
 }
 
 /* Windowed grid (useVirtualGrid): the scroll container stays .content. The
@@ -2804,8 +2952,15 @@ textarea {
 .launching-banner {
   position: fixed;
   top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
+  /* 居中**刻意不用 transform**：这是个 motion.div，framer-motion 的进出场动画会把
+     transform 写进内联 style，而内联优先级高于本规则 —— translateX(-50%) 会被覆盖，
+     横幅就偏到屏幕中线右侧（同一个"看着写了、其实没生效"的坑，另一种成因）。
+     left:0 + right:0 + margin-inline:auto + width:fit-content 的居中与 transform 无关，
+     动画怎么写都不会跑偏。 */
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: fit-content;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2834,44 +2989,10 @@ textarea {
   }
 }
 
-/* Toast notifications */
-.toast-container {
-  position: fixed;
-  bottom: 18px;
-  right: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 2000;
-}
-.toast {
-  background: var(--bg-panel);
-  border: 1px solid var(--border-strong);
-  border-left: 3px solid var(--accent);
-  border-radius: var(--radius);
-  padding: 11px 16px;
-  min-width: 220px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  animation: toast-in 0.2s ease;
-}
-.toast .toast-title {
-  font-weight: 600;
-  margin-bottom: 2px;
-}
-.toast .toast-body {
-  color: var(--text-secondary);
-  font-size: 12px;
-}
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* 通知条（启动失败/等级不足/备份失败）的样式不在这里。
+   ToastContainer.tsx 用 Tailwind 工具类就地定义（top-[64px] left-1/2 -translate-x-1/2 …），
+   原来的 .toast-container / .toast / .toast-title / .toast-body / @keyframes toast-in
+   已经没有任何引用 —— 留着只会让人改了这里却发现界面没反应。要调通知条外观请改组件里的类名。 */
 
 /* Library stats */
 .stat-cards {

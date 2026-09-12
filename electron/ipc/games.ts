@@ -29,7 +29,7 @@ import {
   validateLaunchPath,
 } from "../core/process";
 import { expandVariables, runScript } from "../core/scriptRunner";
-import type { AppSettings, Game, GameLibrary } from "../core/models";
+import type { AppSettings, DeepPartial, Game, GameLibrary } from "../core/models";
 import { registerCommand } from "./registry";
 
 export function registerGamesIpc(ipc: typeof ipcMain) {
@@ -231,7 +231,7 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
       "currentUserAccount",
       "currentUserLevel",
     ]);
-    const safePatch: Partial<AppSettings> = {};
+    const safePatch: DeepPartial<AppSettings> = {};
     for (const [k, v] of Object.entries(patch ?? {})) {
       if (!SECURE_KEYS.has(k)) {
         (safePatch as Record<string, unknown>)[k] = v;

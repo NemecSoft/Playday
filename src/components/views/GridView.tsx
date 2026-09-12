@@ -21,7 +21,7 @@ import GameContextMenu from "../GameContextMenu";
 import { useLazyImage } from "../../hooks/useLazyImage";
 import { useVirtualGrid, type VirtualGridRow } from "../../hooks/useVirtualGrid";
 import { isDarkBackground, paletteForRow } from "../../utils/titlePalette";
-import { clampCardDescFontSize } from "../../utils/cardText";
+import { clampCardFontSize, effectiveCardDescFontSize } from "../../utils/cardText";
 
 interface Props {
   groups: Group[];
@@ -39,7 +39,9 @@ export default function GridView({ groups }: Props) {
   // 网格卡片是否显示简介（工具栏开关控制，持久化）。
   const showCardDescription = useSettingsStore((s) => s.settings.showCardDescription);
   // 网格卡片简介字号（独立于标题字号，可在"设置-外观"里调）。
+  // 0 = 跟随游戏名字号，所以还要拿 title 的字号当基准。
   const cardDescFontSize = useSettingsStore((s) => s.settings.cardDescFontSize);
+  const cardFontSize = useSettingsStore((s) => s.settings.cardFontSize);
   // 标题配色模式："random" 时按行注入 --title-fill
   // （每组配色见 utils/titlePalette）。默认 "theme" = 跟随主题。
   const titleColorMode = useSettingsStore((s) => s.settings.cardText?.colorMode) ?? "theme";
@@ -90,7 +92,10 @@ export default function GridView({ groups }: Props) {
   //
   // 把这些加起来让 rowHeight = coverHeight + titleHeight + cardRowGap 精确等于真实渲染高度。
   // 这样 cardRowGap=0 时两行紧贴（除去下一张卡片自身无法消除的 padding-top）。
-  const descFontSize = clampCardDescFontSize(cardDescFontSize);
+  const descFontSize = effectiveCardDescFontSize(cardDescFontSize, cardFontSize);
+  // 标题行高随字号动态计算 —— 原来写死 22px 是按 15px 字号估的，字号调大后公式会低估，
+  // 行高就靠 ResizeObserver 校正，滚动时会出现"间距忽大忽小"。这里让它一开始就准。
+  const titleLineHeight = Math.round(clampCardFontSize(cardFontSize) * 1.2) + 4;
   // 副标题（英文原名）行高：库里很多游戏有本地化中文名，副标题普遍存在，
   // 统一预留 15px 行高最稳（避免有副标题的卡片溢出盖住下方）。没副标题的卡片
   // 实际更矮，虚拟列表按行内最高卡片排布，不影响正确性。
@@ -98,7 +103,7 @@ export default function GridView({ groups }: Props) {
   const titlePlusDesc =
     6 +        // .grid-card padding-top
     7 +        // .title-wrap margin-top
-    22 +       // .title 行高（font-size 15px * 1.2 + padding 2px）
+    titleLineHeight + // .title 行高（随游戏名字号动态计算）
     origNameHeight + // 副标题（英文原名）行高
     (showCardDescription ? 4 + descFontSize * 1.5 * 3 : 0); // 简介：margin-top + 3 行截断(line-height 1.5)
   const { scrollRef, cols, totalSize, items, virtualizer, rowStartIndex, measureRow } =

@@ -5,6 +5,19 @@
 // 注意：Game/AppSettings 等主实体接口前后端字段已分叉（前端宽松可选、后端完整必填），
 // 不适合强行合并，仍各自保留在各自层。
 
+/**
+ * 递归可选（补丁类型）：表达"只改嵌套对象里的一两个字段"的部分更新语义。
+ * 例：save({ cardText: { color: "#f00" } }) —— cardText 其余字段保持不动。
+ * 只递归普通对象；数组按整体替换处理（补丁不应该去改数组的某一项）。
+ */
+export type DeepPartial<T> = {
+  [K in keyof T]?: NonNullable<T[K]> extends readonly unknown[]
+    ? T[K]
+    : NonNullable<T[K]> extends object
+      ? DeepPartial<NonNullable<T[K]>>
+      : T[K];
+};
+
 /** 卡片文字自定义样式：颜色/描边/发光/阴影/背景填充。所有字段都有默认值。 */
 export interface CardTextStyle {
   /** 主文字颜色（hex，如 "#fff8e7"） */
@@ -104,21 +117,32 @@ export const DEFAULT_SETTINGS = {
   currentUserLevel: 3,
   fontFamily: "",
   cardFontSize: 15,
-  cardDescFontSize: 11,
+  // 0 = 跟随 cardFontSize（用户要求"简介和游戏名一样大"）；>0 才是显式字号。
+  cardDescFontSize: 0,
   cardFontBold: false,
   cardText: DEFAULT_CARD_TEXT,
   themeId: undefined,
   styleId: undefined,
-  // 详情页目录（空 = 默认 <数据根>/Game_Details；绝对/相对路径均可，相对以数据根为基准）
+  // 详情页目录（空 = 默认 <数据根>/Game_Details；绝对/相对路径均可，
+  // 相对以**应用 exe 所在目录**为基准 —— 见 shared/pathConfig.ts）
   gameDetailsDir: "",
-  // 封面图目录（空 = 默认 <数据根>/CoverImages；绝对/相对路径均可，相对以数据根为基准）
+  // 封面图目录（空 = 默认 <数据根>/CoverImages；绝对/相对路径均可，相对以应用 exe 所在目录为基准）
   coverImagesDir: "",
+  // 公告目录（空 = 默认 <数据根>/announcements；绝对/相对路径均可，相对以应用 exe 所在目录为基准）
+  announcementsDir: "",
+  // 数据库"库根"（空 = 默认数据根；绝对/相对路径均可，相对以应用 exe 所在目录为基准）。
+  // 只配置根：源库 <库根>/Admin/library.db、运行时库 <库根>/library/library.db 两级
+  // 结构固定挂在它下面（保证"配置的库"与"被复制的库"永远是同一对文件）。
+  libraryDir: "",
+  // 权威库（源库）目录（空 = 默认 <库根>/Admin；绝对/相对路径均可，相对以应用 exe 所在目录为基准）。
+  // 无盘网吧环境常把权威库放独立/网络位置：运行时副本每次启动从它复制，权威库只读。
+  sourceLibraryDir: "",
   // 存档备份工具 GameSaveHelper.exe 的路径（空 = 未配置，备份不可用）。
-  // 绝对路径原样使用；相对路径以数据根为基准解析。
+  // 绝对路径原样使用；相对路径以应用 exe 所在目录为基准解析。
   gameSaveHelperPath: "",
   // 游戏根目录：游戏按「相对路径」存放时的基准（生产 X:\YunGame\Playnite，
   // 测试 D:\YunGame\Playnite —— 靠这项配置解耦，代码里不写死）。
-  // 空 = 回退到数据根（保持旧行为）。绝对路径原样；相对路径以数据根为基准。
+  // 空 = 回退到数据根（保持旧行为）。绝对路径原样；相对路径以应用 exe 所在目录为基准。
   defaultGameRootPath: "",
   showCardDescription: true,
   // 社区氛围：默认关（避免打扰），用户在设置里开启
@@ -241,3 +265,306 @@ export const DEFAULT_DESIGNER: DesignerConfig = {
   cardBorder: true,
   cardText: DEFAULT_CARD_TEXT,
 };
+
+// ============================================================================
+// 实体模型（单一事实来源）
+// ----------------------------------------------------------------------------
+// 这些接口以前在 electron/core/models.ts 与 src/types/models.ts 各写一份，
+// 字段名/可选性靠人同步 —— 加字段时要改两处，漏一处就是运行时静默失效
+// （本会话在 gameSaveHelperPath / defaultGameRootPath 上各踩了一次）。
+// 现在统一放这里，两层只做 re-export；scripts/check-architecture.mjs 会检查
+// 这两个 shim 文件里不再出现重复定义。
+// ============================================================================
+
+/** 一个游戏运行所依赖的平台（PC / Steam / PS4 / Switch…）。 */
+export interface Platform {
+  id: string;
+  name: string;
+  specificationId?: string;
+  icon?: string;
+}
+
+/** 启动游戏的一个动作（点"开始游戏"实际执行的东西）。 */
+export interface GameAction {
+  id: string;
+  name: string;
+  type: "File" | "URL";
+  path?: string;
+  workingDir?: string;
+  arguments?: string;
+  /** 是否是"游玩指令"。false 的是辅助动作（存档备份等），不参与启动选择。 */
+  isPlayAction: boolean;
+  trackGame: boolean;
+}
+
+/** 一组游戏（按根目录组织），name 是占位符，用在启动路径的 {name} 里。 */
+export interface GameLibrary {
+  id: string;
+  name: string;
+  path: string;
+}
+
+/** 游戏的某个语言的名字（如中文名、日文名）。 */
+export interface GameName {
+  language: string;
+  name: string;
+}
+
+/** 游戏相关的视频（YouTube 链接 / 本地文件 / 普通网址）。 */
+export interface GameVideo {
+  /** "youtube" | "file" | "url" */
+  type: string;
+  url: string;
+  name?: string;
+}
+
+/** 游戏的一条外链（官网、商店页…）。 */
+export interface GameLink {
+  name: string;
+  url: string;
+}
+
+/**
+ * 主游戏实体。字段"必填/可选"按**主进程实际产出**定义：
+ * 主进程 rowToGame 一定会填 localizedNames/alternateNames/screenshots/videos
+ * （arr() 兜底成 []）和 installed（bool()），所以它们是必填而不是可选。
+ * 前端原来的"防御式可选"就此收敛 —— 数据来源只有主进程/网站后端两处，都会填满。
+ */
+export interface Game {
+  id: string;
+  /** 主显示名（通常是中文常用名）。 */
+  name: string;
+  /** 原始英文名（origin_name）。老游戏为 NULL 不显示副标题，新游戏手动填。 */
+  originName?: string;
+  localizedNames: GameName[];
+  alternateNames: string[];
+  gameId?: string;
+  installed: boolean;
+  installDirectory?: string;
+  playTask?: string;
+  otherTasks: string[];
+  lastPlayed?: string;
+  playCount: number;
+  lastActivity?: string;
+  playtime: number;
+  /** 最近一次会话运行了多少秒（进程退出时由后台监控写入）。 */
+  lastSessionSeconds: number;
+  /** 最近一次会话结束时间（ISO8601）。 */
+  lastSessionEndedAt?: string;
+  added: string;
+  modified: string;
+  category: string[];
+  genre: string[];
+  developer: string[];
+  publisher: string[];
+  tags: string[];
+  series: string[];
+  ageRating: string[];
+  region: string[];
+  source: string[];
+  features: string[];
+  releaseDate?: string;
+  communityScore?: number;
+  criticScore?: number;
+  userScore?: number;
+  hidden: boolean;
+  favorite: boolean;
+  backgroundImage?: string;
+  /**
+   * 封面图路径。**运行期算出**：扫封面目录（settings.coverImagesDir）后按游戏名匹配同名文件
+   * （规则见 shared/coverMatch.ts），只存在于内存，不落库。
+   *
+   * ⚠️ 数据库 `games.cover_image` 列**已废弃**：保留不删（旧库兼容）、不再写入；
+   * `rowToGame` 仍会读一次旧值（旧库已有值照旧生效），但无效/不在封面目录内时会被
+   * 运行期匹配覆盖。新代码请勿把本字段写回数据库。
+   */
+  coverImage?: string;
+  icon?: string;
+  description?: string;
+  /** 简介：Playday 用户维护的简短介绍（与 description「描述/版本信息」区分开）。 */
+  intro?: string;
+  notes?: string;
+  version?: string;
+  platform: string[];
+  emulator?: string;
+  completionStatus?: string;
+  userScoreSet: boolean;
+  manualGame: boolean;
+  pluginId?: string;
+  links: GameLink[];
+  actions: GameAction[];
+  featuresEnabled: boolean;
+  /** 详情页的 HTML 攻略/说明。 */
+  guide?: string;
+  screenshots: string[];
+  videos: GameVideo[];
+  /** 这个游戏属于哪个游戏库（按名字匹配 GameLibrary）。 */
+  gameLibrary?: string;
+  /** 玩这个游戏需要的权限等级：1 / 2 / 3（用户等级 >= 该值才可玩）。 */
+  gameLevel: number;
+  /** 启动前执行的脚本（每行一条命令）。 */
+  preLaunchScript?: string;
+  preLaunchEnabled: boolean;
+  /** 游戏进程启动后执行的脚本。 */
+  postLaunchScript?: string;
+  postLaunchEnabled: boolean;
+  /** 游戏退出后执行的脚本。 */
+  postExitScript?: string;
+  postExitEnabled: boolean;
+  /** 存档路径配置（备份/恢复用）。纯字符串数组，含通配符，支持 {游戏库名} 占位符。 */
+  savePaths?: string[];
+  /**
+   * 手动指定的"计时监控 exe"：`进程名|窗口标题关键字`（如 `dotnet.exe|泰拉瑞亚`）。
+   * 仅少数"用 start 启动游戏后自身提前退出"的 bat 才需要填。留空 = 自动判定
+   * （启动器进程 或 安装目录内进程任一存活即视为运行中）。
+   */
+  monitorExe?: string;
+}
+
+/** 统一用户记录：企业用户（按公网 IP 匹配）和个人用户（账号登录）都存这张表。 */
+export interface AppUser {
+  id: string;
+  account: string;
+  passwordHash: string;
+  name: string;
+  level: number;
+  /** "enterprise" | "personal" */
+  kind: string;
+  ipAddress: string;
+  createdAt: string;
+  /** 软删除标记：有值表示已删除（保留用于撤销），空表示正常。 */
+  deletedAt?: string;
+}
+
+/** 主进程"当前会话用户"（登录/企业匹配时确定）。 */
+export interface SessionUser {
+  /** "enterprise" | "personal" | "guest" */
+  kind: string;
+  name: string;
+  account: string;
+  level: number;
+}
+
+/** 库统计信息（library_stats 命令返回）。 */
+export interface LibraryStats {
+  totalGames: number;
+  installedGames: number;
+  installedPct: number;
+  totalPlaytime: number;
+  totalSize: number;
+  favoriteGames: number;
+  hiddenGames: number;
+  platformBreakdown: { name: string; count: number }[];
+  genreBreakdown: { name: string; count: number }[];
+}
+
+/** 库插件注册信息（对应 Playnite 的库插件概念）。 */
+export interface LibraryPluginInfo {
+  id: string;
+  name: string;
+  icon?: string;
+  enabled: boolean;
+}
+
+/**
+ * 应用设置（存 config.json，不在数据库里）。
+ * 主进程与前端共用这一份；缺字段时的兜底值见 DEFAULT_SETTINGS。
+ */
+export interface AppSettings {
+  startupBehavior: string;
+  enableTray: boolean;
+  minimizeToTray: boolean;
+  closeToTray: boolean;
+  /** 运行 .bat/.cmd 脚本指令时是否显示控制台窗口。网吧脚本多为菜单式，需要显示。 */
+  showBatConsole: boolean;
+  language: string;
+  firstTimeWizardComplete: boolean;
+  /** 【已废弃，不再读取】数据库路径固定为双库机制；读取配置时会剔除该键。 */
+  databasePath?: string;
+  autoBackupEnabled: boolean;
+  gridViewImage: string;
+  detailsViewImage: string;
+  listViewImage: string;
+  showInstalledOnly: boolean;
+  showHidden: boolean;
+  showFavorites: boolean;
+  sortOrder: string;
+  sortDirection: string;
+  fullscreenMode: boolean;
+  controllerSupport: boolean;
+  /** 启动时是否显示登录界面。 */
+  loginEnabled: boolean;
+  /** 登录方式："wechat"（扫码）或 "account"（账号密码）。 */
+  loginType: string;
+  /** 当前会话是否已登录。 */
+  loggedIn: boolean;
+  /** 登录用户名（账号登录时填）。 */
+  username?: string;
+  /** 启动游戏时是否记录游戏时长。 */
+  trackPlaytime: boolean;
+  /** 网格卡片宽度（像素）。 */
+  cardWidth: number;
+  /** 网格卡片水平间距（像素，0~20）。 */
+  cardGap: number;
+  /** 网格卡片垂直间距（像素，0~60）。 */
+  cardRowGap: number;
+  /** 左侧边栏宽度（像素，160~600）。 */
+  sidebarWidth: number;
+  /** 企业用户配置文件 JSON 路径（默认 D:/1.json）。 */
+  enterpriseConfigPath: string;
+  /** 当前会话用户类型："enterprise" | "personal" | ""。 */
+  currentUserKind: string;
+  /** 当前会话用户显示名。 */
+  currentUserName: string;
+  /** 当前会话用户等级（1|2|3），默认 3 = 全部可玩。 */
+  currentUserLevel: number;
+  /** 用户选择的界面字体（空 = 用主题默认字体）。 */
+  fontFamily: string;
+  /** 卡片标题/别名字号（px）。默认 15。 */
+  cardFontSize: number;
+  /** 卡片简介字号（px）。默认 11。 */
+  cardDescFontSize: number;
+  /** 卡片标题/别名是否加粗（true=700，false=500）。 */
+  cardFontBold: boolean;
+  /** 卡片文字自定义样式。CSS 读它注入 --card-text-* 等变量。 */
+  cardText: CardTextStyle;
+  /** 用户选择的主题调色板 id（themeLibrary 的某个 palette id）。 */
+  themeId?: string;
+  /** 用户选择的风格 id（styleLibrary 的某个 style id）。 */
+  styleId?: string;
+  /** 游戏静态详情页目录（空 = 默认 <数据根>/Game_Details）。 */
+  gameDetailsDir?: string;
+  /** 封面图目录（空 = 默认 <数据根>/CoverImages）。读图白名单跟随该目录。 */
+  coverImagesDir?: string;
+  /** 公告目录（空 = 默认 <数据根>/announcements）。 */
+  announcementsDir?: string;
+  /**
+   * 数据库"库根"（空 = 默认数据根）：运行时副本所在目录，也是权威库的默认父目录。
+   * 解析规则见 shared/pathConfig.ts（桌面端 + 网站端同语义）。
+   */
+  libraryDir?: string;
+  /**
+   * 权威库（源库）**目录**（空 = 默认 `<库根>/Admin`）。文件名固定 `library.db`：
+   * 运行时副本永远由它复制而来，所以只开放目录、不开放具体文件路径。
+   * 无盘网吧环境常把权威库放在独立/网络位置（如 `//NAS/YunGame/Admin`）。
+   */
+  sourceLibraryDir?: string;
+  /** 存档备份工具 GameSaveHelper.exe 的路径（空 = 未配置）。 */
+  gameSaveHelperPath?: string;
+  /**
+   * 游戏根目录：游戏按「相对路径」存放时的基准
+   * （生产 X:\YunGame\Playnite、测试 D:\YunGame\Playnite，靠配置解耦）。
+   * 空 = 回退数据根。见 docs/design/launch-and-paths.md。
+   */
+  defaultGameRootPath?: string;
+  /** 网格卡片上是否显示简介（intro）。 */
+  showCardDescription: boolean;
+  /** 综合主题/配色/字体设计器配置。 */
+  designer?: DesignerConfig;
+  /** 社区氛围：是否开启"多人氛围"（在线/弹幕/活动流）。 */
+  communityEnabled: boolean;
+  /** 氛围来源：mock（随机模拟）/ real（真实后端，预留）。 */
+  communitySource: string;
+  /** 错误上报/崩溃报告（SMTP 发邮件到收件人邮箱），默认关。 */
+  errorReport: ErrorReportConfig;
+}

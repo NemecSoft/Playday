@@ -15,7 +15,8 @@ import {
   sourceDatabasePath,
   runtimeDatabasePath,
 } from "./paths";
-import type { AppUser, CurrentUser, Game, GameLibrary, LibraryStats } from "./models";
+import { shouldSyncDatabase, type FileStamp } from "../../shared/librarySync";
+import type { AppUser, SessionUser, Game, GameLibrary, LibraryStats } from "./models";
 
 // 全局的 sql.js 静态对象（init 一次复用）。
 let SQL: SqlJsStatic | null = null;
@@ -150,22 +151,39 @@ export async function openDb(): Promise<Database> {
 
   const dbPath = databasePath();
 
-  // 数据来源 → 运行时库：
-  //   源库 <数据根>/Admin/library.db 由手工维护的 games.json + 脚本写入（import-games.bat）；
-  //   每次启动把它复制成 <数据根>/library/library.db 再用，运行期间不受外部改动影响，
-  //   重启即拿到最新数据。源库不存在时（首次运行/纯空环境）用现有运行时库，不复制。
+  // 权威库 → 运行时副本：
+  //   权威库 <权威库目录>/library.db 由手工维护的 games.json + 脚本写入（import-games.bat）；
+  //   每次启动复制成 <库根>/library/library.db，之后**所有读写都只在副本上**，
+  //   重启即回到权威数据。
+  // 为什么这么设计（核心原因）：玩家可能**正在游戏**，而存档操作要读库里的存档路径；
+  //   此时一旦发生"更新"，library/library.db 可能被破坏 → 存档就做不了。
+  //   副本可丢弃 + 每次启动重建，就能把"更新破坏"限制在临时文件上。
+  // 复制这一步有两个细节都是踩出来的：
+  //   1) **大小 + 修改时间一致就跳过复制**（判定在 shared/librarySync.ts）。
+  //      权威库放在网络共享（//NAS/...）时，省掉的是一次实打实的网络读。
+  //      注意：复制时用 cpSync 的 preserveTimestamps 把权威库的 mtime 带过去 ——
+  //      否则 copyFileSync 会给副本打上"现在"的时间戳，两边永远不一致，判定白写。
+  //   2) 复制走"临时文件 + rename"（原子）：避免中途被杀留下半截文件 ——
+  //      那正是下次启动打不开的根源。
   {
     const sourcePath = sourceDatabasePath();
     const runPath = runtimeDatabasePath();
     try {
-      if (fs.existsSync(sourcePath)) {
+      const srcStamp = fileStamp(sourcePath);
+      const dstStamp = fileStamp(runPath);
+      if (shouldSyncDatabase(srcStamp, dstStamp)) {
         const dir = path.dirname(runPath);
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        fs.copyFileSync(sourcePath, runPath);
+        const tmp = `${runPath}.tmp`;
+        fs.cpSync(sourcePath, tmp, { preserveTimestamps: true });
+        fs.renameSync(tmp, runPath); // 同卷 rename 是原子的
+        console.log(`[db] 已从权威库复制运行时副本（${srcStamp?.size ?? 0} 字节）`);
+      } else if (srcStamp) {
+        console.log("[db] 运行时副本与权威库一致（大小/时间相同），跳过复制");
       }
     } catch (e) {
-      // 复制失败（如文件被占用）不致命：继续用现有运行时库。
-      console.error("[db] 从源库复制运行时库失败:", e);
+      // 复制失败（如文件被占用）不致命：继续用现有运行时副本（打不开还有下面的自愈）。
+      console.error("[db] 从权威库复制运行时副本失败:", e);
     }
   }
 
@@ -175,9 +193,7 @@ export async function openDb(): Promise<Database> {
   }
 
   if (fs.existsSync(dbPath)) {
-    // 已有文件：读入内存。注意 sql.js 需要 Uint8Array。
-    const fileBuffer = fs.readFileSync(dbPath);
-    db = new SQL.Database(new Uint8Array(fileBuffer));
+    db = openRuntimeOrRecover(dbPath);
   } else {
     // 首次：建空库并跑建表语句。
     db = new SQL.Database();
@@ -190,6 +206,79 @@ export async function openDb(): Promise<Database> {
   // 迁移：旧库可能缺 save_paths 列（存档管理新增），补上。
   migrateAddColumns();
   return db;
+}
+
+/** 取文件的大小 + mtime（不存在或不可读返回 null）。 */
+function fileStamp(p: string): FileStamp | null {
+  try {
+    const st = fs.statSync(p);
+    return { size: st.size, mtimeMs: st.mtimeMs };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 尝试打开一个 db 文件；**不可用返回 null**（不抛错）。
+ *
+ * ⚠️ 必须实测一句查询，不能只看构造函数：sql.js 对"非 SQLite 内容"**不抛错**
+ * （实测：`new SQL.Database(垃圾)` 正常返回，要等第一次查询才报
+ * `file is not a database`）。只靠 try/catch 会以为打开成功了，
+ * 然后在后面的 `db.run(SCHEMA)` 才炸 —— 那时已经没法体面地自愈了。
+ */
+function tryOpenDatabase(p: string): Database | null {
+  let candidate: Database;
+  try {
+    candidate = new SQL!.Database(new Uint8Array(fs.readFileSync(p)));
+  } catch {
+    return null;
+  }
+  try {
+    candidate.exec("SELECT count(*) FROM sqlite_master");
+    return candidate;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 打开运行时副本；**不可用就自愈**（"副本可丢弃"设计的最后一道保险）。
+ *
+ * 场景：玩家正在游戏时发生更新/异常退出 → `library/library.db` 被写坏、被占用或只剩半截。
+ * 正常情况下启动时那次"从权威库复制"已经把它覆盖成好文件；但那次复制也可能失败
+ * （文件被占用等），此时不能因为一个临时文件坏掉就起不来：
+ *   1) 坏文件**改名留档**（`library.db.corrupt-<时间戳>`，便于事后排查，不直接删）；
+ *   2) 从权威库重新复制一份并复验；
+ *   3) 连权威库都没有 → **明确报错**（不静默建空库，否则看起来像"数据全没了"）。
+ */
+function openRuntimeOrRecover(dbPath: string): Database {
+  const direct = tryOpenDatabase(dbPath);
+  if (direct) return direct;
+
+  console.error("[db] 运行时副本不可用（可能被更新/异常退出写坏），尝试从权威库重建");
+  try {
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const bak = `${dbPath}.corrupt-${stamp}`;
+    fs.renameSync(dbPath, bak);
+    console.error("[db] 损坏的运行时副本已留档:", bak);
+  } catch {
+    /* 改名失败也继续尝试重建 */
+  }
+
+  const sourcePath = sourceDatabasePath();
+  if (!fs.existsSync(sourcePath)) {
+    throw new Error(
+      `运行时库已损坏，且权威库不存在，无法自动恢复。请把备份放回：${sourcePath}` +
+        `（损坏副本已留档为 ${dbPath}.corrupt-*）`,
+    );
+  }
+  fs.copyFileSync(sourcePath, dbPath);
+  const rebuilt = tryOpenDatabase(dbPath);
+  if (!rebuilt) {
+    throw new Error(`从权威库重建运行时副本后仍无法打开：${dbPath}（权威库：${sourcePath}）`);
+  }
+  console.log("[db] 已从权威库重建运行时副本:", dbPath);
+  return rebuilt;
 }
 
 // 对已存在的旧库做增量列迁移：确保新加的列存在。
@@ -343,7 +432,9 @@ export function upsertGame(game: Game): void {
     $hidden: game.hidden ? 1 : 0,
     $favorite: game.favorite ? 1 : 0,
     $background_image: game.backgroundImage ?? null,
-    $cover_image: game.coverImage ?? null,
+    // 注意：这里**没有** $cover_image —— games.cover_image 列已废弃（保留不删、不再写入）。
+    // 封面是运行期按文件名匹配算出来的内存值（shared/coverMatch.ts），写回库没有意义，
+    // 还会把"本次匹配结果"沉淀成脏数据。列保留只为旧库兼容。
     $icon: game.icon ?? null,
     $description: game.description ?? null,
     $intro: game.intro ?? null,
@@ -379,7 +470,7 @@ export function upsertGame(game: Game): void {
       playtime, last_session_seconds, last_session_ended_at, added, modified, category,
       genre, developer, publisher, tags, series, age_rating, region, source, features,
       release_date, community_score, critic_score, user_score, hidden, favorite,
-      background_image, cover_image, icon, description, intro, notes, version, platform,
+      background_image, icon, description, intro, notes, version, platform,
       emulator, completion_status, user_score_set, manual_game, plugin_id, links,
       actions, features_enabled, guide, screenshots, videos, game_library, game_level,
       pre_launch_script, pre_launch_enabled, post_launch_script, post_launch_enabled,
@@ -390,7 +481,7 @@ export function upsertGame(game: Game): void {
       $playtime, $last_session_seconds, $last_session_ended_at, $added, $modified, $category,
       $genre, $developer, $publisher, $tags, $series, $age_rating, $region, $source, $features,
       $release_date, $community_score, $critic_score, $user_score, $hidden, $favorite,
-      $background_image, $cover_image, $icon, $description, $intro, $notes, $version, $platform,
+      $background_image, $icon, $description, $intro, $notes, $version, $platform,
       $emulator, $completion_status, $user_score_set, $manual_game, $plugin_id, $links,
       $actions, $features_enabled, $guide, $screenshots, $videos, $game_library, $game_level,
       $pre_launch_script, $pre_launch_enabled, $post_launch_script, $post_launch_enabled,
@@ -407,7 +498,7 @@ export function upsertGame(game: Game): void {
       tags=$tags, series=$series, age_rating=$age_rating, region=$region, source=$source,
       features=$features, release_date=$release_date, community_score=$community_score,
       critic_score=$critic_score, user_score=$user_score, hidden=$hidden, favorite=$favorite,
-      background_image=$background_image, cover_image=$cover_image, icon=$icon,
+      background_image=$background_image, icon=$icon,
       description=$description, intro=$intro, notes=$notes, version=$version, platform=$platform,
       emulator=$emulator, completion_status=$completion_status, user_score_set=$user_score_set,
       manual_game=$manual_game, plugin_id=$plugin_id, links=$links, actions=$actions,

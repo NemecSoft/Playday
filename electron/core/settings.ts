@@ -6,6 +6,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { configPath, legacyConfigPath } from "./paths";
 import { AppSettings, DEFAULT_SETTINGS, GameLibrary } from "./models";
+import type { DeepPartial } from "../../shared/models";
 import { getGameLibraries } from "./db";
 
 interface ConfigFile {
@@ -41,7 +42,10 @@ export function readSettings(): AppSettings {
     const merged = { ...DEFAULT_SETTINGS, ...(parsed.settings || {}) } as Record<string, unknown>;
     // 历史遗留键清理：databasePath 曾做成可配置，现已废弃（固定"源库 → 运行时库"）。
     // 旧 config.json 里可能残留该键，统一剔除，这样应用下次保存配置时就会把它清掉。
-    // （coverImagesDir / gameDetailsDir 是有效配置项，保留。）
+    // 有效配置项（保留）：coverImagesDir / gameDetailsDir / announcementsDir / libraryDir
+    //   —— 前两个是旧的目录配置，后两个是本次新增（公告目录、数据库库根）。
+    // 注意 databasePath（废弃）与 libraryDir（新增）语义不同：前者指具体 db 文件，
+    // 后者指"库根"，源库/运行时库两级固定挂在它下面。所以这里只删 databasePath。
     delete merged.databasePath;
     return merged as unknown as AppSettings;
   } catch (e) {
@@ -50,16 +54,30 @@ export function readSettings(): AppSettings {
   }
 }
 
-// 写设置。只覆盖传入的字段，其余保留文件里已有的值。
+// 写设置。只覆盖传入的字段（补丁语义），其余保留文件里已有的值。
+// 嵌套对象做**一层深合并**：save({ cardText: { color } }) 只改颜色，不能把
+// cardText 里其余样式字段整体冲掉 —— 以前就是整体替换，于是"先改颜色、再拨描边
+// 开关"会把盘上的颜色丢掉（内存里看着正常，重启后颜色回默认）。
 // 最终落盘的结构是 { settings: {...} }。
-export function writeSettings(patch: Partial<AppSettings>): AppSettings {
+export function writeSettings(patch: DeepPartial<AppSettings>): AppSettings {
   const current = readSettings();
-  const next: AppSettings = { ...current, ...patch };
-  const file: ConfigFile = { settings: next };
+  const cur = current as unknown as Record<string, unknown>;
+  const next: Record<string, unknown> = { ...cur };
+  for (const [k, v] of Object.entries(patch)) {
+    // 补齐：patch 里的 undefined 是有意义的（如 logout 时 username: undefined），
+    // 会原样写入对象，JSON.stringify 时被丢弃 —— 与旧行为一致。
+    next[k] = isPlainObject(v) && isPlainObject(cur[k]) ? { ...cur[k], ...v } : v;
+  }
+  const file: ConfigFile = { settings: next as unknown as AppSettings };
   const dir = path.dirname(configPath());
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(configPath(), JSON.stringify(file, null, 2), "utf-8");
-  return next;
+  return next as unknown as AppSettings;
+}
+
+// 普通对象判定（数组与 null 不算）。
+function isPlainObject(v: unknown): v is Record<string, unknown> {
+  return !!v && typeof v === "object" && !Array.isArray(v);
 }
 
 // 获取游戏库列表。游戏库是"业务数据"，单一数据源是数据库 game_libraries 表，

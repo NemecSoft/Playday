@@ -9,6 +9,11 @@
 import { spawn, type ChildProcess } from "child_process";
 import * as path from "path";
 import { defaultGameRootPath } from "./paths";
+import {
+  resolveActionPath,
+  resolvePath as resolvePathPure,
+  toCmdPath,
+} from "../../shared/launchPaths";
 import { getGame, upsertGame } from "./db";
 import type { Game, GameAction, GameLibrary } from "./models";
 import { expandVariables, runScript } from "./scriptRunner";
@@ -27,54 +32,16 @@ const running = new Map<string, RunningGame>();
 // 每个游戏本会话"最近一次退出"的时长（秒）。
 const lastExit = new Map<string, number>();
 
-// ---- 路径解析（移植 process.rs 的 resolve_path / resolve_library_placeholder）----
+// ---- 路径解析 ----
+//
+// 规则本体（三种基准、{InstallDir} 缺失报错、词法规范化）已抽到
+// shared/launchPaths.ts：零依赖纯函数、有单测（launchPaths.test.ts）、
+// 并由 docs/design/launch-and-paths.md 作为权威说明。
+// 这里只负责把"游戏上下文 + config.json 里的游戏根"喂给它。
 
-// 解析启动路径：
-//   - `{游戏库名}\rest` → 用该库根目录拼上 rest
-//   - 绝对路径 → 原样
-//   - 相对路径（. / ..）→ 相对应用数据根目录
+// 兼容旧调用点（ipc/saveManager、ipc/games 用的是两参数版本）：基准取 defaultGameRootPath。
 export function resolvePath(p: string, gameLibraries: GameLibrary[]): string {
-  if (!p) return p;
-  // 相对路径的基准 = 游戏根目录（config.json → settings.defaultGameRootPath；
-  // 生产 X:\YunGame\Playnite，测试 D:\YunGame\Playnite；未配置时回退数据根）。
-  const root = defaultGameRootPath();
-  const lib = resolveLibraryPlaceholder(p, gameLibraries);
-  if (lib) {
-    const [rest, libRoot] = lib;
-    return normalizePath(path.join(libRoot, rest));
-  }
-  if (path.isAbsolute(p)) return p;
-  return normalizePath(path.join(root, p));
-}
-
-// 如果路径以 `{库名}` 开头，返回"占位符之后的路径"和"该库根目录"。
-function resolveLibraryPlaceholder(p: string, gameLibraries: GameLibrary[]): [string, string] | null {
-  const trimmed = p.trimStart();
-  if (!trimmed.startsWith("{")) return null;
-  const end = trimmed.indexOf("}");
-  if (end < 0) return null;
-  const token = trimmed.slice(1, end);
-  if (!token) return null;
-  const lib = gameLibraries.find((l) => l.name.toLowerCase() === token.toLowerCase());
-  if (!lib || !lib.path.trim()) return null;
-  const rest = trimmed.slice(end + 1).replace(/^[\\/]+/, "");
-  return [rest, lib.path];
-}
-
-// 把路径词法规范化（折叠 . 和 .. 段，不碰磁盘）。
-function normalizePath(p: string): string {
-  const parts = p.split(/[\\/]/);
-  const out: string[] = [];
-  for (const part of parts) {
-    if (part === "." || part === "") continue;
-    if (part === "..") {
-      if (out.length) out.pop();
-      else out.push("..");
-    } else {
-      out.push(part);
-    }
-  }
-  return out.join(path.sep);
+  return resolvePathPure(p, gameLibraries, defaultGameRootPath());
 }
 
 // 在安装目录里找一个可执行文件（移植 find_game_executable）。
@@ -220,29 +187,19 @@ export function launchGame(
       // "{InstallDir}\game.exe" 会被 resolvePath 当成相对路径拼到数据根上，
       // 导致所有用该占位符的游玩指令（实测 755 个）一律报"文件不存在"。
       const installDirRaw = (game.installDirectory ?? "").trim();
-      if (/\{InstallDir\}/i.test(p) && !installDirRaw) {
-        return {
-          launched: false,
-          error: `该游戏未配置安装目录（install_directory 为空），无法解析启动路径：${p}`,
-        };
-      }
-      // 解析基准分三种：
-      //   1) {游戏库名}\... → 库根目录（交给 resolvePath）
-      //   2) 绝对路径       → 原样
-      //   3) 相对路径       → Playnite 语义是相对「安装目录」（如 "TPC.exe"、
-      //      "bin\Inversion.exe"），而不是数据根/游戏根。
-      // 注意：{InstallDir} 展开后的结果是「相对游戏根」的路径（installDirectory 本身
-      // 就是相对游戏根存的），所以那种情况必须走 resolvePath，不能再按安装目录拼。
-      const expanded = expandVariables(p, game);
-      const wasRelativeInData = !p.trim().startsWith("{") && !path.isAbsolute(p.trim());
       // 解析后的安装目录：既用于拼相对动作路径，也用于后面的进程监控。
       const installAbs = installDirRaw ? resolvePath(expandVariables(installDirRaw, game), libs) : "";
-      let resolved: string;
-      if (wasRelativeInData && installAbs) {
-        resolved = normalizePath(path.join(installAbs, expanded));
-      } else {
-        resolved = resolvePath(expanded, libs);
-      }
+      // 路径规则统一交给 shared/launchPaths.ts（纯函数 + 单测）：三种基准、
+      // {InstallDir} 展开、以及"需要安装目录但没配"的明确报错都在那里。
+      const resolvedAction = resolveActionPath({
+        actionPath: p,
+        installDir: installAbs,
+        libraries: libs,
+        gameRoot: defaultGameRootPath(),
+        expand: (s) => expandVariables(s, game),
+      });
+      if (resolvedAction.error) return { launched: false, error: resolvedAction.error };
+      const resolved = resolvedAction.path;
       // path 可能是目录（如安装目录），也可能是 exe 文件。若是目录，自动在其中找
       // 真正的可执行文件（兼容 path 配成目录的情况），并让工作目录跟随该 exe。
       let exeResolved = resolved;
@@ -336,7 +293,9 @@ function doSpawn(game: Game, exe: string, args: string[], cwd: string, track: bo
       // /wait：让外层 cmd 等脚本结束，保持"脚本退出 = 计时结束"的原有语义；
       // 外层 cmd 自己隐藏（windowsHide: true），免得再多出一个空白控制台窗口。
       const comspec = process.env.ComSpec || "cmd.exe";
-      child = spawn(comspec, ["/d", "/s", "/c", "start", "", "/wait", exe, ...args], {
+      // toCmdPath：我们内部统一用 `/` 分隔，但 cmd 会把以 `/` 开头的 token 当开关
+      // （`//NAS/share/x.bat` 直接传会被判成非法开关），拼命令行前换回 `\`。
+      child = spawn(comspec, ["/d", "/s", "/c", "start", "", "/wait", toCmdPath(exe), ...args], {
         cwd,
         stdio: "ignore",
         windowsHide: true,
@@ -346,7 +305,12 @@ function doSpawn(game: Game, exe: string, args: string[], cwd: string, track: bo
       // 脚本文件，会抛 EINVAL（实测所有用 bat 启动的游戏都卡在这里）。必须经
       // cmd.exe：用 shell: true 让 Node 走 `cmd.exe /d /s /c "..."`，并把脚本路径
       // 自带引号，避免路径含空格时被 cmd 拆成多个参数。
-      child = spawn(`"${exe}"`, args, { cwd, stdio: "ignore", windowsHide: true, shell: true });
+      child = spawn(`"${toCmdPath(exe)}"`, args, {
+        cwd,
+        stdio: "ignore",
+        windowsHide: true,
+        shell: true,
+      });
     } else {
       child = spawn(exe, args, { cwd, stdio: "ignore" });
     }

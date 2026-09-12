@@ -5,6 +5,9 @@
 `Game` 是核心实体，对应原版 Playnite 的 `Playnite.SDK.Models.Game`。
 本项目对原版做了关键改进，最核心的是**多名称支持**。前端类型定义在 `src/types/models.ts`，与主进程 `electron/core/models.ts` 返回的结构保持一致。
 
+其中**简介 / 地区 / 标签**是人工维护的内容，单独有一份源表 `data/game-content.json`
+（丢失不可恢复，故放在仓库根并纳入版本管理）——字段与工作流见 [game-content.md](./game-content.md)。
+
 ## `Game` 结构（TypeScript）
 
 ```ts
@@ -100,8 +103,10 @@ export interface Game {
 
 ### 双库机制（务必分清）
 
-- `paths.ts` 的 `sourceDatabasePath()` = `<数据根>/Admin/library.db`：**源库**（数据来源，由手工/脚本维护）。
-- `paths.ts` 的 `runtimeDatabasePath()` = `<数据根>/library/library.db`：**运行时副本**（客户端每次启动 `openDb()` 把 Admin 库 `copyFileSync` 复制过来再用）。
+- `paths.ts` 的 `sourceDatabasePath()` = `<库根>/Admin/library.db`：**源库**（数据来源，由手工/脚本维护）。
+- `paths.ts` 的 `runtimeDatabasePath()` = `<库根>/library/library.db`：**运行时副本**（客户端每次启动 `openDb()` 把 Admin 库 `copyFileSync` 复制过来再用）。
+- `库根` 默认是数据根，可用 `config.json` 的 `settings.libraryDir` 改；权威库目录默认 `<库根>/Admin`，可用 `settings.sourceLibraryDir` 单独改（如指到 `//NAS/YunGame/Admin`）。两者都支持相对路径（以**应用 exe 所在目录**为基准，见 [目录结构](./directory-structure.md) 的「路径配置」）。
+- **为什么要有这两级（核心原因）**：玩家可能**正在游戏**，而存档操作要读库里的存档路径；此时一旦发生"更新"，`library/library.db` 可能被破坏 → 玩家就做不了存档。所以让它成为**可丢弃的副本**：所有读写只在副本上，每次启动从只读的权威库重建，破坏最多影响一个临时文件。这也是"复制关系必须固定"的原因：只开放**目录**，文件名恒为 `library.db`。
 - **写库/同步一律针对 `Admin/library.db`**；改运行时副本是白费（下次启动被 Admin 覆盖）。
 
 ## 多名称设计（对原版 Playnite 的改进）
@@ -144,19 +149,21 @@ export interface GameName {
 
 1. **主名 `name` 不变**：始终是"默认展示名"（通常是英文原名），保证 UI 与现有逻辑不破坏。
 2. **`localizedNames` / `alternateNames` 均为可选扩展**：旧数据库记录（没有这两个字段）自动得到空数组，**向后完全兼容**。
-3. **搜索与展示分离**：`name` 用于界面默认展示；所有名称变体（主名 + 本地化名 + 别名）共同参与搜索（见 [搜索系统](./search.md)）。
+3. **搜索与展示分离**：`name` 用于界面默认展示；所有名称变体（主名 + 本地化名 + 别名）共同参与搜索。
 4. **编辑入口**：游戏编辑弹窗提供本地化名称编辑器（语言 + 名称对，可增删）和别名输入框。
 
 ## 权限等级 `gameLevel`
 
-`gameLevel: 1 | 2 | 3` 表示游玩该游戏所需的**权限等级**。用户等级 N 可玩所有游戏等级 ≤ N 的游戏（见 [登录系统](./login.md)）。无权限游戏正常显示，但点"开始游戏"时提示"用户等级不够"。
+`gameLevel: 1 | 2 | 3` 表示游玩该游戏所需的**权限等级**。用户等级 N 可玩所有游戏等级 ≤ N 的游戏。无权限游戏正常显示，但点"开始游戏"时提示"用户等级不够"。
 
 ## 脚本启动字段
 
-`preLaunchScript` / `postLaunchScript` / `postExitScript` 三个可选脚本字段（每个 `xxxEnabled` 布尔控制开关），配合 `electron/core/scriptRunner.ts` 实现游戏启动前 / 启动后 / 退出后的命令执行（见 [脚本启动](./script-launch.md)）。
+`preLaunchScript` / `postLaunchScript` / `postExitScript` 三个可选脚本字段（每个 `xxxEnabled` 布尔控制开关），配合 `electron/core/scriptRunner.ts` 实现游戏启动前 / 启动后 / 退出后的命令执行。
 
 ## 其他实体
 
+- **`coverImage`（运行期字段，注意）**：封面路径由**运行期匹配**得出（扫封面目录 + 按游戏名匹配同名文件，规则见 `shared/coverMatch.ts`），只存在于内存。数据库 `games.cover_image` 列**已废弃**（保留不删、不再写入），`rowToGame` 仍读一次旧值兼容旧库。
+- **启动复制带跳过优化**：权威库与运行时副本的**大小 + 修改时间一致时跳过复制**（判定见 `shared/librarySync.ts`；复制时用 `preserveTimestamps` 带上权威库的 mtime，否则判定失效）。实测本机 1.8MB 一次复制 7.7ms、跳过 0.27ms；权威库在 `//NAS` 上时省掉的是一次网络读。**要强制重建**：删掉 `<库根>/library/library.db` 即可。
 - **`GameAction`**：启动动作。类型仅 `"File"` / `"URL"`（原版还有 `"Emulator"`，本项目已移除模拟器）。字段含 `path`、`arguments`、`isPlayAction`、`trackGame` 等。
 - **`GameLink`**：游戏相关链接（如商店 / Wiki）。
 - **`GameVideo`**：游戏视频，`type` 为 `"youtube"` / `"file"` / `"url"`。

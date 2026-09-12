@@ -303,43 +303,48 @@ export default function AppearanceSection() {
 
       <div className="mb-3.5">
         <label className="mb-1.5 block text-xs text-secondary-text">
-          {t("settings_cardFontSize", { defaultValue: "卡片字号" })}: <strong>{settings.cardFontSize ?? 15}px</strong>
+          {t("settings_cardFontSize", { defaultValue: "游戏名字号" })}: <strong>{settings.cardFontSize ?? 15}px</strong>
         </label>
         <Slider
-          min={12}
-          max={22}
+          min={10}
+          max={28}
           step={1}
           value={[settings.cardFontSize ?? 15]}
           onValueChange={(v) => save({ cardFontSize: v[0] ?? 15 })}
           className="w-full"
         />
         <div className="flex justify-between text-[11px] text-dim">
-          <span>12</span>
-          <span>22</span>
+          <span>10</span>
+          <span>28</span>
         </div>
         <div className="mt-1 text-[11px] text-dim">
-          {t("settings_cardFontSizeHint", { defaultValue: "调整卡片上标题和别名的字号" })}
+          {t("settings_cardFontSizeHint", { defaultValue: "卡片上游戏名/别名的字号" })}
         </div>
       </div>
 
       <div className="mb-3.5">
         <label className="mb-1.5 block text-xs text-secondary-text">
-          {t("settings_cardDescFontSize", { defaultValue: "简介字号" })}: <strong>{settings.cardDescFontSize ?? 11}px</strong>
+          {t("settings_cardDescFontSize", { defaultValue: "游戏简介字号" })}:{" "}
+          <strong>
+            {(settings.cardDescFontSize ?? 0) > 0
+              ? `${settings.cardDescFontSize}px`
+              : t("settings_cardDescFollowName", { defaultValue: "跟随游戏名" })}
+          </strong>
         </label>
         <Slider
-          min={9}
-          max={16}
+          min={0}
+          max={28}
           step={1}
-          value={[settings.cardDescFontSize ?? 11]}
-          onValueChange={(v) => save({ cardDescFontSize: v[0] ?? 11 })}
+          value={[settings.cardDescFontSize ?? 0]}
+          onValueChange={(v) => save({ cardDescFontSize: v[0] ?? 0 })}
           className="w-full"
         />
         <div className="flex justify-between text-[11px] text-dim">
-          <span>9</span>
-          <span>16</span>
+          <span>{t("settings_cardDescFollowName", { defaultValue: "跟随游戏名" })}</span>
+          <span>28</span>
         </div>
         <div className="mt-1 text-[11px] text-dim">
-          {t("settings_cardDescFontSizeHint", { defaultValue: "调整卡片上简介的字号" })}
+          {t("settings_cardDescFontSizeHint", { defaultValue: "卡片上简介的字号；0 = 跟随游戏名字号" })}
         </div>
       </div>
 

@@ -1,0 +1,173 @@
+// 启动路径解析规则 —— 纯函数，零 import（不依赖 electron / node:path / fs）。
+//
+// 为什么要单独抽出来：
+//   1) 这套规则过去只写在 electron/core/process.ts 里，只能靠手搓临时脚本验证；
+//      抽成纯函数后可以直接单测（launchPaths.test.ts），改动不再靠人肉回归。
+//   2) 规则本身多且容易踩（{库名} / {InstallDir} / 相对安装目录 / 相对游戏根），
+//      权威说明见 docs/design/launch-and-paths.md，每条规则都有对应单测。
+//
+// 分隔符约定：**统一用 `/`**（输出的规范形式）。
+// 为什么是 `/` 而不是 `\`：
+//   1) 写 config.json 时 `\` 必须转义成 `\\`（"D:\\YunGame"），容易写错、难读；
+//      JSON 里 `/` 不需要转义，网络路径 `//NAS/share/...` 也能直接写。
+//   2) Windows 的 API（Node fs / spawn / Electron / sql.js）都接受 `/`。
+// 代价与对策（两条都要守住）：
+//   - **输入两种都收**：现有数据库里存的是 `\`（`bin\Inversion.exe` 之类），
+//     绝不强制迁移；所有解析入口都用 split(/[\\/]/) 兼容两种写法。
+//   - **交给 cmd.exe 时必须换回 `\`**：cmd 会把以 `/` 开头的 token 当开关，
+//     所以拼命令行（启动 .bat）前用 toCmdPath() 转换。
+// 比较路径（如封面白名单）必须**两侧都过同一个规范化函数**，不能一边 `\` 一边 `/`。
+
+/** 游戏库占位符定义（对应 game_libraries 表的 name/path）。 */
+export interface PathLibrary {
+  name: string;
+  path: string;
+}
+
+const SEP = "/";
+/** Windows 原生分隔符（只给 toCmdPath 用）。 */
+const SEP_WIN = "\\";
+
+/**
+ * 词法规范化：折叠 `.` 与 `..`、把分隔符统一成 `/`、去掉空段。不碰磁盘。
+ *
+ * ⚠️ 必须保留 **UNC 前缀**：`\\server\share` 或 `//server/share` 开头那两个斜杠
+ * 不是"空段"，当成空段丢掉的话 `//NAS/Games` 会变成相对路径 `NAS/Games` ✗
+ * （网吧常把游戏/封面放网络共享，这条会被踩）。统一输出成 `//server/share` 形式。
+ */
+export function normalizePath(p: string): string {
+  const raw = String(p);
+  const unc = /^[\\/]{2}[^\\/]/.test(raw);
+  const parts = raw.split(/[\\/]/);
+  const out: string[] = [];
+  for (const part of parts) {
+    if (part === "." || part === "") continue;
+    if (part === "..") {
+      if (out.length) out.pop();
+      else out.push("..");
+    } else {
+      out.push(part);
+    }
+  }
+  const joined = out.join(SEP);
+  return unc ? SEP + SEP + joined : joined;
+}
+
+/** 拼接两段路径并规范化。 */
+export function joinPaths(base: string, rest: string): string {
+  return normalizePath(`${base}${SEP}${rest}`);
+}
+
+/**
+ * 转成 cmd.exe 习惯的反斜杠形式。**只用于拼命令行**（启动 .bat / 脚本）：
+ * cmd 会把以 `/` 开头的 token 当开关，`//NAS/share/x.bat` 直接传会被当成非法开关。
+ * 文件系统 API 不需要它（Windows 接受 `/`）。
+ */
+export function toCmdPath(p: string): string {
+  return normalizePath(p).replace(/\//g, SEP_WIN);
+}
+
+/** 是否以 `{占位符}` 开头（只认开头的占位符，与老实现一致）。 */
+export function startsWithPlaceholder(p: string): boolean {
+  return p.trimStart().startsWith("{");
+}
+
+/** 是否绝对路径：`D:\...`、`D:/...`，或 UNC `\\server\share` / `//server/share`。 */
+export function isAbsolutePath(p: string): boolean {
+  return /^[a-zA-Z]:[\\/]/.test(p) || /^[\\/]{2}[^\\/]/.test(p);
+}
+
+/**
+ * 解析 `{库名}\rest` 形式的库占位符。
+ * 只有 token 与某个库名相等（大小写不敏感）时才算命中；否则返回 null
+ * —— `{InstallDir}` 这类"不是库名的占位符"必须落到别的分支处理。
+ */
+export function resolveLibraryPlaceholder(
+  p: string,
+  libraries: readonly PathLibrary[],
+): { rest: string; root: string } | null {
+  const trimmed = p.trimStart();
+  if (!trimmed.startsWith("{")) return null;
+  const end = trimmed.indexOf("}");
+  if (end < 0) return null;
+  const token = trimmed.slice(1, end);
+  if (!token) return null;
+  const lib = libraries.find((l) => l.name.toLowerCase() === token.toLowerCase());
+  if (!lib || !lib.path.trim()) return null;
+  return { rest: trimmed.slice(end + 1).replace(/^[\\/]+/, ""), root: lib.path };
+}
+
+/**
+ * 把路径解析成绝对路径（不碰磁盘）：
+ *   - `{库名}\rest` → 库根 + rest
+ *   - 绝对路径        → 原样
+ *   - 相对路径        → 以 gameRoot（config.json 的 defaultGameRootPath）为基准
+ */
+export function resolvePath(p: string, libraries: readonly PathLibrary[], gameRoot: string): string {
+  if (!p) return p;
+  const lib = resolveLibraryPlaceholder(p, libraries);
+  if (lib) return joinPaths(lib.root, lib.rest);
+  // 绝对路径：内容不变，但分隔符也统一成 `/`（输出的规范形式只有一种，
+  // 免得下游比较/展示时出现 `D:\a` 与 `D:/a` 两种写法）。
+  if (isAbsolutePath(p)) return normalizePath(p);
+  return joinPaths(gameRoot, p);
+}
+
+/** 解析基准：命中哪条分支（便于日志/测试断言，不参与运行逻辑）。 */
+export type PathBasis = "library" | "absolute" | "installDir" | "gameRoot";
+
+export interface ResolvedActionPath {
+  /** 最终要执行/校验的绝对路径；出错时为空串。 */
+  path: string;
+  basis: PathBasis;
+  /** 出错原因（仅当无法解析时给出，调用方原样抛给用户）。 */
+  error?: string;
+}
+
+/**
+ * 游玩指令 path 的解析 —— 启动链路的核心规则。
+ *
+ * 三种基准（顺序即优先级）：
+ *   1) 原始 path 是相对路径（既不以 `{` 开头、也不是绝对路径，如 `TPC.exe`、
+ *      `bin\Inversion.exe`）→ 以**安装目录**为基准（Playnite 语义）。
+ *   2) 展开占位符后以 `{库名}` 开头 → 库根（库占位符）。
+ *   3) 其余相对结果 → 以**游戏根**（defaultGameRootPath）为基准。
+ *   绝对路径始终原样。
+ *
+ * 注意 `{InstallDir}` 展开后得到的是"相对游戏根"的路径（install_directory 本身
+ * 就是按游戏根存的），所以它走第 3 条，**不能**再按安装目录拼一次。
+ *
+ * @param expand 占位符展开器（{InstallDir}/{GameName}/…）。做成回调是为了让本文件
+ *               保持纯函数、不依赖游戏模型；主进程传入 expandVariables。
+ */
+export function resolveActionPath(opts: {
+  actionPath: string;
+  /** 已解析成绝对的安装目录；空串 = 该游戏没配 install_directory。 */
+  installDir: string;
+  libraries: readonly PathLibrary[];
+  gameRoot: string;
+  expand: (s: string) => string;
+}): ResolvedActionPath {
+  const raw = (opts.actionPath || "").trim();
+  if (!raw) return { path: "", basis: "absolute", error: "启动指令路径为空" };
+  // 需要 {InstallDir} 但游戏没配安装目录：直接给明确原因，而不是拼出一个
+  // 不存在的怪路径再报"文件不存在"。
+  if (/\{InstallDir\}/i.test(raw) && !opts.installDir) {
+    return {
+      path: "",
+      basis: "absolute",
+      error: `该游戏未配置安装目录（install_directory 为空），无法解析启动路径：${raw}`,
+    };
+  }
+  const expanded = opts.expand(raw);
+  const relativeInData = !startsWithPlaceholder(raw) && !isAbsolutePath(raw);
+  if (relativeInData && opts.installDir) {
+    return { path: joinPaths(opts.installDir, expanded), basis: "installDir" };
+  }
+  const basis: PathBasis = startsWithPlaceholder(expanded)
+    ? "library"
+    : isAbsolutePath(expanded)
+      ? "absolute"
+      : "gameRoot";
+  return { path: resolvePath(expanded, opts.libraries, opts.gameRoot), basis };
+}

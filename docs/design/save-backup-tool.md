@@ -10,7 +10,7 @@
 Playday 目前自己拼 NSIS 脚本、调用 `makensis.exe` 生成自解压 exe：
 
 - `electron/core/nsis.ts` —— 生成 `.nsi`（每个存档路径一个 Section）+ `spawnSync` 调 makensis。
-- `electron/core/saveManager.ts` —— 存档路径通配符匹配、备份文件命名、桌面路径。
+- `electron/core/saveManager.ts` —— 存档路径通配符匹配、备份文件命名、桌面路径。（**已删除**）
 - `electron/ipc/saveManager.ts` —— `backup_game_save` / `backup_preview` / `nsis_available`。
 
 现已有独立工具 **GameSaveHelper.exe**（`D:\AI\nsis`），具备同样能力且更成熟：自带
@@ -47,7 +47,7 @@ NSIS 发行包、恢复包模板与图标、界面进度与结果详情、逐条
 解析规则（复用 `paths.ts` 现有 `configuredDir` 的做法）：
 
 - 绝对路径 → 原样使用；
-- 相对路径 → 以**数据根**（`configRoot()`）为基准补全；
+- 相对路径 → 以**应用 exe 所在目录**（`paths.ts::appRoot()`）为基准补全；
 - 空串 / 未设置 / 文件不存在 → 视为「未配置」。
 
 ### 3.2 类型同步（3 处，缺一编译不过）
@@ -137,7 +137,7 @@ spawn(exePath, [gameName, ...resolvedPaths], {
 | 文件 | 内容 |
 | --- | --- |
 | `electron/core/nsis.ts` | 整个文件 |
-| `electron/core/saveManager.ts` | 整个文件（`collectSavePath`/`globMatch`/`splitDirPattern`/`backupFileName`/`desktopPath`，仅服务 `backup_preview` 与旧编译流程） |
+| `electron/core/saveManager.ts`（**已删除**） | 整个文件（`collectSavePath`/`globMatch`/`splitDirPattern`/`backupFileName`/`desktopPath`，仅服务 `backup_preview` 与旧编译流程） |
 | `electron/core/db.ts` | `updateCoverImages` 函数 |
 | `src/api/client.ts` | `getNsisAvailable` |
 

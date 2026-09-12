@@ -12,14 +12,28 @@ import http from "http";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { resolveServerPaths } from "./paths.mjs";
+import {
+  COVER_IMAGE_EXTS,
+  coverCandidateNames,
+  extOf,
+  isBetterCover,
+  normalizeCoverName,
+} from "./coverMatch.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const DATA_DIR = process.env.YUNGAME_DATA_DIR || path.join(ROOT, "release", "data");
 const DIST_DIR = path.join(ROOT, "dist"); // 前端构建产物（vite build 输出）
-const DB_PATH = path.join(DATA_DIR, "library", "library.db");
-const COVER_DIR = path.join(DATA_DIR, "CoverImages");
-const DETAILS_DIR = path.join(DATA_DIR, "Game_Details");
+// 所有数据目录都从 config.json 解析（settings.coverImagesDir / gameDetailsDir /
+// announcementsDir / libraryDir），与桌面端同一套语义 —— 见 server/paths.mjs。
+// 以前这里把 CoverImages / Game_Details / announcements / library 全写死，
+// 桌面端配了自定义目录网站端读不到（"配了没用"）。
+// 注意：目录在启动时确定，改配置后需重启网站端。
+const paths = resolveServerPaths({ dataRoot: DATA_DIR, appRoot: ROOT });
+const DB_PATH = paths.dbPath;
+const COVER_DIR = paths.coverDir;
+const DETAILS_DIR = paths.detailsDir;
 const PORT = Number(process.env.PORT || 8080);
 
 // ---- 打开 sql.js（读同一份 library.db）----
@@ -35,6 +49,62 @@ async function openDb() {
   const buf = fs.readFileSync(DB_PATH);
   db = new SQL.Database(new Uint8Array(buf));
   return db;
+}
+
+// ---- 封面匹配（`games.cover_image` 列已废弃，不再读它）----
+// 封面来源 = 运行期扫封面目录 + 按游戏名匹配同名文件，与桌面端 electron/core/covers.ts
+// 同一套规则（规则本体在 shared/coverMatch.ts，本文件用的是同语义镜像 server/coverMatch.mjs）。
+// 以前这里直接读 cover_image 列 —— 那个列已不再写入（导出时置空），于是新导入的游戏
+// 在网站上全是空封面。
+let coverIndexCache = { dir: "", mtime: 0, byName: /** @type {Map<string,string>|null} */ (null) };
+
+/** 扫封面目录建"规范化名 → 文件绝对路径"索引；目录未变则复用。 */
+function coverIndex() {
+  const dir = COVER_DIR;
+  let mtime = 0;
+  try {
+    mtime = Math.floor(fs.statSync(dir).mtimeMs / 1000);
+  } catch {
+    mtime = 0;
+  }
+  if (coverIndexCache.byName && coverIndexCache.dir === dir && coverIndexCache.mtime === mtime) {
+    return coverIndexCache.byName;
+  }
+  const byName = new Map();
+  try {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (!e.isFile()) continue;
+      if (!COVER_IMAGE_EXTS.includes(extOf(e.name))) continue;
+      const key = normalizeCoverName(path.parse(e.name).name);
+      if (!key) continue;
+      const full = path.join(dir, e.name);
+      const cur = byName.get(key);
+      // 网站端不做 APNG 嗅探（要读文件头，收益小）：同格式时保持先到者。
+      if (
+        !cur ||
+        isBetterCover({ file: e.name, isApng: false }, { file: path.basename(cur), isApng: false })
+      ) {
+        byName.set(key, full);
+      }
+    }
+  } catch {
+    // 目录不存在 → 空索引（该游戏就没有封面，正常结果）
+  }
+  coverIndexCache = { dir, mtime, byName };
+  return byName;
+}
+
+/** 给一个 game 对象补 coverImage（纯运行期匹配，不读已废弃的库列）。 */
+function withCover(game) {
+  const byName = coverIndex();
+  if (!byName.size) return game;
+  for (const name of coverCandidateNames(game)) {
+    const key = normalizeCoverName(name);
+    if (!key) continue;
+    const p = byName.get(key);
+    if (p) return { ...game, coverImage: p };
+  }
+  return { ...game, coverImage: undefined };
 }
 
 // ---- 封面读取（read_image / read_images_batch 共用）----
@@ -89,7 +159,8 @@ function rowToGame(r) {
     otherTasks: arr(r.other_tasks),
     lastPlayed: r.last_played ? str(r.last_played) : undefined,
     playtime: num(r.playtime),
-    coverImage: r.cover_image ? str(r.cover_image) : undefined,
+    // 注意：这里**不读** r.cover_image（该列已废弃、不再写入）。封面由 withCover()
+    // 在运行期按文件名匹配补上，见上面的 coverIndex()。
     backgroundColor: r.background_color ? str(r.background_color) : undefined,
     description: r.description ? str(r.description) : undefined,
     developer: r.developer ? str(r.developer) : undefined,
@@ -117,7 +188,9 @@ async function handleApi(cmd, body) {
       const rows = d.exec("SELECT * FROM games")[0];
       if (!rows) return [];
       const cols = rows.columns;
-      return rows.values.map((v) => rowToGame(Object.fromEntries(cols.map((c, i) => [c, v[i]]))));
+      return rows.values
+        .map((v) => rowToGame(Object.fromEntries(cols.map((c, i) => [c, v[i]]))))
+        .map(withCover);
     }
     case "get_game": {
       const id = body?.id ?? "";
@@ -127,16 +200,16 @@ async function handleApi(cmd, body) {
       // 把每行数组转成 { 列名: 值 } 的对象，交给 rowToGame 转为前端 Game 对象。
       // 注意：Object.fromEntries 需要 [key, value] 二元数组，这里补上列名 c 作为 key。
       const row = Object.fromEntries(cols.map((c, i) => [c, r.values[0][i]]));
-      return rowToGame(row);
+      return withCover(rowToGame(row));
     }
     case "get_settings": {
-      const cfg = fs.existsSync(path.join(DATA_DIR, "config.json"))
-        ? JSON.parse(fs.readFileSync(path.join(DATA_DIR, "config.json"), "utf-8"))
-        : {};
-      return cfg.settings || {};
+      // 每次请求重新读：桌面端的 config.json 在 <主程序目录> 下，不在数据根里。
+      // 这里以前读 <数据根>/config.json —— 等于读了个不存在/过期的文件，
+      // 站点上的语言、主题、路径配置全都不是真配置。
+      return resolveServerPaths({ dataRoot: DATA_DIR, appRoot: ROOT }).settings;
     }
     case "get_announcement": {
-      const f = path.join(DATA_DIR, "announcements", "announcement.html");
+      const f = paths.announcementsFile;
       return fs.existsSync(f) ? fs.readFileSync(f, "utf-8") : "";
     }
     case "read_image": {
@@ -254,6 +327,11 @@ server.listen(PORT, () => {
   console.log("  Playday 网站版已启动");
   console.log(`  访问:  http://localhost:${PORT}`);
   console.log(`  数据:  ${DATA_DIR}`);
+  console.log(`  配置:  ${paths.configFile}${fs.existsSync(paths.configFile) ? "" : "  (不存在，用默认)"}`);
+  console.log(`  库:    ${paths.dbPath}`);
+  console.log(`  封面:  ${paths.coverDir}`);
+  console.log(`  详情:  ${paths.detailsDir}`);
+  console.log(`  公告:  ${paths.announcementsFile}`);
   console.log("  (网站版不支持启动游戏，其余功能可用)");
   console.log("==============================================");
 });

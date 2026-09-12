@@ -5,16 +5,10 @@ import * as path from "path";
 import { configRoot } from "./paths";
 import type { CrashReport } from "./errorCollector";
 
-/** 错误上报配置（来自 AppSettings.errorReport） */
-export interface ErrorReportConfig {
-  enabled: boolean;
-  smtpHost: string;
-  smtpPort: number;
-  smtpUser: string;
-  smtpPass: string;
-  toEmail: string;
-  maxPerDay: number;
-}
+// ErrorReportConfig 的单一事实来源是 shared/models.ts（原来是本文件手抄一份，
+// 与 shared 的那份重复；加字段时极易只改一边）。
+export type { ErrorReportConfig } from "../../shared/models";
+import type { ErrorReportConfig } from "../../shared/models";
 
 /** 限流状态文件：记录当天已发送封数 */
 const RATE_FILE = () => path.join(configRoot(), "logs", "sent-crash.json");

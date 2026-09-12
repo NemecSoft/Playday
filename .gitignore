@@ -74,3 +74,10 @@ release/data/Game_Details/
 # library 里只推 database，忽略备份
 release/data/library/*
 !release/data/library/library.db
+
+# ============================================================
+# data/（仓库根）：**故意入库**，别加忽略规则
+# 这里放人工维护、丢失不可恢复的内容数据 —— 目前是 game-content.json
+# （每个游戏的简介/地区/标签，几千条手工内容）。它原本在 release/data/ 下，
+# 而上面那些规则只放行 library、announcements、config.json，等于没进版本管理。
+# ============================================================

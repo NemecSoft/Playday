@@ -8,7 +8,6 @@
 | 前端 | React 18 + TypeScript 5 + Vite 5 | Vite 构建产物输出到 `dist/`，由 Electron 加载 |
 | 状态管理 | Zustand 5（UI/本地状态）+ TanStack Query 5（服务端缓存） | 分工明确 |
 | 路由 | react-router-dom v6（HashRouter） | 客户端/管理端共用同一套路由 |
-| 3D 视图 | three.js + @react-three/fiber + drei + cannon-es | 3D 棋盘视图（BoardScene）与恐怖谷地图（HorrorValleyView） |
 | 样式 | 纯手写 CSS（`global.css` + `tokens.css`，CSS 变量多主题） + Tailwind | 主题/风格由 themeLibrary/styleLibrary 驱动 |
 | 存储 | **sql.js（SQLite WebAssembly）** | 游戏库 / 用户 / 游戏库（根目录）/ 平台 |
 | 设置 | `config.json`（JSON 文件，不进数据库） | 语言 / 主题 / 风格 / 登录 / 布局等 |
@@ -80,7 +79,7 @@
 
 ### 网站端（`server/`）
 
-`server/server.mjs`：Node 内置 http（零依赖），复用同一份 `library.db` / `config.json` / `CoverImages` / `Game_Details`，提供 `/api/<cmd>`、`/CoverImages/*`、`/Game_Details/*`、静态 `dist/`。**网站版不支持启动游戏**，仅只读浏览/登录/封面/详情。
+`server/server.mjs`：Node 内置 http（零依赖），复用同一份 `library.db` / `config.json` / `CoverImages` / `Game_Details`，提供 `/api/<cmd>`、`/CoverImages/*`、`/Game_Details/*`、静态 `dist/`。数据目录与桌面端**走同一套配置**（`config.json` 的 `coverImagesDir` / `gameDetailsDir` / `announcementsDir` / `libraryDir`，见 `server/paths.mjs`）。**网站版不支持启动游戏**，仅只读浏览/登录/封面/详情。
 
 ## 数据流
 
@@ -123,4 +122,4 @@ sql.js (library/library.db) / config.json / 文件系统 / 进程启动
 7. **详情页惰性加载**：游戏详情页本地 HTTP 服务器不在启动时预启动，改为第一次打开详情页时经 `get_game_server_url` 惰性启动（见 [游戏静态详情页](./game-details.md)）。
 8. **主题与配色解耦**：主题（视觉风格）只保留苹果 / 浮雕 / 机械感 3 个，且**只做形状与质感、不含颜色**；配色（调色板）全部保留、独立于主题。主题与配色互不冲突（见 [主题与配色规范](./themes-styles.md)）。
 9. **多人氛围营造**：通过 provider 抽象层实现"在线用户 / 弹幕 / 活动流"——默认用随机模拟（mockProvider），预留真实后端（realProvider）可无缝切换（见 [多人氛围营造](./community-atmosphere.md)）。
-10. **管理端本地网站化**：管理端不再用 Electron GUI 窗口，改为"本地网站"形式——Node http + sql.js 读写权威库，浏览器访问管理页面（复用 admin/src 前端），需 admin 令牌认证（见 [管理端网站化](./admin-web.md)）。
+10. **管理端本地网站化**：管理端不再用 Electron GUI 窗口，改为"本地网站"形式——Node http + sql.js 读写权威库，浏览器访问管理页面（复用 admin/src 前端），需 admin 令牌认证（见 [双端架构](./dual-end.md)）。

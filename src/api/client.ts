@@ -6,7 +6,9 @@ import { call } from "./ipc";
 import type {
   AppSettings,
   CurrentUser,
+  DeepPartial,
   Game,
+  LibraryPluginInfo,
   LibraryStats,
   Platform,
   CrashReport,
@@ -75,14 +77,15 @@ export const api = {
   getSettings: () => call<AppSettings>("get_settings"),
   // 只提交"改动的字段"（patch）：主进程读盘后再合并，避免覆盖用户手改的 config.json。
   // 返回值是合并后的完整设置。
-  saveSettings: (settings: Partial<AppSettings>) =>
+  saveSettings: (settings: DeepPartial<AppSettings>) =>
     call<AppSettings>("save_settings", settings as Record<string, unknown>),
 
   // —— 平台 / 插件（Playday 暂未实现，返回空；管理端单独有命令） ——
   getPlatforms: () => call<Platform[]>("get_platforms").catch(() => [] as Platform[]),
   getBuiltinPlatforms: () => Promise.resolve([] as Platform[]),
   savePlatform: (platform: Platform) => Promise.resolve(platform),
-  discoverPlugins: () => call<unknown[]>("get_library_plugins").catch(() => [] as unknown[]),
+  discoverPlugins: () =>
+    call<LibraryPluginInfo[]>("get_library_plugins").catch(() => [] as LibraryPluginInfo[]),
   getPluginGames: () => Promise.resolve([] as Game[]),
   saveLibraryPlugin: (p: unknown) => Promise.resolve(p),
   deleteLibraryPlugin: (_id: string) => Promise.resolve(),

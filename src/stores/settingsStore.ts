@@ -2,9 +2,9 @@
 
 import { create } from "zustand";
 import { api } from "../api/client";
-import type { AppSettings, Platform, CardTextStyle } from "../types/models";
+import type { AppSettings, DeepPartial, Platform, CardTextStyle } from "../types/models";
 import { DEFAULT_CARD_TEXT } from "../types/models";
-import { clampCardDescFontSize } from "../utils/cardText";
+import { effectiveCardDescFontSize } from "../utils/cardText";
 import { DEFAULT_SETTINGS } from "../../shared/models";
 // 主题改由顶栏 ThemeTopPicker 预设切换（themeApply.ts 注入 :root），
 // 不再走设计器（applyDesigner 会用旧 designer.paletteId 覆盖刚选的配色，
@@ -61,10 +61,11 @@ export function applyCardTextStyles(s: Partial<AppSettings>) {
   root.setProperty("--card-title-weight", String(weight));
   // 别名字号按标题 80% 缩放（11px 对应 14px 标题），保持视觉比例。
   root.setProperty("--card-alt-size", `${Math.max(9, Math.round(size * 0.8))}px`);
-  // 简介字号：单独设置 9~16px，CSS .grid-desc 用 var(--card-desc-font-size) 读取。
+  // 简介字号：CSS .grid-desc 用 var(--card-desc-font-size) 读取。
+  // 0 = 跟随游戏名字号（默认，"和游戏名一样大"）；显式值范围 9~28。
   // GridView 也会订阅这个值参与精确行高公式（3 行截断高度依赖字号）。
-  // clamp 逻辑统一在 utils/cardText.ts（避免两处重复写 9~16 范围）。
-  const descSize = clampCardDescFontSize(s.cardDescFontSize);
+  // clamp 与"跟随"规则统一在 utils/cardText.ts（避免两处重复）。
+  const descSize = effectiveCardDescFontSize(s.cardDescFontSize, size);
   root.setProperty("--card-desc-font-size", `${descSize}px`);
   // 用户自定义颜色/描边/发光/阴影/背景。CSS 用 var(--card-...) 读取。
   root.setProperty("--card-text-color", ct.color || "#fff8e7");
@@ -101,9 +102,11 @@ interface SettingsState {
   loaded: boolean;
 
   load: () => Promise<void>;
-  save: (s: Partial<AppSettings>) => Promise<void>;
+  // 补丁语义：允许只改嵌套对象里的字段（如 save({ cardText: { color } })）。
+  // 主进程 writeSettings 会做一层深合并，所以这里传部分嵌套对象是安全的。
+  save: (s: DeepPartial<AppSettings>) => Promise<void>;
   /** 只改内存不落盘：给 Ctrl+滚轮这类高频操作用（滚完由调用方 debounce 后再 save）。 */
-  apply: (s: Partial<AppSettings>) => void;
+  apply: (s: DeepPartial<AppSettings>) => void;
   loadPlatforms: () => Promise<void>;
 }
 

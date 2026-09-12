@@ -8,12 +8,17 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import { normalizePath } from "../../shared/launchPaths";
+import {
+  COVER_IMAGE_EXTS,
+  coverCandidateNames,
+  extOf,
+  isBetterCover,
+  normalizeCoverName,
+} from "../../shared/coverMatch";
 import { coverImagesDir } from "./paths";
 import { getGames } from "./db";
 import type { Game } from "./models";
-
-// 我们当作封面的图片扩展名。
-const IMAGE_EXTS = ["png", "jpg", "jpeg", "webp", "gif", "bmp"];
 
 /**
  * 路径是否位于"当前配置的封面目录"内（Windows 大小写不敏感 + 目录边界检查）。
@@ -31,28 +36,24 @@ export function isInCoverDir(p: string): boolean {
   } catch {
     return false;
   }
+  // ⚠️ 两侧都必须过**同一个**规范化函数：realpathSync 返回系统原生分隔符（`\`），
+  // 而 coverImagesDir() 现在统一是 `/` —— 不统一就会出现"图明明在目录里却判不在"，
+  // 白名单全否 → 界面一片占位符（这个坑踩过一次，见上面注释）。
   const norm = (s: string) => {
-    const r = path.resolve(s);
+    const r = normalizePath(s);
     return process.platform === "win32" ? r.toLowerCase() : r;
   };
   const a = norm(canonical);
   const b = norm(coverImagesDir());
-  return a === b || a.startsWith(b.endsWith(path.sep) ? b : b + path.sep);
+  return a === b || a.startsWith(b.endsWith("/") ? b : b + "/");
 }
 
-// 同名的图，动画格式优先于静态（APNG > webp > gif > jpg > png）。
-function formatPriority(ext: string, isApng: boolean): number {
-  if (ext === "png" && isApng) return 100;
-  if (ext === "webp") return 80;
-  if (ext === "gif") return 60;
-  if (ext === "jpg" || ext === "jpeg") return 40;
-  if (ext === "png") return 20;
-  if (ext === "bmp") return 10;
-  return 0;
-}
-
+// 格式优先级（动图 png > webp > gif > jpg > png > bmp）与名称规范化都在
+// shared/coverMatch.ts —— 网站端 server/server.mjs 也用同一套规则匹配封面，
+// 规则必须唯一，否则会出现"桌面能看到封面、网站看不到"。
+//
 // 判断一个 .png 是不是真·动图（APNG）：看文件头 IHDR 后面紧跟的那块是不是 acTL。
-// 只读前几十字节，很轻量。
+// 只读前几十字节，很轻量。（这段要读盘，所以留在主进程侧，由它把 isApng 结果喂给共享规则。）
 function isApng(p: string): boolean {
   try {
     const fd = fs.openSync(p, "r");
@@ -68,25 +69,6 @@ function isApng(p: string): boolean {
   } catch {
     return false;
   }
-}
-
-// 名称规范化：转小写、全角转半角、去掉空格和标点括号，
-// 这样"星际争霸 (2)"、"星际争霸-2"、"星际争霸"都能匹配到同一个键。
-function normalizeName(s: string): string {
-  const stripped = new Set(
-    " \t\r\n　、，。：；！？·•（）【】《》「」『』〈〉()[]{}<>-_.,｜|&+'\"/`＊*＃#".split("")
-  );
-  let out = "";
-  for (const ch of s) {
-    let c = ch;
-    // 全角数字/字母转半角
-    if (c >= "０" && c <= "９") c = String.fromCharCode(c.charCodeAt(0) - "０".charCodeAt(0) + "0".charCodeAt(0));
-    else if (c >= "Ａ" && c <= "Ｚ") c = String.fromCharCode(c.charCodeAt(0) - "Ａ".charCodeAt(0) + "A".charCodeAt(0));
-    else if (c >= "ａ" && c <= "ｚ") c = String.fromCharCode(c.charCodeAt(0) - "ａ".charCodeAt(0) + "a".charCodeAt(0));
-    if (stripped.has(c)) continue;
-    out += c.toLocaleLowerCase();
-  }
-  return out;
 }
 
 // 简易目录修改时间，用来判断缓存是否还有效。
@@ -119,21 +101,21 @@ function scanCoverIndex(): CoverIndex {
       if (!entry.isFile()) continue;
       const full = path.join(dir, entry.name);
       const ext = path.extname(entry.name).slice(1).toLowerCase();
-      if (!IMAGE_EXTS.includes(ext)) continue;
+      if (!COVER_IMAGE_EXTS.includes(ext)) continue;
       const stem = path.basename(entry.name, path.extname(entry.name));
-      const key = normalizeName(stem);
+      const key = normalizeCoverName(stem);
       if (!key) continue;
       fileCount++;
       const isAnimPng = ext === "png" && isApng(full);
-      const prio = formatPriority(ext, isAnimPng);
       const existing = byName.get(key);
       if (!existing) {
         byName.set(key, full);
       } else {
-        const eExt = path.extname(existing).slice(1).toLowerCase();
-        const eAnim = eExt === "png" && isApng(existing);
-        const ePrio = formatPriority(eExt, eAnim);
-        if (prio > ePrio) byName.set(key, full);
+        // 同名多格式：取优先级最高者（规则在 shared/coverMatch.ts，与网站端共用）。
+        const eAnim = extOf(existing) === "png" && isApng(existing);
+        if (isBetterCover({ file: full, isApng: isAnimPng }, { file: existing, isApng: eAnim })) {
+          byName.set(key, full);
+        }
       }
     }
   }
@@ -143,32 +125,11 @@ function scanCoverIndex(): CoverIndex {
 }
 
 // 给单个游戏找一个匹配的封面路径（按候选名优先级依次试）。
+// 候选名的顺序规则（zh-CN → zh-TW → 其它多语言名 → 别名 → 主名）在
+// shared/coverMatch.ts，与网站端共用同一份。
 function matchCover(index: CoverIndex, game: Game): string | undefined {
-  const seen = new Set<string>();
-  const candidates: string[] = [];
-  // 1) 中文名（zh-CN 优先，再 zh-TW）
-  for (const lang of ["zh-CN", "zh-TW"]) {
-    const ln = game.localizedNames.find((n) => n.language === lang);
-    if (ln) {
-      const t = ln.name.trim();
-      if (t && seen.add(t)) candidates.push(t);
-    }
-  }
-  // 2) 其他多语言名
-  for (const ln of game.localizedNames) {
-    const t = ln.name.trim();
-    if (t && seen.add(t)) candidates.push(t);
-  }
-  // 3) 别名
-  for (const a of game.alternateNames || []) {
-    const t = a.trim();
-    if (t && seen.add(t)) candidates.push(t);
-  }
-  // 4) 原名
-  if (seen.add(game.name.trim())) candidates.push(game.name.trim());
-
-  for (const name of candidates) {
-    const key = normalizeName(name);
+  for (const name of coverCandidateNames(game)) {
+    const key = normalizeCoverName(name);
     if (!key) continue;
     const p = index.byName.get(key);
     if (p) return p;

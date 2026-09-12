@@ -3,41 +3,11 @@
 import { describe, it, expect } from "vitest";
 import { displayName } from "../display";
 import type { Game } from "../../types/models";
+import { makeGame as makeBaseGame } from "../../test/factories";
 
-function makeGame(over: Partial<Game>): Game {
-  return {
-    id: "g",
-    name: "English Name",
-    installed: false,
-    otherTasks: [],
-    playCount: 0,
-    playtime: 0,
-    added: "",
-    modified: "",
-    category: [],
-    genre: [],
-    developer: [],
-    publisher: [],
-    tags: [],
-    series: [],
-    ageRating: [],
-    region: [],
-    source: [],
-    features: [],
-    hidden: false,
-    favorite: false,
-    platform: [],
-    userScoreSet: false,
-    manualGame: false,
-    actions: [],
-    links: [],
-    featuresEnabled: false,
-    gameLevel: 1,
-    preLaunchEnabled: false,
-    postLaunchEnabled: false,
-    postExitEnabled: false,
-    ...over,
-  };
+// 本文件的默认主名是英文名（用于验证"无本地化名时回退到英文主名"）。
+function makeGame(over: Partial<Game> = {}): Game {
+  return makeBaseGame({ name: "English Name", ...over });
 }
 
 describe("displayName", () => {

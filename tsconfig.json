@@ -16,5 +16,8 @@
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  // shared/ 也要纳入：里面除了类型还有纯逻辑（launchPaths 等）与其单测，
+  // 只靠 src 传递引入的话，未被 src 引用到的文件（如 shared 自己的 .test.ts）
+  // 不会被类型检查，测试就会悄悄漂移。
+  "include": ["src", "shared"]
 }

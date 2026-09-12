@@ -1,5 +1,12 @@
 # 存档管理（备份-恢复）设计文档
 
+> ⚠️ **实现现状（2026-09 更新）**：存档备份已改为**调用独立工具 GameSaveHelper.exe**，
+> 不再由 App 自己拼 NSIS 脚本并调用 makensis 编译（`electron/core/nsis.ts` 与
+> `electron/core/saveManager.ts` 均已删除）。当前实现见
+> [存档备份工具接入](./save-backup-tool.md) 与 `electron/core/gameSaveHelper.ts`。
+> **本文以下内容是原设计稿**，保留备查，不要当现状读。
+
+
 > 状态：设计定稿 v1.0（2026-08-15 决策确认）
 > 本文档描述 Playday 客户端"游戏存档备份-恢复"功能的设计，包含数据模型、备份/恢复流程、
 > NSIS 打包方案、多存储接口、用户登录联动与 UI 设计。
@@ -280,10 +287,8 @@ SectionEnd
 
 | 文件 | 职责 |
 | --- | --- |
-| `electron/core/saveManager.ts` | 核心：解析路径、打包、恢复、清单读写 |
-| `electron/core/nsis.ts` | 生成 `.nsi` 脚本 + 调用 makensis |
-| `electron/core/storage.ts` | StorageProvider 抽象 + 内置实现 |
-| `electron/ipc/saveManager.ts` | IPC 命令（backup_save/restore/list 等） |
+| `electron/ipc/saveManager.ts` | IPC 命令（backup_game_save 等） |
+| `electron/core/gameSaveHelper.ts` | 调用外部 GameSaveHelper.exe（取代原自编译 NSIS 链路） |
 | `src/components/save/*` | 前端 UI（备份/恢复对话框） |
 | 数据模型 | `Game.savePaths` 字段 |
 

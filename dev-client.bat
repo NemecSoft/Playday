@@ -40,7 +40,26 @@ REM ---- 3. 启动 Vite 开发服务器（后台）----
 echo [dev] 启动 Vite 开发服务器...
 start "Playday Vite" /min cmd /c "cd /d %~dp0 && node node_modules\vite\bin\vite.js --port 5173 --strictPort"
 
-REM ---- 4. 等待 Vite 就绪（最多 30 秒）----
+REM ---- 4. 编译主进程（必须在 Electron 之前完成）----
+REM 为什么要有这一步：本脚本最后只是 `call electron .`，跑的是 dist-electron/ 里的
+REM **编译产物**。以前改了 electron/** 或 shared/** 不重新编译，dev 里跑的还是旧代码，
+REM 而且毫无提示（踩过：改了路径解析/封面匹配，重启后以为生效了、其实没有）。
+REM 放在 Vite 启动之后：编译与 Vite 启动并行，总等待 ≈ max(编译时间, Vite 就绪时间)。
+echo [dev] 编译主进程 (tsc -p tsconfig.main.json)...
+call node_modules\.bin\tsc.cmd -p tsconfig.main.json > dev-client-build.log 2>&1
+if errorlevel 1 (
+    echo.
+    echo [dev] ***********************************************************
+    echo [dev]  主进程编译失败，已中止启动（避免拿旧代码跑出假象）
+    echo [dev]  错误详情：dev-client-build.log
+    echo [dev] ***********************************************************
+    type dev-client-build.log
+    pause
+    exit /b 1
+)
+echo [dev] 主进程编译完成。
+
+REM ---- 5. 等待 Vite 就绪（最多 30 秒）----
 echo [dev] 等待 Vite 就绪...
 set /a tries=0
 :waitvite
@@ -57,7 +76,7 @@ if errorlevel 1 (
 echo [dev] Vite 已就绪。
 
 :runelectron
-REM ---- 5. 启动 Electron（加载 5173）----
+REM ---- 6. 启动 Electron（加载 5173）----
 echo [dev] 启动 Electron...
 call node_modules\.bin\electron.cmd . 2>dev-client-err.log
 

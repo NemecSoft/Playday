@@ -5,11 +5,11 @@ import * as fs from "fs";
 import { readSettings, writeSettings } from "../core/settings";
 import { getUserByIp } from "../core/db";
 import { publicIpv4Address, localIpv4Addresses, verifyPersonalLogin, canPlay, loadEnterpriseRecords } from "../core/auth";
-import type { CurrentUser } from "../core/models";
+import type { SessionUser } from "../core/models";
 import { registerCommand } from "./registry";
 
 // 把当前用户拼成给前端的载荷。
-function toPayload(u: CurrentUser, enterprise: boolean, configPath: string, configExists: boolean) {
+function toPayload(u: SessionUser, enterprise: boolean, configPath: string, configExists: boolean) {
   return {
     kind: u.kind,
     name: u.name,
@@ -55,7 +55,7 @@ export function registerAuthIpc(ipc: typeof ipcMain) {
 
     if (enterpriseUser) {
       // 企业用户优先，并持久化到 settings。
-      const cu: CurrentUser = {
+      const cu: SessionUser = {
         kind: "enterprise",
         name: enterpriseUser.name,
         account: enterpriseUser.account,
@@ -69,7 +69,7 @@ export function registerAuthIpc(ipc: typeof ipcMain) {
       return toPayload(cu, true, cfgPath, cfgExists);
     } else if (settings.loggedIn) {
       // 已登录的个人会话。
-      const cu: CurrentUser = {
+      const cu: SessionUser = {
         kind: "personal",
         name: settings.currentUserName,
         account: settings.username || "",
@@ -78,7 +78,7 @@ export function registerAuthIpc(ipc: typeof ipcMain) {
       return toPayload(cu, false, cfgPath, cfgExists);
     } else {
       // 默认游客，全权限（等级3）。
-      const cu: CurrentUser = { kind: "guest", name: "Guest", account: "", level: 3 };
+      const cu: SessionUser = { kind: "guest", name: "Guest", account: "", level: 3 };
       settings = writeSettings({
         currentUserKind: "guest",
         currentUserName: cu.name,
@@ -97,7 +97,7 @@ export function registerAuthIpc(ipc: typeof ipcMain) {
     const publicIp = await publicIpv4Address();
     const u = publicIp ? getUserByIp(publicIp) : null;
     if (u) {
-      const cu: CurrentUser = { kind: "enterprise", name: u.name, account: u.account, level: u.level };
+      const cu: SessionUser = { kind: "enterprise", name: u.name, account: u.account, level: u.level };
       writeSettings({ currentUserKind: "enterprise", currentUserName: cu.name, currentUserLevel: cu.level });
       return toPayload(cu, true, cfgPath, cfgExists);
     }

@@ -61,7 +61,8 @@ CREATE TABLE games (
 | 元数据 | `category, genre, developer, publisher, tags, series, age_rating, region, source, features, platform` | **JSON 数组**（TEXT） |
 | 评分 | `community_score`, `critic_score`, `user_score`, `user_score_set` | INTEGER |
 | 标记 | `hidden`, `favorite`, `manual_game`, `features_enabled` | INTEGER (0/1) |
-| 媒体 | `background_image`, `cover_image`, `icon`, `guide`, `screenshots`, `videos`, `notes`, `description` | TEXT / JSON |
+| 媒体 | `background_image`, `icon`, `guide`, `screenshots`, `videos`, `notes`, `description` | TEXT / JSON |
+| 媒体（**已废弃**） | `cover_image` | 列**保留不删、不再写入**。封面改为**运行期**扫封面目录按游戏名匹配同名文件（`shared/coverMatch.ts`，桌面端 + 网站端共用），只存在于内存。旧库里已有的值仍会被读到（`rowToGame`），但不在封面目录内时会被重新匹配覆盖。 |
 | 启动动作 | `links`, `actions`, `other_tasks` | **JSON 数组**（TEXT） |
 | 权限 | `game_level` | INTEGER (1|2|3) |
 | 脚本 | `pre/post_launch_script` + `*_enabled` 对 | TEXT / INTEGER |
@@ -134,8 +135,10 @@ games.actions[].path {Gamelibrary1} ──解析──> game_libraries.path
 
 | 库 | 路径 | 角色 |
 | --- | --- | --- |
-| 源库 | `paths.ts` 的 `sourceDatabasePath()` = `<数据根>/Admin/library.db` | 数据来源：手工维护的 games.json + 脚本（import-games.bat）写入 |
-| 运行时副本 | `paths.ts` 的 `runtimeDatabasePath()` = `<数据根>/library/library.db` | 客户端每次启动 `openDb()` 把 Admin 库 `copyFileSync` 复制过来再用 |
+| 源库 | `paths.ts` 的 `sourceDatabasePath()` = `<库根>/Admin/library.db` | 数据来源：手工维护的 games.json + 脚本（import-games.bat）写入 |
+| 运行时副本 | `paths.ts` 的 `runtimeDatabasePath()` = `<库根>/library/library.db` | 客户端每次启动 `openDb()` 把 Admin 库 `copyFileSync` 复制过来再用 |
+
+（`<库根>` 默认 = 数据根，可用 `config.json` → `settings.libraryDir` 改；见 [目录结构](./directory-structure.md) 的「路径配置」。）
 
 **规则**：
 1. **写库 / 同步一律针对 `Admin/library.db`**（权威）。

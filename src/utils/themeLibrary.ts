@@ -1542,6 +1542,48 @@ export const themeLibrary: ThemeEntry[] = [
   },
   {
     // 来源：tweakcn 社区预设 "Mono"（自动抓取转换，深色优先）。
+    // 我的世界（Minecraft）：全部取自游戏内 GUI 的原生色板 ——
+    //   背包/箱子面板灰 #313131、GUI 背后的深灰 #1E1E1E、内描边 #555555 + 外描边纯黑，
+    //   强调色用草方块绿 #5EBB41，点缀钻石青 #4AEDD9 / 金锭黄 #FCEE4B，危险用红石红 #FF5555。
+    // 方块硬边请搭配风格库里的「像素风」(s43) 使用（0~2px 圆角 + 等宽字体 + pixel 特效）。
+    id: "p-minecraft",
+    name: "Minecraft",
+    zh: "我的世界",
+    desc: "游戏内 GUI 原生色板：石质深灰面板 + 纯黑描边 + 草方块绿强调，钻石青/金锭黄点缀；再配「像素风」风格就是方块世界。",
+    category: "游戏主题",
+    palette: {
+      background: "#1E1E1E",
+      foreground: "#EDEDED",
+      card: "#313131",
+      cardForeground: "#EDEDED",
+      primary: "#5EBB41",
+      primaryForeground: "#10210A",
+      secondary: "#3F3F3F",
+      secondaryForeground: "#EDEDED",
+      muted: "#2A2A2A",
+      mutedForeground: "#B4B4B4",
+      border: "#555555",
+      ring: "#4AEDD9",
+      bgBase: "#1E1E1E",
+      bgTop: "#2B2B2B",
+      bgSidebar: "#262626",
+      bgPanel: "#313131",
+      bgItemHover: "#3F3F3F",
+      bgItemActive: "#4A4A4A",
+      bgInput: "#2A2A2A",
+      borderStrong: "#000000",
+      textPrimary: "#EDEDED",
+      textSecondary: "#B4B4B4",
+      textDim: "#8A8A8A",
+      accent: "#4AEDD9",
+      accentHover: "#7FF2E4",
+      accentSoft: "rgba(74, 237, 217, 0.18)",
+      success: "#5EBB41",
+      warning: "#FCEE4B",
+      danger: "#FF5555",
+    },
+  },
+  {
     id: "p-mono",
     name: "Mono",
     zh: "单色",
