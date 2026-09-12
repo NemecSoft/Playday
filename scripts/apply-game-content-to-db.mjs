@@ -6,13 +6,22 @@
 //   intro  ← item.intro
 //   region ← item.region   （库里存的是 JSON 数组文本，如 ["国产"]）
 //   tags   ← item.tags     （同上，如 ["3D","恐怖"]）
-//   game_level ← item.gamelevel（**默认不写**：关卡等级以 YunGame_Gamelist.json 为准；
-//                确实想用内容表覆盖时加 --with-level）
+//   community_score ← item.score（社区评分，**人工填**；> HOT_SCORE_MIN=100 的会在卡片
+//                右上角亮"人气火爆"小火苗，见 src/utils/hotBadge.ts）
+//   game_level ← item.gamelevel。它不是"关卡等级"，而是**玩这个游戏需要的权限等级**：
+//                1 = 黄金版、2 = 钻石版（黄金用户只能玩 1，钻石用户 1/2 都能玩；
+//                见 shared/models.ts 的 Game.gameLevel 与 docs/design/user-level-detection.md）。
+//                **默认就写**。曾经把它做成 --with-level 可选（理由是"gamelist 才是权威"），
+//                结果库里 1276 条 game_level 全是迁移时写死的 1，直接造成线上 bug：
+//                黄金版用户能启动钻石版游戏。等级数据必须跟着内容表进库，否则门禁形同虚设。
 //
 // 字段写入规则（避免误清空）：
 //   · 键**存在**就写（哪怕写的是空值 —— 你手动清空标签就是要清空）；
 //   · 键**缺失**就跳过（不动库里原值）。
-//   region/tags 容错：写成数组 ["国产"] 或逗号分隔字符串 "国产,日本" 都行。
+//   · intro：**默认全部写入**，不管长短。曾经有过"超过 48 字就跳过"的闸门，
+//     结果把人工写的长简介（如"苏丹的游戏"77 字）悄悄漏掉了 —— 那是不对的。
+//     只想先把短的那批写进库时加 --short-only。
+//   region/tags 容错：写成 "#休闲#生存"、数组 ["休闲","生存"] 都行。
 //
 // 匹配：先按 gameid ↔ games.game_id（归一化掉 - 与大小写），再退到 name（归一化）；
 //       两边都匹配不上的会列出来，绝不瞎猜。
@@ -21,7 +30,8 @@
 // 用法：
 //   node scripts/apply-game-content-to-db.mjs                 # dry-run，只看会改多少
 //   node scripts/apply-game-content-to-db.mjs --apply         # 真写（含备份）
-//   node scripts/apply-game-content-to-db.mjs --apply --with-level   # 连 game_level 一起写
+//   node scripts/apply-game-content-to-db.mjs --apply --short-only    # 只写 ≤48 字的简介
+// （`--with-level` 已废弃：game_level 现在默认就写 —— 见文件头说明）
 import fs from "fs";
 import path from "path";
 import initSqlJs from "sql.js";
@@ -37,13 +47,11 @@ const CONTENT = argOf("--in", path.join(root, "data/game-content.json"));
 const ADMIN = argOf("--admin", path.join(root, "release/data/Admin/library.db"));
 const RUNTIME = argOf("--runtime", path.join(root, "release/data/library/library.db"));
 const APPLY = has("--apply");
-const WITH_LEVEL = has("--with-level");
 /**
- * 默认只同步"已重写过的简介"（≤48 字，与 merge-authored-intros 的风格校验 6..48 一致），
- * 超长的视为**尚未重写的爬来文案**，跳过不写进库 —— 否则一条 --apply 就会把
- * 844 条营销文案推上界面（用户明确说过那种不行）。要连它们一起写：--all-intros。
+ * 简介**默认全部写入**（长的人工简介也是内容，不能漏）。
+ * 只有 --short-only 时才恢复旧行为：只写 ≤48 字的，把尚未重写的爬来长文案留在库里不动。
  */
-const ALL_INTROS = has("--all-intros");
+const SHORT_ONLY = has("--short-only");
 const INTRO_MAX = 48;
 
 const normId = (s) => String(s ?? "").trim().toLowerCase().replace(/-/g, "");
@@ -81,9 +89,18 @@ console.log("内容文件:", path.relative(root, CONTENT));
 console.log("权威库  :", path.relative(root, ADMIN));
 console.log("运行时库:", path.relative(root, RUNTIME));
 console.log(
-  `模式    : ${APPLY ? "APPLY（会写盘 + 备份）" : "DRY-RUN（只看会改多少）"}${WITH_LEVEL ? "｜含 game_level" : "｜不写 game_level"}${ALL_INTROS ? "｜简介不过滤长度" : `｜简介只写 ≤${INTRO_MAX} 字（未重写的长文案跳过）`}`,
+  `模式    : ${APPLY ? "APPLY（会写盘 + 备份）" : "DRY-RUN（只看会改多少）"}｜含 game_level（权限等级）${SHORT_ONLY ? `｜简介只写 ≤${INTRO_MAX} 字` : "｜简介全部写入"}`,
 );
 console.log(`条目    : ${items.length}\n`);
+
+// 界面是**纯文本**渲染的（GridView 直接输出 game.intro），markdown 记号会原样显示 ——
+// 例如 "**阿尔图**" 在卡片上就是带星号的两个字。这里只提示、不阻拦，你自己决定要不要去掉。
+const markdownish = items.filter((it) => typeof it.intro === "string" && /\*\*|`/.test(it.intro));
+if (markdownish.length) {
+  console.log(`提示：${markdownish.length} 条简介里有 markdown 记号（** 或 反引号），界面会原样显示，例如：`);
+  for (const it of markdownish.slice(0, 5)) console.log(`   · ${it.name}`);
+  console.log("");
+}
 
 const byId = new Map();
 const byName = new Map();
@@ -102,17 +119,25 @@ const FIELDS = [
   { key: "intro", col: "intro", kind: "text" },
   { key: "region", col: "region", kind: "array" },
   { key: "tags", col: "tags", kind: "array" },
+  // 社区评分：只在文件里填了正数时才写。0 / 空 = "没设过" → 不动库里原值 ——
+  // 否则 apply 一次就会把 1276 个 NULL 全刷成 0，制造一大片毫无意义的改动。
+  { key: "score", col: "community_score", kind: "num", positiveOnly: true },
+  // 权限等级（1 黄金 / 2 钻石）：门禁的判据，必须跟着内容表进库（见文件头说明）
+  { key: "gamelevel", col: "game_level", kind: "num" },
 ];
-if (WITH_LEVEL) FIELDS.push({ key: "gamelevel", col: "game_level", kind: "num" });
 
 function syncDb(dbPath, { dryRun }) {
   const db = new SQL.Database(new Uint8Array(fs.readFileSync(dbPath)));
-  const rows = db.exec("SELECT id, game_id, name, intro, region, tags, game_level FROM games")[0].values;
+  // 取列必须覆盖 FIELDS 里要用到的每一列 —— 少取一列不会报错，只会把那一列当成
+  // undefined（→ 0 / ""）从而"每次都判定要改"，白写一遍库（踩过：score 漏了 community_score）。
+  const rows = db.exec(
+    "SELECT id, game_id, name, intro, region, tags, game_level, community_score FROM games",
+  )[0].values;
   const stats = { byId: 0, byName: 0, changed: {}, unchanged: 0, unmatched: [], skippedLongIntro: 0 };
   for (const f of FIELDS) stats.changed[f.key] = 0;
 
   const updates = [];
-  for (const [id, gameId, name, intro, region, tags, level] of rows) {
+  for (const [id, gameId, name, intro, region, tags, level, communityScore] of rows) {
     const hit = byId.get(normId(gameId)) ?? byName.get(normName(name));
     if (!hit) {
       stats.unmatched.push(String(name));
@@ -121,13 +146,15 @@ function syncDb(dbPath, { dryRun }) {
     if (byId.has(normId(gameId))) stats.byId++;
     else stats.byName++;
 
-    const cur = { intro, region, tags, gamelevel: level };
+    const cur = { intro, region, tags, gamelevel: level, score: communityScore };
     const next = {};
     let touched = false;
     for (const f of FIELDS) {
       if (!(f.key in hit)) continue; // 键缺失 → 不动库里原值
-      // 长简介 = 尚未重写的爬来文案 → 默认不写进库（见上方 INTRO_MAX 说明）
-      if (f.key === "intro" && !ALL_INTROS && String(hit[f.key] ?? "").trim().length > INTRO_MAX) {
+      // positiveOnly（目前只有 score）：没填（0 / 空 / 非数字）一律当"没设过"，不动库里原值
+      if (f.positiveOnly && !(Number(hit[f.key]) > 0)) continue;
+      // 只有 --short-only 才按长度过滤（默认长简介照样写进库）
+      if (f.key === "intro" && SHORT_ONLY && String(hit[f.key] ?? "").trim().length > INTRO_MAX) {
         stats.skippedLongIntro++;
         continue;
       }
@@ -182,7 +209,7 @@ for (const dbPath of [ADMIN, RUNTIME]) {
   );
   if (s.skippedLongIntro) {
     console.log(
-      `  跳过：${s.skippedLongIntro} 条简介还是长文案（>${INTRO_MAX} 字，视为未重写）—— 确认要写加 --all-intros`,
+      `  跳过：${s.skippedLongIntro} 条 >${INTRO_MAX} 字的简介（--short-only 模式）`,
     );
   }
   console.log(`  库里有、内容表没有的 ${s.unmatched.length} 条`);

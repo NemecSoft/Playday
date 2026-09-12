@@ -988,6 +988,38 @@ textarea {
   background: var(--accent-soft);
 }
 
+/* 顶部中央：当前版本标识（黄金版 / 钻石版）。原系统就在这个位置用「图标 + 文字」显示，
+   我们也照做。绝对居中，不参与左右两组控件的流式排布。
+   ⚠️ 必须 no-drag：顶栏整体是拖拽区，不排除的话鼠标停上去会变成拖窗口、tooltip 也出不来。 */
+.topbar-tier {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  pointer-events: auto;
+  -webkit-app-region: no-drag;
+  color: var(--tier-color);
+  background: color-mix(in srgb, var(--tier-color) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tier-color) 55%, transparent);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--tier-color) 55%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--tier-color) 30%, transparent);
+}
+/* 黄金 = 琥珀（跟主题的 --warning 走）；钻石 = 青蓝（固定色，可用 --tier-diamond-color 覆盖） */
+.topbar-tier.gold {
+  --tier-color: var(--warning, #ffc83d);
+}
+.topbar-tier.diamond {
+  --tier-color: var(--tier-diamond-color, #6ee7ff);
+}
+
 /* Right of the tabs: edition label (YunGame——黄金版) */
 .topbar-edition {
   margin-left: auto;
@@ -2054,7 +2086,9 @@ textarea {
 /* 说明：原来的"静态霓虹渐变描边 + 多层 drop-shadow 光晕"已移除。
    理由：一层渐变描边 + 三层光晕 + 卡片白色内泛光 + 标题药丸 + 简介渐变底，
    五个装饰同时在抢注意力，封面反而被压住（也是典型的"AI 生成的浓妆"）。
-   现在强调只保留一处：hover 时 1px accent 描边 + 底部细线（见上面的 ::after）。 */
+   现在常态只保留一处：hover 时 1px accent 描边。
+   → 后来按需求又重开了**两段可关的光效**（现代方案的锥形光环 + 极致方案的光渗），
+     同样是 hover 才亮、颜色全走主题令牌，详见下面「卡片光效」那一整段。 */
 /* Recordly 主题特殊覆盖：
    Recordly 是浅色 SaaS 风（accent #2563EB 蓝色），如果统一按钮文字色继续用 var(--accent)，
    蓝字 + 淡蓝背景会"同色系看不清"（对比度仅 3.3 左右）。
@@ -2064,9 +2098,124 @@ textarea {
   --ui-accent: var(--text-primary);
 }
 
+/* ============================================================================
+   卡片光效（现代方案 + 极致方案）—— 悬停/键盘聚焦才亮，颜色全走主题令牌
+   ----------------------------------------------------------------------------
+   卡片光效以前被删过（理由见上一段）。这次是有意重开的实验版，跟当年那版
+   "五个装饰一起抢注意力"的区别：
+     · 只在 hover / 键盘聚焦时亮 → 一屏最多一张卡在发光，不是满屏糊光；
+     · 颜色只取主题令牌（--accent / --accent-hover / --warning），不写死霓虹色 ——
+       浅色主题（Recordly）下自然变成柔和的同色系光，不会突然蹦出彩虹；
+     · 整段一行可关：把 :root 的 data-card-aurora 设为 "0"（或直接删掉本段）。
+   想调浓度：--card-aurora-opacity（光环，默认 1）、--card-bleed-opacity（光渗，默认 .5）、
+             --card-aurora-1 / -2 / -3（三档颜色，默认自动取自主题）。
+
+   ① 现代方案：锥形渐变光环（@property + conic-gradient）
+      --card-aurora-angle 必须用 @property 注册：**未注册**的自定义属性是"离散"值，
+      animation 只会 0deg↔360deg 跳变，不可能平滑自转。
+      "只留描边"用两块 mask 相减抠出来（-webkit-mask-composite: xor / mask-composite: exclude），
+      比 padding+border 稳 —— 圆角始终跟得上卡片尺寸。
+      代价：动画驱动的是自定义属性 → 每帧重绘这一张卡的渐变。只在 hover 单卡时发生，
+      低端机若有压力，把 animation 那行删掉即可（静态光环一样好看）。
+
+   ② 极致方案：光渗（radial-gradient + blur + mix-blend-mode: plus-lighter）
+      plus-lighter 是**加色**混合，光叠在封面图上像真的透出来（screen 偏"发白"，
+      plus-lighter 更接近真实光的叠加）。封面上的 isolation: isolate 把混合限制在
+      封面内部，不会渗到页面背景上（否则卡片外面跟着一起发白）。
+   ============================================================================ */
+@property --card-aurora-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+:root:not([data-card-aurora="0"]) .grid-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: calc(var(--radius-card) + 1px);
+  background: conic-gradient(
+    from var(--card-aurora-angle),
+    var(--card-aurora-1, var(--accent)) 0deg,
+    var(--card-aurora-2, var(--accent-hover)) 90deg,
+    var(--card-aurora-3, color-mix(in srgb, var(--accent) 45%, var(--warning))) 180deg,
+    var(--card-aurora-2, var(--accent-hover)) 270deg,
+    var(--card-aurora-1, var(--accent)) 360deg
+  );
+  /* 抠出最外 1.5px 的环：两块 mask 相减（content-box 挖掉，只剩 padding 那一圈）。
+     注意顺序：mask 简写会重置 mask-composite，所以 composite 必须写在简写之后。 */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  box-shadow: 0 0 22px color-mix(in srgb, var(--accent) 55%, transparent);
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-soft);
+  pointer-events: none;
+  z-index: 2;
+}
+:root:not([data-card-aurora="0"]) .grid-card:hover::before,
+:root:not([data-card-aurora="0"]) .grid-card:focus-visible::before {
+  opacity: var(--card-aurora-opacity, 1);
+  animation: card-aurora-spin 4.5s linear infinite;
+}
+/* 选中态给个静态光环（不转）：既提示"已选"，又和 hover 区分开 */
+:root:not([data-card-aurora="0"]) .grid-card.selected::before {
+  opacity: calc(var(--card-aurora-opacity, 1) * 0.55);
+}
+@keyframes card-aurora-spin {
+  to {
+    --card-aurora-angle: 360deg;
+  }
+}
+:root:not([data-card-aurora="0"]) .grid-card .cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      55% 70% at 18% 8%,
+      color-mix(in srgb, var(--card-aurora-1, var(--accent)) 75%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      70% 70% at 88% 96%,
+      color-mix(in srgb, var(--card-aurora-3, var(--warning)) 45%, transparent),
+      transparent 76%
+    );
+  mix-blend-mode: plus-lighter;
+  filter: blur(14px);
+  opacity: 0;
+  transition: opacity var(--dur-slow) var(--ease-soft);
+  pointer-events: none;
+  z-index: 1;
+}
+:root:not([data-card-aurora="0"]) .grid-card:hover .cover::after,
+:root:not([data-card-aurora="0"]) .grid-card:focus-visible .cover::after {
+  opacity: var(--card-bleed-opacity, 0.5);
+}
+/* 减弱动效偏好：不转、光渗淡一档（保留静态光 —— 它不含位移与闪烁） */
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-card-aurora="0"]) .grid-card:hover::before,
+  :root:not([data-card-aurora="0"]) .grid-card:focus-visible::before {
+    animation: none;
+  }
+  :root:not([data-card-aurora="0"]) .grid-card:hover .cover::after {
+    opacity: calc(var(--card-bleed-opacity, 0.5) * 0.7);
+  }
+}
+
 .grid-card .cover {
   aspect-ratio: 16 / 9;
   background: var(--bg-base);
+  /* 光渗（.cover::after 的 mix-blend-mode: plus-lighter）只在这个封面内部混合：
+     不加 isolation 时 plus-lighter 会把下面的页面背景一起加色，卡片外面跟着发白。
+     它只建立层叠上下文，不影响布局、圆角与子元素层级。 */
+  isolation: isolate;
   /* 内描边代替原来的实线边框：图片边缘和卡片之间有一道极淡的"银幕边"，
      深色主题下不显脏、浅色主题下也不会太硬。 */
   box-shadow: inset 0 0 0 1px var(--hairline);
@@ -2136,6 +2285,9 @@ textarea {
 .grid-card .cover-actions {
   position: absolute;
   inset: 0;
+  /* 抬到光渗层（.cover::after 的 z-index: 1）之上：
+     否则 hover 时那层光会糊在「游玩 / 详情」两个按钮上。 */
+  z-index: 3;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -2192,6 +2344,98 @@ textarea {
   color: var(--warning);
   font-size: 15px;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+/* 卡片「火爆」角标（封面右上角的小火苗）：社区评分 > HOT_SCORE_MIN 时由 GridView 渲染，
+   常显（不是 hover 才亮）—— 它是给用户看的招牌。
+   颜色只走一个令牌 --hot-color（默认取 --warning，跟主题走），想换橙/红只改这一处。 */
+.grid-card .hot-flag {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--hot-color, var(--warning));
+  /* 半透明暗底 + 同色描光：盖在任意封面上都能读清（封面明暗不可控） */
+  background: color-mix(in srgb, var(--hot-color, var(--warning)) 18%, rgba(0, 0, 0, 0.55));
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  /* 跟形状走的发光：drop-shadow 会贴合火苗轮廓，比 box-shadow 的矩形光晕自然。
+     注意它**不参与动画**（下面只动 transform/opacity），避免逐帧重绘滤镜。 */
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--hot-color, var(--warning)) 85%, transparent));
+  pointer-events: none; /* 别挡住"点卡片选中" */
+  z-index: 4; /* 光渗层是 1、封面按钮是 3 —— 角标要在它们之上 */
+  /* 刻意**不写** will-change：常显意味着可能有几十张卡同时亮火苗，
+     给每张都提层反而费内存；transform/opacity 动画本身就会被合成器提升。 */
+  animation: hot-flicker 1.8s var(--ease-soft) infinite;
+}
+/* 火苗跳动：只碰 transform + opacity（合成器友好，不触发重绘/重排） */
+@keyframes hot-flicker {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.12) rotate(-3deg);
+    opacity: 0.86;
+  }
+}
+/* 减弱动效偏好：火苗不跳（保留静态发光 —— 它不含位移与闪烁） */
+@media (prefers-reduced-motion: reduce) {
+  .grid-card .hot-flag {
+    animation: none;
+  }
+}
+/* 想换成自己做的 GIF/位图角标：把上面的 color 换成 background-image 即可，
+   例如给 .grid-card .hot-flag 加 background-image: var(--hot-badge-image)（再设
+   background-size: contain + color: transparent）。不需要改任何代码。 */
+
+/* 锁定态：当前用户等级不够这个游戏（黄金版看钻石版游戏）。
+   需求原话是"强烈的反馈，知道自己能看到但玩不到"，所以三层信号一起给：
+     ① 封面降饱和 + 压暗（一眼就与可玩卡片不同）
+     ② 左上角锁标 + 「钻石版专享」文字
+     ③ 游玩按钮换成锁图标 + 同一句话（见 GridView.tsx；可点，点了弹明确解释）
+   颜色走 --lock-color（默认取主题 accent）。与右上角"人气火爆"火苗刻意用**不同角落 +
+   不同形状**：锁定时不显示火苗（可用性信息优先于营销信息，见 GridView 里的条件渲染）。
+   规则与门禁见 docs/design/user-level-detection.md */
+.grid-card.locked .cover img {
+  filter: grayscale(0.6) brightness(0.62);
+}
+/* 标题/简介也压一档：只压封面会造成"文字很亮、画面很暗"的割裂感 */
+.grid-card.locked .title,
+.grid-card.locked .title-orig,
+.grid-card.locked .grid-desc,
+.grid-card.locked .alt-names {
+  opacity: 0.72;
+}
+.grid-card .lock-flag {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  color: #fff;
+  background: color-mix(in srgb, var(--lock-color, var(--accent)) 82%, rgba(0, 0, 0, 0.55));
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  z-index: 4;
+}
+.grid-card .lock-flag svg {
+  flex: none;
+}
+/* 锁定的"游玩"按钮：警告色 + 锁图标 —— 还没点就看出"这里不能玩" */
+.grid-card .cover-btn.play.locked {
+  background: rgba(20, 20, 20, 0.75);
+  color: var(--warning);
+  border: 1px solid color-mix(in srgb, var(--warning) 55%, transparent);
 }
 .grid-card .installed-dot {
   position: absolute;
@@ -3599,6 +3843,40 @@ textarea {
     0 30px 80px rgba(0, 0, 0, 0.6),
     0 0 0 1px rgba(255, 255, 255, 0.04);
   overflow: hidden;
+}
+
+/* 公告窗口的维护提示条：压在公告内容之上（红警示色），必须一眼看到 ——
+   见 docs/design/user-level-detection.md 的维护状态一节。 */
+.ann-maintenance {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #fff;
+  background: color-mix(in srgb, var(--danger, #e5484d) 26%, rgba(0, 0, 0, 0.55));
+  border: 1px solid color-mix(in srgb, var(--danger, #e5484d) 60%, transparent);
+}
+.ann-maintenance svg {
+  flex: none;
+  margin-top: 1px;
+}
+.ann-maintenance-title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+.ann-maintenance-body {
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+/* 维护时的"退出"按钮：与"进入系统"同形，改成警示色 */
+.ann-enter-btn.ann-exit-btn {
+  background: color-mix(in srgb, var(--danger, #e5484d) 70%, #000);
 }
 
 .announcement-body {

@@ -125,7 +125,22 @@ export const api = {
   getAnnouncement: () => call<string>("get_announcement").then((html) => ({ html, fromFile: !!html })),
 
   // 公告窗口点"进入系统"：通知主进程关闭公告窗口并创建主窗口。
-  enterSystem: () => call<boolean>("enter_system"),
+  // 服务器维护中时主进程会拒绝（返回 ok:false），前端据此切到"维护中"态。
+  enterSystem: () =>
+    call<{ ok: boolean; reason?: string; level?: number; status?: number | null }>("enter_system"),
+
+  // 服务器维护状态（公告窗口一启动就问一次）：Status=0 = 该等级维护中，不允许进入系统。
+  // 按用户等级分别控（黄金版定期维护只关黄金版）。见 docs/design/user-level-detection.md
+  getServerStatus: () =>
+    call<{
+      maintenance: boolean;
+      status: number | null;
+      level: number;
+      filePath: string;
+      fileExists: boolean;
+      recordCount: number;
+      parseError?: string;
+    }>("get_server_status"),
 
   // —— 游戏详情页 ——
   getGameHtmlPage: (gameId: string, gameName?: string) =>

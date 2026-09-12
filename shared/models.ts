@@ -112,6 +112,18 @@ export const DEFAULT_SETTINGS = {
   cardRowGap: 8,
   sidebarWidth: 210,
   enterpriseConfigPath: "D:/1.json",
+  // 用户表（YunGame_UserList.json，明文或原版 JsonCrypt 加密版都能吃）：按本机 IP 判定
+  // 黄金版/钻石版。相对路径以「应用 exe 所在目录」为基准（与其它路径字段一致）。
+  // 见 docs/design/user-level-detection.md
+  yunGameUserListPath: "YunGame_UserList.json",
+  // 服务器维护状态表（YunGame_ServerStatus.json）：按用户等级分别控状态，
+  // Status=0 表示该等级正在维护（公告窗口会提示并禁止进入系统）。
+  // 相对路径同样以「应用 exe 所在目录」为基准。
+  yunGameServerStatusPath: "YunGame_ServerStatus.json",
+  // 0 = 关闭（默认，按用户表 IP 判定）；非 0 时强制使用该等级：
+  // 1 黄金 / 2 钻石 / 3 全解锁。**仅用于本机调试与排障**（没有它，没进名单的开发机
+  // 会被判成黄金版，连自测都跑不起来）。
+  userLevelOverride: 0,
   currentUserKind: "",
   currentUserName: "",
   currentUserLevel: 3,
@@ -512,6 +524,24 @@ export interface AppSettings {
   sidebarWidth: number;
   /** 企业用户配置文件 JSON 路径（默认 D:/1.json）。 */
   enterpriseConfigPath: string;
+  /**
+   * 用户表位置（YunGame_UserList.json）：明文或原版 JsonCrypt 加密版都能解析。
+   * 相对路径以**应用 exe 所在目录**为基准；未配置时默认 `<应用目录>/YunGame_UserList.json`。
+   * 见 docs/design/user-level-detection.md
+   */
+  yunGameUserListPath?: string;
+  /**
+   * 服务器维护状态表位置（YunGame_ServerStatus.json）：按用户等级分别控状态，
+   * `Status = 0` = 该等级维护中（公告窗口提示并禁止进入系统）。明文或加密版都能解析。
+   * 未配置时默认 `<应用目录>/YunGame_ServerStatus.json`。
+   */
+  yunGameServerStatusPath?: string;
+  /**
+   * 用户等级覆盖开关：0 = 关闭（按用户表 IP 判定）；非 0 时强制该等级
+   * （1 黄金 / 2 钻石 / 3 全解锁）。**仅用于本机调试与排障**：没有它，没进名单的
+   * 开发机会被判成黄金版，连自测都跑不起来。
+   */
+  userLevelOverride?: number;
   /** 当前会话用户类型："enterprise" | "personal" | ""。 */
   currentUserKind: string;
   /** 当前会话用户显示名。 */

@@ -7,6 +7,7 @@ import { APP_NAME, APP_VERSION } from "../config";
 import { configRoot, appRoot } from "../core/paths";
 import { readSettings } from "../core/settings";
 import { getClientWindow, enterSystem } from "../main";
+import { resolveMaintenanceState } from "../core/auth";
 import { registerCommand } from "./registry";
 
 // 取"发起命令的窗口"；没有则回退到主客户端窗口。
@@ -31,11 +32,31 @@ function currentAppInfo() {
 }
 
 export function registerSystemIpc(ipc: typeof ipcMain) {
+  // 服务器维护状态：公告窗口一启动就问一次，决定"能不能进系统"。
+  // 规则见 docs/design/user-level-detection.md（Status=0 = 该等级维护中）。
+  registerCommand(ipc, "get_server_status", async () => {
+    const m = await resolveMaintenanceState();
+    return {
+      maintenance: m.maintenance,
+      status: m.status,
+      level: m.level,
+      filePath: m.filePath,
+      fileExists: m.fileExists,
+      recordCount: m.recordCount,
+      parseError: m.parseError,
+    };
+  });
+
   // "进入系统"：公告窗口点按钮后，先打开数据库，再关闭公告窗口并创建主窗口。
   // await enterSystem()：等数据库就绪后再返回，主窗口渲染时数据一定可用。
+  // ⚠️ 维护中一律拒绝（前端也会查一次，但那只是为了早点提示 —— 不能只靠前端拦）。
   registerCommand(ipc, "enter_system", async () => {
+    const m = await resolveMaintenanceState();
+    if (m.maintenance) {
+      return { ok: false, reason: "maintenance", level: m.level, status: m.status };
+    }
     await enterSystem();
-    return true;
+    return { ok: true };
   });
 
   // 应用信息。

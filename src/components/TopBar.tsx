@@ -22,6 +22,8 @@ import {
   Home,
   Clapperboard,
   Wrench,
+  Crown,
+  Gem,
 } from "lucide-react";
 import { api } from "../api/client";
 import { useI18n } from "../i18n";
@@ -40,6 +42,8 @@ const TABS: { key: ActiveTab; labelKey: string; icon: typeof Home }[] = [
 export default function TopBar() {
   const { t } = useI18n();
   const currentUser = useAuthStore((s) => s.currentUser);
+  // 当前用户等级（黄金/钻石）——顶部中央的版本标识用它。
+  const userLevel = useAuthStore((s) => s.userLevel);
 
   const menuOpen = useUIStore((s) => s.menuOpen);
   const toggleMenu = useUIStore((s) => s.toggleMenu);
@@ -215,6 +219,21 @@ export default function TopBar() {
 
       {/* Right of the tabs: theme picker (all presets, one-click switch) */}
       <ThemeTopPicker />
+
+      {/* 顶部中央：当前版本标识（黄金版 / 钻石版）—— 原系统就在这个位置用图标+文字显示，
+          我们也照做（绝对居中，不参与左右两组的流式排布）。
+          等级由主进程按用户表 IP 判定（docs/design/user-level-detection.md）：
+          1 = 黄金版、≥2 = 钻石版（3 是 config 的调试覆盖值，同样显示钻石版）。 */}
+      <div
+        className={`topbar-tier ${userLevel >= 2 ? "diamond" : "gold"}`}
+        title={`${userLevel >= 2 ? t("tier_diamond") : t("tier_gold")}${
+          currentUser?.name ? ` · ${currentUser.name}` : ""
+        }`}
+        onDoubleClick={(e) => e.stopPropagation()}
+      >
+        {userLevel >= 2 ? <Gem size={14} /> : <Crown size={14} />}
+        <span>{userLevel >= 2 ? t("tier_diamond") : t("tier_gold")}</span>
+      </div>
 
       {/* Right of the tabs: edition label (circle 1 in the reference image) */}
       <div className="topbar-edition" title={titleText}>

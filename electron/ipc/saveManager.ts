@@ -7,9 +7,10 @@
 // 所以这里的返回值只表示"工具是否成功启动"，不代表备份已经成功。
 import { ipcMain, BrowserWindow } from "electron";
 import { getGame } from "../core/db";
-import { getLibraries } from "../core/settings";
+import { getLibraries, readSettings } from "../core/settings";
 import { launchSaveBackup } from "../core/gameSaveHelper";
 import { resolvePath, subscribeGameExit } from "../core/process";
+import { canPlay } from "../core/auth";
 import { registerCommand } from "./registry";
 
 export function registerSaveManagerIpc(ipc: typeof ipcMain) {
@@ -19,6 +20,10 @@ export function registerSaveManagerIpc(ipc: typeof ipcMain) {
   subscribeGameExit((payload) => {
     // 只有该游戏配置了存档路径时才需要提示用户（没配存档路径的备份无意义）。
     if (!payload.hasSavePaths) return;
+    // 等级不够的人不该被问"要不要备份"（他连启动都不允许，见 docs/design/user-level-detection.md）。
+    // 这里再判一次是防御性的：将来若有"免启动试玩"之类的路径，也不会给不该备份的人弹窗。
+    const g = payload.gameId ? getGame(payload.gameId) : undefined;
+    if (g && !canPlay(readSettings().currentUserLevel, g.gameLevel)) return;
     for (const win of BrowserWindow.getAllWindows()) {
       win.webContents.send("game_exited", {
         gameId: payload.gameId,
@@ -32,6 +37,14 @@ export function registerSaveManagerIpc(ipc: typeof ipcMain) {
   registerCommand(ipc, "backup_game_save", async (a: { gameId?: string }) => {
     const game = a?.gameId ? getGame(a.gameId) : undefined;
     if (!game) return { ok: false, error: "游戏不存在" };
+
+    // 权限门禁：与"能不能启动"同一条规则（唯一的 canPlay）。黄金版不得备份存档 ——
+    // 否则"能看不能玩"会被绕过（用备份包把别人的存档恢复进来）。
+    const settings = readSettings();
+    if (!canPlay(settings.currentUserLevel, game.gameLevel)) {
+      // 用户可见文案不带等级数字（见 docs/design/user-level-detection.md 的反馈规范）
+      return { ok: false, error: "需要升级为钻石版网吧（网咖）才能存档" };
+    }
 
     const savePaths = game.savePaths ?? [];
     if (savePaths.length === 0) {

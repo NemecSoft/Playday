@@ -5,9 +5,27 @@
 // 权限判定规则：用户等级 N 可以玩等级 ≤ N 的游戏。
 
 import { createHash } from "crypto";
+import * as fs from "fs";
 import * as os from "os";
+import * as path from "path";
 import { getUserByAccount, getUserByIp } from "./db";
 import type { AppUser, SessionUser } from "./models";
+import { appRoot, configuredPath } from "./paths";
+import { readSettings } from "./settings";
+import {
+  parseServerStatusRaw,
+  parseUserListRaw,
+  resolveMaintenance,
+  resolveUserLevel,
+  type MaintenanceState,
+  type ResolveUserLevelResult,
+  type ServerStatusRecord,
+  type YunGameUser,
+} from "../../shared/userLevel";
+
+// 等级判定与"能不能玩"的**唯一**实现都在 shared/userLevel.ts（两端共用、有单测）。
+// 这里只 re-export，保持历史调用点（如 electron/core/process.ts 的 `from "./auth"`）不变。
+export { canPlay } from "../../shared/userLevel";
 
 // 企业配置文件里的一条记录（兼容旧系统 PascalCase 键名）。
 export interface EnterpriseRecord {
@@ -18,21 +36,17 @@ export interface EnterpriseRecord {
   user_level: number;
 }
 
-// 读取企业配置文件。旧格式是一个 JSON 数组，字段用 PascalCase。
+// 读取企业/用户配置文件（YunGame_UserList.json）。**明文与密文都能吃**：
+// 原版 JsonCrypt 用 base64+XOR 加密（见 shared/userLevel.ts 的 parseUserListRaw）。
 export function loadEnterpriseRecords(filePath: string): EnterpriseRecord[] {
   try {
-    const fs = require("fs");
     if (!fs.existsSync(filePath)) return [];
-    const text = fs.readFileSync(filePath, "utf-8");
-    const arr = JSON.parse(text);
-    if (!Array.isArray(arr)) return [];
-    // 兼容 PascalCase 键
-    return arr.map((r: Record<string, unknown>) => ({
-      user_id: String(r.UserId ?? r.user_id ?? ""),
-      user_account: String(r.UserAccount ?? r.user_account ?? ""),
-      user_name: String(r.UserName ?? r.user_name ?? ""),
-      user_ip_address: String(r.UserIpAddress ?? r.user_ip_address ?? ""),
-      user_level: Number(r.UserLevel ?? r.user_level ?? 0) || 0,
+    return parseUserListRaw(fs.readFileSync(filePath, "utf-8")).map((r) => ({
+      user_id: r.userId,
+      user_account: r.account,
+      user_name: r.name,
+      user_ip_address: r.ipAddress,
+      user_level: r.level,
     }));
   } catch {
     return [];
@@ -85,8 +99,14 @@ function parseIpv4(s: string): string | null {
   return candidate;
 }
 
+// 公网 IP 会话级缓存：启动时 get_current_user / get_status_bar / get_server_status
+// 会各问一遍，而每次都要挨个试 6 个外部服务（最坏几十秒）。同一进程内公网 IP 不会变，
+// 所以只缓存**成功**的结果（失败不缓存 —— 网络暂时不通时下次还能重试）。
+let publicIpCache: string | null = null;
+
 // 获取本机公网 IPv4 地址。按顺序尝试各服务，全部失败返回 null。
 export async function publicIpv4Address(): Promise<string | null> {
+  if (publicIpCache) return publicIpCache;
   for (const service of PUBLIC_IP_SERVICES) {
     try {
       const controller = new AbortController();
@@ -95,7 +115,10 @@ export async function publicIpv4Address(): Promise<string | null> {
       clearTimeout(timer);
       const body = await resp.text();
       const ip = parseIpv4(body);
-      if (ip) return ip;
+      if (ip) {
+        publicIpCache = ip;
+        return ip;
+      }
     } catch {
       continue; // 尝试下一个服务
     }
@@ -148,6 +171,109 @@ export function publicUser(u: AppUser) {
 }
 
 // 用户等级 N 是否可以玩等级 game_level 的游戏。
-export function canPlay(userLevel: number, gameLevel: number): boolean {
-  return userLevel >= gameLevel;
+// （实现已移到 shared/userLevel.ts 的 canPlay，本文件顶部 re-export；这里只留说明。）
+
+// 解析结果的附带信息（排查用：为什么判定成这个版本）。
+export interface CurrentUserLevelInfo {
+  /** 实际使用的用户表路径。 */
+  userListPath: string;
+  userListExists: boolean;
+  /** 解析失败原因（文件存在但读不动时才有值）。 */
+  parseError?: string;
+  /** 用户表记录条数（排查"名单是不是空的"）。 */
+  recordCount: number;
+  localIps: string[];
+  publicIp: string;
 }
+
+/**
+ * 解析「当前这台机器的用户等级」—— 本功能的**单一入口**。
+ *
+ * 优先级（实现在 shared/userLevel.ts 的 resolveUserLevel）：
+ *   config 覆盖开关 > 用户表按 IP 命中（L2=钻石，其余黄金）> 个人会话等级 > 黄金(1)
+ *
+ * 用户表位置：config.json → settings.yunGameUserListPath（相对路径以应用 exe 所在目录为基准，
+ * 与其它路径字段一致）；未配置时默认 <应用目录>/YunGame_UserList.json。
+ *
+ * 文件不存在 / 解析失败**不抛错**：按"未命中"处理落到黄金版，但把原因放进返回值，
+ * 供状态栏与日志说明 —— 静默失败最难受（用户只会看到"游戏都不能玩"却不知为什么）。
+ */
+export async function resolveCurrentUserLevel(
+  opts: { personalLevel?: number } = {},
+): Promise<ResolveUserLevelResult & CurrentUserLevelInfo> {
+  const filePath = configuredPath("yunGameUserListPath") ?? path.join(appRoot(), "YunGame_UserList.json");
+
+  let records: YunGameUser[] = [];
+  let parseError: string | undefined;
+  const exists = fs.existsSync(filePath);
+  if (exists) {
+    try {
+      records = parseUserListRaw(fs.readFileSync(filePath, "utf-8"));
+    } catch (e) {
+      parseError = e instanceof Error ? e.message : String(e);
+      console.error(`[auth] 用户表解析失败（按未命中处理 → 黄金版）: ${filePath} — ${parseError}`);
+    }
+  }
+
+  const publicIp = (await publicIpv4Address()) || "";
+  const localIps = localIpv4Addresses();
+  // 公网 IP 排最前（用户表里存的就是公网 IP），本机内网 IPv4 作为兜底
+  const ips = [publicIp, ...localIps].filter(Boolean);
+
+  const override = Number(readSettings().userLevelOverride) || 0;
+  const resolved = resolveUserLevel(records, ips, { override, personalLevel: opts.personalLevel });
+
+  return {
+    ...resolved,
+    userListPath: filePath,
+    userListExists: exists,
+    parseError,
+    recordCount: records.length,
+    localIps,
+    publicIp,
+  };
+}
+
+// 维护状态 + 排查信息。
+export interface MaintenanceInfo extends MaintenanceState {
+  filePath: string;
+  fileExists: boolean;
+  recordCount: number;
+  parseError?: string;
+}
+
+/**
+ * 解析「当前等级是否正在维护」—— 公告窗口据此决定能不能进系统。
+ *
+ * 先要等级（维护状态是**按等级**分别控的：黄金版定期维护就只关黄金版），
+ * 再从 YunGame_ServerStatus.json 取该等级那一行的 Status。
+ *
+ * 文件不存在 / 解析失败 → 视为**正常营业**（只认显式 0 为维护）：
+ * 配错或漏配不该把所有人锁在门外。原因放进返回值供排查。
+ */
+export async function resolveMaintenanceState(): Promise<MaintenanceInfo> {
+  const user = await resolveCurrentUserLevel();
+  const filePath =
+    configuredPath("yunGameServerStatusPath") ?? path.join(appRoot(), "YunGame_ServerStatus.json");
+
+  let records: ServerStatusRecord[] = [];
+  let parseError: string | undefined;
+  const exists = fs.existsSync(filePath);
+  if (exists) {
+    try {
+      records = parseServerStatusRaw(fs.readFileSync(filePath, "utf-8"));
+    } catch (e) {
+      parseError = e instanceof Error ? e.message : String(e);
+      console.error(`[auth] 维护状态表解析失败（按正常营业处理）: ${filePath} — ${parseError}`);
+    }
+  }
+
+  return {
+    ...resolveMaintenance(records, user.level),
+    filePath,
+    fileExists: exists,
+    recordCount: records.length,
+    parseError,
+  };
+}
+

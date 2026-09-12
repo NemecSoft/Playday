@@ -36,7 +36,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "开战机横扫弹幕，一路吃分升级解锁，竖版街机射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -81,7 +81,9 @@
 		"postExitScript": null,
 		"postExitEnabled": false,
 		"monitorExe": null,
-		"savePaths": ["X:\\YunGame\\V\\SkyForceReloaded\\Save\\*.*"]
+		"savePaths": [
+			"X:\\YunGame\\V\\SkyForceReloaded\\Save\\*.*"
+		]
 	},
 	{
 		"id": "001c9420-4b37-4295-96c9-f951fe0675f3",
@@ -120,7 +122,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2024.4.2 v1.1",
-		"intro": null,
+		"intro": "1-4 人闯鬼医院，看异常选电梯逃出去，联机恐怖逃生。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -166,9 +168,9 @@
 		"postExitEnabled": false,
 		"monitorExe": null,
 		"savePaths": [
-		"D:\\games\\X\\Deep Rock Galactic RogueCore\\RogueCore\\Saved\\*.*",
-		"D:\\games\\X\\Deep Rock Galactic RogueCore\\test\\*.*",
-		"C:\\Users\\Administrator\\AppData\\Local\\Hospital666\\*.*"
+			"D:\\games\\X\\Deep Rock Galactic RogueCore\\RogueCore\\Saved\\*.*",
+			"D:\\games\\X\\Deep Rock Galactic RogueCore\\test\\*.*",
+			"C:\\Users\\Administrator\\AppData\\Local\\Hospital666\\*.*"
 		]
 	},
 	{
@@ -208,7 +210,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "指挥幽灵海盗船员，暂停时间规划暗杀路线，潜行战术。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -254,7 +256,7 @@
 		"postExitEnabled": false,
 		"monitorExe": null,
 		"savePaths": [
-		"C:\\Users\\Administrator\\AppData\\Local\\2K Sports\\NBA 2K27\\*.*"
+			"C:\\Users\\Administrator\\AppData\\Local\\2K Sports\\NBA 2K27\\*.*"
 		]
 	},
 	{
@@ -294,7 +296,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v0.0.13_Epic无D加密版",
-		"intro": null,
+		"intro": "当大学校长，建校园，管师生，开各种奇葩专业，模拟经营。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -379,7 +381,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v0.7.1",
-		"intro": null,
+		"intro": "带着小怪物在人海里刷弹幕，边打边进化，最多三人联机生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -463,7 +465,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.10.31 v1.0.14460 汉化版",
-		"intro": null,
+		"intro": "和朋友一起把房车开回家，路上互相添乱，联机派对。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -552,7 +554,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2024.12.22 v1.6.15",
-		"intro": null,
+		"intro": "继承爷爷的农场，种地养牲口交朋友，多人一起过日子。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -719,7 +721,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "露玛岛 Luma Island 局域网联机版 2024.11.22 v1.19264\r\n全部评测：特别好评 (1,032) 80%好评\r\nhttps://store.steampowered.com/app/2408820\r\n\r\n主机：载入/新建。进入游戏后，按ESC，多人游戏，所有好友。\r\n客机：加入游戏，加入。",
-		"intro": null,
+		"intro": "开荒小岛办农场，学手艺挖宝，多人悠闲冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -803,7 +805,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "金德曼积善医务室|官方中文|Build.12872735-Patch 3-罪恶亡灵-邪恶复苏",
-		"intro": null,
+		"intro": "在地狱监狱当医务官，执行死刑做实验，暗黑经营。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -887,7 +889,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "【游戏简介】\r\n\r\n　　《重力反转》是一款TPS游戏，虽然同样是一款老套的射击游戏，但采用了创新的重力控制战斗、无重力环境以及独特的可摧毁掩体系统从而给人一种新鲜感。\r\n\r\n　　根据Namco Bandai对这款游戏的简介，《重力反转》的故事是设定在近未来，人类世界的宁静和平被突如其来的Lutadore种族侵略而遭受破坏。藉由先进的重力控制武器，Lutadore人轻轻松松的就把地球的大城市搞成废墟。这种不可思议的异象就表示侵略的开始，城市里很多东西都进入无重力状态或是遭到向量改变，整个世界陷入颠倒的混乱之中。而玩家则要扮演警察Davis Russel或警察的邻居Leo Delgado，也运用重力武器跟地心吸力的环境来拯救人类!\r\n\r\n　　本作由负责过《Time Shift(时空飞梭)》的Saber Interactive工作室开发，开发商承诺做出零重力效果!整个游戏过程都是无重力的，当你进入游戏，你就能浮空，并利用其他浮空物体做掩护。还能飞檐走壁，做一切你所梦寐以求的空中行走。除了浮空，还有“向量掌控”(Vector Charges)，在你游戏过程中会一定程度上旋转游戏场景。游戏场景会“空翻”90度或180度，使敌人、炸弹等所有东西都翻转跌落到新的地面。",
-		"intro": null,
+		"intro": "翻转重力跳平台，躲障碍开枪推进，像素动作解谜。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -973,7 +975,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "德军总部：新秩序",
-		"intro": null,
+		"intro": "当战争英雄杀进纳粹据点，单机剧情射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -1057,7 +1059,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v2026.4.18",
-		"intro": null,
+		"intro": "和小伙伴一起往上爬，边爬边互相使坏，联机派对。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -1124,7 +1126,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "火影忍者究极忍者风暴4是火影系列最新作，本作最大特点就是混战破坏效果更加真实，官方甚至用“天崩地裂”来形容查克拉爆发后的场面。新作将讲述《火影》漫画最终章的故事，同时还将加入最终剧场版THE LAST的剧情。\r\n\r\n火影忍者究极忍者风暴4游戏背景\r\n\r\n　　游戏承接《火影忍者疾风传：究极忍者风暴3》的剧情，设定了由初代火影千手柱间和宇智波斑的决斗开始，接着横跨到第四次忍界大战。\r\n\r\n　　讲述四位火影奔赴战场，宇智波佐助归来，宇智波带土成为十尾人柱力等一直到第四次忍界大战结束，鸣人当上第七代火影而终结的故事。",
-		"intro": null,
+		"intro": "化身动漫忍者打连招对战，还有剧情模式，格斗。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -1208,7 +1210,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.1.1",
-		"intro": null,
+		"intro": "带着儿子闯北欧神话，砍杀解谜看史诗剧情，动作冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -1292,7 +1294,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "冰与火之舞 豪华中文 Build.10827262+全DLC",
-		"intro": null,
+		"intro": "一个按键跟着节奏走，双星盘旋不许踩错，音游。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -1382,7 +1384,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "孤身闯淞沪战场，一路杀进日军总部，第一人称射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -1447,7 +1449,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2026.4.16 v5.0.1",
-		"intro": null,
+		"intro": "守穹顶挖资源，边挖边打一波波怪，挖矿生存。",
 		"notes": null,
 		"version": "2.3.2",
 		"platform": [
@@ -1537,7 +1539,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "机战佣兵™VI 境界天火™ ARMORED CORE VI: FIRES OF RUBICON 局域网联机版\r\n2024.2.8 v1.06.1 全DLC 联机Mod 0.1.4\r\n最近评测：特别好评 (692) 92%好评\r\n全部评测：特别好评 (52,055) 90%好评\r\nhttps://store.steampowered.com/app/1888160\r\nRadmin LAN中加入同一网络后运行ac6_for_coop_launcher.exe。隐私选择“是”，游戏分析选择“否”，游戏服务器连接失败点击“CANCEL”，然后“OK”。所有人NEW GAME或者CONTINIUE，过完序章，在机库里。\r\n主机：多人游戏，创建小队，然后使用Shift+F2菜单邀请客机。\r\n客机：等待邀请，加入。",
-		"intro": null,
+		"intro": "开自组机甲高速对轰，打 Boss 刷任务，机甲动作射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -1621,7 +1623,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v2.0.1\r\n《北欧之烬：诸神黄昏幸存》以北欧神话中的“诸神黄昏”（Ragnarök）为核心背景，深度融入了神话预言中的末日战役与重生设定。以下是游戏涉及的主要神话剧情元素：\r\n\r\n1. ​​诸神黄昏的核心事件​​\r\n​​末日之战​​：游戏还原了神话中众神与巨人族的终极决战，包括奥丁被巨狼芬里尔吞噬、雷神索尔与巨蛇耶梦加得同归于尽等经典情节。\r\n​​自然浩劫​​：芬布尔之冬（连续三个严冬）、日月被吞噬、世界树倒塌等末日预兆在游戏中通过环境设计或剧情暗示体现。\r\n2. ​​幸存者与新生​​\r\n​​神话角色​​：玩家可操控的角色如阿塞尔多、媞拉等，原型可能参考了神话中幸存的维达尔（森林之神）、瓦利（复仇之神）或人类利布与里普特拉西尔。\r\n​​新世界重建​​：游戏设定在诸神黄昏后的废墟中，玩家需通过战斗恢复世界树的能量，呼应神话中“毁灭后复苏”的主题。\r\n3. ​​神话生物与道具​​\r\n​​敌人设计​​：巨狼芬里尔、毒龙尼德霍格、火巨人苏尔特尔等反派作为Boss或精英敌人登场。\r\n​​武器与圣物​​：雷神之锤（妙尔尼尔）等神器可能以超限武器形式出现，结合神话中的描述。\r\n4. ​​九界与地图设定​​\r\n游戏的9张地图对应北欧神话中的九界（如米德加尔特、穆斯贝尔海姆），每张地图的敌人和场景设计融入对应界域的神话特征。",
-		"intro": null,
+		"intro": "选个北欧英雄自动割草，从怪海里活下来，肉鸽幸存者。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -1706,7 +1708,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.9.6R",
-		"intro": null,
+		"intro": "当女王的总督，带狐狸海狸建城，边建边扛灾变，城市营造。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -1796,7 +1798,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "丧尸围城3联机版\r\n\r\n《丧尸围城3》将采用全新主角Rick，是一名汽车技工，设定在虚构的城市“Los Perdidos”，原型为加利福尼亚州的洛杉矶，游戏的主线任务需要Rick在导弹摧毁这座充满僵尸的封锁城市前，修理好飞机逃离。\r\n　　Rick将遇到Red和他的女友Annie，他们带领着一群未与政府记录的寻找治疗僵尸的市民。另外，Rick还将遇到一系列的Boss战。",
-		"intro": null,
+		"intro": "在丧尸满城的开放世界里造武器逃生，联机割草。",
 		"notes": null,
 		"version": "V1.0.0.6",
 		"platform": [
@@ -1881,7 +1883,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.09.0.1",
-		"intro": null,
+		"intro": "幕末日本当浪人，刀剑砍杀加潜行，开放世界动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -1965,7 +1967,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带仙侠小队闯江湖，回合制打怪看剧情，国产角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -4277,7 +4279,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.6.4",
-		"intro": null,
+		"intro": "校园厉鬼索命，边躲边查真相，第一人称恐怖解谜。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -4361,7 +4363,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2026.8.27 v1.4.0",
-		"intro": null,
+		"intro": "和队友在诡异走廊里找出口，边跑边躲，联机恐怖逃生。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -4445,7 +4447,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "铁拳8|豪华中文|Build.13299098+预购特典+全DLC 1.01.4\r\n《铁拳8》（Tekken 8）的剧情发生在《铁拳7》事件的半年之后，游戏的核心围绕着风间仁与他的父亲三岛一八之间的父子恩怨。在这场史诗般的对决中，风间仁为了对抗自己的命运，决定挑战掌握恶魔之力的父亲。这场父子之间的战斗不仅影响了他们个人，也牵动了整个世界的命运。游戏的叙事深入探讨了角色的内心挣扎、家族秘密以及他们与恶魔之力的斗争。\r\n\r\n风间仁的母亲风间准，自《铁拳2》以来首次回归作为可玩角色，她的出现为故事增添了新的层次和谜团。游戏的战斗概念强调“进攻性”，通过新的“Heat”系统，玩家可以更加积极地参与战斗，利用角色的特性和强化动作来主导战局。《铁拳8》不仅保留了系列的经典元素，还引入了新的游戏机制，为玩家和观众带来了前所未有的爽快感和观赏性。",
-		"intro": null,
+		"intro": "选角色打连招对拼，练招打排位，3D 格斗。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -4542,7 +4544,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "森林 The Forest 局域网联机版\n2019.9.10  v1.12 \n最近评测：好评如潮(12,252)\n全部评测：好评如潮(326,985) 95%好评\nhttps://store.steampowered.com/app/242760/The_Forest\n点击多人游戏，正常开房进房即可",
-		"intro": null,
+		"intro": "流落荒岛砍树盖房，防食人族，联机生存。",
 		"notes": null,
 		"version": "1.12",
 		"platform": [
@@ -4635,7 +4637,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.02",
-		"intro": null,
+		"intro": "回到校园当学生，上课恋爱交朋友，生活模拟。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -4719,7 +4721,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "当独臂忍者拿刀拼刀，反复死亡学招，硬核动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -4803,7 +4805,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "招武将带兵打天下，回合制征战，三国策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -4887,7 +4889,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v0.4 2026.2.13 v118398",
-		"intro": null,
+		"intro": "刷装备打神话怪物，一路砍怪升级，联机动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -4973,7 +4975,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "打枪过关还能打僵尸模式，科幻射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -5066,7 +5068,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "正式版",
-		"intro": null,
+		"intro": "横版探索打怪，边刷装备边跑图，类银河恶魔城。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -5155,7 +5157,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "开载具打大规模多人枪战，军事射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -5244,7 +5246,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2026.2.19 v1.05 全DLC",
-		"intro": null,
+		"intro": "开着火车在太空捡物资造装备，联机生存建造。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -5328,7 +5330,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "造舰队抢星系，太空实时战略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -5414,7 +5416,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "增强版 v1.0.8.38 中文",
-		"intro": null,
+		"intro": "在废土里潜行打怪，坐火车活下去，第一人称末日生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -5498,7 +5500,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在闹鬼老宅里走来走去，被幻觉吓，第一人称恐怖。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -5584,7 +5586,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "当黑帮小弟从街头混起，开车开枪，剧情犯罪。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -5671,7 +5673,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "摆陷阱堵门，自己也能下场砍，塔防动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -5755,7 +5757,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "拿重力枪打外星人突围，经典第一人称射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -5841,7 +5843,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "被 Boss 反复教做人，硬核动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -5925,7 +5927,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v20240603\r\n《高层都市》为城市模拟和大亨游戏提供了一个新的机遇，扩大了经济和资源管理方面。感受一下这个类型的现代游戏，它丰富了基于资源的复杂经济系统。",
-		"intro": null,
+		"intro": "规划高楼养活一座城，城市营造模拟。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -6010,7 +6012,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "星球大战 绝地 幸存者™|豪华中文|Build.15643690+预购特典+全DLC",
-		"intro": null,
+		"intro": "当绝地武士挥光剑砍怪探图，动作冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -6096,7 +6098,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v663500",
-		"intro": null,
+		"intro": "管一群小人在太空小行星里活下去，生存建造模拟。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -6182,7 +6184,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在哥谭当义警潜行揍人查案，动作冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -6266,7 +6268,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在科幻废土里选阵营闯世界，开放世界角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -6358,7 +6360,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.4.24 v1.08 全DLC",
-		"intro": null,
+		"intro": "骑摩托穿废土，被尸潮追，开放世界生存。",
 		"notes": null,
 		"version": "1.06",
 		"platform": [
@@ -6442,7 +6444,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v2025.1.28 v2.3.0.0",
-		"intro": null,
+		"intro": "造村子招村民过日子，联机中世纪经营。",
 		"notes": null,
 		"version": "1.5.0.4",
 		"platform": [
@@ -6528,7 +6530,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "拿枪在野外找猎物，慢慢蹲，拟真狩猎。",
 		"notes": null,
 		"version": "v1603223",
 		"platform": [
@@ -6614,7 +6616,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2026.7.10 v1.0.0",
-		"intro": null,
+		"intro": "抓怪物当苦力，盖基地造枪，联机生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -6716,7 +6718,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2024.10.6 v1.1.236.114\r\n收到已过世的妻子玛丽寄来的信，詹姆斯借机来到充满回忆的城镇「寂静岭」。 但是市街却深锁于浓雾之中，变成诡异生物徘徊的鬼城。 和怪物战斗并解谜的同时，在城镇中探索妻子蛛丝马迹的『SILENT HILL 2』重制版作品。",
-		"intro": null,
+		"intro": "走进雾中小镇找亡妻，心理恐怖。",
 		"notes": null,
 		"version": "v1.1.236.114",
 		"platform": [
@@ -6802,7 +6804,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "经典魂系，硬核打怪死磕，动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -6887,7 +6889,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.4.8 Mod0.5.0.1",
-		"intro": null,
+		"intro": "带兵骑马砍杀打天下，封建沙盒战争。",
 		"notes": null,
 		"version": "e1.7.1",
 		"platform": [
@@ -6971,7 +6973,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "拿神兵打妖魔救母，国风动作冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -7057,7 +7059,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "经典动作冒险游戏毁灭全人类回归，在这款重制版中扮演外星人使用各种武器和能力收割人类。游侠网分享毁灭全人类下载，将城市夷为平地，你的目标是毁灭全人类。\r\n\r\n高分辨率和更改视角工具\r\n\r\n毁灭全人类游戏特色\r\n\r\n　　1、体验50年代的外星人入侵故事的邪恶一面；\r\n\r\n　　2、（再次）发现为什么这个游戏被认为是有史以来最有趣的游戏之一；\r\n\r\n　　3、在新的银河荣耀中，从0开始忠实地进行了重建；\r\n\r\n　　4、享受隐藏者的独特武器库，例如肛门探针枪；\r\n\r\n　　5、伪装成弱小的人类，渗透进他们不堪一击的民主。\r\n\r\n毁灭全人类游戏亮点\r\n\r\n　　1、使用念力让敌人飞起来，或者使用随机物体对他们进行轰炸；\r\n\r\n　　2、使用喷气背包自如穿梭于各个可探索的50年代美国城市；\r\n\r\n　　3、用飞碟消灭原始的人类建筑；\r\n\r\n　　4、包含修复后的、坊间流传已久但之前从未现身过的：失落的42区任务！",
-		"intro": null,
+		"intro": "当外星人用飞碟吸人搞破坏，搞笑动作射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -7143,7 +7145,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "《使命召唤：联合进攻》（Call of Duty: United Offensive）是一款由Gray Matter Interactive开发，动视发行的第一人称射击游戏，是2003年游戏《使命召唤》的第一部资料片，于2004年9月14日发行。\r\n本作保留了原来的游戏结构，玩家将会扮演美国、英国和苏联三国的士兵，完成10项以上的任务。",
-		"intro": null,
+		"intro": "二战枪战过关，经典第一人称射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -7229,7 +7231,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v2026.4.24 全DLC 361299",
-		"intro": null,
+		"intro": "和队友一起造东西活下去，联机生存建造。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -7313,7 +7315,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.10.23 全DLC",
-		"intro": null,
+		"intro": "在丧尸街头砍杀求生，联机动作角色扮演。",
 		"notes": null,
 		"version": "V230716",
 		"platform": [
@@ -7397,7 +7399,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.1.14 v1.13.2 全DLC",
-		"intro": null,
+		"intro": "带队抢银行占地盘，联机犯罪射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -7484,7 +7486,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.1.1(Build.21164535) voices38版",
-		"intro": null,
+		"intro": "当刺客潜行刺杀逛古都，开放世界动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -7572,7 +7574,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "耍连招砍恶魔，越打越华丽，动作砍杀。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -7663,7 +7665,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2023.3.14 v1.20\r\n\r\n主机：不要一个人玩，共享故事，在弹出的界面中右键邀请客机\r\n客机：等待主机邀请，右上角接受。",
-		"intro": null,
+		"intro": "做选择看恐怖剧情，还能联机一起选，互动电影。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -7748,7 +7750,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "浓浓宇宙汤 Nom Nom Galaxy 局域网联机版\r\n2023.6.1 全DLC\r\n全部评测：多半好评(727) 77%好评\r\nhttps://store.steampowered.com/app/226100\r\n由于使用的是针对旧版本的汉化补丁，可能有部分文字无法显示。Radmin LAN加入同一网络后运行NomNomGalaxy.exe。\r\n主机：银河故事，底下“上线”，多人游戏，创建一个在线游戏，将私有切换成打开，点继续回到选择关卡，使用Shift+Tab，右键邀请客机。\r\n客机：等待主机邀请，右上角Join。",
-		"intro": null,
+		"intro": "和队友在星球上种菜做汤卖钱，联机休闲。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -7833,7 +7835,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在丧尸乐园里求生打枪，第一人称恐怖。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -7919,7 +7921,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2012年最大喜讯：光荣宣布《真三国无双6：猛将传》PC版组合套装将于2012年3月9日发售，PC玩家们欢呼吧，光荣是业界最后的良心，本次发售的《真三国无双6：猛将传》PC版组合套装售价7140円。\r\n\r\n　　此次《真三国无双6：猛将传》PC版组合套装将收录2011年10月之前所有在TV平台上新增的附加下载内容，这非常厚道，根据以往光荣的套路来说，此次《真三国无双6：猛将传》PC版组合套装将很有可能发售中文版，PC玩家一定不能错过这款大作游戏，《真三国无双6》乃无双系列的革新之作。",
-		"intro": null,
+		"intro": "一骑当千砍杂兵，无双割草。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -8003,7 +8005,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2024.10.17 v1.16 全DLC 无缝联机mod1.9.0",
-		"intro": null,
+		"intro": "进魂系开放世界受苦，联机一起打 Boss。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -8098,7 +8100,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v5.00.20",
-		"intro": null,
+		"intro": "摆塔守路口，卡通塔防。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -8182,7 +8184,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "刷装备砍怪，暗黑类动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -8266,7 +8268,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.0.139P",
-		"intro": null,
+		"intro": "挖矿打虫自动割草，肉鸽幸存者。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -8352,7 +8354,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带队友打外星人救银河，科幻角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -8440,7 +8442,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "光环战争》是由Ensemble Studios公司以经典FPS游戏《光环》为背景制作的一款即时战略游戏。该作的剧情时间设定在《光环》之前，讲述了人类与Covenant首次相遇时的事情。在本作中，玩家将可以控制人类一方的一个名为“Spirit of Fire”的小队，在未知的星球中探险。",
-		"intro": null,
+		"intro": "造基地出兵打太空战役，实时战略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -8524,7 +8526,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.0.0.9\r\nDYNASTY WARRIORS: ORIGINS - Visions of Four Heroes（新增）",
-		"intro": null,
+		"intro": "从无名小卒砍到名将，无双割草。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -8609,7 +8611,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "刷枪打怪闯奇幻世界，联机射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -8693,7 +8695,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v11691",
-		"intro": null,
+		"intro": "在列车上摆怪守塔，卡牌肉鸽。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -8778,7 +8780,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v0.63.02",
-		"intro": null,
+		"intro": "从平民打拼成一方诸侯，三国策略养成。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -8867,7 +8869,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "GZDoom 4.4.2",
-		"intro": null,
+		"intro": "拿枪在恶魔堆里突突突，经典复古射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -8958,7 +8960,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "第一人称被困鬼屋，边躲边解谜，生存恐怖。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -9042,7 +9044,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "管地盘收武将打天下，回合制三国策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -9135,7 +9137,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "这款求生实时战略游戏设定在野蛮人柯南的世界，你要在其中建造据点，组建一支不屈的军队，并在野蛮大军的进攻中生存下来。由 Petroglyph 公司曾经制作《命令与征服》的资深开发人员开发。",
-		"intro": null,
+		"intro": "造基地扛一波波怪，合作塔防式策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -9219,7 +9221,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "山羊模拟器3 Goat Simulator 3 局域网联机版\r\n2022.11.22 v208909 全DLC\r\nhttps://store.epicgames.com/zh-CN/p/goat-simulator-3\r\n启动一次游戏后，编辑NemirtingasEpicEmu.json的DefaultName改名，不能先改名再启动游戏。\r\n主机：点击主界面的好友或者+号，邀请客机。\r\n客机：等待主机邀请，确定加入。",
-		"intro": null,
+		"intro": "当山羊到处搞破坏，联机沙盒恶搞。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -9307,7 +9309,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "横版一路打过去，少林武僧砍杀。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -9391,7 +9393,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v2.0.1.4",
-		"intro": null,
+		"intro": "在村里查民俗怪事，第一人称恐怖解谜。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -9475,7 +9477,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.2.2\r\n包含DLC\r\n• Alan Wake 2 Pre-Order Bonus\r\n• Alan Wake 2 Deluxe Upgrade\r\n• Alan Wake 2 Night Springs\r\n• Alan Wake 2 The Lake House（新增）",
-		"intro": null,
+		"intro": "当作家在案件里分不清现实，剧情向生存恐怖。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -9560,7 +9562,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "《抗日大刀队：日军总部》是《德军总部3D》粉丝们不容错过的FPS游戏。想射爆鬼子吗？玩这款游戏就对了！不用换弹匣！没有后坐力！操作简单爽快！现在！扛起你的大刀！在肾上腺素狂飙的27个关卡中大屠杀！让鬼子们统统死啦死啦地！",
-		"intro": null,
+		"intro": "拿大刀砍进敌人总部，抗日动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -9644,7 +9646,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.2.001|容量24GB|官方简体中文|支持键盘.鼠标.手柄",
-		"intro": null,
+		"intro": "机甲兔横版探索打拳，类银河恶魔城。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -9728,7 +9730,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在江湖里经营门派传功，武侠沙盒角色扮演。",
 		"notes": null,
 		"version": "V0.0.52.14",
 		"platform": [
@@ -9816,7 +9818,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v20231220-P2P",
-		"intro": null,
+		"intro": "骑摩托压弯跑赛道，拟真竞速。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -9900,7 +9902,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.16.244.0",
-		"intro": null,
+		"intro": "开飞船逛上千个星球，太空开放世界角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -9984,7 +9986,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "铁血联盟3 V1.03.339125-黑色契约-绝地之战",
-		"intro": null,
+		"intro": "带佣兵回合制打枪，战术策略。",
 		"notes": null,
 		"version": "V1.03.339125",
 		"platform": [
@@ -10068,7 +10070,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "迷宫校舍 School Labyrinth 局域网联机版\r\n2024.3.27 v1.1.2\r\n最近评测：特别好评 (153) 83%好评\r\n全部评测：特别好评 (362) 84%好评\r\nhttps://store.steampowered.com/app/2423300\r\nRadmin LAN加入同一网络后运行UI_Test.exe。多人游戏\r\n主机：创建房间，将房间号告诉客机。\r\n客机：搜索房间，输入房间号。",
-		"intro": null,
+		"intro": "和队友在校园迷宫里找出口，联机解谜恐怖。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -10152,7 +10154,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v2.13",
-		"intro": null,
+		"intro": "接谍战大单闯新城区，剧情向开放世界角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -10238,7 +10240,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "双摇杆一路突突外星虫，俯视射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -10324,7 +10326,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在自由城当罪犯接活，开车开枪，开放世界动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -10408,7 +10410,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "幽灵行者2 残暴版|官方中文|Build.12522194+预购特典+全DLC",
-		"intro": null,
+		"intro": "一刀一个跑酷砍杀，赛博忍者。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -10492,7 +10494,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "Build.10602756",
-		"intro": null,
+		"intro": "在太空飞船里被怪物追，第三人称生存恐怖。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -10578,7 +10580,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "Build.23314029",
-		"intro": null,
+		"intro": "乐高小人合作解谜打坏人，动作冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -10664,7 +10666,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "华丽连招砍天使恶魔，动作砍杀。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -10750,7 +10752,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在香港老楼里撞鬼逃命，第一人称恐怖解谜。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -10836,7 +10838,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "开飞机打弹幕躲子弹，竖版街机射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -10938,7 +10940,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "当鲨鱼吃人变大，开放世界动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -11024,7 +11026,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "双人合作打丧尸，一边逃一边开枪，动作射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -11108,7 +11110,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "选人打连招对战，街机格斗。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -11195,7 +11197,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带帮派抢地盘搞事，联机开放世界犯罪。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -11279,7 +11281,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带村民在黑暗荒野里活下来，生存建造策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -11367,7 +11369,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "全面战争：罗马重制版v2.0.5集成高清材质包",
-		"intro": null,
+		"intro": "带军团作战打天下，策略战争。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -11455,7 +11457,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "《火炬之光 2》的事件已经过去了一个世纪，烬石帝国进入衰退期。在《火炬之光 3》中，诺瓦特拉亚再一次陷入遭到侵略的危机之中，你必须挺身而出抵挡冥裔和它们的帮凶。打起十二分精神，勇敢地在前线中战斗，赢取声望、荣誉，并体验新的冒险！",
-		"intro": null,
+		"intro": "刷装备砍怪升级，联机动作角色扮演。",
 		"notes": null,
 		"version": "2020.12.17",
 		"platform": [
@@ -11539,7 +11541,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "一个人穿过沙漠走向远山，氛围冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -11623,7 +11625,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "欺诈之地是klei开发的一款科幻背景策略卡牌角色扮演类型的游戏，rogue-like元素带来的高度随机性保证了每次游戏都有不同的体验。游侠网分享欺诈之地下载，玩家可自由选择要接的任务，要交的朋友，以及要收集的卡牌。\r\n\r\n欺诈之地游戏特色\r\n\r\n　　1、每个决定都至关重要，不管是接受什么任务、跟谁交朋友、还是收集哪些卡牌；\r\n\r\n　　2、死亡来的很快，但是每次轮回都会有新的场面和新的策略可以探索；\r\n\r\n　　3、我们会积极的根据玩家社区的反馈定期发布游戏更新，包括：新卡牌、新任务和新人物！\r\n\r\n欺诈之地游戏角色\r\n\r\n　　当前游戏还在开发阶段，你可以扮演萨儿或是鲁克进行游戏，第三个人物正在开发中。\r\n\r\n　　萨儿是一名探险家，她追逐利润的同时也渴望复仇。\r\n\r\n　　鲁克是一名上了年纪的特工，他执行着自己的秘密计划。",
-		"intro": null,
+		"intro": "靠打牌谈判也靠打牌打架，卡牌剧情。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -11708,7 +11710,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "《狂怒2》设定在一个反乌托邦的世界中，没有社会形态，也没有法律和秩序，本作将为玩家带来一场全新的开放世界FPS游戏体验，玩家可以到任何地方去，可以射击任何物体，可以探索一切。",
-		"intro": null,
+		"intro": "在废土飙车开枪乱杀，开放世界射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -11792,7 +11794,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.0.5",
-		"intro": null,
+		"intro": "制毒卖货管小弟躲警察，犯罪经营。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -11876,7 +11878,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "V1.0.3-前世今生",
-		"intro": null,
+		"intro": "在中式民俗诡异里查真相，恐怖解谜。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -11967,7 +11969,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v16.1.9737",
-		"intro": null,
+		"intro": "造村爆兵推平对手，历史实时战略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -12053,7 +12055,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.4.10 v1.0.2 全DLC",
-		"intro": null,
+		"intro": "小队潜行绕后杀敌，二战战术。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -12139,7 +12141,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.5.6 v4.0.3 全DLC",
-		"intro": null,
+		"intro": "开局一个星球，探索银河打外交战，太空策略。",
 		"notes": null,
 		"version": "3.8.2",
 		"platform": [
@@ -12223,7 +12225,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "转视角把画面拼起来，创意解谜。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -12307,7 +12309,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "《EVERSPACE™ 2》是一款快节奏的单人太空射击游戏，融合了经典的RPG元素，具有高度探索性且提供大量战利品。在纯手工搭建的开放世界中体验惊险刺激的故事，探索无尽的奥秘，在成为人类的道路上克服艰难险阻。\r\n包含DLC\r\n• EVERSPACE 2 - Alienware Ship Skin\r\n• EVERSPACE 2 - Titans（新增）\r\nv1.3.43094",
-		"intro": null,
+		"intro": "开飞船太空狗斗刷装备，飞行射击角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -12394,7 +12396,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "王国保卫战：起源是王国保卫战系列获奖冒险游戏的第三作，该系列在全球范围内已受到数百万玩家和评论家的喜爱和追捧。在这部作品中，您将回到整个故事的开始，那时维兹南还未曾起意要用力量宝石来胁迫王国。您将领略到这一不可不玩的塔防游戏系列的精髓，体验更加痛快利落而摄人心魄的游戏玩法。这部激动人心的前传将让您率领精灵军队，在全新防御塔、英雄和法术的帮助下，击退海蛇、邪恶术士和豺狼族人一波又一波的进攻，与坏人们血战到底，保卫神秘大陆的安全。",
-		"intro": null,
+		"intro": "摆塔守线出兵挡怪，塔防策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -12481,7 +12483,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "开载具打多人枪战，军事射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -12565,7 +12567,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在洛圣都开车搞事，开放世界动作。",
 		"notes": "GTA5 Mod整合版 2169辆载具 500多位人物与超级英雄 各种实用脚本模组 罪恶都市整合版【127GB】 \r\n\r\nSimple Trainer 修改器说明：\r\n进游戏按F3打开修改器菜单\r\n小键盘28上下\r\n小键盘46左右\r\n小键盘5确定 \r\n小键盘0返回 \r\n\r\n 修改器2说明：\r\n进游戏按F5打开修改器菜单，刷车，刷人物\r\n小键盘28上下\r\n小键盘46左右\r\n小键盘5确定 \r\n小键盘0返回 \r\n\r\n\r\n修改器3说明：\r\n进游戏按F6打开修改器菜单\r\nWSAD可以穿梭地图再按F6关闭\r\n  \r\n\r\nMenyoo 修改器说明：刷车，刷人物\r\n进游戏按F8打开修改器菜单\r\n小键盘28上下\r\n小键盘46左右\r\n小键盘5确定 \r\n小键盘0返回",
 		"version": null,
 		"platform": [
@@ -12631,7 +12633,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2026.2.6 v1.0Z",
-		"intro": null,
+		"intro": "在僵尸末世里搜刮建家，联机生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -12717,7 +12719,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.0.10407.0714",
-		"intro": null,
+		"intro": "末世里带人复仇求生，第三人称动作冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -12801,7 +12803,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "暂停时间安排暗杀路线，潜行战术。",
 		"notes": null,
 		"version": "3.2.25F.r4769",
 		"platform": [
@@ -12894,7 +12896,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "当小岛独裁者搞经济搞政治，模拟经营。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -12979,7 +12981,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.11.15 v2025.5.4",
-		"intro": null,
+		"intro": "开船航海打海盗刷装备，联机生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -13064,7 +13066,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "模拟人生4|官方中文|V1.102.190.1030+全DLC资料片+整合MOD",
-		"intro": null,
+		"intro": "捏人造屋过一辈子，生活模拟。",
 		"notes": null,
 		"version": "v1.84.197.1030",
 		"platform": [
@@ -13148,7 +13150,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "砍怪刷连招看剧情，日式动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -13234,7 +13236,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.0.28.4623",
-		"intro": null,
+		"intro": "从石器一路发展到现代，回合制 4X 策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -13321,7 +13323,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v2.01.76808",
-		"intro": null,
+		"intro": "带残兵回合制闯关，压力崩了就完蛋，暗黑肉鸽。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -13405,7 +13407,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "当失忆警探靠对话破案，剧情角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -13489,7 +13491,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2026.2.22 v1.0.4",
-		"intro": null,
+		"intro": "和队友坐电梯一路往下逃，联机恐怖。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -13573,7 +13575,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "生化危机6  Resident Evil 6 局域网联机版\r\n2018.1.27  v1.1.0全 DLC\r\n最近评测：特别好评(511)\r\n全部评测：特别好评(27,411) 80%好评\r\n启动BH6-LAN.exe，需要过完序章，回到主菜单，才能联机。\r\n有生存模式，有类似L4D2联机的人类VS丧尸模式，比赛模式等等。",
-		"intro": null,
+		"intro": "联机打僵尸过关，动作射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -13658,7 +13660,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v2025.3.4 全DLC",
-		"intro": null,
+		"intro": "用动漫角色飞天对战，联机格斗。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -13704,8 +13706,8 @@
 		"postExitEnabled": false,
 		"monitorExe": null,
 		"savePaths": [
-		"X:\\YunGame\\X\\SparkingZERO\\SaveGame\\*.*",
-		"X:\\YunGame\\X\\SparkingZERO\\settings\\*.*"
+			"X:\\YunGame\\X\\SparkingZERO\\SaveGame\\*.*",
+			"X:\\YunGame\\X\\SparkingZERO\\settings\\*.*"
 		]
 	},
 	{
@@ -13748,7 +13750,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "和队友打铺天盖地的巨虫外星人，联机射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -13833,7 +13835,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "《异域镇魂曲：增强版》（Planescape: Torment Enhanced Edition）是由黑岛工作室（Black Isle Studios）开发的一款基于高级龙与地下城规则的角色扮演游戏。这款游戏在1999年首次发布，后来在2017年推出了增强版，对游戏的图像和音乐进行了重制，并加入了新的游戏界面和配乐。\r\n\r\n剧情：\r\n游戏的主角是一个名为无名氏（Nameless One）的角色，他在停尸房醒来，失去了记忆。无名氏发现自己是一个不朽的存在，每次死亡后都会复活，但每次复活都会失去一部分记忆。为了找回自己的身份和记忆，无名氏踏上了一段探索自我和宇宙真相的旅程。游戏的故事充满了哲学思考，探讨了存在主义、自由意志和宿命等主题。\r\n\r\n玩家角色：\r\n玩家扮演的无名氏可以选择不同的职业，如战士、法师或盗贼，并且可以在游戏过程中自由转职。无名氏的背景故事丰富，他的过去充满了谜团，玩家需要通过与游戏中的NPC对话和探索来逐渐揭开这些谜团。\r\n\r\n最终Boss：\r\n游戏的最终Boss是“超越者”（The Transcendent One），也被称为“无名氏的创造者”。超越者是一个强大的存在，他创造了无名氏并试图通过他来实现自己的目的。在游戏的高潮部分，无名氏需要面对超越者，揭开自己不朽之谜的真相。\r\n\r\n最终目标：\r\n游戏的最终目标是帮助无名氏找回他的记忆，理解自己的存在意义，并决定自己的命运。玩家可以通过多种方式来达成这个目标，包括与超越者进行对话、战斗或者寻找其他解决方案。游戏提供了多种结局，每种结局都反映了玩家在游戏中的选择和无名氏的内心世界。这些结局不仅影响了无名氏的命运，也反映了玩家对游戏世界和角色的理解。",
-		"intro": null,
+		"intro": "靠对话和选择活出一个哲学故事，经典角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -13918,7 +13920,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "格兰蒂亚秘闻 v1.0.0a 豪华汉化中文最新正式版",
-		"intro": null,
+		"intro": "像素风打怪刷装备，动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -14002,7 +14004,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2026.2.12 v1.6.7",
-		"intro": null,
+		"intro": "组队挖矿造基地闯矮人矿坑，联机生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -14090,7 +14092,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.5.14 v0.93L",
-		"intro": null,
+		"intro": "和可爱虚拟女孩待在家里，越待越不对，心理恐怖。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -14175,7 +14177,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.2.21 v1.1.1",
-		"intro": null,
+		"intro": "下海潜水捞资源，联机深海冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -14259,7 +14261,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v0.8822",
-		"intro": null,
+		"intro": "和人对赌吹牛出老千，联机派对卡牌。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -14324,7 +14326,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "第一人称逛闹鬼画廊，恐怖解谜。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -14410,7 +14412,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "泳池狂欢1.6.1\r\n原作者：一只碧某人\r\nhttps://space.bilibili.com/86565098\r\n请大家支持作者",
-		"intro": null,
+		"intro": "摆植物挡僵尸，3D 塔防。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -14494,7 +14496,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "爬山，一个平台一个平台死过去，硬核平台跳跃。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -14579,7 +14581,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.5.14 v1.8.2 全DLC",
-		"intro": null,
+		"intro": "收集怪物变身打回合制，联机角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -14669,7 +14671,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "度假岛变丧尸岛，联机砍杀生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -14755,7 +14757,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "摆炮塔挡外星虫，塔防射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -14840,7 +14842,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.2.12.77991",
-		"intro": null,
+		"intro": "带兵骑马砍杀打天下，沙盒战争。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -14924,7 +14926,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "《ELEX》游戏背景设置在一个经历了陨石袭击的魔幻星球上。玩家将进入一个庞大无缝的游戏世界，这里充满了奇怪的人物，变异的生物，深刻的道德选择和强大的动作场面。",
-		"intro": null,
+		"intro": "在科幻荒野里选阵营闯世界，开放世界角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -15008,7 +15010,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "Build.15745129",
-		"intro": null,
+		"intro": "当米老鼠跳平台解谜冒险，3D 平台跳跃。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -15093,7 +15095,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.7.14 v1.0.3",
-		"intro": null,
+		"intro": "和队友打怪清巢穴，联机动作射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -15178,7 +15180,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.5.9 v2.0.1",
-		"intro": null,
+		"intro": "和队友抢头条搞事情，联机派对。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -15262,7 +15264,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.38290.H1",
-		"intro": null,
+		"intro": "死了重来一路砍出地狱，希腊神话肉鸽。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -15346,7 +15348,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "正式版",
-		"intro": null,
+		"intro": "俯视角拿枪扫虫海，割草射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -15431,7 +15433,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "当卧底警察在香港打黑帮，开放世界动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -15525,7 +15527,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在夜之城当雇佣兵，改造身体接活，开放世界角色扮演。",
 		"notes": null,
 		"version": "1.61",
 		"platform": [
@@ -15609,7 +15611,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.040",
-		"intro": null,
+		"intro": "带小队打二战实时战术，拟真策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -15693,7 +15695,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "三国志13 威力加强版|中文|V4670615-五路侵攻-姜维北伐-四夷六国+全DLC",
-		"intro": null,
+		"intro": "当君主或武将经营天下，三国策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -15786,7 +15788,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "跳平台闯关打坏人，合家欢冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -15871,7 +15873,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "主机：使用Shift+F2邀请客机。或者等客机用场景的网线进行联机。\r\n客机：等待主机邀请，或者使用场景的网线进行匹配联机。",
-		"intro": null,
+		"intro": "和队友在树林里被追，联机恐怖生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -15957,7 +15959,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在苏联科幻世界里打机器人，第一人称射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -16044,7 +16046,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "反复同一天，摸清路线破循环，第一人称射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -16138,7 +16140,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在校园里当刺头打架闹事，开放世界动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -16222,7 +16224,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "从一无所有在废土里挣扎，自由沙盒角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -16306,7 +16308,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "坎巴拉太空计划V1.12.5.03190",
-		"intro": null,
+		"intro": "自己拼火箭送小人上天，物理沙盒模拟。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -16391,7 +16393,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.3.28 v1.0.0",
-		"intro": null,
+		"intro": "和队友一起囤吃的蹦蹦跳，联机休闲。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -16477,7 +16479,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "横版一路斩妖除魔，一刀一刀砍过去，国产动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -16561,7 +16563,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "《瘟疫传说：无罪》讲述了姐弟两人在历史上最黑暗的时刻为生存而斗争的残酷故事。这款由Asobo工作室开发的新游戏将玩家带入一段回到14世纪法国的情感之旅，游戏玩法结合了冒险、动作和潜行，并辅以引人入胜的故事。跟随年轻的阿米西亚和她的小弟弟雨果，玩家将面对残酷的蹂躏世界，在黑死病的威胁下，揭露一个黑暗的阴谋。",
-		"intro": null,
+		"intro": "带弟弟在瘟疫里潜行逃命，剧情动作冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -16647,7 +16649,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在日本街头当黑道打架看剧情，动作冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -16731,7 +16733,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "转视角骗眼睛走通关，视觉错位解谜。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -16815,7 +16817,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "皇家骑士团 重生|豪华中文|V1.0.7.0-蔓延的战火-优化+全DLC-支持手柄",
-		"intro": null,
+		"intro": "回合制排兵布阵打战役，战术角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -16900,7 +16902,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.15威力加强版",
-		"intro": null,
+		"intro": "当战国大名管地盘打天下，历史策略。",
 		"notes": null,
 		"version": "1.05",
 		"platform": [
@@ -16998,7 +17000,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.0.1026_20周年纪念版",
-		"intro": null,
+		"intro": "攀爬解谜探古墓打枪，动作冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -17085,7 +17087,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "白天当医生晚上吸血，在伦敦做选择，动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -17169,7 +17171,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.5.15",
-		"intro": null,
+		"intro": "和队友一起开酒馆做菜卖酒，联机经营。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -17253,7 +17255,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "咩咩启示录|豪华中文|V1.3.3.344-重大更新-肉身之罪+罪孽DLC",
-		"intro": null,
+		"intro": "当邪教头子养小羊，一边种田一边砍怪，肉鸽经营。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -17341,7 +17343,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "罗马2：全面战争联机版，参见联机教程",
-		"intro": null,
+		"intro": "带军团打大规模会战，回合策略加实时战场。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -17430,7 +17432,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v20230925",
-		"intro": null,
+		"intro": "被追着逃出城市，第三人称生存恐怖。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -17514,7 +17516,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v2025.3.27",
-		"intro": null,
+		"intro": "在扭曲的世界里查案，心理恐怖叙事。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -17598,7 +17600,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "机械战警：暴戾都市 V230111-预购特典-未来之人",
-		"intro": null,
+		"intro": "当半机械警察上街执法开枪，科幻动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -17682,7 +17684,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "空心茧 茧中蚕作最后一梦|官方中文|V1.11-重大更新-多结局",
-		"intro": null,
+		"intro": "回老家老宅撞鬼逃命，第一人称恐怖。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -17766,7 +17768,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "当边境查验官决定放谁过，像素道德抉择。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -17853,7 +17855,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "经典塔防游戏《皇家守卫军/王国保卫战/Kingdom Rush》的续作正式发布！《皇家守卫军：前线/王国保卫战：前线/Kingdom Rush Frontiers》在保留了前作饱受好评的传统操作机制上，扩充了大量的全新内容，8种全新防御塔、9名全新英雄、包括巨蝎和暴怒猩猩在内的40种全新敌人，现在你的防御塔将有超过18种特别技能：释放死亡骑士、瘟疫之云或者潜行的刺客去刺杀敌人，当然关卡的规模也变得更大，绝对能让你过足瘾！",
-		"intro": null,
+		"intro": "摆塔守关挡怪，经典塔防。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -17941,7 +17943,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "畅玩原版《古墓丽影》冒险三部曲：在这款终极合集中，首次在现代化平台上提供包含所有扩展内容和隐藏关卡的完整游戏体验。",
-		"intro": null,
+		"intro": "攀爬解谜探古墓，经典动作冒险重制。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -18029,7 +18031,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "以撒的结合 重生|官方中文|V1.7.9B+忏悔DLC+全DLC",
-		"intro": null,
+		"intro": "边哭边射眼泪躲弹幕，地牢肉鸽。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -18113,7 +18115,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "招人占地打天下，回合制战棋。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -18197,7 +18199,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "重金属 地狱歌手|官方中文|V1.7.2-烈焰战歌-暗黑乐章+全DLC",
-		"intro": null,
+		"intro": "跟着摇滚节奏开枪踩点，节奏射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -18283,7 +18285,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在霓虹废土上打机甲开枪，复古科幻射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -18367,7 +18369,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.4.3.29",
-		"intro": null,
+		"intro": "当狱警或犯人管一座监狱，模拟经营。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -18453,7 +18455,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "最终幻想 起源 STRANGER OF PARADISE FINAL FANTASY ORIGIN 局域网联机版\r\n2023.4.6 1.32 全DLC\r\n全部评测：特别好评(312) 90%好评\r\nhttps://store.steampowered.com/app/1358700\r\n过完教程和出发剧情，在大地图。\r\n主机：选择一个任务，创建房间。\r\n客机：按ESC，按2切换到互联网图标，搜索房间，加入。",
-		"intro": null,
+		"intro": "砍杀刷装备闯剧情，联机动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -18537,7 +18539,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2026.5.11 全DLC",
-		"intro": null,
+		"intro": "开消防车冲火场救人，联机拟真模拟。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -18621,7 +18623,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "洞穴探险2 Spelunky 2 局域网联机版\r\n2022.11.23 v1.28\r\n最近评测：特别好评(134) 91%好评\r\n全部评测：特别好评(15,920) 93%好评\r\nhttps://store.steampowered.com/app/418530\r\nRadmin LAN加入同一网络后运行Spel2.exe。\r\n主机：在线，在线探险。\r\n客机：Shift+F2菜单，对着主机右键，接受游戏邀请。\r\n回车就绪，等待开始。",
-		"intro": null,
+		"intro": "下洞捡宝躲陷阱，死了重来，联机平台肉鸽。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -18711,7 +18713,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "鬼屋魔影：重制版 Build.13801462+预购特典+全DLC",
-		"intro": null,
+		"intro": "在老宅里查怪事求生，第三人称生存恐怖。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -18795,7 +18797,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.6.5",
-		"intro": null,
+		"intro": "开车穿越诡异公路，边开边捡物资活下去。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -18880,7 +18882,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.7.14 v1.17.30088",
-		"intro": null,
+		"intro": "开出租拉客赚钱，城市驾驶模拟。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -18966,7 +18968,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "怪物猎人：世界 Monster Hunter: World 局域网联机版\r\n2023.10.23 15.20.00 全DLC\r\n最近评测：特别好评 (1,573) 92%好评\r\n全部评测：特别好评 (235,715)  87%好评\r\nhttps://store.steampowered.com/app/582010\r\n创建人物并至少完成冠突龙骚动中任务，回到主界面。开始游戏，选择存档。\r\n主机：自己建立集会区域，设定完毕。游戏中按ESC，沟通交流，邀请好友。或者用Shift+F2调出菜单。对着客机右键Invite。\r\n客机：搜寻好友所在的集会区域。或者等待主机邀请后，选择受到邀请的集会所。\r\n集会所是只有自己的，进入同一个集会所后，任意人接受任务，其他人在任务柜台参加任务，参加集会区域内的任务。其他人按空格准备完毕，任务主按空格出发。出发后在任务地才能互相看到。",
-		"intro": null,
+		"intro": "组队猎大型怪物，剥材料做装备，联机动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -19050,7 +19052,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "逃离塔科夫 V0.13.0.3.22173-黑暗边缘\r\n如何玩：\r\n1- 启动“\\Aki.Server.exe”，不要关闭它。\r\n2- 启动“\\Aki.Launcher.exe”。\r\n3- 使用随机用户/密码，然后单击“注册”。\r\n4- 将版本更改为“Edge Of Darkness”\r\n5- 开始游戏 \r\n6-如果提示电脑未安装“逃离塔科夫”去附件里下载修复文件放入C盘根目录运行”Register.bat”\r\n重新打开启动器Aki.Launcher.exe登录即可开始游戏",
-		"intro": null,
+		"intro": "带装备进图搜刮，死了全丢，拟真射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -19134,7 +19136,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "史诗战争模拟2 免安装绿色中文版v0.1|游侠LMAO汉化1.0",
-		"intro": null,
+		"intro": "摆几万人打群架看物理乱飞，沙盒战争模拟。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -19218,7 +19220,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.0.3300.2",
-		"intro": null,
+		"intro": "在江湖里闯荡做选择，武侠角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -19306,7 +19308,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带小队打二战抢据点，实时战略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -19390,7 +19392,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "造大军团打大规模机甲战争，实时战略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -19476,7 +19478,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "魔兽争霸3重制版 整合收藏版v1.36\r\n20G地图",
-		"intro": null,
+		"intro": "造兵打对战闯战役，经典奇幻实时战略。",
 		"notes": null,
 		"version": "1.35",
 		"platform": [
@@ -19560,7 +19562,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "星之海(Sea of Stars)是一款致敬经典的回合制角色扮演游戏。玩家将扮演两位双至日之子，聚集太阳和月亮的力量施展星蚀魔法，以对抗邪恶血肉术士的恐怖造物。游侠网分享星之海游戏下载，以现代的方式重现经典角色扮演游戏：从回合制战斗到跌宕起伏的故事，从世界探索到细腻的环境互动，让大家重现独自一人回到怀旧游戏的美好时光。",
-		"intro": null,
+		"intro": "回合制打怪闯像素世界，复古角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -19644,7 +19646,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带火枪骑兵打历史会战，实时战略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -19730,7 +19732,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "厕所穿越记 Unepic 局域网联机版\r\n2018.7.12 v1.51.1\r\n最近评测：特别好评(13) 92%好评\r\n全部评测：特别好评(5,018) 91%好评\r\nhttps://store.steampowered.com/app/233980\r\nRadmin LAN加入同一网络后运行unepic.exe。第一次启动游戏选择右面的+16，再点Chinese(Simp)，选是。游戏默认按键比较反人类，建议先进选项看看。多人模式。\r\n主机：创建队伍，Public group，等待客机都加入了，创建游戏，选择模式，角色，地图，开始游戏。\r\n客机：搜寻队伍，看到房间加入。",
-		"intro": null,
+		"intro": "在地牢里乱砍乱跳，联机恶搞冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -19814,7 +19816,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带蚂蚁军团打架占地图，昆虫即时战略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -19900,7 +19902,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2026.7.29",
-		"intro": null,
+		"intro": "砍树挖矿造基地躲巨龙，联机开放世界生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -19984,7 +19986,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "一骑当千砍杂兵，无双割草。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -20075,7 +20077,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "联机打纳粹僵尸群，第三人称射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -20142,7 +20144,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "当特种兵打现代战争，军事射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -20226,7 +20228,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "开恐龙公园管游客，模拟经营。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -20312,7 +20314,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "潜行找点位狙击，开放世界射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -20396,7 +20398,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.12.7023440",
-		"intro": null,
+		"intro": "滑雪滑翔爬山，开放世界极限运动。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -20480,7 +20482,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.01.00",
-		"intro": null,
+		"intro": "带队踢足球打比赛，体育竞技。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -20578,7 +20580,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "联机打僵尸过关，动作射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -20665,7 +20667,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "摆炮塔出兵打外星人，塔防策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -20750,7 +20752,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.3.10 v1.19 全DLC",
-		"intro": null,
+		"intro": "和队友下墓探险被吓，联机恐怖解谜。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -20834,7 +20836,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "泰坦陨落2 终极版+全DLC|中字-国语",
-		"intro": null,
+		"intro": "开泰坦机甲打枪跑酷，科幻射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -20918,7 +20920,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "雾锁王国 Enshrouded 局域网联机版\r\n2024.3.26 v0.7.1.1\r\n全部评测：特别好评(16,522) 85%好评\r\nhttps://store.steampowered.com/app/1203620\r\n找一个人开服，运行服务端enshrouded_server.exe。\r\n服务器存档位于EnshroudedServer\\Game\\savegame。",
-		"intro": null,
+		"intro": "在迷雾里造基地砍怪，联机生存建造。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -21011,7 +21013,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "一个模拟器玩上千款老街机，怀旧合集。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -21095,7 +21097,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "霓虹入侵者 From Space 局域网联机版\r\n2023.10.12 b12424589 全DLC\r\n最近评测：多半好评(31) 74%好评\r\n全部评测：褒贬不一(1,281) 67%好评\r\nhttps://store.steampowered.com/app/1502190\r\n\r\n主机：生存模式或剧情模式，新建游戏或加载存档。\r\n客机：生存模式或剧情模式，大厅，选择房间加入游戏。",
-		"intro": null,
+		"intro": "和队友在霓虹城市扫外星怪，联机街机射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -21184,7 +21186,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "中国式家长是一款轻松休闲的模拟养成游戏，模拟从出生到成人这段过程，探讨孩子与家长之间的关系。\r\n\r\n本游戏为国产游戏，只为学习和研究之目的，如果你觉得好玩，请购买正版。",
-		"intro": null,
+		"intro": "从出生到高考一路养娃，模拟养成。",
 		"notes": null,
 		"version": "1.0.9.4",
 		"platform": [
@@ -21268,7 +21270,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "和迪士尼角色一起建村过日子，生活模拟。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -21437,7 +21439,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "反叛公司 局势升级|官方中文|V1.4.0.10(10)-1-V43+全DLC+沙海秘事-聚财除灾+场景编辑器|解压即撸|",
-		"intro": null,
+		"intro": "一边打仗一边搞建设稳民心，策略模拟。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -21528,7 +21530,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "开载具打多人枪战，军事射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -21612,7 +21614,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2026.7.21 v1.5.1",
-		"intro": null,
+		"intro": "进货摆货收银赚差价，联机经营。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -21699,7 +21701,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "一路打僵尸救人质，第三人称生存恐怖。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -21784,7 +21786,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2026.04.11 v1.0",
-		"intro": null,
+		"intro": "戴面具招族人造基地，联机生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -21870,7 +21872,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "《阿提拉：全面战争》是由世嘉发行的一款策略游戏，该作为《全面战争》系列的作品之一。游戏将带领玩家探索匈奴王阿提拉的故事，风格融合了《拿破仑：全面战争》与《帝国：全面战争》。游戏讲述了随着古罗马分裂，塞西亚的匈奴王阿提拉正逐步聚集力量，他将毁灭你的文明，身为统治者的你可能被阿提拉征服，或将其逼至帝国的另一方。\r\n　　本作将探索更广阔的任务，不仅需要提防部落之间的争斗，还可探索，为匈奴王阿提拉的入侵做准备，还引入的族谱系统。另外，相比前作，游戏机制也做了很大改变，例如加入了灾难毁灭元素、疾病传播元素、传奇游戏起点模式等。同时，核心游戏性和UI同时获得增强，而这些变化都体现在政治、家庭树、市政管理、以及技术发展等方面。",
-		"intro": null,
+		"intro": "带蛮族打帝国末日，回合策略加实时战场。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -21957,7 +21959,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "《河洛群侠传》是由河洛工作室制作，方块游戏发行的一款角色扮演类游戏。本作继承了河洛工作室高自由度的游戏特色，玩法丰富的角色养成系统让每个玩家都能够在各色队友的陪伴下，精心打造出一个与众不同的武林世界。",
-		"intro": null,
+		"intro": "在江湖里闯荡学武功，武侠开放世界角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -22050,7 +22052,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在宗教黑暗世界里横版砍杀，类银河恶魔城。",
 		"notes": null,
 		"version": "v4.0.67",
 		"platform": [
@@ -22134,7 +22136,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "从少年长成英雄，做选择变好或变坏，奇幻角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -22218,7 +22220,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "死了换后代继承接着闯，横版肉鸽。",
 		"notes": null,
 		"version": "v1.1.1",
 		"platform": [
@@ -22302,7 +22304,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v4.0.19.43315",
-		"intro": null,
+		"intro": "带维京人占地盘抗寒冬，即时战略。",
 		"notes": null,
 		"version": "v2.5.22.22563",
 		"platform": [
@@ -22386,7 +22388,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "打枪还看真人剧集，时间超能力动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -22472,7 +22474,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带坦克打二战阵地战，实时战略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -22558,7 +22560,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v2.0.2",
-		"intro": null,
+		"intro": "砍怪刷装备刷词条，日式动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -22644,7 +22646,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "《羞辱:界外魔之死》仍由屡获殊荣的Arkane Studios开发，玩家在本作将能够扮演恶名昭彰的刺客Billie Lurk，在资料片中他将会和导师达乌德再次联手，以完成一场终极难度的刺杀任务——杀死局外人。Billie和达乌德曾经见识过帝国最为黑暗的一面，而为了杀死局外人，这一次两人又将深入Karnaca最恶劣的角落，揭开界外魔的秘密并且了解他的起源之谜。在这个过程中，玩家将面对致命的敌人、远古的强者，还面临着将永远改变你周遭世界的艰难抉择。",
-		"intro": null,
+		"intro": "潜行暗杀挑路线，第一人称潜行。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -22730,7 +22732,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "C:\\Users\\Administrator\\AppData\\Roaming\\AlawarEntertainment\\SPL\\TreasuresOfMontesuma4",
-		"intro": null,
+		"intro": "三消刷分闯关，休闲益智。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -22823,7 +22825,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "造村爆兵打殖民时代，联机实时战略。",
 		"notes": null,
 		"version": "v100.12.38254.0",
 		"platform": [
@@ -22909,7 +22911,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "1-5章全\r\nC:\\Users\\Administrator\\Documents\\Telltale Games\\Batman The Telltale Series",
-		"intro": null,
+		"intro": "做选择演哥谭义警的剧情，剧情向冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -23003,7 +23005,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在方块世界里养龙盖城堡，沙盒建造。",
 		"notes": null,
 		"version": "1.12.2",
 		"platform": [
@@ -23087,7 +23089,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.7.17 v1.01",
-		"intro": null,
+		"intro": "造城堡攻城防人，中世纪策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -23175,7 +23177,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "集成DLC：Night of the Hangry Horde饿人之夜",
-		"intro": null,
+		"intro": "和队友在乱厨房里抢着做菜，联机合作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -23260,7 +23262,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2026.1.26 v1.2.2.3",
-		"intro": null,
+		"intro": "在方块星球上建造探索，联机沙盒。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -23346,7 +23348,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "双摇杆一路突突外星虫，俯视射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -23432,7 +23434,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在哥谭滑翔揍人清据点，开放世界动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -23517,7 +23519,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "帝国神话 Myth of Empires 局域网联机版\r\n2024.4.4 v1.35.3 全DLC\r\n最近评测：褒贬不一 (1,617) 60%好评\r\n全部评测：多半好评 (11,271) 71%好评\r\nhttps://store.steampowered.com/app/1371580/\r\n游戏主界面进入单机/主机模式\r\n主机：创建游戏，网络模式选择本地模式。\r\n客机：切换到局域网标签，找到主机加入。",
-		"intro": null,
+		"intro": "在古战场造城带兵打仗，联机生存沙盒。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -23601,7 +23603,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在末日楼顶捡物资建小家，休闲生存建造。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -23687,7 +23689,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "由育碧蒙特利尔工作室主研，育碧上海工作室、育碧基辅工作室以及育碧布加勒斯特工作室协助研发的《孤岛惊魂：新曙光》是一款开放世界式的第一人称射击游戏。作为《孤岛惊魂5》的独立续作，玩家将被猛然带入到鲜亮的后启示录世界并面临来自双胞胎姐妹米琪和露的双重威胁。玩家可以招募中立的人物或野兽，也可以在合作模式下招募好友作战，共同体验充满未知的、令人难忘的、任何情况都有可能发生的游戏时刻。",
-		"intro": null,
+		"intro": "在彩色废土上打帮派，开放世界射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -23772,7 +23774,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.9.6.404",
-		"intro": null,
+		"intro": "当穷小子学剑混江湖，拟真中世纪角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -23857,7 +23859,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2024.12.10 v1.5.9",
-		"intro": null,
+		"intro": "指挥航母编队打海战，军事策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -23943,7 +23945,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "当哥谭英雄上街揍人查案，联机动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -24030,7 +24032,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "两个人配合跳平台解谜，双人合作冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -24114,7 +24116,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在宅子里被父亲追，像素恐怖解谜。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -24198,7 +24200,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "打弹幕竖版射击，黑白属性互克。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -24284,7 +24286,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在日本街头当黑道打架看剧情，动作冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -24368,7 +24370,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "主机：新游戏或者加载存档，进入地图后按ESC，显示及复制邀请码，发给客机。\r\n客机：粘贴主机的邀请码，加入。",
-		"intro": null,
+		"intro": "改造外星荒星让它能住人，联机生存建造。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -24452,7 +24454,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2024.7.31 v1.0.5 全DLC",
-		"intro": null,
+		"intro": "和队友在雨夜里躲怪，联机恐怖。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -24536,7 +24538,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "造兵打奇幻战役，经典实时战略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -24621,7 +24623,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "战魂铭人 Otherworld Legends 局域网联机版\r\n2023.11.15 v2.0.2 全DLC\r\n最近评测：多半好评(14) 78%好评\r\n全部评测：褒贬不一(714) 56%好评\r\nhttps://store.steampowered.com/app/1761380\r\nRadmin LAN加入同一网络后运行Otherworld Legends.exe。\r\n进行完战斗，回到大厅，走到大厅左边的小房间，有个联机助手小克（树上的猫头鹰），与其对话，选择局域网联机。\r\n主机：创建房间。\r\n客机：点击房间加入。",
-		"intro": null,
+		"intro": "像素风地牢砍怪刷装备，联机肉鸽。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -24705,7 +24707,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "Build.20200907",
-		"intro": null,
+		"intro": "指挥太空舰队对轰，战锤策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -24789,7 +24791,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "黎明前20分钟|官方中文|V1.0.3-全新完整版-新增角色:卡坦娜",
-		"intro": null,
+		"intro": "撑过20分钟打枪割草，肉鸽射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -24875,7 +24877,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "滚球走高空轨道，物理益智。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -24959,7 +24961,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "选角色打连招对战，3D 格斗。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -25045,7 +25047,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "一路突突打纳米机械兵，剧情射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -25131,7 +25133,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "冰封之焰服务端\r\n2023.1.27 0.73.0.0.32742\r\n主机需要下载，运行run.bat。\r\n更详细的服务器游戏配置参数可以看这里https://github.com/DreamsideInteractive/FrozenFlameServer/blob/main/README_CN.md\r\n\r\n冰封之焰 Frozen Flame 局域网联机版\r\n2023.1.27 0.73.0.0.32742 全DLC\r\n全部评测：褒贬不一(1,335) 67%好评\r\nhttps://store.steampowered.com/app/715400\r\nRadmin LAN加入同一网络，运行FrozenFlame\\Binaries\\Win64\\FrozenFlame-Win64-Shipping.exe。\r\n主机：游玩，私人服务器，添加，输入127.0.0.1，接入。\r\n客机：游玩，私人服务器，添加，输入主机的Radmin LAN IP，接入。",
-		"intro": null,
+		"intro": "和队友在冰雪世界砍怪建家，联机生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -25226,7 +25228,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "全面战争传奇：特洛伊V1.2.0.0",
-		"intro": null,
+		"intro": "带神话英雄打城战，回合策略加实时战场。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -25310,7 +25312,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.0.0",
-		"intro": null,
+		"intro": "跟妹子度假拍照看剧情，恋爱模拟。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -25396,7 +25398,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "双摇杆突突外星虫，俯视射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -25480,7 +25482,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.0.20",
-		"intro": null,
+		"intro": "收拾凶案现场清血迹，黑色幽默模拟。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -25564,7 +25566,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "动力装甲行动MOD目的是将整个游戏的玩法和视觉效果重做，能让玩家体验到电影中的虫海，同时增加了十多种单位，并且完全重做了所有单位的技能。同时22段过场动画重新剪辑制作！在大量修改游戏内容的同时还兼具了电影化的游戏视觉效果，虫族的数量大幅度增加，而你的部队不仅拥有更强悍的火力武装，还拥有更精良的训练！ 虫族现在不仅仅是拥有更多的数量，它们还更加聪明！",
-		"intro": null,
+		"intro": "穿动力甲打虫潮，联机科幻射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -25648,7 +25650,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "典藏版|内置简中汉化",
-		"intro": null,
+		"intro": "当西部枪手边打边讲往事，射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -25735,7 +25737,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "骑士与商人重制版 Knights and Merchants Remake 局域网联机版\r\n2023.4.6 r15122\r\n最近评测：特别好评(24) 91%好评\r\n全部评测：特别好评(2,418) 86%好评\r\nhttps://store.steampowered.com/app/253900\r\nRadmin LAN加入同一网络，运行KaM_Remake.exe。如果运行游戏时提示OpenAL could not be initialized。安装一下目录里的oalinst.exe再运行游戏。\r\n切换中文：Options，Chinese。原版游戏节奏很慢，重制版支持F5、F6、F7、F8变速。\r\n多人联网，右上角修改姓名，不能同名。\r\n主机：创建服务器，创建本地服务器。\r\n客机：找到服务器加入。",
-		"intro": null,
+		"intro": "造田养兵打中世纪战争，经营策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -25819,7 +25821,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2024.10.29 v1.29 全DLC",
-		"intro": null,
+		"intro": "横版拿枪一路突突，联机街机射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -25903,7 +25905,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "失落迷城 群星的诅咒 终极版|官方中文|V1.09.0-冬季版+全DLC",
-		"intro": null,
+		"intro": "闯遗迹打怪，魂系动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -25987,7 +25989,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "开改装车街头飙车躲警车，竞速。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -26071,7 +26073,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带小队打二战战术，实时战略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -26157,7 +26159,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "V1.34.0.15931218 全DLC",
-		"intro": null,
+		"intro": "打冷战枪战，还能打僵尸模式，射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -26241,7 +26243,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带队友闯奇幻世界做选择，剧情角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -26329,7 +26331,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "从远古一路发展文明，回合制策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -26415,7 +26417,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带队友打外星人救银河，科幻角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -26499,7 +26501,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "方块创作型RPG《勇者斗恶龙 创世小玩家 阿雷夫加尔德复兴记》于Steam®登场，并新增便利的创造物品功能！舞台为广阔的“阿雷夫加尔德”的世界，这个世界由方块建构而成。在推进故事的同时，自由地创造专属于你自己的建筑或城镇，复兴“阿雷夫加尔德”！",
-		"intro": null,
+		"intro": "边砍怪边盖房子重建世界，日式建造。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -26585,7 +26587,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "完整版|容量5.93GB|内置简中汉化|支持键盘.鼠标.手柄",
-		"intro": null,
+		"intro": "边嘴炮边砍人开枪，搞笑动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -26669,7 +26671,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v4.2.0.1",
-		"intro": null,
+		"intro": "开工程车修路清废墟，模拟建造。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -26753,7 +26755,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带弟弟逃亡做选择，剧情向冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -26837,7 +26839,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "大佬竞速是一款采用复古画面的街机风格赛车竞速游戏，利用漂移技术帮助你获得领先，获得极速赛车体验。游侠网分享Hotshot Racing下载，游戏采用低聚3D模型，追求速度第一，支持单人和多人游戏并包含多种游戏模式。\r\n\r\n大佬竞速游戏特色\r\n\r\n　　16条赛道中分布着迂回、转弯和直道，充斥着快速的赛车体验。无论是沿海、丛林、高山还是拉斯维加斯的沙漠环境，每一个赛道都有最生动的颜色和和一望无际的蓝天。\r\n\r\n　　计时赛和大奖赛模式迎合了那些喜欢在经典赛车模式中竞速的玩家，而“警察和强盗”和“驾驶或爆炸”模式则提供了令人兴奋的新玩法。\r\n\r\n　　每种模式都有单人模式、四人分屏模式和八人在线模式，计时赛则只有单人模式。单人模式以60FPS的炫目速度运行，以最快的速度极其真实地描绘赛车场景。",
-		"intro": null,
+		"intro": "开卡通车乱撞一气，休闲竞速。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -26921,7 +26923,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "红至日2：幸存者 Red Solstice 2: Survivors 局域网联机版\r\n2023.7.3 v2.997 全DLC\r\n最近评测：特别好评(15) 86%好评\r\n全部评测：多半好评(2,230) 71%好评\r\nhttps://store.steampowered.com/app/768520\r\nRadmin LAN加入同一网络后运行survivors.exe。OPTIONS、GAMEPLAY中切换语言。进入联机作战。\r\n房主：点击右下角的【主机】开房。可以使用Shift+F2邀请客机。\r\n客机：可以浏览服务器加入，或者使用Shift+F2菜单Join主机。\r\n存档与steamid有关，%LOCALAPPDATA%\\RedSolstice2\\Save\\Profiles的文件名数字就是steamid，与游戏文件夹中的user_steam_id.txt内容需要一致。",
-		"intro": null,
+		"intro": "和队友在外星打异形守据点，联机战术射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -27006,7 +27008,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.6.7 B99.5",
-		"intro": null,
+		"intro": "开火车拉货跑线路，联机拟真模拟。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -27090,7 +27092,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "缉私警察|官方中文|Build.12930888-10.2.3-重大更新+全DLC",
-		"intro": null,
+		"intro": "拦车查证件抓走私，执法模拟。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -27174,7 +27176,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "和队友打铺天盖地的巨虫，联机射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -27260,7 +27262,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "参见联机教程",
-		"intro": null,
+		"intro": "拿着大枪无双乱杀外星怪，联机射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -27344,7 +27346,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2024.10.28 v1.4.6",
-		"intro": null,
+		"intro": "变小后在院子里跟虫子抢地盘，联机生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -27428,7 +27430,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "拿摄像机在疯人院里躲人逃命，第一人称恐怖。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -27512,7 +27514,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.2.103.259",
-		"intro": null,
+		"intro": "从练气一路修仙闯宗门，国产开放世界修仙。",
 		"notes": null,
 		"version": "0.8.7011",
 		"platform": [
@@ -27596,7 +27598,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在时间循环里查案，解谜冒险。",
 		"notes": null,
 		"version": "1.3.0",
 		"platform": [
@@ -27680,7 +27682,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.0.46.0",
-		"intro": null,
+		"intro": "背货穿越荒野送快递，剧情向开放世界冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -27764,7 +27766,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.1",
-		"intro": null,
+		"intro": "在江湖里打打杀杀闯名堂，武侠动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -27811,7 +27813,7 @@
 		"postExitEnabled": false,
 		"monitorExe": null,
 		"savePaths": [
-		"C:\\Users\\Administrator\\AppData\\LocalLow\\HuaLongZ\\saves\\*.*"
+			"C:\\Users\\Administrator\\AppData\\LocalLow\\HuaLongZ\\saves\\*.*"
 		]
 	},
 	{
@@ -27851,7 +27853,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "FIFA23|豪华中文|V1.0.82.43747-最终稳定版+全DLC+中文解说+世界杯离线",
-		"intro": null,
+		"intro": "带队踢足球打比赛，体育竞技。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -27935,7 +27937,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "和队友下地牢砍怪刷装备，联机角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -28019,7 +28021,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "自造种族统领奇幻世界，回合制 4X 策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -28109,7 +28111,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.2.12 b17329769 全DLC",
-		"intro": null,
+		"intro": "和队友打枪刷词条闯关，联机肉鸽射击。",
 		"notes": null,
 		"version": "9.03",
 		"platform": [
@@ -28193,7 +28195,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在唯美世界里解谜前行，氛围冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -28279,7 +28281,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "砍杀闯关刷装备，联机动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -28365,7 +28367,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "和队友互相拉着往上爬，联机搞怪平台跳跃。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -28451,7 +28453,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.8.26 v2.9.3.104278",
-		"intro": null,
+		"intro": "在丛林里砍树搭窝防野兽，联机生存。",
 		"notes": null,
 		"version": "2.4.3",
 		"platform": [
@@ -28535,7 +28537,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.0.157",
-		"intro": null,
+		"intro": "造城墙挡一波波敌人，中世纪基地策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -28619,7 +28621,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "马克思佩恩3V1.0.0.255全DLC    汉化中文",
-		"intro": null,
+		"intro": "子弹时间打枪复仇，第三人称射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -28703,7 +28705,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "老牌足球对战，带队伍打比赛，体育竞技。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -28787,7 +28789,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.2.19 v0.7.22\r\n主机：开始游戏，进行完教程，在小屋，使用Shift+F2邀请所有客机\r\n客机：右上角接受邀请，或者在主界面按Shift+F2，主机邀请后，对着主机右键，接受游戏邀请。\r\n如果有客机无法加入，主机需要回到主界面，重新开始游戏和邀请。",
-		"intro": null,
+		"intro": "和队友手忙脚乱做饮品出单，联机经营。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -28873,7 +28875,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "惊惧之邀 INVITATION To FEAR 局域网联机版\r\n2022.6.15 v1.1.1\r\n全部评测：褒贬不一(169) 69%好评\r\nhttps://store.steampowered.com/app/1802330\r\nRadmin LAN加入同一网络启动HorrorWaiwai.exe。多人游戏。\r\n主机：创建，公共或者仅限邀请，仅限邀请的话，使用Shift+F2菜单右键邀请客机。\r\n客机：搜索房间进入，或者等待主机邀请，使用Shift+F2菜单右键接受邀请加入主机。",
-		"intro": null,
+		"intro": "和队友在密室里躲木偶找出口，联机恐怖解谜。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -28964,7 +28966,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "联机打僵尸群，第三人称射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -29049,7 +29051,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在末日里打机器人军队，剧情射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -29133,7 +29135,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v20240107",
-		"intro": null,
+		"intro": "拿物理玩具随便造随便玩，沙盒联机。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -29227,7 +29229,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2024.7.17 v1.2.5.7\r\n主机：游玩，选择一个战役，右上角切换难度界面选择创建游戏（相当于公开大厅，大家都能搜索到加入），确定。\r\n客机：游玩，寻找游戏，找到房间加入。",
-		"intro": null,
+		"intro": "和队友摆陷阱堵门砍兽人，联机塔防动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -29311,7 +29313,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "V34.82",
-		"intro": null,
+		"intro": "在恐龙岛上抓龙盖房活下去，联机生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -29397,7 +29399,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "腐烂国度2 巨霸主宰版|官方中文|V34-542780-转折-血心来袭+全DLC",
-		"intro": null,
+		"intro": "建社区收幸存者扛丧尸，开放世界生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -29481,7 +29483,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "一骑当千砍杂兵，无双割草。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -29565,7 +29567,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2025.1.23 v1.33.502.0",
-		"intro": null,
+		"intro": "和队友在活火山小岛上求生，联机生存建造。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -29649,7 +29651,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "2026.6.26 v0.21.1.2",
-		"intro": null,
+		"intro": "和队友跑商建镇做生意，联机经营。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -29911,7 +29913,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "DayZ 局域网联机版\r\n2023.6.6 1.21.156243\r\n最近评测：特别好评(3,110) 86%好评\r\n全部评测：多半好评(269,374) 72%好评\r\nhttps://store.steampowered.com/app/221100\r\n等待主机启动好服务器。\r\n主机/客机：右上角齿轮图标设置语言。点击更换服务器，在LAN页面查看服务器加入。\r\n如果想使用mod，参考run_with_mod.bat的内容，将mod放在游戏根目录，编辑bat内容后运行bat来打开游戏。\r\n\r\n\r\nDayZ 服务端\r\n2023.6.6 1.21.156243\r\n主机需要下载并运行start.bat。\r\n有些mod需要服务端也安装，将mod文件夹放在服务端根目录，同时每个mod里有个bikey文件需要放在服务端的keys文件夹，最后编辑start.bat的mod=部分。\r\n如果要切换为DLC地图，serverDZ.cfg文件中template=\"dayzOffline.chernarusplus\"换成template=\"dayzOffline.enoch\"。\r\n\r\n\r\nMod安装方法：\r\n将mod的文件夹放到根目录。\r\n服务端在bat启动参数加入：-config=serverDZ.cfg -port=2302 -cpuCount=4 -dologs -adminlog -netlog -freezecheck -mod=@CF;@SchanaModParty\r\n-mod=后面的内容，是每个mod的文件夹名，以英文分号隔开，自行根据mod的文件夹修改。例如上述例子里有两个mod，分别放在@CF和@SchanaModParty文件夹中。并且将每个Mod文件夹中的Keys文件夹的*.bikey文件复制到根目录中的keys文件夹中\r\n\r\n客户端在bat启动参数加入：-mod=@CF;@SchanaModParty\r\n-mod=后面的内容，是每个mod的文件夹名，以英文分号隔开，自行根据mod的文件夹修改。例如上述例子里有两个mod，分别放在@CF和@SchanaModParty文件夹中。\r\n改名在启动参数加入-name=YourName，每个启动参数之间用空格分开。",
-		"intro": null,
+		"intro": "在僵尸末世里搜物资活下去，见人就开火，联机生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -37401,7 +37403,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.0.6",
-		"intro": null,
+		"intro": "当海盗船长开船海战，上岛潜行刺杀，开放世界动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -42311,7 +42313,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "光明记忆 无限 终极版|中字-语音|Build.12410926-第三人称新功能+优化-洪荒神水+危机四伏-影映离殇-曦月幽蓝+全DLC",
-		"intro": null,
+		"intro": "用枪和刀一路突进砍杀，短平快国产射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -47228,7 +47230,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "西游幸存者|官方中文|V0.8234-道侣双修-如来神掌-神话纷争-黑暗遗迹",
-		"intro": null,
+		"intro": "选西游角色自动割草，从一波波妖怪里活下来，肉鸽生存。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -49279,7 +49281,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "当狂战士硬碰硬砍杀，高难度动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -54299,7 +54301,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "v1.0.42.46611",
-		"intro": null,
+		"intro": "当西部牛仔闯亡命徒时代，骑马开枪，开放世界冒险。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -58739,7 +58741,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带小队斩妖除魔，实时战斗看剧情，国产武侠角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -67626,7 +67628,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "《Elden Ring》是一款黑暗幻想类的动作角色扮演游戏。该作更加注重RPG元素，继续保持高难度，玩家将体验到战胜困难所带来的乐趣。在Elden Ring的世界里充斥着危险和威胁，有很多地方等待探索。玩家会见到一些错综复杂的地图设计，充满层次感的城堡，以及许多类似的要素。",
-		"intro": null,
+		"intro": "在交界地四处探索打怪，死了重来，硬核开放世界动作。",
 		"notes": null,
 		"version": "1.02.2",
 		"platform": [
@@ -71370,7 +71372,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "戴森球计划 Dyson Sphere Program\n2023.12.16 v0.10.28.20829\n最近评测：好评如潮(917) 97%好评\n全部评测：好评如潮(67,211) 97%好评\nhttps://store.steampowered.com/app/1366540\n浩瀚无垠的宇宙，未知的征程，作为戴森球计划的一名工程师，你将前往陌生的星系，建造戴森球。从一无所有白手起家，采集资源，规划设计生产线，逐步实现全自动化，将你的工厂从一个小作坊，发展成为庞大的跨星系工业帝国。探索未知的星球，发现珍奇，让你的足迹遍布星辰大海。",
-		"intro": null,
+		"intro": "在星球上盖工厂造戴森球，全自动化流水线，建造经营。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -76599,7 +76601,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "天命奇御-+DLC伏虎迷蹤-V.2.3(官中+完美结局存档可直接游玩DLC)",
-		"intro": null,
+		"intro": "当少侠闯江湖，边打边解谜查案，国产武侠角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -77792,7 +77794,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "在开放世界当雇佣兵砍杀探索，动作角色扮演。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -80524,7 +80526,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带一队嘴炮队友打怪，做选择看剧情，动作冒险。",
 		"notes": null,
 		"version": "Build.8734975",
 		"platform": [
@@ -82223,7 +82225,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "严阵以待 Ready or Not 局域网联机版\n2023.1.19 v25143 汉化版\n最近评测：特别好评(5,175) 88%好评\n全部评测：特别好评(77,414) 92%好评\nhttps://store.steampowered.com/app/1144200",
-		"intro": null,
+		"intro": "带队破门突入，慢节奏拟真反恐，战术射击。",
 		"notes": null,
 		"version": "v25143",
 		"platform": [
@@ -85661,7 +85663,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "当纳美人潜入潘多拉，打物资抗人类，开放世界射击。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -85707,7 +85709,7 @@
 		"postExitEnabled": false,
 		"monitorExe": null,
 		"savePaths": [
-		"C:\\Users\\Administrator\\AppData\\Roaming\\Goldberg UplayEmu Saves\\4740\\*.*"
+			"C:\\Users\\Administrator\\AppData\\Roaming\\Goldberg UplayEmu Saves\\4740\\*.*"
 		]
 	},
 	{
@@ -90003,7 +90005,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "失落城堡 Lost Castle 联机版\n2024.2.21 v2.04\n最近评测：多半好评(63) 73%好评\n全部评测：特别好评(17,429) 88%好评\nhttps://store.steampowered.com/app/434650\n第一次启动提示是否关联Epic账号选NO，点击多人游戏，在线多人。\n主机：创建房间，勾上私人，创建，邀请好友。\n客机：等待主机邀请，右上角加入游戏。",
-		"intro": null,
+		"intro": "在地牢里乱砍乱捡装备，死了重来，联机横版动作。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -90923,7 +90925,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": "《大侠立志传》是一款开放世界武侠RPG游戏，更是一款像素版江湖生存模拟器，站在一个初出茅庐的市井小人物视角，还原在江湖底层摸爬滚打最终脱颖而出的逆袭经历。",
-		"intro": null,
+		"intro": "当江湖小人物从零打拼，自由养成闯荡，国产武侠。",
 		"notes": null,
 		"version": "v080828b40",
 		"platform": [
@@ -93208,7 +93210,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带仙侠小队闯江湖，即时战斗看剧情，国产角色扮演。",
 		"notes": null,
 		"version": "2.01",
 		"platform": [
@@ -103537,7 +103539,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "带英雄招募兵种，回合制占地攻城，经典策略。",
 		"notes": null,
 		"version": null,
 		"platform": [
@@ -104656,7 +104658,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "组队回合制打怪，用环境互动玩花活，硬核角色扮演。",
 		"notes": null,
 		"version": "v3.0.226.993",
 		"platform": [
@@ -105239,7 +105241,7 @@
 		"favorite": false,
 		"coverImage": "",
 		"description": null,
-		"intro": null,
+		"intro": "从练气一步步筑基成丹，炼丹交友闯秘境，国产修仙。",
 		"notes": null,
 		"version": "1.0.28",
 		"platform": [
@@ -108950,7 +108952,64 @@
 		"savePaths": []
 	},
 	{
+		"id": null,
 		"name": "大富翁11",
+		"originName": null,
+		"localizedNames": [],
+		"alternateNames": [],
+		"gameId": null,
+		"installed": false,
+		"installDirectory": null,
+		"playTask": null,
+		"otherTasks": [],
+		"lastPlayed": null,
+		"playCount": null,
+		"lastActivity": null,
+		"playtime": null,
+		"added": null,
+		"modified": null,
+		"category": [],
+		"genre": [],
+		"developer": [],
+		"publisher": [],
+		"tags": [],
+		"series": [],
+		"ageRating": [],
+		"region": [],
+		"source": [],
+		"features": [],
+		"releaseDate": null,
+		"communityScore": null,
+		"criticScore": null,
+		"userScore": null,
+		"hidden": false,
+		"favorite": false,
+		"coverImage": "",
+		"description": null,
+		"intro": null,
+		"notes": null,
+		"version": null,
+		"platform": [],
+		"emulator": null,
+		"completionStatus": null,
+		"userScoreSet": false,
+		"manualGame": false,
+		"pluginId": null,
+		"links": [],
+		"actions": [],
+		"featuresEnabled": false,
+		"guide": null,
+		"screenshots": [],
+		"videos": [],
+		"gameLibrary": null,
+		"gameLevel": null,
+		"preLaunchScript": null,
+		"preLaunchEnabled": false,
+		"postLaunchScript": null,
+		"postLaunchEnabled": false,
+		"postExitScript": null,
+		"postExitEnabled": false,
+		"monitorExe": null,
 		"savePaths": [
 			"D:\\games\\Z\\Richman 11\\2074800\\*.*",
 			"D:\\games\\Z\\Richman 11\\settings\\*.*"

@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { api } from "../api/client";
+import { t } from "../i18n";
 import { useAuthStore } from "./authStore";
 import { preloadImages } from "../utils/assets";
 import type { Game, GameAction } from "../types/models";
@@ -252,10 +253,10 @@ export const useGamesStore = create<GamesState>((set, get) => ({
       // if the current user's level is too low to play this game.
       const canPlay = useAuthStore.getState().canPlay(game.gameLevel);
       if (!canPlay) {
-        void api.showNotification(
-          "等级不足",
-          `你的用户等级（${useAuthStore.getState().userLevel}）无法游玩《${game.name}》`
-        );
+        // 文案**不带等级数字**："当前用户等级 1、游戏需要 2" 是给开发者看的；
+        // 用户只需要知道"升成钻石版网吧才能玩"（用户明确要求过）。
+        // 判定规则见 docs/design/user-level-detection.md
+        void api.showNotification(t("grid_diamond_only"), t("need_diamond_cafe"));
         return false;
       }
     }

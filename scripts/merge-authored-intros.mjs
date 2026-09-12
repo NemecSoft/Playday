@@ -10,7 +10,8 @@
 //
 // 风格校验（不通过就退出码 1，不写文件）：
 //   1) 简介里不得出现游戏名（全名，或名字里 "：" / "-" 之前的主干）；
-//   2) 长度 6..48 字；3) 不许为空；4) 不许有 markdown/换行。
+//   2) 不许为空；3) 不许有 markdown/换行（界面是纯文本，`**` 会原样显示成星号）；
+//   4) 长度 6..200 字 —— 只防"写得跑偏"，不再卡 48 字（用户认可更详细的人工简介）。
 //
 // 用法：
 //   node scripts/merge-authored-intros.mjs
@@ -73,9 +74,11 @@ for (const row of table) {
   const intro = hit.intro.replace(/\s+/g, " ").trim();
 
   if (!intro) problems.push(`${row.name}: 简介为空`);
-  if (/[#*`\n]/.test(intro)) problems.push(`${row.name}: 简介里有 markdown/换行字符`);
+  if (/[#*`\n]/.test(intro)) {
+    problems.push(`${row.name}: 简介里有 markdown/换行字符（界面是纯文本，会原样显示）`);
+  }
   if (intro.length < 6) problems.push(`${row.name}: 太短（${intro.length} 字）`);
-  if (intro.length > 48) problems.push(`${row.name}: 太长（${intro.length} 字）`);
+  if (intro.length > 200) problems.push(`${row.name}: 太长（${intro.length} 字，上限 200）`);
   const core = coreOf(row.name);
   if (core.length >= 2 && normName(intro).includes(normName(core))) {
     problems.push(`${row.name}: 简介里重复了游戏名（出现了 "${core}"）→ ${intro}`);

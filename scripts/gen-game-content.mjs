@@ -11,7 +11,12 @@
 //                 （导出命令见 scripts/export-litedb-games.ps1 头部注释）
 //   intro       ← 详情页 <gameDetailsDir>/<游戏名>/info.json 的 description
 //   region/tags ← 权威库 release/data/Admin/library.db 的同名列（库里是 JSON 数组文本）
-//   gamelevel  ← YunGame_Gamelist.json（按 id 匹配，取不到 = 2）
+//   gamelevel  ← YunGame_Gamelist.json（按 id 匹配，取不到 = 2）。它是"玩这个游戏
+//                 需要的**权限等级**"：1 = 黄金版、2 = 钻石版（黄金用户只能玩 1，
+//                 钻石用户 1/2 都能玩）—— **不是**关卡难度等级，别写错注释。
+//   score      ← 权威库的 community_score（社区评分，**人工填**的字段，库里默认几乎全空）。
+//                 卡片右上角"人气火爆"小火苗就是按它判的（> HOT_SCORE_MIN=100，见
+//                 src/utils/hotBadge.ts）。没填过就不写出这个键，别往 1283 条里塞满 0。
 //
 // 文件里的书写格式（为手写方便，由本脚本统一写出）：
 //   tags   = "#休闲#生存#卡通#烧脑"（# 分隔；空 = ""）
@@ -146,9 +151,10 @@ if (fs.existsSync(ADMIN_DB)) {
     locateFile: (f) => path.join(root, "node_modules", "sql.js", "dist", f),
   });
   const db = new SQL.Database(new Uint8Array(fs.readFileSync(ADMIN_DB)));
-  for (const [gameId, name, region, tags] of db.exec("SELECT game_id, name, region, tags FROM games")[0]
-    .values) {
-    const rec = { region: parseArrText(region), tags: parseArrText(tags) };
+  for (const [gameId, name, region, tags, score] of db.exec(
+    "SELECT game_id, name, region, tags, community_score FROM games",
+  )[0].values) {
+    const rec = { region: parseArrText(region), tags: parseArrText(tags), score: Number(score) || 0 };
     regionTagsByName.set(normName(name), rec);
     if (gameId) regionTagsById.set(normId(gameId), rec);
   }
@@ -175,6 +181,8 @@ let filledRegion = 0;
 let filledTags = 0;
 let keptLevel = 0;
 let refreshedLevel = 0;
+let keptScore = 0;
+let filledScore = 0;
 
 for (const g of games) {
   const name = String(g.Name ?? "").trim();
@@ -198,6 +206,12 @@ for (const g of games) {
   if (tagsPrev.length) keptTags++;
   else if (tags.length) filledTags++;
 
+  // 社区评分（人工填）：文件里填过（> 0）就保留，否则取库里的值；两边都没有 = 没设过
+  const scorePrev = Number(prev?.score) > 0 ? Number(prev.score) : 0;
+  const score = scorePrev || Number(rt?.score) || 0;
+  if (scorePrev) keptScore++;
+  else if (score) filledScore++;
+
   let level;
   if (!REFRESH_LEVEL && prev && (typeof prev.gamelevel === "number" || prev.gamelevel != null)) {
     level = Number(prev.gamelevel);
@@ -210,7 +224,7 @@ for (const g of games) {
     refreshedLevel++;
   }
 
-  out.push({
+  const entry = {
     gameid: gameId || String(prev?.gameid ?? ""),
     name,
     intro,
@@ -218,7 +232,10 @@ for (const g of games) {
     region: regionText(region),
     tags: tagsText(tags),
     gamelevel: Number.isFinite(level) ? level : 2,
-  });
+  };
+  // 社区评分只在你填过时才写出这个键（0 / 空 = 没设过）
+  if (score > 0) entry.score = score;
+  out.push(entry);
   seen.add(normId(gameId));
   seen.add(normName(name));
 }
@@ -251,6 +268,9 @@ console.log(`  intro : 保留 ${keptIntro} 条 / 新补 ${filledIntro} 条 / 仍
 console.log(`  region: 保留 ${keptRegion} 条 / 新补 ${filledRegion} 条 / 为空 ${out.filter((x) => !x.region?.length).length} 条`);
 console.log(`  tags  : 保留 ${keptTags} 条 / 新补 ${filledTags} 条 / 为空 ${out.filter((x) => !x.tags?.length).length} 条`);
 console.log(`  level : 保留 ${keptLevel} 条 / 重算 ${refreshedLevel} 条`);
+console.log(
+  `  score : 保留 ${keptScore} 条 / 从库里补 ${filledScore} 条 / 未设置 ${out.filter((x) => !x.score).length} 条（未设置 = 卡片不亮火爆角标）`,
+);
 if (orphans.length) {
   console.log(
     `\n  清单里已没有、但内容文件里保留的条目 ${orphans.length} 个${DROP_ORPHANS ? "（已按 --drop-orphans 删除）" : "（默认保留你的编辑；确认要删加 --drop-orphans）"}：`,

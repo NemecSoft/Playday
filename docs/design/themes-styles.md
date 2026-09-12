@@ -107,3 +107,57 @@
 | `src/utils/themeApply.ts` | 注入应用主题变量与配色变量 |
 | `src/components/settings/ThemesSection.tsx` | 主题 + 配色选择 UI |
 | `src/main.tsx` | 启动时恢复 `themeId` / `styleId` |
+
+---
+
+## 五、卡片光效（悬停光晕 + 光渗）
+
+游戏卡片上叠了两段**实验性**光效，实现在 `src/styles/global.css` 的「卡片光效」段
+（`.grid-card::before` 是光环，`.grid-card .cover::after` 是光渗）：
+
+| 方案 | 做法 | 要点 |
+|------|------|------|
+| 现代方案 | 锥形渐变光环，`@property` 注册 `--card-aurora-angle` 让角度能自转 | 自定义属性**必须**注册，否则 animation 只会 0deg↔360deg 跳变；"只留描边"用两块 mask 相减（`mask-composite: exclude`）抠出 |
+| 极致方案 | `radial-gradient` + `blur` + `mix-blend-mode: plus-lighter` 的光渗 | `plus-lighter` 是加色混合，光叠在封面图上像真的透出来；封面上的 `isolation: isolate` 把混合限制在封面内 |
+
+**为什么这次不会变成"AI 浓妆"**（早期删过一版光效，见 `global.css` 里的说明）：
+只在该卡 **hover / 键盘聚焦**时亮（一屏最多一张在发光）、颜色全部取自主题令牌
+（浅色配色下自然变成柔和同色系光，不会蹦彩虹）。
+
+可调令牌（都能在 `:root` 或某个 `body.theme-*` / 主题里覆盖）：
+
+| 令牌 | 默认 | 作用 |
+|------|------|------|
+| `--card-aurora-1` / `-2` / `-3` | 自动取 `--accent` / `--accent-hover` / `accent+warning` 混色 | 光环三档颜色 |
+| `--card-aurora-opacity` | `1` | 光环亮度 |
+| `--card-bleed-opacity` | `0.5` | 光渗强度（浅色配色可调小） |
+
+**关掉整个效果**：给 `:root` 设 `data-card-aurora="0"`（选一个属性即可，CSS 里所有光效
+规则都带 `:root:not([data-card-aurora="0"])` 前缀），或直接删掉 `global.css` 的那一整段。
+
+已知代价：光环靠"自定义属性动画"驱动，hover 时会**逐帧重绘这一张卡**的渐变（单卡、可接受）。
+低端机上若觉得费，删掉 `animation: card-aurora-spin …` 那一行即变成静态光环，观感基本不变。
+
+### 5.1 卡片「火爆」角标（右上角小火苗）
+
+封面右上角的小火苗（`.grid-card .hot-flag`）是**常显**的招牌，不是 hover 才亮。规则很简单：
+
+```
+社区评分 games.community_score > HOT_SCORE_MIN  →  亮火苗
+```
+
+| 项 | 在哪 | 说明 |
+|------|------|------|
+| 阈值 `HOT_SCORE_MIN`（默认 100） | `src/utils/hotBadge.ts` | 改这一个常量，桌面端 + 网站端同时生效（两端共用本文件，有单测锁边界：100 不算、101 才算） |
+| 判定 | 同上 `isHotGame()` | 没填过评分（undefined/NaN）一律不算 |
+| 渲染 | `src/components/views/GridView.tsx` | 只有真的超阈值的卡才多这一个节点（列表是虚拟化渲染，其余卡零开销） |
+| 颜色 | `--hot-color`（默认取 `--warning`，跟主题走） | 想换橙/红只改这一个变量 |
+| 数据怎么填 | `data/game-content.json` 的 `score` 字段 | 填完用 `sync-game-content.bat` 同步进库，见 [game-content.md](./game-content.md) |
+
+**为什么不是 GIF**：GIF 是固定像素，卡片尺寸随用户设置变（会糊），也没法跟主题变色（23 套配色下
+一张 GIF 必然在某个配色里突兀），而且常显意味着几十张卡同时解码。所以用矢量火苗
+（lucide `Flame` + CSS 动画），只动 `transform`/`opacity`（合成器友好，不逐帧重绘滤镜）。
+
+真要换成自己做的 GIF/位图：给 `.grid-card .hot-flag` 加
+`background-image: var(--hot-badge-image)`（配 `background-size: contain` + `color: transparent`）即可，
+**不需要改任何代码** —— 详见 `global.css` 里该规则末尾的注释。

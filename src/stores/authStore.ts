@@ -3,6 +3,8 @@
 import { create } from "zustand";
 import { api } from "../api/client";
 import type { CurrentUser } from "../types/models";
+// 等级判定与主进程共用同一份实现（唯一事实来源，见 docs/design/user-level-detection.md）
+import { canPlay } from "../../shared/userLevel";
 
 interface AuthState {
   currentUser: CurrentUser | null;
@@ -20,6 +22,8 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set, get) => ({
   currentUser: null,
   loaded: false,
+  // 加载完成前的暂定值取 3（宽松）：主进程在真正启动游戏/备份存档时还会再判一次，
+  // 所以这里宽松不会放行任何操作，只会让卡片在几十毫秒内不闪出"锁定"红标。
   userLevel: 3,
 
   load: async () => {
@@ -49,5 +53,5 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ currentUser: null, userLevel: 3 });
   },
 
-  canPlay: (gameLevel) => get().userLevel >= gameLevel,
+  canPlay: (gameLevel) => canPlay(get().userLevel, gameLevel),
 }));

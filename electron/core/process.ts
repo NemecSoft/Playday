@@ -165,10 +165,8 @@ export function launchGame(
 ): LaunchResult {
   // 权限校验：用户等级必须 >= 游戏等级。
   if (!canPlay(options.userLevel, game.gameLevel)) {
-    return {
-      launched: false,
-      error: `用户等级 ${options.userLevel} 不够，无法游玩等级 ${game.gameLevel} 的游戏`,
-    };
+    // 用户可见文案不带等级数字（前端有一模一样的提示，这里只是后端口径的兜底）
+    return { launched: false, error: "需要升级为钻石版网吧（网咖）才能玩" };
   }
 
   const libs = options.gameLibraries;

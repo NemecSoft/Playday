@@ -16,12 +16,14 @@ import type { Game } from "../../types/models";
 import { displayName } from "../../utils/display";
 import { imageUrl } from "../../utils/assets";
 import { useI18n } from "../../i18n";
-import { Image as ImageIcon, Play, Info } from "lucide-react";
+import { Image as ImageIcon, Play, Info, Flame, Lock } from "lucide-react";
 import GameContextMenu from "../GameContextMenu";
 import { useLazyImage } from "../../hooks/useLazyImage";
 import { useVirtualGrid, type VirtualGridRow } from "../../hooks/useVirtualGrid";
 import { isDarkBackground, paletteForRow } from "../../utils/titlePalette";
 import { clampCardFontSize, effectiveCardDescFontSize } from "../../utils/cardText";
+import { isHotGame } from "../../utils/hotBadge";
+import { useAuthStore } from "../../stores/authStore";
 
 interface Props {
   groups: Group[];
@@ -376,6 +378,10 @@ function GridCard({
 }) {
   const { t } = useI18n();
   const { ref: coverRef } = useLazyImage(game.coverImage);
+  // 锁定态：当前用户等级不够这个游戏（黄金版看钻石版游戏）。能看详情、能看封面，
+  // 但不能启动、不能备份存档 —— 规则见 docs/design/user-level-detection.md。
+  // 这里只负责"视觉上让人一眼知道玩不到"，真正的拦截在启动与存档两条 IPC 上。
+  const locked = useAuthStore((s) => !s.canPlay(game.gameLevel));
   // 简介展开/收起：默认收成几行，点击可展开完整。受工具栏"简介"开关控制。
   // 注意：这里显示的是 Playday 用户维护的"简介"（intro），不是 Playnite 的"描述"（description）。
   const [descExpanded, setDescExpanded] = useState(false);
@@ -389,7 +395,7 @@ function GridCard({
   // 说明：已移除 Aceternity spotlight 光晕（动态光效，按需求去掉）。
   return (
     <div
-      className={`grid-card ${selected ? "selected" : ""}`}
+      className={`grid-card ${selected ? "selected" : ""} ${locked ? "locked" : ""}`}
       onClick={(e) => onSelect(e.ctrlKey || e.metaKey)}
       onContextMenu={(e) => {
         e.preventDefault();
@@ -410,17 +416,40 @@ function GridCard({
             `index` prop is 0-based; we show index + 1. */}
         <span className="debug-badge">#{index + 1}</span>
         {game.installed && <span className="installed-dot" />}
+        {/* 火爆角标：社区评分 > HOT_SCORE_MIN（阈值与数据来源见 utils/hotBadge.ts）。
+            常显，不是 hover 才亮 —— 它就是给用户看的招牌。
+            只有真的超阈值的游戏才多这一个节点，其余卡片零开销（列表本身是虚拟化渲染）。 */}
+        {!locked && isHotGame(game) && (
+          <span className="hot-flag" role="img" aria-label={t("grid_hot")} title={t("grid_hot")}>
+            <Flame size={14} fill="currentColor" strokeWidth={1.5} />
+          </span>
+        )}
+        {/* 锁定角标（左上角，与右上角的火爆火苗分区）：可用性信息优先于营销信息，
+            所以锁定时不显示火苗，只显示锁。 */}
+        {locked && (
+          <span
+            className="lock-flag"
+            role="img"
+            aria-label={t("grid_diamond_only")}
+            title={t("need_diamond_cafe")}
+          >
+            <Lock size={12} strokeWidth={2.4} />
+            <span>{t("grid_diamond_only")}</span>
+          </span>
+        )}
         <div className="cover-actions">
           <button
-            className="cover-btn play"
-            title={t("grid_play")}
+            className={`cover-btn play ${locked ? "locked" : ""}`}
+            title={locked ? t("need_diamond_cafe") : t("grid_play")}
             onClick={(e) => {
               e.stopPropagation();
+              // 锁定时**仍然允许点击**：点了由 gamesStore 弹明确提示（"需要钻石版…"），
+              // 而不是给一个点不动的死按钮 —— 需求要的就是"强烈的反馈"。
               onLaunch();
             }}
           >
-            <Play size={16} fill="currentColor" />
-            <span>{t("grid_play")}</span>
+            {locked ? <Lock size={16} /> : <Play size={16} fill="currentColor" />}
+            <span>{locked ? t("grid_diamond_only") : t("grid_play")}</span>
           </button>
           <button
             className="cover-btn details"

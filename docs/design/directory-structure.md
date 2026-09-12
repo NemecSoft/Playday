@@ -29,6 +29,8 @@ Playday/
 ├── dev-admin.bat        # 开发启动（管理端）
 ├── deploy-web.bat       # 一键部署网站端
 ├── test-web.bat         # 网站端测试
+├── sync-tags.bat        # 标签同步（json → 权威库）
+├── sync-game-content.bat # 游戏内容同步（简介/地区/标签 → 库）
 └── package.bat          # 打包便携 exe
 ```
 

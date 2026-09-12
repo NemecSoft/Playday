@@ -166,6 +166,9 @@ function rowToGame(r) {
     developer: r.developer ? str(r.developer) : undefined,
     publisher: r.publisher ? str(r.publisher) : undefined,
     releaseDate: r.release_date ? str(r.release_date) : undefined,
+    // 社区评分：卡片"人气火爆"角标用它（> HOT_SCORE_MIN 才亮，见 src/utils/hotBadge.ts）。
+    // 桌面端走 electron/core/db.ts 的同名字段；两端字段必须一致，否则网站端没有火苗。
+    communityScore: r.community_score == null ? undefined : num(r.community_score),
     platforms: arr(r.platforms),
     genre: arr(r.genre),
     tags: arr(r.tags),
