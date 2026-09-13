@@ -1,8 +1,9 @@
 // 临时检查数据库 description 字段使用情况
 import fs from "fs";
 import initSqlJs from "sql.js";
+import { adminDbPath } from "./lib/devData.mjs";
 
-const DB = "release/data/Admin/library.db";
+const DB = adminDbPath();
 const SQL = await initSqlJs();
 const db = new SQL.Database(new Uint8Array(fs.readFileSync(DB)));
 

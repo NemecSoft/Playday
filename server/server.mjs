@@ -4,7 +4,7 @@
 // 但不能启动游戏（桌面端才有 spawn 进程能力）。
 //
 // 数据：直接复用桌面端同一份数据（library.db / config.json / CoverImages / Game_Details），
-// 通过 YUNGAME_DATA_DIR 环境变量指定数据根（默认取 server/../release/data）。
+// 通过 YUNGAME_DATA_DIR 环境变量指定数据根（默认取 server/../dev-data）。
 //
 // 启动：node server/server.mjs  （或双击 deploy-web.bat）
 // 访问：http://localhost:8080
@@ -20,10 +20,14 @@ import {
   isBetterCover,
   normalizeCoverName,
 } from "./coverMatch.mjs";
+import { devDataDir } from "../scripts/lib/devData.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
-const DATA_DIR = process.env.YUNGAME_DATA_DIR || path.join(ROOT, "release", "data");
+// 数据根：环境变量优先，否则用规则表（path-modes.json 的 dev 段）里那一份。
+// 别再写死目录名 —— 曾经写死过，数据目录一挪，网站端就**静默**读不到库了
+// （桌面端还好好的，只有网站端封面/详情全空）。取路径的逻辑见 scripts/lib/devData.mjs。
+const DATA_DIR = process.env.YUNGAME_DATA_DIR || devDataDir();
 const DIST_DIR = path.join(ROOT, "dist"); // 前端构建产物（vite build 输出）
 // 所有数据目录都从 config.json 解析（settings.coverImagesDir / gameDetailsDir /
 // announcementsDir / libraryDir），与桌面端同一套语义 —— 见 server/paths.mjs。

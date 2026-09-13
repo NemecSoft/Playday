@@ -6,7 +6,7 @@ Playday 的核心能力之一：**一套前端源码**既能跑桌面端（Elect
 
 1. **前端零分叉**——桌面端和网站端跑的是 `src/` 同一套组件、store、页面。
 2. **传输层抽象**——前端不关心数据来自 Electron IPC 还是 HTTP，只管调命令。
-3. **单一数据源**——两端都读写 `release/data/` 下同一份数据（桌面端能写，网站端目前只读）。
+3. **单一数据源**——两端都读写 `dev-data/` 下同一份数据（桌面端能写，网站端目前只读）。
 
 ## 传输层：`src/api/ipc.ts`
 
@@ -46,9 +46,9 @@ api.loginPersonal(...)  // → call("login_personal", {...})
 
 ## 网站端后端：`server/server.mjs`
 
-Node 内置 `http`（零依赖），复用 `release/data` 同一份数据：
+Node 内置 `http`（零依赖），复用 `dev-data` 同一份数据：
 
-- **数据目录**：`DATA_DIR = YUNGAME_DATA_DIR || server/../release/data`，默认复用桌面端数据。
+- **数据目录**：`DATA_DIR = YUNGAME_DATA_DIR || server/../dev-data`，默认复用桌面端数据。
 - **API**：实现 `/api/<cmd>`，用 sql.js 读 `library/library.db`。
 - **静态服务**：`/CoverImages/*`、`/Game_Details/*`、前端产物 `dist/`。
 - **只读模式**：网站版**不支持启动游戏**（`launch_game`/`test_script` 返回"网站版不支持启动游戏"），主要只读浏览。

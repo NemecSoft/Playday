@@ -1,0 +1,1 @@
+Start-Process -FilePath 'd:/AI/nsis/GameSaveHelper.exe' -ArgumentList '医院666-网吧联机版','/out:d:/AI/nsis/build' -Wait -PassThru | Format-List ExitCode, HasExited

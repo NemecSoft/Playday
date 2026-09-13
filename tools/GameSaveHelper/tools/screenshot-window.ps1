@@ -1,0 +1,43 @@
+param([string]$Exe, [string]$OutPng, [string]$ArgList = "")
+# 启动指定 exe，等窗口出来后置顶并截屏窗口区域保存为 png，然后关掉进程
+Add-Type -AssemblyName System.Drawing
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public class W {
+  [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr h, out RECT r);
+  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll")] public static extern bool BringWindowToTop(IntPtr h);
+  [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr h, IntPtr a, int x, int y, int cx, int cy, uint f);
+  public struct RECT { public int L; public int T; public int R; public int B; }
+}
+"@
+if ($ArgList -ne "") {
+    $p = Start-Process -FilePath $Exe -ArgumentList $ArgList -PassThru
+} else {
+    $p = Start-Process -FilePath $Exe -PassThru
+}
+Start-Sleep -Milliseconds 3500
+$p.Refresh()
+Write-Output ("diag: HasExited=" + $p.HasExited + " ExitCode=" + $p.ExitCode + " hwnd=" + $p.MainWindowHandle)
+$h = $p.MainWindowHandle
+if ($h -eq [IntPtr]::Zero) { if (-not $p.HasExited) { Stop-Process -Id $p.Id -Force }; Write-Output "no window"; exit 1 }
+# 用 TOPMOST→NOTOPMOST 方式把窗口提到最前（不抢焦点，规避前台锁）
+[W]::SetWindowPos($h, [IntPtr]1, 0, 0, 0, 0, 0x53) | Out-Null   # HWND_TOPMOST, NOMOVE|NOSIZE|NOACTIVATE... 0x53=NOZORDER去掉了
+Start-Sleep -Milliseconds 200
+[W]::SetWindowPos($h, [IntPtr]-2, 0, 0, 0, 0, 0x53) | Out-Null  # HWND_NOTOPMOST
+Start-Sleep -Milliseconds 300
+[W]::BringWindowToTop($h) | Out-Null
+Start-Sleep -Milliseconds 500
+$r = New-Object W+RECT
+[W]::GetWindowRect($h, [ref]$r) | Out-Null
+$wd = $r.R - $r.L; $ht = $r.B - $r.T
+if ($wd -le 0 -or $ht -le 0) { Stop-Process -Id $p.Id -Force; Write-Output "bad rect"; exit 1 }
+$bmp = New-Object System.Drawing.Bitmap $wd, $ht
+$g = [System.Drawing.Graphics]::FromImage($bmp)
+$g.CopyFromScreen($r.L, $r.T, 0, 0, (New-Object System.Drawing.Size $wd, $ht))
+$bmp.Save($OutPng, [System.Drawing.Imaging.ImageFormat]::Png)
+$g.Dispose(); $bmp.Dispose()
+Stop-Process -Id $p.Id -Force
+Write-Output "saved $OutPng ${wd}x${ht}"

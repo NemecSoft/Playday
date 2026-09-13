@@ -61,6 +61,7 @@ class FakeAudio {
 (globalThis as unknown as { Audio: unknown }).Audio = FakeAudio;
 
 import { useMusicStore } from "../musicStore";
+import { api } from "../../api/client";
 
 /** 三条测试曲目。 */
 const TRACKS = [
@@ -190,5 +191,77 @@ describe("点歌与拖进度", () => {
     useMusicStore.getState().seek(Number.NaN);
     expect(Number.isFinite(useMusicStore.getState().currentTime)).toBe(true);
     expect(useMusicStore.getState().currentTime).toBe(0);
+  });
+});
+
+describe("load 幂等：启动时 StrictMode 双调用不许换曲", () => {
+  // 由来（用户报的 bug）：刚启动时状态栏显示的曲名和实际播放的不一致。
+  // 根因是 main.tsx 开了 React.StrictMode → App 的 effect 跑两遍 → load() 并发调两次，
+  // 而旧实现每次 load 都按"随机"模式重洗一遍牌：trackIndex 指到第二遍洗出的那首，
+  // <audio> 里却还是第一遍那首。下面几条把"显示 == 实播"这条不变量钉住。
+  const libOf = (tracks: Array<{ name: string; rel: string; url: string }>, dir = "/music") => ({
+    dir,
+    exists: true,
+    tracks,
+  });
+
+  it("曲库没变 → 不重排队列、不换当前曲、不重新起播", async () => {
+    const fake = resetPlaying(); // 已经在放第 0 首
+    useMusicStore.setState({ mode: "shuffle" });
+    const before = useMusicStore.getState();
+    vi.mocked(api.getMusicLibrary).mockResolvedValue(libOf(TRACKS));
+
+    await useMusicStore.getState().load();
+
+    const after = useMusicStore.getState();
+    expect(after.trackIndex).toBe(before.trackIndex);
+    expect(after.order).toEqual(before.order); // 没有重新洗牌
+    expect(fake.playCalls).toBe(0); // 也没有重新起播
+    // 关键不变量：显示的那首 == <audio> 里真正加载的那首
+    expect(fake.src).toBe(after.tracks[after.trackIndex].url);
+  });
+
+  it("并发两次 load（模拟 StrictMode）后，显示的曲名仍与实际播的一致", async () => {
+    const fake = resetPlaying();
+    useMusicStore.setState({ mode: "shuffle" });
+    vi.mocked(api.getMusicLibrary).mockResolvedValue(libOf(TRACKS));
+
+    await Promise.all([useMusicStore.getState().load(), useMusicStore.getState().load()]);
+
+    const st = useMusicStore.getState();
+    expect(fake.src).toBe(st.tracks[st.trackIndex].url);
+  });
+
+  it("曲库变了但那首还在 → 保留它，且进度不被打回 0", async () => {
+    const fake = resetPlaying();
+    useMusicStore.setState({ mode: "shuffle", currentTime: 42 });
+    const st0 = useMusicStore.getState();
+    const playingRel = st0.tracks[st0.trackIndex].rel;
+    // 新曲库多了一首（原来三首都还在）
+    vi.mocked(api.getMusicLibrary).mockResolvedValue(
+      libOf([...TRACKS, { name: "丁", rel: "丁.mp3", url: "/music/d.mp3" }]),
+    );
+
+    await useMusicStore.getState().load();
+
+    const st = useMusicStore.getState();
+    expect(st.tracks[st.trackIndex].rel).toBe(playingRel);
+    expect(st.currentTime).toBe(42); // 没被重置
+    expect(fake.src).toBe(st.tracks[st.trackIndex].url);
+  });
+
+  it("曲库变了且正在放的那首没了 → 按模式重排、进度归零", async () => {
+    resetPlaying();
+    useMusicStore.setState({ mode: "sequential", currentTime: 42 });
+    vi.mocked(api.getMusicLibrary).mockResolvedValue(
+      libOf([{ name: "戊", rel: "戊.mp3", url: "/music/e.mp3" }]),
+    );
+
+    await useMusicStore.getState().load();
+
+    const st = useMusicStore.getState();
+    expect(st.tracks).toHaveLength(1);
+    expect(st.trackIndex).toBe(0);
+    expect(st.currentTime).toBe(0);
   });
 });

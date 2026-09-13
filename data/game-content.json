@@ -7,7 +7,7 @@
     "tags": "#竖版射击#街机#弹幕#升级解锁",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/SkyForceReloaded/Save/*.*"
+      "D:/YunGame/V/SkyForceReloaded/Save/*.*"
     ]
   },
   {
@@ -63,7 +63,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/Ride/*.*",
-      "X:/YunGame/W/Ride/settings/*.*"
+      "D:/YunGame/W/Ride/settings/*.*"
     ]
   },
   {
@@ -94,7 +94,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/FeelFreeGames/Luma Island/*.*",
-      "X:/YunGame/X/LumaIsland/settings/*.*"
+      "D:/YunGame/X/LumaIsland/settings/*.*"
     ]
   },
   {
@@ -199,7 +199,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Roaming/ArmoredCore6/*.*",
-      "X:/YunGame/II/ARMORED CORE VI FIRES OF RUBICON/settings/user_steam_id.txt"
+      "D:/YunGame/II/ARMORED CORE VI FIRES OF RUBICON/settings/user_steam_id.txt"
     ]
   },
   {
@@ -210,7 +210,7 @@
     "tags": "#幸存者类#动作肉鸽#北欧神话#多人合作#割草",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/NordicAshes/Nordic Ashes_Data/SteamCloud/*.*"
+      "D:/YunGame/W/NordicAshes/Nordic Ashes_Data/SteamCloud/*.*"
     ]
   },
   {
@@ -265,7 +265,7 @@
     "tags": "#开放世界#解谜#沙盒建造#冒险#奇幻",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/TOTK/user/nand/user/save/0000000000000000/*.*"
+      "D:/YunGame/III/TOTK/user/nand/user/save/0000000000000000/*.*"
     ]
   },
   {
@@ -321,7 +321,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/AbioticFactor/*.*",
-      "X:/YunGame/W/AbioticFactor/settings/*.*"
+      "D:/YunGame/W/AbioticFactor/settings/*.*"
     ]
   },
   {
@@ -376,7 +376,7 @@
     "tags": "#横版解谜#平台跳跃#多人合作#奇幻#动作",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/Trine 5/1436700/*.*"
+      "D:/YunGame/III/Trine 5/1436700/*.*"
     ]
   },
   {
@@ -464,7 +464,7 @@
     "tags": "#即时战略#冷战#基地建设#多人对战#经典",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Ra2-China/*.sav"
+      "D:/YunGame/Ra2-China/*.sav"
     ]
   },
   {
@@ -520,7 +520,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/ProtoCat/Saved/*.*",
-      "X:/YunGame/X/Cloudheim/settings/*.*"
+      "D:/YunGame/X/Cloudheim/settings/*.*"
     ]
   },
   {
@@ -620,7 +620,7 @@
     "tags": "#策略#三国题材#即时战斗#武将领军#单机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/三国群英传7演义版/Save/*.*"
+      "D:/YunGame/III/三国群英传7演义版/Save/*.*"
     ]
   },
   {
@@ -642,7 +642,7 @@
     "tags": "#第一人称射击#科幻#僵尸模式#剧情战役",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/CoD12/players/*.*"
+      "D:/YunGame/CoD/CoD12/players/*.*"
     ]
   },
   {
@@ -676,7 +676,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/VoidTrain/*.*",
-      "X:/YunGame/V/Voidtrain/settings/*.*"
+      "D:/YunGame/V/Voidtrain/settings/*.*"
     ]
   },
   {
@@ -698,7 +698,7 @@
     "tags": "#第一人称射击#末日生存#潜行#剧情驱动#废土",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/MetroExodus/saved_games/*.*"
+      "D:/YunGame/III/MetroExodus/saved_games/*.*"
     ]
   },
   {
@@ -742,7 +742,7 @@
     "tags": "#第一人称射击#科幻#剧情驱动#解谜#经典",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/HalfLife/Half-Life2.3in1/episodic/SAVE/*.*"
+      "D:/YunGame/HalfLife/Half-Life2.3in1/episodic/SAVE/*.*"
     ]
   },
   {
@@ -797,7 +797,7 @@
     "tags": "#动作冒险#潜行#超级英雄#侦探#开放世界",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/Batman.ArkhamOrigins/SinglePlayer/Binaries/Win32/Profile/*.*"
+      "D:/YunGame/2023/Batman.ArkhamOrigins/SinglePlayer/Binaries/Win32/Profile/*.*"
     ]
   },
   {
@@ -854,8 +854,8 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/Pal/*.*",
-      "X:/YunGame/V/Palworld/settings/*.*",
-      "X:/YunGame/V/Palworld/Server/Pal/Saved/*.*"
+      "D:/YunGame/V/Palworld/settings/*.*",
+      "D:/YunGame/V/Palworld/Server/Pal/Saved/*.*"
     ]
   },
   {
@@ -921,7 +921,7 @@
     "tags": "#第一人称射击#二战战役#经典#剧情驱动",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/CoD1/uo/save/*.*"
+      "D:/YunGame/CoD/CoD1/uo/save/*.*"
     ]
   },
   {
@@ -933,7 +933,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/REANIMAL/*.*",
-      "X:/YunGame/X/REANIMAL/settings/*.*"
+      "D:/YunGame/X/REANIMAL/settings/*.*"
     ]
   },
   {
@@ -1000,7 +1000,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Roaming/NomNomGalaxy/*.*",
-      "X:/YunGame/IIII/NomNomGalaxy/settings/user_steam_id.txt"
+      "D:/YunGame/IIII/NomNomGalaxy/settings/user_steam_id.txt"
     ]
   },
   {
@@ -1011,7 +1011,7 @@
     "tags": "#丧尸#生存#多人合作#基地建设#动作射击",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/WelcometoParadiZe/Data/Save/*.*"
+      "D:/YunGame/W/WelcometoParadiZe/Data/Save/*.*"
     ]
   },
   {
@@ -1034,7 +1034,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Roaming/EldenRing/*.*",
-      "X:/YunGame/W/ERSOTE/settings/*.*"
+      "D:/YunGame/W/ERSOTE/settings/*.*"
     ]
   },
   {
@@ -1089,7 +1089,7 @@
     "tags": "#即时战略#科幻#基地建设#多人对战#手柄操作",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Halo/Halo.Wars.Definitive/savegame/*.*"
+      "D:/YunGame/Halo/Halo.Wars.Definitive/savegame/*.*"
     ]
   },
   {
@@ -1112,7 +1112,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Documents/My Games/Tiny Tina's Wonderlands/*.*",
-      "X:/YunGame/II/Tiny Tina's Wonderlands/settings/user_steam_id.txt"
+      "D:/YunGame/II/Tiny Tina's Wonderlands/settings/user_steam_id.txt"
     ]
   },
   {
@@ -1145,7 +1145,7 @@
     "tags": "#第一人称射击#复古#恶魔#割草战役",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Doom/Doom2/Save/*.*"
+      "D:/YunGame/Doom/Doom2/Save/*.*"
     ]
   },
   {
@@ -1156,7 +1156,7 @@
     "tags": "#生存恐怖#第一人称#解谜#恐怖#密室逃生",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Resident.Evil/Resident.Evil.7/Profile/*.*"
+      "D:/YunGame/Resident.Evil/Resident.Evil.7/Profile/*.*"
     ]
   },
   {
@@ -1167,7 +1167,7 @@
     "tags": "#三国题材#回合制策略#历史#内政经营",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/SAN14PK/Profile/VALVE/Saves/*.*"
+      "D:/YunGame/2023/SAN14PK/Profile/VALVE/Saves/*.*"
     ]
   },
   {
@@ -1255,7 +1255,7 @@
     "tags": "#武侠#沙盒#角色扮演#国产#高自由度",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/TheScrollOfTaiwu/Save_test/*.*"
+      "D:/YunGame/II/TheScrollOfTaiwu/Save_test/*.*"
     ]
   },
   {
@@ -1321,7 +1321,7 @@
     "tags": "#俯视射击#双摇杆#科幻#割草",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Alien.Shooter/Alien.Shooter.LastHope/steam_settings/*.*"
+      "D:/YunGame/Alien.Shooter/Alien.Shooter.LastHope/steam_settings/*.*"
     ]
   },
   {
@@ -1376,7 +1376,7 @@
     "tags": "#动作#砍杀#华丽连招#日式",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Bayonetta/Bayonetta.2.US.CEMU/cemu/mlc01/emulatorSave/b8611392/*.*"
+      "D:/YunGame/Bayonetta/Bayonetta.2.US.CEMU/cemu/mlc01/emulatorSave/b8611392/*.*"
     ]
   },
   {
@@ -1667,7 +1667,7 @@
     "tags": "#生存#航海#开放世界#角色扮演",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/X/Salt 2/1574900/*.*"
+      "D:/YunGame/X/Salt 2/1574900/*.*"
     ]
   },
   {
@@ -1756,8 +1756,8 @@
     "tags": "#格斗#动漫改编#多人对战#3D#联机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/X/SparkingZERO/SaveGame/*.*",
-      "X:/YunGame/X/SparkingZERO/settings/*.*"
+      "D:/YunGame/X/SparkingZERO/SaveGame/*.*",
+      "D:/YunGame/X/SparkingZERO/settings/*.*"
     ]
   },
   {
@@ -1864,7 +1864,7 @@
     "tags": "#平台跳跃#硬核#像素风#剧情向#独立",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/Celeste/Saves/*.*"
+      "D:/YunGame/III/Celeste/Saves/*.*"
     ]
   },
   {
@@ -1886,7 +1886,7 @@
     "tags": "#第一人称#丧尸#开放世界#生存",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/DeadIslandDefinitiveEdition/SmartSteamEmu/*.*"
+      "D:/YunGame/V/DeadIslandDefinitiveEdition/SmartSteamEmu/*.*"
     ]
   },
   {
@@ -1897,7 +1897,7 @@
     "tags": "#塔防#俯视射击#科幻#割草",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Alien.Shooter/Alien.Shooter.TD/Profile/*.*"
+      "D:/YunGame/Alien.Shooter/Alien.Shooter.TD/Profile/*.*"
     ]
   },
   {
@@ -1985,7 +1985,7 @@
     "tags": "#开放世界#动作#犯罪#格斗#第三人称",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/sdhdship/data/*HK *.*"
+      "D:/YunGame/2023/sdhdship/data/*HK *.*"
     ]
   },
   {
@@ -2095,7 +2095,7 @@
     "tags": "#模拟#物理#建造#太空#沙盒",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/KSP/saves/*.*"
+      "D:/YunGame/V/KSP/saves/*.*"
     ]
   },
   {
@@ -2128,7 +2128,7 @@
     "tags": "#剧情向#潜行#中世纪#动作冒险#第三人称",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/A.Plague.Tale.Innocence/Profile/*.*"
+      "D:/YunGame/A.Plague.Tale.Innocence/Profile/*.*"
     ]
   },
   {
@@ -2172,7 +2172,7 @@
     "tags": "#历史策略#战国#内政经营#回合制",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/NOBU16/SteamData*.*"
+      "D:/YunGame/2023/NOBU16/SteamData*.*"
     ]
   },
   {
@@ -2205,7 +2205,7 @@
     "tags": "#第一人称#模拟经营#多人合作#开放世界#奇幻#烹饪",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/AleandTaleTavern/Ale and Tale Tavern_Data/saves/*.*"
+      "D:/YunGame/W/AleandTaleTavern/Ale and Tale Tavern_Data/saves/*.*"
     ]
   },
   {
@@ -2371,7 +2371,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Documents/My Games/STRANGER OF PARADISE FINAL FANTASY ORIGIN/*.*",
-      "X:/YunGame/III/SOPFFO/steam_settings/settings/user_steam_id.txt"
+      "D:/YunGame/III/SOPFFO/steam_settings/settings/user_steam_id.txt"
     ]
   },
   {
@@ -2393,7 +2393,7 @@
     "tags": "#横版平台#肉鸽#死亡重来#探宝#多人合作",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/Spelunky 2/*.sav"
+      "D:/YunGame/IIII/Spelunky 2/*.sav"
     ]
   },
   {
@@ -2437,8 +2437,8 @@
     "tags": "#动作角色扮演#狩猎共斗#装备打造#开放地图",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/MonsterHunterIceborne/582010/*.*",
-      "X:/YunGame/II/MonsterHunterIceborne/settings/user_steam_id.txt"
+      "D:/YunGame/II/MonsterHunterIceborne/582010/*.*",
+      "D:/YunGame/II/MonsterHunterIceborne/settings/user_steam_id.txt"
     ]
   },
   {
@@ -2449,7 +2449,7 @@
     "tags": "#硬核射击#撤离玩法#第一人称#拟真#高风险",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/EscapeFromTarkov/user/*.*"
+      "D:/YunGame/II/EscapeFromTarkov/user/*.*"
     ]
   },
   {
@@ -2538,7 +2538,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/BANDAI NAMCO Entertainment/ACE COMBAT 7/*.*",
-      "X:/YunGame/Z/ACECOMBAT7/settings/*.*"
+      "D:/YunGame/Z/ACECOMBAT7/settings/*.*"
     ]
   },
   {
@@ -2549,7 +2549,7 @@
     "tags": "#横版动作#角色扮演#银河恶魔城#搞笑吐槽#多人合作",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/Unepic/233980/*.*"
+      "D:/YunGame/IIII/Unepic/233980/*.*"
     ]
   },
   {
@@ -2701,8 +2701,8 @@
     "tags": "#生存建造#开放世界#体素#多人合作#挖矿",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/Enshrouded/1203620/*.*",
-      "X:/YunGame/V/Enshrouded/settings/user_steam_id.txt"
+      "D:/YunGame/V/Enshrouded/1203620/*.*",
+      "D:/YunGame/V/Enshrouded/settings/user_steam_id.txt"
     ]
   },
   {
@@ -2713,7 +2713,7 @@
     "tags": "#模拟器#街机怀旧#复古合集#开源#单机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IndieGame3/MAME/sta/*.*"
+      "D:/YunGame/IndieGame3/MAME/sta/*.*"
     ]
   },
   {
@@ -2725,7 +2725,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Triangle Studios/FromSpace/*.*",
-      "X:/YunGame/IIII/FromSpace/settings/user_steam_id.txt"
+      "D:/YunGame/IIII/FromSpace/settings/user_steam_id.txt"
     ]
   },
   {
@@ -2759,7 +2759,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/Endeavor/Saved/SaveGames/*.*",
-      "X:/YunGame/IIII/Aliens.Fireteam.Elite/settings/*.*"
+      "D:/YunGame/IIII/Aliens.Fireteam.Elite/settings/*.*"
     ]
   },
   {
@@ -2803,7 +2803,7 @@
     "tags": "#横版动作#清版过关#多人合作#像素画风#怀旧",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Z/TMNT/1361510/*.*"
+      "D:/YunGame/Z/TMNT/1361510/*.*"
     ]
   },
   {
@@ -2814,7 +2814,7 @@
     "tags": "#第三人称射击#生存恐怖#丧尸#解谜#动作",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Resident.Evil/RE4HD/Bin32/3DMGAME/3DMGAME/storage/*.*"
+      "D:/YunGame/Resident.Evil/RE4HD/Bin32/3DMGAME/3DMGAME/storage/*.*"
     ]
   },
   {
@@ -2826,7 +2826,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/WS/*.*",
-      "X:/YunGame/W/Soulmask/settings/*.*"
+      "D:/YunGame/W/Soulmask/settings/*.*"
     ]
   },
   {
@@ -2848,7 +2848,7 @@
     "tags": "#武侠#开放世界#角色扮演#自由探索#剧情向",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Heluo.Legend/The.Books.of.Dragon/RemoteStorage/*.*"
+      "D:/YunGame/Heluo.Legend/The.Books.of.Dragon/RemoteStorage/*.*"
     ]
   },
   {
@@ -2892,7 +2892,7 @@
     "tags": "#即时战略#维京题材#资源管理#多人对战#北欧神话",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/Northgard/save/*.*"
+      "D:/YunGame/III/Northgard/save/*.*"
     ]
   },
   {
@@ -2981,7 +2981,7 @@
     "tags": "#沙盒建造#奇幻生物#巨龙#探索冒险#模组",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/IndieGame3/minecraft-ASongofIceandFire/.minecraft/saves/*.*"
+      "D:/YunGame/IndieGame3/minecraft-ASongofIceandFire/.minecraft/saves/*.*"
     ]
   },
   {
@@ -3004,7 +3004,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Team17/Overcooked2/*.*",
-      "X:/YunGame/IndieGame/Overcooked.2/save/settings/*.*"
+      "D:/YunGame/IndieGame/Overcooked.2/save/settings/*.*"
     ]
   },
   {
@@ -3016,7 +3016,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Documents/Cubic Odyssey/*.*",
-      "X:/YunGame/W/Cubic Odyssey/settings/*.*"
+      "D:/YunGame/W/Cubic Odyssey/settings/*.*"
     ]
   },
   {
@@ -3050,7 +3050,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/MOE/*.*",
-      "X:/YunGame/V/MythofEmpires/settings/user_steam_id.txt"
+      "D:/YunGame/V/MythofEmpires/settings/user_steam_id.txt"
     ]
   },
   {
@@ -3127,7 +3127,7 @@
     "tags": "#像素恐怖#解谜#追逐逃生#多结局#独立",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/MadFather/Save/*.*"
+      "D:/YunGame/V/MadFather/Save/*.*"
     ]
   },
   {
@@ -3138,7 +3138,7 @@
     "tags": "#竖版射击#弹幕#色彩相克#街机#高难度",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/IndieGame3/Ikaruga/Profile/*.*"
+      "D:/YunGame/IndieGame3/Ikaruga/Profile/*.*"
     ]
   },
   {
@@ -3149,7 +3149,7 @@
     "tags": "#动作冒险#极道题材#开放街区#剧情丰富#小游戏",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Yakuza/Yakuza.Kiwami/media/RemoteStorage/*.*"
+      "D:/YunGame/Yakuza/Yakuza.Kiwami/media/RemoteStorage/*.*"
     ]
   },
   {
@@ -3182,7 +3182,7 @@
     "tags": "#即时战略#奇幻#经典老游戏#基地建造#战役",
     "gamelevel": 1,
     "savepaths": [
-      "X:/YunGame/2023/WAR2/WAR2/*.sav"
+      "D:/YunGame/2023/WAR2/WAR2/*.sav"
     ]
   },
   {
@@ -3194,7 +3194,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Chilly Room/Otherworld Legends/*.*",
-      "X:/YunGame/IIII/Otherworld Legends/settings/user_steam_id.txt"
+      "D:/YunGame/IIII/Otherworld Legends/settings/user_steam_id.txt"
     ]
   },
   {
@@ -3205,7 +3205,7 @@
     "tags": "#太空海战#实时战术#科幻#舰队指挥#剧情战役",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Y/BattlefleetGothic2/BattlefleetGothic2/Binaries/Win64/Profile/VALVE/*.*"
+      "D:/YunGame/Y/BattlefleetGothic2/BattlefleetGothic2/Binaries/Win64/Profile/VALVE/*.*"
     ]
   },
   {
@@ -3227,7 +3227,7 @@
     "tags": "#物理益智#滚球#机关解谜#高空挑战",
     "gamelevel": 1,
     "savepaths": [
-      "X:/YunGame/II/Ballance/Database.tdb"
+      "D:/YunGame/II/Ballance/Database.tdb"
     ]
   },
   {
@@ -3261,7 +3261,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/FrozenFlame/Saved/SaveGames/*.*",
-      "X:/YunGame/II/Frozen Flame/settings/user_steam_id.txt"
+      "D:/YunGame/II/Frozen Flame/settings/user_steam_id.txt"
     ]
   },
   {
@@ -3305,7 +3305,7 @@
     "tags": "#模拟#黑色幽默#第一人称#清洁#犯罪题材",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/CSC/CrimeCleaner_Data/Saves/*.*"
+      "D:/YunGame/W/CSC/CrimeCleaner_Data/Saves/*.*"
     ]
   },
   {
@@ -3338,7 +3338,7 @@
     "tags": "#即时战略#中世纪#城建经营#资源管理#联机对战",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/KaMRemake/Saves/*.*"
+      "D:/YunGame/V/KaMRemake/Saves/*.*"
     ]
   },
   {
@@ -3382,8 +3382,8 @@
     "tags": "#回合制#精灵收集#开放世界#联机交换#冒险养成",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Z/PokemonScarletandViolet/Emulator/Ryujinx/portable/bis/user/*.*",
-      "X:/YunGame/Z/PokemonScarletandViolet/Emulator/Ryujinx/portable/bis/system/save/*.*"
+      "D:/YunGame/Z/PokemonScarletandViolet/Emulator/Ryujinx/portable/bis/user/*.*",
+      "D:/YunGame/Z/PokemonScarletandViolet/Emulator/Ryujinx/portable/bis/system/save/*.*"
     ]
   },
   {
@@ -3505,7 +3505,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/RedSolstice2/Save/Profiles/*.*",
-      "X:/YunGame/III/The Red Solstice 2 Survivors/settings/user_steam_id.txt"
+      "D:/YunGame/III/The Red Solstice 2 Survivors/settings/user_steam_id.txt"
     ]
   },
   {
@@ -3549,7 +3549,7 @@
     "tags": "#第一人称射击#割草#联机合作#外星入侵#爽快暴力",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Serious.Sam/Serious.Sam.4/UserData/*.*"
+      "D:/YunGame/Serious.Sam/Serious.Sam.4/UserData/*.*"
     ]
   },
   {
@@ -3561,7 +3561,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Saved Games/Grounded/*.*",
-      "X:/YunGame/W/Grounded/settings/*.*"
+      "D:/YunGame/W/Grounded/settings/*.*"
     ]
   },
   {
@@ -3639,7 +3639,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/Archon/*.*",
-      "X:/YunGame/IIII/Dungeons.of.S/settings/user_steam_id.txt"
+      "D:/YunGame/IIII/Dungeons.of.S/settings/user_steam_id.txt"
     ]
   },
   {
@@ -3661,7 +3661,7 @@
     "tags": "#肉鸽#第一人称射击#联机合作#随机词条#刷装备",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/Gunfire.Reborn/1217060/*.*"
+      "D:/YunGame/II/Gunfire.Reborn/1217060/*.*"
     ]
   },
   {
@@ -3684,7 +3684,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/THQ Nordic/Darksiders Genesis/*.*",
-      "X:/YunGame/Darksiders/Darksiders.Genesis/Engine/Binaries/ThirdParty/Steamworks/Steamv139/Win64/save/settings/user_steam_id.txt"
+      "D:/YunGame/Darksiders/Darksiders.Genesis/Engine/Binaries/ThirdParty/Steamworks/Steamv139/Win64/save/settings/user_steam_id.txt"
     ]
   },
   {
@@ -3706,8 +3706,8 @@
     "tags": "#生存#丛林求生#联机合作#第一人称#硬核",
     "gamelevel": 1,
     "savepaths": [
-      "X:/YunGame/Green.Hell/815370/*.*",
-      "x:/YunGame/Green.Hell/settings/*.*"
+      "D:/YunGame/Green.Hell/815370/*.*",
+      "D:/YunGame/Green.Hell/settings/*.*"
     ]
   },
   {
@@ -3752,7 +3752,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Roaming/Feed The Cups/*.*",
-      "X:/YunGame/V/Feed The Cups/settings/*.*"
+      "D:/YunGame/V/Feed The Cups/settings/*.*"
     ]
   },
   {
@@ -3796,7 +3796,7 @@
     "tags": "#沙盒#物理#联机#模组扩展#自由创造",
     "gamelevel": 2,
     "savepaths": [
-      "X:/yungame/v/garrysmod/garrysmod/saves/*.*"
+      "D:/YunGame/v/garrysmod/garrysmod/saves/*.*"
     ]
   },
   {
@@ -3818,7 +3818,7 @@
     "tags": "#生存建造#联机合作#恐龙#开放世界#驯养",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/ARK.Survival.Ascended/ShooterGame/Saved/*.*"
+      "D:/YunGame/IIII/ARK.Survival.Ascended/ShooterGame/Saved/*.*"
     ]
   },
   {
@@ -3863,7 +3863,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Airstrafe Interactive/Saleblazers/*.*",
-      "X:/YunGame/X/Saleblazers/settings/*.*"
+      "D:/YunGame/X/Saleblazers/settings/*.*"
     ]
   },
   {
@@ -3874,7 +3874,7 @@
     "tags": "#回合制#角色扮演#中国神话#复古重制#收集探索",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/FSB/save/*.*"
+      "D:/YunGame/V/FSB/save/*.*"
     ]
   },
   {
@@ -3885,7 +3885,7 @@
     "tags": "#卡牌构筑#肉鸽#心理恐怖#密室逃脱#剧情反转",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/IndieGame/Inscryption/*.gwsave"
+      "D:/YunGame/IndieGame/Inscryption/*.gwsave"
     ]
   },
   {
@@ -3948,7 +3948,7 @@
     "tags": "#体育竞技#足球#联机对战#经典老作#球员养成",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/We/We8China/save/*.*"
+      "D:/YunGame/We/We8China/save/*.*"
     ]
   },
   {
@@ -4003,7 +4003,7 @@
     "tags": "#模拟经营#电脑装机#维修任务#第一人称#经营养成",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/PC.Building.Simulator/Saves/*.*"
+      "D:/YunGame/IIII/PC.Building.Simulator/Saves/*.*"
     ]
   },
   {
@@ -4014,7 +4014,7 @@
     "tags": "#第一人称射击#科幻#剧情战役#物理解谜",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/HalfLife/Half-Life2.3in1/hl2/SAVE/*.*"
+      "D:/YunGame/HalfLife/Half-Life2.3in1/hl2/SAVE/*.*"
     ]
   },
   {
@@ -4047,7 +4047,7 @@
     "tags": "#第一人称射击#二战#剧情战役#经典老作#多人对战",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/MedalofHonor/MedalofHonorAlliedAssault/Main/save/*.*"
+      "D:/YunGame/2023/MedalofHonor/MedalofHonorAlliedAssault/Main/save/*.*"
     ]
   },
   {
@@ -4058,7 +4058,7 @@
     "tags": "#策略#三国题材#横向战场#武将养成#经典老作",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Sanguo.Heroes/Sanguo2.God/SAVES/*.*"
+      "D:/YunGame/Sanguo.Heroes/Sanguo2.God/SAVES/*.*"
     ]
   },
   {
@@ -4070,7 +4070,7 @@
     "gamelevel": 1,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/HighMoon/Saved/*.*",
-      "X:/YunGame/2023/Evil.West/settings/*.*"
+      "D:/YunGame/2023/Evil.West/settings/*.*"
     ]
   },
   {
@@ -4103,7 +4103,7 @@
     "tags": "#策略#三国题材#横向战场#武将养成#经典老作",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Sanguo.Heroes/Sanguo2/SAVES/*.*"
+      "D:/YunGame/Sanguo.Heroes/Sanguo2/SAVES/*.*"
     ]
   },
   {
@@ -4180,7 +4180,7 @@
     "tags": "#类魂#动作角色扮演#蒸汽朋克#硬核战斗#暗黑童话",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/LOP/LiesofP/Saved/SaveGames/*.*"
+      "D:/YunGame/II/LOP/LiesofP/Saved/SaveGames/*.*"
     ]
   },
   {
@@ -4224,7 +4224,7 @@
     "tags": "#动作角色扮演#仙侠#硬核战斗#双主角#平台跳跃",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IndieGame3/BloodySpell/SavesDir/*.*"
+      "D:/YunGame/IndieGame3/BloodySpell/SavesDir/*.*"
     ]
   },
   {
@@ -4235,7 +4235,7 @@
     "tags": "#第一人称射击#剧情战役#现代战争#重制",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/CoD6.Remastered/players2/*.*"
+      "D:/YunGame/CoD/CoD6.Remastered/players2/*.*"
     ]
   },
   {
@@ -4247,7 +4247,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Documents/KoeiTecmo/WARRIORS OROCHI 4/Savedata/*.*",
-      "X:/YunGame/IIII/WARRIORS OROCHI 4/settings/user_steam_id.txt"
+      "D:/YunGame/IIII/WARRIORS OROCHI 4/settings/user_steam_id.txt"
     ]
   },
   {
@@ -4258,7 +4258,7 @@
     "tags": "#策略#全面战争#中世纪#大战略#即时战斗",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Total.War/Total.War.Medieval.II/*.sav"
+      "D:/YunGame/Total.War/Total.War.Medieval.II/*.sav"
     ]
   },
   {
@@ -4391,7 +4391,7 @@
     "gamelevel": 1,
     "savepaths": [
       "C:/Users/Administrator/Documents/KoeiTecmo/Wolong/*.*",
-      "X:/YunGame/2023/WoLongFallenDynasty/settings/*.*"
+      "D:/YunGame/2023/WoLongFallenDynasty/settings/*.*"
     ]
   },
   {
@@ -4403,7 +4403,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Soda Den/Roots of Pacha/saves/*.*",
-      "X:/YunGame/IIII/Roots of Pacha/settings/*.*"
+      "D:/YunGame/IIII/Roots of Pacha/settings/*.*"
     ]
   },
   {
@@ -4414,7 +4414,7 @@
     "tags": "#模拟经营#城建#经济策略#沙盒#像素风",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/Ratopia/Ratopia_Data/SaveFile/*.*"
+      "D:/YunGame/W/Ratopia/Ratopia_Data/SaveFile/*.*"
     ]
   },
   {
@@ -4467,7 +4467,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/TheLastSurvivor/*.*",
-      "X:/YunGame/V/Project Zero 2/settings/*.*"
+      "D:/YunGame/V/Project Zero 2/settings/*.*"
     ]
   },
   {
@@ -4541,7 +4541,7 @@
     "tags": "#策略#三国题材#横向战斗#武将养成战役",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IndieGame3/三国群英传7重制版/Save/*.*"
+      "D:/YunGame/IndieGame3/三国群英传7重制版/Save/*.*"
     ]
   },
   {
@@ -4552,7 +4552,7 @@
     "tags": "#即时战略#冷战题材#基地建造#经典怀旧#多人对战",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Ra2/*.sav"
+      "D:/YunGame/Ra2/*.sav"
     ]
   },
   {
@@ -4574,7 +4574,7 @@
     "tags": "#第一人称射击#现代战争#剧情战役#多人对战#军事",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/CoD8/players2/*.*"
+      "D:/YunGame/CoD/CoD8/players2/*.*"
     ]
   },
   {
@@ -4585,7 +4585,7 @@
     "tags": "#即时战略#泰伯利亚#基地建造#同人模组#科幻战争",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/TiberiumCrisis2/Saved Games/*.*"
+      "D:/YunGame/V/TiberiumCrisis2/Saved Games/*.*"
     ]
   },
   {
@@ -4629,7 +4629,7 @@
     "tags": "#收集养成#策略#斗蟋#国风民俗#休闲",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/Cricket/Cricket_Data/Save/*.*"
+      "D:/YunGame/2023/Cricket/Cricket_Data/Save/*.*"
     ]
   },
   {
@@ -4640,7 +4640,7 @@
     "tags": "#策略#横向战斗#武将养成#历史题材战役",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/三国群英传7两宋风云/Save/*.*"
+      "D:/YunGame/III/三国群英传7两宋风云/Save/*.*"
     ]
   },
   {
@@ -4662,7 +4662,7 @@
     "tags": "#模拟经营#城市建造#中世纪#生存#资源管理",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/ForestVillage/save/*.*"
+      "D:/YunGame/2023/ForestVillage/save/*.*"
     ]
   },
   {
@@ -4717,7 +4717,7 @@
     "tags": "#割草#丧尸#载具作战#街机#休闲",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/1 Million Zombies/Data/*.*"
+      "D:/YunGame/V/1 Million Zombies/Data/*.*"
     ]
   },
   {
@@ -4761,7 +4761,7 @@
     "tags": "#第三人称射击#开放世界#战术潜行#军事#多人合作",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/IndieGame/Ghost.Recon.Wildlands/UbiStorage/*.*"
+      "D:/YunGame/IndieGame/Ghost.Recon.Wildlands/UbiStorage/*.*"
     ]
   },
   {
@@ -4772,7 +4772,7 @@
     "tags": "#模拟经营#沙盒#殖民地生存#像素风#硬核",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/RimWorld/SaveData/*.*"
+      "D:/YunGame/IIII/RimWorld/SaveData/*.*"
     ]
   },
   {
@@ -4805,7 +4805,7 @@
     "tags": "#体育竞技#篮球#模拟经营#多人对战#生涯模式",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/NBA/NBA2K22/Game/data/steam/steam_settings/1644960/remote/*.*"
+      "D:/YunGame/NBA/NBA2K22/Game/data/steam/steam_settings/1644960/remote/*.*"
     ]
   },
   {
@@ -4871,8 +4871,8 @@
     "tags": "#横版射击#多人合作#像素风#破坏场景#搞笑",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/Broforce/Saves/*.*",
-      "X:/YunGame/V/Broforce/settings/user_steam_id.txt"
+      "D:/YunGame/V/Broforce/Saves/*.*",
+      "D:/YunGame/V/Broforce/settings/user_steam_id.txt"
     ]
   },
   {
@@ -4884,7 +4884,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/AFE2/*.*",
-      "X:/YunGame/Z/AliensFireteamElite2/settings/*.*"
+      "D:/YunGame/Z/AliensFireteamElite2/settings/*.*"
     ]
   },
   {
@@ -5038,7 +5038,7 @@
     "tags": "#即时战略#历史题材#文明发展#经典怀旧#多人对战",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Age.of.Empires/Age.of.Empires.II.HD/savegame/*.*"
+      "D:/YunGame/Age.of.Empires/Age.of.Empires.II.HD/savegame/*.*"
     ]
   },
   {
@@ -5104,7 +5104,7 @@
     "tags": "#即时战略#柴油朋克#机甲#架空历史#剧情战役",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Iron.Harvest/release/Profile/*.*"
+      "D:/YunGame/Iron.Harvest/release/Profile/*.*"
     ]
   },
   {
@@ -5146,8 +5146,8 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Circle Empires 2/Circle Empires 2/cloud/*.*",
-      "X:/YunGame/X/Circle Empires 2/3093020/*.*",
-      "X:/YunGame/X/Circle Empires 2/settings/*.*"
+      "D:/YunGame/X/Circle Empires 2/3093020/*.*",
+      "D:/YunGame/X/Circle Empires 2/settings/*.*"
     ]
   },
   {
@@ -5191,7 +5191,7 @@
     "tags": "#平台跳跃#动作冒险#卡通#家庭向#解谜",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/TheSmurfs1/_Save/*.*"
+      "D:/YunGame/IIII/TheSmurfs1/_Save/*.*"
     ]
   },
   {
@@ -5284,7 +5284,7 @@
     "tags": "#动作冒险#开放世界#潜行刺杀#历史题材#维多利亚时代",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Assassins.Creed/Assassins.Creed.Syndicate/Profile/*.*"
+      "D:/YunGame/Assassins.Creed/Assassins.Creed.Syndicate/Profile/*.*"
     ]
   },
   {
@@ -5350,7 +5350,7 @@
     "tags": "#第一人称射击#现代战争#军事#剧情战役#多人对战",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/COD10/players2/*.*"
+      "D:/YunGame/CoD/COD10/players2/*.*"
     ]
   },
   {
@@ -5461,7 +5461,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Roaming/Arrowhead/Helldivers/*.*",
-      "X:/YunGame/Y/Helldivers/settings/*.*"
+      "D:/YunGame/Y/Helldivers/settings/*.*"
     ]
   },
   {
@@ -5472,7 +5472,7 @@
     "tags": "#生存恐怖#僵尸#解谜#经典重制",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Resident.Evil/RE1HD/Profile/*.*"
+      "D:/YunGame/Resident.Evil/RE1HD/Profile/*.*"
     ]
   },
   {
@@ -5495,7 +5495,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Roaming/dekovir/crafttheworld/*.*",
-      "X:/YunGame/IndieGame3/CraftWorld/settings/*.*"
+      "D:/YunGame/IndieGame3/CraftWorld/settings/*.*"
     ]
   },
   {
@@ -5517,7 +5517,7 @@
     "tags": "#第一人称射击#二战题材战役#战争",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/COD14/players2/*.*"
+      "D:/YunGame/CoD/COD14/players2/*.*"
     ]
   },
   {
@@ -5529,7 +5529,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/FactoryGame/*.*",
-      "X:/YunGame/III/Satisfactory/settings/*.*"
+      "D:/YunGame/III/Satisfactory/settings/*.*"
     ]
   },
   {
@@ -5650,7 +5650,7 @@
     "tags": "#第一人称射击#科幻#太空战争战役",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/COD13/players2/*.*"
+      "D:/YunGame/CoD/COD13/players2/*.*"
     ]
   },
   {
@@ -5661,8 +5661,8 @@
     "tags": "#第一人称解谜#物理#科幻#黑色幽默#双人合作",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/Portal 2/portal2/SAVE/*.*",
-      "X:/YunGame/IIII/Portal 2/bin/save/settings/user_steam_id.txt"
+      "D:/YunGame/IIII/Portal 2/portal2/SAVE/*.*",
+      "D:/YunGame/IIII/Portal 2/bin/save/settings/user_steam_id.txt"
     ]
   },
   {
@@ -5684,7 +5684,7 @@
     "tags": "#即时战术#潜行#二战#硬核#小队指挥#俯视角",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Commandos/CommCP/output/*.*"
+      "D:/YunGame/Commandos/CommCP/output/*.*"
     ]
   },
   {
@@ -5750,7 +5750,7 @@
     "tags": "#即时战略#英雄养成#奇幻#多人对战#基地建造#剧情战役",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/War3/Save/*.*"
+      "D:/YunGame/III/War3/Save/*.*"
     ]
   },
   {
@@ -5813,7 +5813,7 @@
     "tags": "#体育竞技#足球#模拟经营#单机#联机对战",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/We/We82012/save/*.*"
+      "D:/YunGame/We/We82012/save/*.*"
     ]
   },
   {
@@ -5836,7 +5836,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Documents/Klei/DoNotStarveTogether/*.*",
-      "X:/YunGame/IndieGame3/Don't Starve Together/settings/*.*"
+      "D:/YunGame/IndieGame3/Don't Starve Together/settings/*.*"
     ]
   },
   {
@@ -5858,8 +5858,8 @@
     "tags": "#沙盒#生存#开放世界#动作角色扮演#建造",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/ConanExiles/ConanSandbox/Saved/*.*",
-      "X:/YunGame/III/ConanExiles/settings/user_steam_id.txt"
+      "D:/YunGame/III/ConanExiles/ConanSandbox/Saved/*.*",
+      "D:/YunGame/III/ConanExiles/settings/user_steam_id.txt"
     ]
   },
   {
@@ -5903,7 +5903,7 @@
     "tags": "#平台解谜#动作冒险#奇幻#横版#合作",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Trine/Trine.1/profiles/*.*"
+      "D:/YunGame/Trine/Trine.1/profiles/*.*"
     ]
   },
   {
@@ -5925,7 +5925,7 @@
     "tags": "#生存#沙盒#开放世界#恐龙#建造",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/ARK/ShooterGame/Saved/*.*"
+      "D:/YunGame/III/ARK/ShooterGame/Saved/*.*"
     ]
   },
   {
@@ -6024,7 +6024,7 @@
     "tags": "#动作肉鸽#第三人称射击#高难度#随机生成#刷宝",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/Risk of Rain 2/632360/*.*"
+      "D:/YunGame/II/Risk of Rain 2/632360/*.*"
     ]
   },
   {
@@ -6058,7 +6058,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/TECOPARK/PICO PARK 2/Steam/*.*",
-      "X:/YunGame/V/PICO PARK 2/settings/*.*"
+      "D:/YunGame/V/PICO PARK 2/settings/*.*"
     ]
   },
   {
@@ -6069,7 +6069,7 @@
     "tags": "#第一人称射击#狙击#潜行#军事题材#线性",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Sniper/Sniper.Ghost.Warrior.1/Game/out/*.*"
+      "D:/YunGame/Sniper/Sniper.Ghost.Warrior.1/Game/out/*.*"
     ]
   },
   {
@@ -6080,7 +6080,7 @@
     "tags": "#动作角色扮演#国风#志怪#驱鬼#剧情",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/zhenxie2/Save/*.*"
+      "D:/YunGame/W/zhenxie2/Save/*.*"
     ]
   },
   {
@@ -6091,7 +6091,7 @@
     "tags": "#桌上游戏#回合制#休闲#多人对战#派对#经营",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Richman/Rich4/MultiverseJourney/SAVE*.DAT"
+      "D:/YunGame/Richman/Rich4/MultiverseJourney/SAVE*.DAT"
     ]
   },
   {
@@ -6157,7 +6157,7 @@
     "tags": "#模拟经营#修仙#国风#建造#养成#沙盒",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/AmazingCultivationSimulator/saves/*.*"
+      "D:/YunGame/III/AmazingCultivationSimulator/saves/*.*"
     ]
   },
   {
@@ -6168,7 +6168,7 @@
     "tags": "#潜行#第一人称#动作冒险#超能力#蒸汽朋克#多结局",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Dishonored/Dishonored.1/Binaries/Win32/Profile/*.*"
+      "D:/YunGame/Dishonored/Dishonored.1/Binaries/Win32/Profile/*.*"
     ]
   },
   {
@@ -6179,7 +6179,7 @@
     "tags": "#第三人称射击#机甲#变形战役#载具战斗",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/Gunmetal/Data/SavedGames/*.*"
+      "D:/YunGame/W/Gunmetal/Data/SavedGames/*.*"
     ]
   },
   {
@@ -6190,7 +6190,7 @@
     "tags": "#策略#三国题材#横向战斗#回合制#养将#历史",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Sanguo.Heroes/Sanguo4/Save/*.*"
+      "D:/YunGame/Sanguo.Heroes/Sanguo4/Save/*.*"
     ]
   },
   {
@@ -6201,7 +6201,7 @@
     "tags": "#第一人称射击#科幻战役#剧情#未来战争#动作",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/COD/CoD9SP/players/*.*"
+      "D:/YunGame/COD/CoD9SP/players/*.*"
     ]
   },
   {
@@ -6264,7 +6264,7 @@
     "tags": "#竞速#格斗#摩托#街机#对抗#怀旧",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Race/RoadRash/*.rrs"
+      "D:/YunGame/Race/RoadRash/*.rrs"
     ]
   },
   {
@@ -6275,7 +6275,7 @@
     "tags": "#开放世界#动作冒险#探索#解谜#奇幻#高自由度",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/SED/user/nand/user/save/0000000000000000/*.*"
+      "D:/YunGame/2023/SED/user/nand/user/save/0000000000000000/*.*"
     ]
   },
   {
@@ -6364,7 +6364,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/Shivers/*.*",
-      "X:/YunGame/II/Demonologist/settings/*.*"
+      "D:/YunGame/II/Demonologist/settings/*.*"
     ]
   },
   {
@@ -6386,7 +6386,7 @@
     "tags": "#即时战略#神话#基地建造#古代文明#多人对战#经典",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Age.of.Empires/Age.of.Mythology.Extended.Edition/savegame/*.*"
+      "D:/YunGame/Age.of.Empires/Age.of.Mythology.Extended.Edition/savegame/*.*"
     ]
   },
   {
@@ -6441,7 +6441,7 @@
     "tags": "#第三人称射击#狙击#潜行#二战题材战役#硬核",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Sniper/SniperElite3/238090/remote/*.*"
+      "D:/YunGame/Sniper/SniperElite3/238090/remote/*.*"
     ]
   },
   {
@@ -6453,7 +6453,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Documents/My Games/Kallax/*.*",
-      "X:/YunGame/III/Kallax/settings/user_steam_id.txt"
+      "D:/YunGame/III/Kallax/settings/user_steam_id.txt"
     ]
   },
   {
@@ -6464,8 +6464,8 @@
     "tags": "#第一人称射击#多人合作#挖矿#随机生成#矮人#生存",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/DeepRockGalactic/FSD/Saved/*.*",
-      "X:/YunGame/2023/DeepRockGalactic/settings/*.*"
+      "D:/YunGame/2023/DeepRockGalactic/FSD/Saved/*.*",
+      "D:/YunGame/2023/DeepRockGalactic/settings/*.*"
     ]
   },
   {
@@ -6509,7 +6509,7 @@
     "tags": "#第一人称射击#开放世界#沙盒#潜行#狩猎#剧情",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Far.Cry/Far.Cry.4/bin/Profile/*.*"
+      "D:/YunGame/Far.Cry/Far.Cry.4/bin/Profile/*.*"
     ]
   },
   {
@@ -6542,7 +6542,7 @@
     "tags": "#模拟经营#医院#策略#搞笑#经典#建造",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/IndieGame3/HOSP/Save/*.*"
+      "D:/YunGame/IndieGame3/HOSP/Save/*.*"
     ]
   },
   {
@@ -6608,7 +6608,7 @@
     "tags": "#即时战术#二战题材#军事#策略#硬核#单机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/Blitzkrieg2/Profiles/*.*"
+      "D:/YunGame/V/Blitzkrieg2/Profiles/*.*"
     ]
   },
   {
@@ -6685,7 +6685,7 @@
     "tags": "#格斗#动漫改编#立体对战#剧情模式#多人对战#热血",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/DemonSlayer/user/nand/user/save/*.*"
+      "D:/YunGame/2023/DemonSlayer/user/nand/user/save/*.*"
     ]
   },
   {
@@ -6785,7 +6785,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Roaming/Axolot Games/Scrap Mechanic/*.*",
-      "X:/YunGame/IndieGame3/ScrapMechanic/Release/settings/*.*"
+      "D:/YunGame/IndieGame3/ScrapMechanic/Release/settings/*.*"
     ]
   },
   {
@@ -6808,7 +6808,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Redbeet Interactive/Raft/User/*.*",
-      "X:/YunGame/IndieGame/Raft/settings/*.*"
+      "D:/YunGame/IndieGame/Raft/settings/*.*"
     ]
   },
   {
@@ -6885,7 +6885,7 @@
     "tags": "#第一人称射击#开放世界#热带岛屿#变异生物#潜行战役",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Far.Cry/Far.Cry.1/bin/Profiles/*.*"
+      "D:/YunGame/Far.Cry/Far.Cry.1/bin/Profiles/*.*"
     ]
   },
   {
@@ -6907,7 +6907,7 @@
     "tags": "#第一人称射击#割草射击#外星入侵#复古战役",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Serious.Sam/Serious.Sam.HD.The.First.Encounter/Bin/Administrator_swarm/SeriousSamHD/SavedGames/*.*"
+      "D:/YunGame/Serious.Sam/Serious.Sam.HD.The.First.Encounter/Bin/Administrator_swarm/SeriousSamHD/SavedGames/*.*"
     ]
   },
   {
@@ -6940,7 +6940,7 @@
     "tags": "#竖版射击#弹幕#街机#飞行射击#硬核闯关",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Raiden/RaidenV/Profile/*.*"
+      "D:/YunGame/Raiden/RaidenV/Profile/*.*"
     ]
   },
   {
@@ -6951,7 +6951,7 @@
     "tags": "#动作肉鸽#横版平台#跑酷#波斯神话#高难度",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/TheRoguePrinceofPersia/userdata/*.*"
+      "D:/YunGame/W/TheRoguePrinceofPersia/userdata/*.*"
     ]
   },
   {
@@ -6962,7 +6962,7 @@
     "tags": "#竞速#水上竞技#动漫风#角色养成#多人对战#爽快",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Kandagawa.Jet.Girls/SavesDir/*.*"
+      "D:/YunGame/Kandagawa.Jet.Girls/SavesDir/*.*"
     ]
   },
   {
@@ -6973,7 +6973,7 @@
     "tags": "#动作角色扮演#肉鸽#迷宫探索#武士#和风#打宝",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/KatanaKami/RemoteStorage/*.*"
+      "D:/YunGame/V/KatanaKami/RemoteStorage/*.*"
     ]
   },
   {
@@ -6984,7 +6984,7 @@
     "tags": "#角色扮演#仙侠#即时战斗#国产单机#剧情丰富#古风",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/GuJian/GuJian.2/Bin/Profile/*.*"
+      "D:/YunGame/GuJian/GuJian.2/Bin/Profile/*.*"
     ]
   },
   {
@@ -7025,7 +7025,7 @@
     "tags": "#动作#忍者#高难度#砍杀#日式风格战役",
     "gamelevel": 1,
     "savepaths": [
-      "X:/YunGame/2023/Ninja2/user/nand/user/save/*.*"
+      "D:/YunGame/2023/Ninja2/user/nand/user/save/*.*"
     ]
   },
   {
@@ -7080,7 +7080,7 @@
     "tags": "#动作肉鸽#砍杀#像素风#多人合作#俯视视角#高难度",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/EmberKnights/EmberKnights_64_Data/SaveData/*.*"
+      "D:/YunGame/III/EmberKnights/EmberKnights_64_Data/SaveData/*.*"
     ]
   },
   {
@@ -7114,7 +7114,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/KeepDigging/*.*",
-      "X:/YunGame/X/KeepDigging/settings/*.*"
+      "D:/YunGame/X/KeepDigging/settings/*.*"
     ]
   },
   {
@@ -7125,7 +7125,7 @@
     "tags": "#动作#砍杀#华丽连击#魔女题材#高难度#日式风格",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Bayonetta/Bayonetta1/Profile/*.*"
+      "D:/YunGame/Bayonetta/Bayonetta1/Profile/*.*"
     ]
   },
   {
@@ -7137,7 +7137,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/Strange Brigade/*.*",
-      "X:/YunGame/IIII/Strange Brigade/settings/user_steam_id.txt"
+      "D:/YunGame/IIII/Strange Brigade/settings/user_steam_id.txt"
     ]
   },
   {
@@ -7182,7 +7182,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Dazed Games/How to Fish/*.*",
-      "X:/YunGame/Z/How to Fish/settings/*.*"
+      "D:/YunGame/Z/How to Fish/settings/*.*"
     ]
   },
   {
@@ -7202,7 +7202,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Roaming/Brotato/*.*",
-      "X:/YunGame/2023/Brotato/Game/Brotato/settings/user_steam_id.txt"
+      "D:/YunGame/2023/Brotato/Game/Brotato/settings/user_steam_id.txt"
     ]
   },
   {
@@ -7213,7 +7213,7 @@
     "tags": "#角色扮演#吉卜力风#即时战斗#王国建设#动漫风#剧情丰富",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Ni.no.Kuni/Ni.no.Kuni.2.Revenant.Kingdom/Profile/*.*"
+      "D:/YunGame/Ni.no.Kuni/Ni.no.Kuni.2.Revenant.Kingdom/Profile/*.*"
     ]
   },
   {
@@ -7246,7 +7246,7 @@
     "tags": "#动作冒险#潜行刺杀#开放世界#历史题材#跑酷战役",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Assassins.Creed/Assassin’s.Creed.3.Remastered/Profile/*.*"
+      "D:/YunGame/Assassins.Creed/Assassin’s.Creed.3.Remastered/Profile/*.*"
     ]
   },
   {
@@ -7268,7 +7268,7 @@
     "tags": "#第一人称射击#现代战争战役#多人对战#军事题材#重制",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/CoD4.Remastered/players2/*.*"
+      "D:/YunGame/CoD/CoD4.Remastered/players2/*.*"
     ]
   },
   {
@@ -7280,7 +7280,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/BoB/*.*",
-      "X:/YunGame/IIII/Bang-On Balls Chronicles/settings/user_steam_id.txt"
+      "D:/YunGame/IIII/Bang-On Balls Chronicles/settings/user_steam_id.txt"
     ]
   },
   {
@@ -7302,7 +7302,7 @@
     "tags": "#俯视射击#割草射击#外星入侵#角色养成#刷装备",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Alien.Shooter/Alien.Shooter.2.TheLegend/SteamEmu/Saves/*.*"
+      "D:/YunGame/Alien.Shooter/Alien.Shooter.2.TheLegend/SteamEmu/Saves/*.*"
     ]
   },
   {
@@ -7324,7 +7324,7 @@
     "tags": "#太空生存#沙盒建造#开放世界#第一人称#科技树",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Empyrion.Galactic.Survival/Saves/*.*"
+      "D:/YunGame/Empyrion.Galactic.Survival/Saves/*.*"
     ]
   },
   {
@@ -7336,7 +7336,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/Ndemic Creations/Plague Inc. Evolved/*.*",
-      "X:/YunGame/III/PlagueIncEvolved/246620/*.*"
+      "D:/YunGame/III/PlagueIncEvolved/246620/*.*"
     ]
   },
   {
@@ -7369,7 +7369,7 @@
     "tags": "#即时战略#基地建造#科幻#阵营对抗#多人对战#怀旧",
     "gamelevel": 1,
     "savepaths": [
-      "X:/YunGame/II/Reunion2023/Saved Games/*.*"
+      "D:/YunGame/II/Reunion2023/Saved Games/*.*"
     ]
   },
   {
@@ -7380,7 +7380,7 @@
     "tags": "#解谜平台#黑白美术#悬疑#高难度#压抑氛围#横版",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/IndieGame3/LIMBO/honghao_swarm/*.*"
+      "D:/YunGame/IndieGame3/LIMBO/honghao_swarm/*.*"
     ]
   },
   {
@@ -7414,7 +7414,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/Pacify/*.*",
-      "X:/YunGame/II/Pacify/settings/*.*"
+      "D:/YunGame/II/Pacify/settings/*.*"
     ]
   },
   {
@@ -7470,7 +7470,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/SCUM/*.*",
-      "X:/YunGame/2023/SCUM/settings/*.*"
+      "D:/YunGame/2023/SCUM/settings/*.*"
     ]
   },
   {
@@ -7503,7 +7503,7 @@
     "tags": "#合作解谜#横版平台#物理#双人游戏#休闲#轻松",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/Shift Happens/359840/*.*"
+      "D:/YunGame/II/Shift Happens/359840/*.*"
     ]
   },
   {
@@ -7514,7 +7514,7 @@
     "tags": "#点击解谜#手绘美术#蒸汽朋克#机器人#无对白#独立游戏",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/Machinarium/Profile/XDGAME/Saves/*.*"
+      "D:/YunGame/III/Machinarium/Profile/XDGAME/Saves/*.*"
     ]
   },
   {
@@ -7559,7 +7559,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/Desolate/*.*",
-      "X:/YunGame/IIII/Desolate/settings/*.*"
+      "D:/YunGame/IIII/Desolate/settings/*.*"
     ]
   },
   {
@@ -7636,7 +7636,7 @@
     "tags": "#动作肉鸽#多人合作#俯视视角#民间传说#高难度#刷宝",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/Ravenswatch/_Save/*.*"
+      "D:/YunGame/IIII/Ravenswatch/_Save/*.*"
     ]
   },
   {
@@ -7658,7 +7658,7 @@
     "tags": "#模拟生存#打工#现实题材#开放世界#剧情丰富#策略",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/Nobody/Game/Nobody_Data/StreamingAssets/S/*.*"
+      "D:/YunGame/2023/Nobody/Game/Nobody_Data/StreamingAssets/S/*.*"
     ]
   },
   {
@@ -7691,7 +7691,7 @@
     "tags": "#即时战略#基地建造#科幻#阵营对抗#多人对战#怀旧",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Ra2/*.sav"
+      "D:/YunGame/Ra2/*.sav"
     ]
   },
   {
@@ -7714,7 +7714,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/FarFarWest/*.*",
-      "X:/YunGame/Y/FarFarWest/settings/*.*"
+      "D:/YunGame/Y/FarFarWest/settings/*.*"
     ]
   },
   {
@@ -7736,8 +7736,8 @@
     "tags": "#动作狩猎#和风#装备打造#巨型怪物",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/MonsterHunterRise/1446780/*.*",
-      "X:/YunGame/II/MonsterHunterRise/settings/user_steam_id.txt"
+      "D:/YunGame/II/MonsterHunterRise/1446780/*.*",
+      "D:/YunGame/II/MonsterHunterRise/settings/user_steam_id.txt"
     ]
   },
   {
@@ -7748,7 +7748,7 @@
     "tags": "#三国题材#回合策略#横向战斗#君主扮演#单机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/三国群英传7原版/Save/*.*"
+      "D:/YunGame/III/三国群英传7原版/Save/*.*"
     ]
   },
   {
@@ -7770,7 +7770,7 @@
     "tags": "#肉鸽#弹幕生存#暗黑奇幻#复古像素",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/HallsOfTorment/2218750/*.*"
+      "D:/YunGame/W/HallsOfTorment/2218750/*.*"
     ]
   },
   {
@@ -7793,7 +7793,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Stunlock Studios/VRising/*.*",
-      "X:/YunGame/IndieGame3/VRising/settings/*.*"
+      "D:/YunGame/IndieGame3/VRising/settings/*.*"
     ]
   },
   {
@@ -7827,7 +7827,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/TerrorDogStudio/Ultimate Zombie Defense 2/*.*",
-      "X:/YunGame/X/Ultimate Zombie Defense 2/settings/*.*"
+      "D:/YunGame/X/Ultimate Zombie Defense 2/settings/*.*"
     ]
   },
   {
@@ -7838,7 +7838,7 @@
     "tags": "#第一人称射击#科幻#重制#解谜#线性战役",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/HalfLife/Half-Life1.Black.Mesa/bms/save/*.*"
+      "D:/YunGame/HalfLife/Half-Life1.Black.Mesa/bms/save/*.*"
     ]
   },
   {
@@ -7893,7 +7893,7 @@
     "tags": "#第一人称射击#二战战役#战争#线性",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/CoD2/main/players/*.*"
+      "D:/YunGame/CoD/CoD2/main/players/*.*"
     ]
   },
   {
@@ -7926,7 +7926,7 @@
     "tags": "#硬核动作#科幻#机甲#反乌托邦",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/TheSurge1/bin/Profile/*.*"
+      "D:/YunGame/II/TheSurge1/bin/Profile/*.*"
     ]
   },
   {
@@ -7937,7 +7937,7 @@
     "tags": "#动作冒险#砍杀#奇幻#解谜#重制",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Darksiders/Darksiders.Warmastered.Edition/Profile/*.*"
+      "D:/YunGame/Darksiders/Darksiders.Warmastered.Edition/Profile/*.*"
     ]
   },
   {
@@ -7948,7 +7948,7 @@
     "tags": "#街机#模拟器#格斗#怀旧#联机对战",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/WinKawaks/saves/*.*"
+      "D:/YunGame/IIII/WinKawaks/saves/*.*"
     ]
   },
   {
@@ -7959,7 +7959,7 @@
     "tags": "#解谜#物理引擎#搞笑#欢乐",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IndieGame/Human.Fall.Flat/477160/*.*"
+      "D:/YunGame/IndieGame/Human.Fall.Flat/477160/*.*"
     ]
   },
   {
@@ -8048,7 +8048,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Documents/My Games/TerraTech/*.*",
-      "X:/YunGame/IIII/TerraTech/steam_settings/settings/user_steam_id.txt"
+      "D:/YunGame/IIII/TerraTech/steam_settings/settings/user_steam_id.txt"
     ]
   },
   {
@@ -8081,7 +8081,7 @@
     "tags": "#生存恐怖#心理恐怖#解谜#第三人称#灵异",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Silent.Hill/Silent.Hill.4.The.Room/save/*.*"
+      "D:/YunGame/Silent.Hill/Silent.Hill.4.The.Room/save/*.*"
     ]
   },
   {
@@ -8169,7 +8169,7 @@
     "tags": "#动作冒险#超级英雄#潜行#开放世界#剧情",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/Batman.Arkham.Knight/BmGame/SaveData/*.*"
+      "D:/YunGame/2023/Batman.Arkham.Knight/BmGame/SaveData/*.*"
     ]
   },
   {
@@ -8180,7 +8180,7 @@
     "tags": "#合作恐怖#生存恐怖#第一人称#逃生",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/X/DEVOUR/1274570/*.*"
+      "D:/YunGame/X/DEVOUR/1274570/*.*"
     ]
   },
   {
@@ -8199,7 +8199,7 @@
     "tags": "#动作角色扮演#肉鸽#像素风#家族叙事",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/ChildrenOfMorta/330020/*.*"
+      "D:/YunGame/IIII/ChildrenOfMorta/330020/*.*"
     ]
   },
   {
@@ -8211,7 +8211,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Documents/SavedGames/Survivalist2/*.*",
-      "X:/YunGame/X/Survivalist Invisible Strain/settings/*.*"
+      "D:/YunGame/X/Survivalist Invisible Strain/settings/*.*"
     ]
   },
   {
@@ -8223,7 +8223,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Backrooms/Inside the Backrooms/*.*",
-      "X:/YunGame/2023/InsideTheBackrooms/settings/*.*"
+      "D:/YunGame/2023/InsideTheBackrooms/settings/*.*"
     ]
   },
   {
@@ -8234,7 +8234,7 @@
     "tags": "#生存恐怖#僵尸#第三人称#解谜#重制",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/Re3HD/savedata/*.*"
+      "D:/YunGame/II/Re3HD/savedata/*.*"
     ]
   },
   {
@@ -8301,7 +8301,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/Bellwright/*.*",
-      "X:/YunGame/V/Bellwright/settings/*.*"
+      "D:/YunGame/V/Bellwright/settings/*.*"
     ]
   },
   {
@@ -8412,7 +8412,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/ChainedTogether/*.*",
-      "X:/YunGame/W/ChainedTogether/settings/*.*"
+      "D:/YunGame/W/ChainedTogether/settings/*.*"
     ]
   },
   {
@@ -8456,7 +8456,7 @@
     "tags": "#角色扮演#回合制#仙侠#国风#剧情",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/pal4/save/*.*"
+      "D:/YunGame/2023/pal4/save/*.*"
     ]
   },
   {
@@ -8467,7 +8467,7 @@
     "tags": "#即时战略#太空#科幻#舰队作战#重制",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/Homeworld/HomeworldRM/Bin/Profiles/*.*"
+      "D:/YunGame/V/Homeworld/HomeworldRM/Bin/Profiles/*.*"
     ]
   },
   {
@@ -8544,7 +8544,7 @@
     "tags": "#回合策略#奇幻#战棋#经典重制",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Heroes.of.Might.and.Magic/Heroes.3.HD/Games/*.*"
+      "D:/YunGame/Heroes.of.Might.and.Magic/Heroes.3.HD/Games/*.*"
     ]
   },
   {
@@ -8566,7 +8566,7 @@
     "tags": "#平台跳跃#横版#多人合作#阖家欢乐#卡通",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/SuperMarioBrosWonder/user/nand/system/save/*.*"
+      "D:/YunGame/IIII/SuperMarioBrosWonder/user/nand/system/save/*.*"
     ]
   },
   {
@@ -8599,8 +8599,8 @@
     "tags": "#休闲#桌游#买地经营#多人对战#派对",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/Richman11/2074800/*.*",
-      "X:/YunGame/W/Richman11/settings/*.*"
+      "D:/YunGame/W/Richman11/2074800/*.*",
+      "D:/YunGame/W/Richman11/settings/*.*"
     ]
   },
   {
@@ -8611,7 +8611,7 @@
     "tags": "#第一人称#动作#像素风#暴力",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/PaintTheTownRed/337320/remote/*.*"
+      "D:/YunGame/V/PaintTheTownRed/337320/remote/*.*"
     ]
   },
   {
@@ -8623,7 +8623,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Saved Games/Remnant2/*.*",
-      "X:/YunGame/IndieGame3/Remnant2/settings/*.*"
+      "D:/YunGame/IndieGame3/Remnant2/settings/*.*"
     ]
   },
   {
@@ -8667,7 +8667,7 @@
     "tags": "#第一人称射击#科幻#物理引擎战役#剧情",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/HalfLife/Half-Life2.3in1/hl2/SAVE/*.*"
+      "D:/YunGame/HalfLife/Half-Life2.3in1/hl2/SAVE/*.*"
     ]
   },
   {
@@ -8690,7 +8690,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Spiderling Games/Besiege/*.*",
-      "X:/YunGame/W/Besiege/Besiege_Data/SavedMachines/*.*"
+      "D:/YunGame/W/Besiege/Besiege_Data/SavedMachines/*.*"
     ]
   },
   {
@@ -8712,7 +8712,7 @@
     "tags": "#角色扮演#三国题材#开放世界#策略#养成",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Y/Three.Kingdoms.Mushouden/Mushouden_Data/GameData/*.*"
+      "D:/YunGame/Y/Three.Kingdoms.Mushouden/Mushouden_Data/GameData/*.*"
     ]
   },
   {
@@ -8745,7 +8745,7 @@
     "tags": "#模拟经营#国风#城市建造#休闲#沙盒",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/Ballads.of.Hongye/storage/*.*"
+      "D:/YunGame/2023/Ballads.of.Hongye/storage/*.*"
     ]
   },
   {
@@ -8811,7 +8811,7 @@
     "tags": "#第一人称射击#动作#爽快#暴力#科幻",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/IndieGame3/Bulletstorm/Binaries/Win64/Profile/*.*"
+      "D:/YunGame/IndieGame3/Bulletstorm/Binaries/Win64/Profile/*.*"
     ]
   },
   {
@@ -8866,7 +8866,7 @@
     "tags": "#策略#三国题材#横版战斗#武将养成#单机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/三国群英传7上下五千年/Save/*.*"
+      "D:/YunGame/III/三国群英传7上下五千年/Save/*.*"
     ]
   },
   {
@@ -8899,7 +8899,7 @@
     "tags": "#篮球#体育竞技#生涯模式#球队经营#联机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/NBA2K23/Profile/VALVE/Saves/*.*"
+      "D:/YunGame/2023/NBA2K23/Profile/VALVE/Saves/*.*"
     ]
   },
   {
@@ -8910,7 +8910,7 @@
     "tags": "#生存建造#北欧神话#维京#合作联机#开放世界",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/Valheim/892970/*.*"
+      "D:/YunGame/II/Valheim/892970/*.*"
     ]
   },
   {
@@ -8954,7 +8954,7 @@
     "tags": "#恐怖#步行模拟#找茬#悬疑",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Z/B1/b1/Saved/*.*"
+      "D:/YunGame/Z/B1/b1/Saved/*.*"
     ]
   },
   {
@@ -9116,7 +9116,7 @@
     "tags": "#生存恐怖#第一人称#中式民俗#战斗#多结局",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/TheDrainedGoddess/savegames/*.*"
+      "D:/YunGame/2023/TheDrainedGoddess/savegames/*.*"
     ]
   },
   {
@@ -9138,7 +9138,7 @@
     "tags": "#模拟驾驶#卡车#开放世界#经营#联机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Truck.Simulator/Euro.Truck.Simulator.2/227300/*.*"
+      "D:/YunGame/Truck.Simulator/Euro.Truck.Simulator.2/227300/*.*"
     ]
   },
   {
@@ -9160,7 +9160,7 @@
     "tags": "#模拟器#街机#怀旧#合集",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/hbmame/config/sta/*.*"
+      "D:/YunGame/V/hbmame/config/sta/*.*"
     ]
   },
   {
@@ -9194,7 +9194,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/nwx/Saved/*.*",
-      "X:/YunGame/X/Nightingale/settings/*.*"
+      "D:/YunGame/X/Nightingale/settings/*.*"
     ]
   },
   {
@@ -9217,7 +9217,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/Icarus/*.*",
-      "X:/YunGame/IndieGame3/ICARUS/settings/user_steam_id.txt"
+      "D:/YunGame/IndieGame3/ICARUS/settings/user_steam_id.txt"
     ]
   },
   {
@@ -9228,7 +9228,7 @@
     "tags": "#动作冒险#电影改编#解谜#合作#搞笑",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/LEGO/LEGO.STAR.WARS.The.Force.Awakens/Profile/*.*"
+      "D:/YunGame/LEGO/LEGO.STAR.WARS.The.Force.Awakens/Profile/*.*"
     ]
   },
   {
@@ -9239,7 +9239,7 @@
     "tags": "#休闲#消除#益智#街机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/ZUMADELUXE/userdata/*.*"
+      "D:/YunGame/III/ZUMADELUXE/userdata/*.*"
     ]
   },
   {
@@ -9251,7 +9251,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Electric Monkeys/Hired2Die/*.*",
-      "X:/YunGame/X/Hired2Die/settings/*.*"
+      "D:/YunGame/X/Hired2Die/settings/*.*"
     ]
   },
   {
@@ -9263,7 +9263,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/ProjectWar/*.*",
-      "X:/YunGame/IIII/The Front/settings/user_steam_id.txt"
+      "D:/YunGame/IIII/The Front/settings/user_steam_id.txt"
     ]
   },
   {
@@ -9274,7 +9274,7 @@
     "tags": "#第一人称射击#爽快#科幻#怪物#单机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/SeriousSam2/Content/SeriousSam2/PlayerProfiles/*.*"
+      "D:/YunGame/V/SeriousSam2/Content/SeriousSam2/PlayerProfiles/*.*"
     ]
   },
   {
@@ -9352,7 +9352,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Fika Productions/ShipOfFools/*.*",
-      "X:/YunGame/V/ShipOfFools/settings/user_steam_id.txt"
+      "D:/YunGame/V/ShipOfFools/settings/user_steam_id.txt"
     ]
   },
   {
@@ -9375,7 +9375,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Documents/My Games/Borderlands 3/*.*",
-      "X:/YunGame/Borderlands/Borderlands3/settings/*.*"
+      "D:/YunGame/Borderlands/Borderlands3/settings/*.*"
     ]
   },
   {
@@ -9431,7 +9431,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Documents/Avalanche Studios/GenerationZero/Saves/*.*",
-      "X:/YunGame/V/Generation Zero/settings/user_steam_id.txt"
+      "D:/YunGame/V/Generation Zero/settings/user_steam_id.txt"
     ]
   },
   {
@@ -9442,7 +9442,7 @@
     "tags": "#体育竞技#足球#修改版#赛事#联机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/We/We82016/save/*.*"
+      "D:/YunGame/We/We82016/save/*.*"
     ]
   },
   {
@@ -9530,7 +9530,7 @@
     "tags": "#空战#街机#射击#军事",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/IndieGame3/AirStrikeIIGulfThunder/game.bin"
+      "D:/YunGame/IndieGame3/AirStrikeIIGulfThunder/game.bin"
     ]
   },
   {
@@ -9563,7 +9563,7 @@
     "tags": "#第一人称射击#二战#剧情战役#军事",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/MedalofHonor/MedalofHonorAlliedAssault/Mainta/save/*.*"
+      "D:/YunGame/2023/MedalofHonor/MedalofHonorAlliedAssault/Mainta/save/*.*"
     ]
   },
   {
@@ -9574,7 +9574,7 @@
     "tags": "#合作#消防#喜剧#物理搞笑#联机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/Embr/1062830/*.*"
+      "D:/YunGame/IIII/Embr/1062830/*.*"
     ]
   },
   {
@@ -9618,7 +9618,7 @@
     "tags": "#第一人称射击#军事#剧情战役#特种部队#多人对战",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/CoD6/players/*.*"
+      "D:/YunGame/CoD/CoD6/players/*.*"
     ]
   },
   {
@@ -9725,7 +9725,7 @@
     "tags": "#策略#三国题材#横版战斗#武将养成#单机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/三国群英传7幻想之圣战/Save/*.*"
+      "D:/YunGame/III/三国群英传7幻想之圣战/Save/*.*"
     ]
   },
   {
@@ -9755,7 +9755,7 @@
     "tags": "#第一人称射击#多人对战#大逃杀#僵尸#竞技",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/Cod15/players/*.*"
+      "D:/YunGame/III/Cod15/players/*.*"
     ]
   },
   {
@@ -9777,7 +9777,7 @@
     "tags": "#第一人称射击#科幻#剧情#经典",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/HalfLife/Bin/valve_schinese/SAVE/*.*"
+      "D:/YunGame/V/HalfLife/Bin/valve_schinese/SAVE/*.*"
     ]
   },
   {
@@ -9810,7 +9810,7 @@
     "tags": "#模拟经营#城市建设#经济#建造#策略",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/SovietRepublic/media_soviet/save/*.*"
+      "D:/YunGame/W/SovietRepublic/media_soviet/save/*.*"
     ]
   },
   {
@@ -9822,7 +9822,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Windwalk Games/SWORN/*.*",
-      "X:/YunGame/V/SWORN/settings/*.*"
+      "D:/YunGame/V/SWORN/settings/*.*"
     ]
   },
   {
@@ -9833,7 +9833,7 @@
     "tags": "#休闲#棋盘#经营#派对#多人",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Richman/RichMan8/Save/*.*"
+      "D:/YunGame/Richman/RichMan8/Save/*.*"
     ]
   },
   {
@@ -9845,7 +9845,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/KoeiTecmo/NIOH3/*.*",
-      "X:/YunGame/V/Nioh3/settings/*.*"
+      "D:/YunGame/V/Nioh3/settings/*.*"
     ]
   },
   {
@@ -9900,7 +9900,7 @@
     "tags": "#第一人称#跑酷#丧尸#开放世界#合作联机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Dying.Light/DyingLight2/534380/*.*"
+      "D:/YunGame/Dying.Light/DyingLight2/534380/*.*"
     ]
   },
   {
@@ -9933,7 +9933,7 @@
     "tags": "#俯视角射击#动作射击#末日废土#外星怪物战役",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Alien.Shooter/Alien.Shooter.2.NewEra/Profile/VALVE/*.*"
+      "D:/YunGame/Alien.Shooter/Alien.Shooter.2.NewEra/Profile/VALVE/*.*"
     ]
   },
   {
@@ -9945,7 +9945,7 @@
     "gamelevel": 1,
     "savepaths": [
       "C:/Users/Administrator/AppData/Roaming/7DaysToDie/*.*",
-      "X:/YunGame/7.Days.To.Die/settings/*.*"
+      "D:/YunGame/7.Days.To.Die/settings/*.*"
     ]
   },
   {
@@ -9978,7 +9978,7 @@
     "tags": "#武侠#角色扮演#解谜推理#多结局#国产单机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/III/FateSeeker/Profile/*.*"
+      "D:/YunGame/III/FateSeeker/Profile/*.*"
     ]
   },
   {
@@ -9989,7 +9989,7 @@
     "tags": "#动作角色扮演#开放世界#奇幻#巨兽狩猎#合作联机",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/Atlas Fallen/1230530/*.*"
+      "D:/YunGame/II/Atlas Fallen/1230530/*.*"
     ]
   },
   {
@@ -10034,7 +10034,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Roaming/EldenRing/*.*",
-      "X:/YunGame/IIII/EldenRing-Lan/steam_settings/settings/user_steam_id.txt"
+      "D:/YunGame/IIII/EldenRing-Lan/steam_settings/settings/user_steam_id.txt"
     ]
   },
   {
@@ -10045,7 +10045,7 @@
     "tags": "#肉鸽#卡牌构筑#回合制#爬塔",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/Slay the Spire/saves/*.*"
+      "D:/YunGame/II/Slay the Spire/saves/*.*"
     ]
   },
   {
@@ -10056,7 +10056,7 @@
     "tags": "#第一人称射击#冷战题材#越战#剧情战役#多人对战",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/CoD7/players/*.*"
+      "D:/YunGame/CoD/CoD7/players/*.*"
     ]
   },
   {
@@ -10089,7 +10089,7 @@
     "tags": "#第一人称射击#二战题材#剧情战役#多人对战#写实",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/CoD1/Main/save/*.*"
+      "D:/YunGame/CoD/CoD1/Main/save/*.*"
     ]
   },
   {
@@ -10100,7 +10100,7 @@
     "tags": "#第一人称射击#生存恐怖#末日废土#开放世界#硬核",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/Anomaly/appdata/savedgames/*.*"
+      "D:/YunGame/III/Anomaly/appdata/savedgames/*.*"
     ]
   },
   {
@@ -10155,7 +10155,7 @@
     "tags": "#第一人称射击#二战题材#剧情战役#多人对战#军事",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/MedalofHonor/MedalofHonorAlliedAssault/Maintt/save/*.*"
+      "D:/YunGame/2023/MedalofHonor/MedalofHonorAlliedAssault/Maintt/save/*.*"
     ]
   },
   {
@@ -10188,7 +10188,7 @@
     "tags": "#即时战略#历史题材#建造经营#多人对战#经典",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Age.of.Empires/Age.of.Empires.I/savegame/*.*"
+      "D:/YunGame/Age.of.Empires/Age.of.Empires.I/savegame/*.*"
     ]
   },
   {
@@ -10218,7 +10218,7 @@
     "tags": "#动作冒险#开放世界#超级英雄#蛛丝摆荡#漫画改编",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/IndieGame3/The Amazing Spider-Man 2/Profile/*.*"
+      "D:/YunGame/IndieGame3/The Amazing Spider-Man 2/Profile/*.*"
     ]
   },
   {
@@ -10306,7 +10306,7 @@
     "tags": "#横版潜行#动作冒险#明朝背景#暗杀#剧情",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/Assassins Creed Chronicles China/Binaries/Win32/save3dmgames/*.*"
+      "D:/YunGame/II/Assassins Creed Chronicles China/Binaries/Win32/save3dmgames/*.*"
     ]
   },
   {
@@ -10372,7 +10372,7 @@
     "tags": "#音乐节奏#二次元#单机#曲库丰富#下落式",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/MUSYNX/SavesDir/*.*"
+      "D:/YunGame/IIII/MUSYNX/SavesDir/*.*"
     ]
   },
   {
@@ -10383,7 +10383,7 @@
     "tags": "#即时战略#像素风#建造经营#多人对战#轻松",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/8-bit Hordes/profile_1/*.*"
+      "D:/YunGame/IIII/8-bit Hordes/profile_1/*.*"
     ]
   },
   {
@@ -10394,7 +10394,7 @@
     "tags": "#横版动作#潜行#超级英雄#银河恶魔城#漫画改编",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/Batman.BlackGate/GameData/SteamSaves/*.*"
+      "D:/YunGame/2023/Batman.BlackGate/GameData/SteamSaves/*.*"
     ]
   },
   {
@@ -10406,7 +10406,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Flow Studio/Len's Island/*.*",
-      "X:/YunGame/Y/Len's Island/settings/*.*"
+      "D:/YunGame/Y/Len's Island/settings/*.*"
     ]
   },
   {
@@ -10428,7 +10428,7 @@
     "tags": "#体育竞技#职业摔角#多人对战#捏脸自定义#真实授权",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/WWE 2K23/SteamData/*.*"
+      "D:/YunGame/II/WWE 2K23/SteamData/*.*"
     ]
   },
   {
@@ -10439,7 +10439,7 @@
     "tags": "#丧尸生存#第一人称#跑酷#开放世界#多人合作",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/X/DyingLight_TheBeast/3008130/*.*"
+      "D:/YunGame/X/DyingLight_TheBeast/3008130/*.*"
     ]
   },
   {
@@ -10450,7 +10450,7 @@
     "tags": "#塔防#第一人称射击#多人合作#科幻#策略",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/Sanctum2/Binaries/Win32/210770/*.*"
+      "D:/YunGame/II/Sanctum2/Binaries/Win32/210770/*.*"
     ]
   },
   {
@@ -10472,7 +10472,7 @@
     "tags": "#生存恐怖#丧尸#解谜探索#射击#剧情",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Resident.Evil/Resident.Evil.Revelations/Profile/*.*"
+      "D:/YunGame/Resident.Evil/Resident.Evil.Revelations/Profile/*.*"
     ]
   },
   {
@@ -10546,7 +10546,7 @@
     "tags": "#肉鸽#横版射击#多人合作#刷装备#像素风",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/Risk of Rain Returns/1337520/*.*"
+      "D:/YunGame/IIII/Risk of Rain Returns/1337520/*.*"
     ]
   },
   {
@@ -10579,7 +10579,7 @@
     "tags": "#开放世界#动作冒险#爆炸破坏#沙盒#第三人称射击",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/Just.Cause.2/*.sav"
+      "D:/YunGame/II/Just.Cause.2/*.sav"
     ]
   },
   {
@@ -10646,7 +10646,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Valko Game Studios/Labyrinthine/*.*",
-      "X:/YunGame/V/Labyrinthine/settings/*.*"
+      "D:/YunGame/V/Labyrinthine/settings/*.*"
     ]
   },
   {
@@ -10657,7 +10657,7 @@
     "tags": "#丧尸生存#第一人称#跑酷#开放世界#多人合作",
     "gamelevel": 1,
     "savepaths": [
-      "X:/YunGame/Dying.Light/Dying.Light/239140/*.*"
+      "D:/YunGame/Dying.Light/Dying.Light/239140/*.*"
     ]
   },
   {
@@ -10680,7 +10680,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Alcedo Games/Old Market Simulator/*.*",
-      "X:/YunGame/X/Old Market Simulator/settings/configs.user.ini"
+      "D:/YunGame/X/Old Market Simulator/settings/configs.user.ini"
     ]
   },
   {
@@ -10702,7 +10702,7 @@
     "tags": "#生存建造#沙盒#恐龙#像素方块",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/PixARK/ShooterGame/Saved/*.*"
+      "D:/YunGame/V/PixARK/ShooterGame/Saved/*.*"
     ]
   },
   {
@@ -10724,7 +10724,7 @@
     "tags": "#第一人称射击#未来战争#外骨骼#剧情战役#多人对战",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/CoD11/players2/*.*"
+      "D:/YunGame/CoD/CoD11/players2/*.*"
     ]
   },
   {
@@ -10735,8 +10735,8 @@
     "tags": "#生存建造#开放世界#玩家对抗#硬核",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/Rust/RustServer/server/*.*",
-      "X:/YunGame/IIII/Rust/settings/*.*"
+      "D:/YunGame/IIII/Rust/RustServer/server/*.*",
+      "D:/YunGame/IIII/Rust/settings/*.*"
     ]
   },
   {
@@ -10780,7 +10780,7 @@
     "tags": "#俯视角射击#动作射击#外星怪物#末日废土#刷装备",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Alien.Shooter/AlienShooter2/Saves/*.*"
+      "D:/YunGame/Alien.Shooter/AlienShooter2/Saves/*.*"
     ]
   },
   {
@@ -10868,7 +10868,7 @@
     "tags": "#横版解谜#平台跳跃#奇幻#多人合作#物理解谜",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Trine/Trine.4/690640/*.*"
+      "D:/YunGame/Trine/Trine.4/690640/*.*"
     ]
   },
   {
@@ -10956,7 +10956,7 @@
     "tags": "#策略#三国题材#即时战斗#内政经营#经典",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Sanguo.Heroes/Sanguo3/Save/*.*"
+      "D:/YunGame/Sanguo.Heroes/Sanguo3/Save/*.*"
     ]
   },
   {
@@ -11033,7 +11033,7 @@
     "tags": "#第一人称射击#现代战争#剧情战役#多人对战#军事",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/CoD4/players/*.*"
+      "D:/YunGame/CoD/CoD4/players/*.*"
     ]
   },
   {
@@ -11077,7 +11077,7 @@
     "tags": "#体育竞技#篮球#生涯模式#拟真",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/NBA/NBA2K21/Game/data/steam/1225330/remote/*.*"
+      "D:/YunGame/NBA/NBA2K21/Game/data/steam/1225330/remote/*.*"
     ]
   },
   {
@@ -11088,7 +11088,7 @@
     "tags": "#即时战略#复古像素#基地建造#联机对战#科幻",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/8-bit Invaders/profile_1/*.*"
+      "D:/YunGame/IIII/8-bit Invaders/profile_1/*.*"
     ]
   },
   {
@@ -11196,7 +11196,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Roaming/R2G_Hellcard/*.*",
-      "X:/YunGame/V/HELLCARD/settings/user_steam_id.txt"
+      "D:/YunGame/V/HELLCARD/settings/user_steam_id.txt"
     ]
   },
   {
@@ -11262,8 +11262,8 @@
     "tags": "#动作角色扮演#生存#开放世界#多人合作#硬核",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/Outward/SaveGames/*.*",
-      "X:/YunGame/IIII/Outward/settings/*.*"
+      "D:/YunGame/IIII/Outward/SaveGames/*.*",
+      "D:/YunGame/IIII/Outward/settings/*.*"
     ]
   },
   {
@@ -11297,7 +11297,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/PGTY/*.*",
-      "X:/YunGame/Y/DREADZONE/settings/*.*"
+      "D:/YunGame/Y/DREADZONE/settings/*.*"
     ]
   },
   {
@@ -11330,7 +11330,7 @@
     "tags": "#城市建造#策略#古代中国#经济模拟#历史",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/EmperorRotMK/Save/*.*"
+      "D:/YunGame/W/EmperorRotMK/Save/*.*"
     ]
   },
   {
@@ -11341,7 +11341,7 @@
     "tags": "#生存建造#开放世界#火车#多人合作#沙盒",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Z/Oxygen Train/3907790/*.*"
+      "D:/YunGame/Z/Oxygen Train/3907790/*.*"
     ]
   },
   {
@@ -11352,7 +11352,7 @@
     "tags": "#动作角色扮演#砍杀#刷宝#多人合作#奇幻",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/IndieGame3/WarhammerChaosbane/Data/Save/*.*"
+      "D:/YunGame/IndieGame3/WarhammerChaosbane/Data/Save/*.*"
     ]
   },
   {
@@ -11385,7 +11385,7 @@
     "tags": "#第一人称射击#军事#小队战术#剧情战役#现代战争",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/DFBHD/*.sav"
+      "D:/YunGame/II/DFBHD/*.sav"
     ]
   },
   {
@@ -11473,7 +11473,7 @@
     "tags": "#模拟经营#农场#休闲#多人合作#放置养成",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/FarmTogether/steam_settings/673950/*.*"
+      "D:/YunGame/IIII/FarmTogether/steam_settings/673950/*.*"
     ]
   },
   {
@@ -11551,7 +11551,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Roaming/Factorio/saves/*.*",
-      "X:/YunGame/III/Factorio/bin/x64/427520/remote/*.*"
+      "D:/YunGame/III/Factorio/bin/x64/427520/remote/*.*"
     ]
   },
   {
@@ -11617,7 +11617,7 @@
     "tags": "#角色扮演#武侠#开放世界#高自由度#经典",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/The.Heroes.of.JinYong.6in1/data/YBdata/save/*.*"
+      "D:/YunGame/The.Heroes.of.JinYong.6in1/data/YBdata/save/*.*"
     ]
   },
   {
@@ -11640,7 +11640,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/RubberBandGames/Wobbly Life/*.*",
-      "X:/YunGame/V/Wobbly Life/settings/*.*"
+      "D:/YunGame/V/Wobbly Life/settings/*.*"
     ]
   },
   {
@@ -11684,7 +11684,7 @@
     "tags": "#动作冒险#间谍#潜行#剧情向#射击",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Z/007FirstLight/Retail/steam_settings/SAVE/*.*"
+      "D:/YunGame/Z/007FirstLight/Retail/steam_settings/SAVE/*.*"
     ]
   },
   {
@@ -11824,7 +11824,7 @@
     "tags": "#格斗#漫改#剧情模式#多人对战#热血",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/SaintSeiyaSoldiersSoul/Profile/ALI213/*.*"
+      "D:/YunGame/V/SaintSeiyaSoldiersSoul/Profile/ALI213/*.*"
     ]
   },
   {
@@ -11846,8 +11846,8 @@
     "tags": "#动作角色扮演#共斗狩猎#刷宝#多人合作#末世",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/GOD EATER 3/steam_settings/899440/*.*",
-      "X:/YunGame/V/GOD EATER 3/steam_settings/settings/*.*"
+      "D:/YunGame/V/GOD EATER 3/steam_settings/899440/*.*",
+      "D:/YunGame/V/GOD EATER 3/steam_settings/settings/*.*"
     ]
   },
   {
@@ -11858,7 +11858,7 @@
     "tags": "#策略#模拟经营#航海#贸易#历史",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Port.Royale/Port.Royale.4/steam_settings/1024650/*.*"
+      "D:/YunGame/Port.Royale/Port.Royale.4/steam_settings/1024650/*.*"
     ]
   },
   {
@@ -11869,7 +11869,7 @@
     "tags": "#动作冒险#开放世界#潜行暗杀#历史题材#多人合作",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Assassins.Creed/Assassin's.Creed.Unity/save3dmgames/*.*"
+      "D:/YunGame/Assassins.Creed/Assassin's.Creed.Unity/save3dmgames/*.*"
     ]
   },
   {
@@ -11889,7 +11889,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/It's Happening/PlateUp/*.*",
-      "X:/YunGame/II/PlateUp/settings/*.*"
+      "D:/YunGame/II/PlateUp/settings/*.*"
     ]
   },
   {
@@ -11922,7 +11922,7 @@
     "tags": "#模拟经营#休闲#多人合作#开放世界#治愈",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/CozyIsland/CozyIsland_Data/SaveFiles/*.*"
+      "D:/YunGame/W/CozyIsland/CozyIsland_Data/SaveFiles/*.*"
     ]
   },
   {
@@ -12018,7 +12018,7 @@
     "tags": "#第一人称射击#狙击#潜行#开放关卡#军事",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Sniper/Sniper.GhostWarriorContracts/win_x64/Profile/*.*"
+      "D:/YunGame/Sniper/Sniper.GhostWarriorContracts/win_x64/Profile/*.*"
     ]
   },
   {
@@ -12030,7 +12030,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Saved Games/Sackboy/*.*",
-      "X:/YunGame/IIII/Sackboy/settings/user_steam_id.txt"
+      "D:/YunGame/IIII/Sackboy/settings/user_steam_id.txt"
     ]
   },
   {
@@ -12042,7 +12042,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Endnight/SonsOfTheForest/*.*",
-      "X:/YunGame/2023/SonsOfTheForest/settings/*.*"
+      "D:/YunGame/2023/SonsOfTheForest/settings/*.*"
     ]
   },
   {
@@ -12054,7 +12054,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Saved Games/4J Studios/Manic Mechanics/*.*",
-      "X:/YunGame/V/ManicMechanics/settings/user_steam_id.txt"
+      "D:/YunGame/V/ManicMechanics/settings/user_steam_id.txt"
     ]
   },
   {
@@ -12098,7 +12098,7 @@
     "tags": "#第三人称射击#恐怖#生存#多人合作#丧尸",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Resident.Evil/Resident.Evil.5/RemoteStorage/*.*"
+      "D:/YunGame/Resident.Evil/Resident.Evil.5/RemoteStorage/*.*"
     ]
   },
   {
@@ -12164,7 +12164,7 @@
     "tags": "#动作角色扮演#类魂#希腊神话#合作联机#割草",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/Achilles/Achilles/Saved/SaveGames/*.*"
+      "D:/YunGame/IIII/Achilles/Achilles/Saved/SaveGames/*.*"
     ]
   },
   {
@@ -12231,7 +12231,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/GalvanicGames/wizardwithagun/*.*",
-      "X:/YunGame/IIII/wizardwithagun/settings/user_steam_id.txt"
+      "D:/YunGame/IIII/wizardwithagun/settings/user_steam_id.txt"
     ]
   },
   {
@@ -12242,7 +12242,7 @@
     "tags": "#动作冒险#和风#战国#斩击#解谜探索",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/Onimusha/steam_settings/761600/*.*"
+      "D:/YunGame/W/Onimusha/steam_settings/761600/*.*"
     ]
   },
   {
@@ -12379,7 +12379,7 @@
     "tags": "#第一人称射击#开放世界#邪教题材#合作联机#沙盒",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Far.Cry/Far.Cry.5/bin/SAVES/*.*"
+      "D:/YunGame/Far.Cry/Far.Cry.5/bin/SAVES/*.*"
     ]
   },
   {
@@ -12435,7 +12435,7 @@
     "tags": "#卡牌构筑#肉鸽#回合制#爬塔#高重玩性",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/SlayTheSpire2/2868840/*.*"
+      "D:/YunGame/W/SlayTheSpire2/2868840/*.*"
     ]
   },
   {
@@ -12491,7 +12491,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/BANDAI NAMCO Entertainment/One Piece Pirate Warriors 4/*.*",
-      "X:/YunGame/III/OPPW4/settings/*.*"
+      "D:/YunGame/III/OPPW4/settings/*.*"
     ]
   },
   {
@@ -12502,7 +12502,7 @@
     "tags": "#解谜#悬疑#民国题材#民俗恐怖#多结局",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/FbStory/FbStory_Data/savefiles/*.*"
+      "D:/YunGame/2023/FbStory/FbStory_Data/savefiles/*.*"
     ]
   },
   {
@@ -12547,7 +12547,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/EarthDefenceForce6/*.*",
-      "X:/YunGame/X/EARTH DEFENSE FORCE 6/settings/*.*"
+      "D:/YunGame/X/EARTH DEFENSE FORCE 6/settings/*.*"
     ]
   },
   {
@@ -12558,7 +12558,7 @@
     "tags": "#合作恐怖#捉鬼#第一人称#调查取证",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/IndieGame3/Ghost.Hunters.Corp/save/*.*"
+      "D:/YunGame/IndieGame3/Ghost.Hunters.Corp/save/*.*"
     ]
   },
   {
@@ -12580,7 +12580,7 @@
     "tags": "#角色扮演#武侠#古龙改编#剧情向#回合制",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/X/TTH1DVD/Save/*.*"
+      "D:/YunGame/X/TTH1DVD/Save/*.*"
     ]
   },
   {
@@ -12602,7 +12602,7 @@
     "tags": "#动作肉鸽#俯视角#像素风#合作联机#背包管理",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/X/Sephiria/2436940/*.*"
+      "D:/YunGame/X/Sephiria/2436940/*.*"
     ]
   },
   {
@@ -12742,7 +12742,7 @@
     "tags": "#动作冒险#开放世界#历史题材#潜行刺杀#跑酷",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/AssassinsCreedII/Orbit/storage/SKIDROW/*.*"
+      "D:/YunGame/V/AssassinsCreedII/Orbit/storage/SKIDROW/*.*"
     ]
   },
   {
@@ -12765,7 +12765,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Roaming/Klei/Rotwood/*.*",
-      "X:/YunGame/V/Rotwood/bin/settings/user_steam_id.txt"
+      "D:/YunGame/V/Rotwood/bin/settings/user_steam_id.txt"
     ]
   },
   {
@@ -12828,7 +12828,7 @@
     "tags": "#横版解谜#平台冒险#反乌托邦#氛围#暗黑",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/IndieGame3/INSIDE/Profile/*.*"
+      "D:/YunGame/IndieGame3/INSIDE/Profile/*.*"
     ]
   },
   {
@@ -12839,7 +12839,7 @@
     "tags": "#生存沙盒#第一人称#丧尸题材#合作联机#开放世界",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/X/Vein/Vein/Saved/SaveGames/*.*"
+      "D:/YunGame/X/Vein/Vein/Saved/SaveGames/*.*"
     ]
   },
   {
@@ -12905,7 +12905,7 @@
     "tags": "#第一人称#解谜#中式恐怖#心理恐怖#剧情向",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/NoReturn/LBRR996/Saved/SaveGames/*.*"
+      "D:/YunGame/W/NoReturn/LBRR996/Saved/SaveGames/*.*"
     ]
   },
   {
@@ -12949,7 +12949,7 @@
     "tags": "#生活模拟#角色扮演#职业切换#治愈",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Y/FANTASY LIFE i/2993780/*.*"
+      "D:/YunGame/Y/FANTASY LIFE i/2993780/*.*"
     ]
   },
   {
@@ -12960,7 +12960,7 @@
     "tags": "#即时战略#科幻#基地建设#多人对战#经典",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/IndieGame3/StarCraft/save/*.*"
+      "D:/YunGame/IndieGame3/StarCraft/save/*.*"
     ]
   },
   {
@@ -12971,7 +12971,7 @@
     "tags": "#物理模拟#沙盒#搞笑#策略#布娃娃",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/TotallyAccurateBattleSimulator/508440/*.*"
+      "D:/YunGame/III/TotallyAccurateBattleSimulator/508440/*.*"
     ]
   },
   {
@@ -13081,7 +13081,7 @@
     "tags": "#动作角色扮演#类魂#科幻#硬核#装备打造",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/II/TheSurge2/bin/Profile/*.*"
+      "D:/YunGame/II/TheSurge2/bin/Profile/*.*"
     ]
   },
   {
@@ -13104,7 +13104,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/OTWD/*.*",
-      "X:/YunGame/III/OVERKILL's The Walking Dead/settings/user_steam_id.txt"
+      "D:/YunGame/III/OVERKILL's The Walking Dead/settings/user_steam_id.txt"
     ]
   },
   {
@@ -13126,7 +13126,7 @@
     "tags": "#生存恐怖#丧尸题材#双人合作#解谜#剧情向",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Resident.Evil/Resident.Evil.Revelations2/Profile/*.*"
+      "D:/YunGame/Resident.Evil/Resident.Evil.Revelations2/Profile/*.*"
     ]
   },
   {
@@ -13193,7 +13193,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/Local/SniperElite4/*.*",
-      "X:/YunGame/sniper/SniperElite4/settings/*.*"
+      "D:/YunGame/sniper/SniperElite4/settings/*.*"
     ]
   },
   {
@@ -13237,7 +13237,7 @@
     "tags": "#类银河恶魔城#肉鸽#横版动作#像素风#高难度",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IndieGame3/Dead.Cells/save/*.*"
+      "D:/YunGame/IndieGame3/Dead.Cells/save/*.*"
     ]
   },
   {
@@ -13270,7 +13270,7 @@
     "tags": "#第一人称射击#割草射击#多人合作#科幻#爽快",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Serious.Sam/Serious.Sam.Siberian.Mayhem/UserData/*.*"
+      "D:/YunGame/Serious.Sam/Serious.Sam.Siberian.Mayhem/UserData/*.*"
     ]
   },
   {
@@ -13281,7 +13281,7 @@
     "tags": "#战棋#抗日题材#回合制#策略#国产经典",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/DLZwin95/windows95.img"
+      "D:/YunGame/W/DLZwin95/windows95.img"
     ]
   },
   {
@@ -13325,7 +13325,7 @@
     "tags": "#第一人称射击#丧尸#波次生存#合作",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/CoD/CoD9/players/*.*"
+      "D:/YunGame/CoD/CoD9/players/*.*"
     ]
   },
   {
@@ -13347,7 +13347,7 @@
     "tags": "#地下城管理#即时战略#反派主角#建造经营#黑色幽默",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/V/WarForTheOverworld/230190/*.*"
+      "D:/YunGame/V/WarForTheOverworld/230190/*.*"
     ]
   },
   {
@@ -13369,7 +13369,7 @@
     "tags": "#第一人称射击#二战#纳粹#超自然#关卡射击",
     "gamelevel": 2,
     "savepaths": [
-      "X:/Yungame/Wolfenstein/RTCW/Main/save/*.*"
+      "D:/YunGame/Wolfenstein/RTCW/Main/save/*.*"
     ]
   },
   {
@@ -13391,7 +13391,7 @@
     "tags": "#模拟经营#职业模拟#第一人称#经营养成#硬核",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/PC.Building.Simulator.2/Saves/*.*"
+      "D:/YunGame/IIII/PC.Building.Simulator.2/Saves/*.*"
     ]
   },
   {
@@ -13402,7 +13402,7 @@
     "tags": "#叙事冒险#第三人称#公路旅行#探索#文艺",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/SeasonALettertotheFuture/Sea/Saved/SaveGames/*.*"
+      "D:/YunGame/2023/SeasonALettertotheFuture/Sea/Saved/SaveGames/*.*"
     ]
   },
   {
@@ -13490,7 +13490,7 @@
     "tags": "#角色扮演#武侠#剧情丰富#古龙改编#双主角",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/X/TTH2DVD/Save/*.*"
+      "D:/YunGame/X/TTH2DVD/Save/*.*"
     ]
   },
   {
@@ -13567,7 +13567,7 @@
     "tags": "#战棋#角色扮演#奇幻#魔兽养成#回合制",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/W/Amadis-lob/*.SAV"
+      "D:/YunGame/W/Amadis-lob/*.SAV"
     ]
   },
   {
@@ -13600,7 +13600,7 @@
     "tags": "#平台跳跃#可爱#多人合作#变身能力#轻松休闲",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IndieGame3/Kirby and the Forgotten Land/user/nand/user/save/*.*"
+      "D:/YunGame/IndieGame3/Kirby and the Forgotten Land/user/nand/user/save/*.*"
     ]
   },
   {
@@ -13652,7 +13652,7 @@
     "tags": "#角色扮演#修仙#卡牌战斗#开放世界#回合制",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/2023/觅长生/MCSSave/*.*"
+      "D:/YunGame/2023/觅长生/MCSSave/*.*"
     ]
   },
   {
@@ -13675,7 +13675,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Brimstone/Overthrown/*.*",
-      "X:/YunGame/X/Overthrown/settings/*.*"
+      "D:/YunGame/X/Overthrown/settings/*.*"
     ]
   },
   {
@@ -13786,7 +13786,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Documents/KoeiTecmo/Attack on Titan2_AOT2/*.*",
-      "X:/YunGame/AttackonTitan/AttackonTitan2/settings/*.*"
+      "D:/YunGame/AttackonTitan/AttackonTitan2/settings/*.*"
     ]
   },
   {
@@ -13797,8 +13797,8 @@
     "tags": "#格斗#漫改#忍者题材#多人对战#华丽连招",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/NSUNSC/1020790/*.*",
-      "X:/YunGame/IIII/NSUNSC/settings/user_steam_id.txt"
+      "D:/YunGame/IIII/NSUNSC/1020790/*.*",
+      "D:/YunGame/IIII/NSUNSC/settings/user_steam_id.txt"
     ]
   },
   {
@@ -13829,7 +13829,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/Documents/My Games/Dead Rising 4/*.*",
-      "X:/YunGame/W/DeadRising4/settings/*.*"
+      "D:/YunGame/W/DeadRising4/settings/*.*"
     ]
   },
   {
@@ -13851,7 +13851,7 @@
     "tags": "#角色扮演#武侠#剧情丰富#回合制#多结局",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/X/TTH3DVD/Save/*.*"
+      "D:/YunGame/X/TTH3DVD/Save/*.*"
     ]
   },
   {
@@ -13873,8 +13873,8 @@
     "tags": "#生存#模拟#流浪汉#多人合作#都市",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/Hobo.Tough.Life/Hobo.Tough.Life-Lan/HoboRPG_Data/Save/*.*",
-      "X:/YunGame/Hobo.Tough.Life/Hobo.Tough.Life-Lan/settings/*.*"
+      "D:/YunGame/Hobo.Tough.Life/Hobo.Tough.Life-Lan/HoboRPG_Data/Save/*.*",
+      "D:/YunGame/Hobo.Tough.Life/Hobo.Tough.Life-Lan/settings/*.*"
     ]
   },
   {
@@ -13886,7 +13886,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/James Bendon/Dinkum/*.*",
-      "X:/YunGame/II/Dinkum/settings/user_steam_id.txt"
+      "D:/YunGame/II/Dinkum/settings/user_steam_id.txt"
     ]
   },
   {
@@ -13908,7 +13908,7 @@
     "tags": "#即时战略#科幻#冷战#阵营对抗#多人对战",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IIII/MentalOmega/Saved Games/*.*"
+      "D:/YunGame/IIII/MentalOmega/Saved Games/*.*"
     ]
   },
   {
@@ -13919,7 +13919,7 @@
     "tags": "#第一人称射击#复古射击#多人合作#外星敌人#割草",
     "gamelevel": 1,
     "savepaths": [
-      "X:/Yungame/Serious.Sam/Serious.Sam.HD.The.Second.Encounter/Bin/Administrator_swarm/SeriousSamHD_TSE/SavedGames/*.*"
+      "D:/YunGame/Serious.Sam/Serious.Sam.HD.The.Second.Encounter/Bin/Administrator_swarm/SeriousSamHD_TSE/SavedGames/*.*"
     ]
   },
   {
@@ -13963,7 +13963,7 @@
     "tags": "#开放世界#动作#犯罪#黑色幽默#角色自定义",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/III/SaintsRow_Lan/sr5/steam_settings/742420/*.*"
+      "D:/YunGame/III/SaintsRow_Lan/sr5/steam_settings/742420/*.*"
     ]
   },
   {
@@ -13985,7 +13985,7 @@
     "tags": "#沙盒#挖掘探索#生存#多人合作#像素风",
     "gamelevel": 2,
     "savepaths": [
-      "X:/YunGame/IndieGame3/Core.Keeper/1621690/*.*"
+      "D:/YunGame/IndieGame3/Core.Keeper/1621690/*.*"
     ]
   },
   {
@@ -14030,7 +14030,7 @@
     "gamelevel": 2,
     "savepaths": [
       "C:/Users/Administrator/AppData/LocalLow/Team 17 Digital ltd_/The Escapists 2/*.*",
-      "X:/YunGame/V/The Escapists 2/steam_settings/settings/user_steam_id.txt"
+      "D:/YunGame/V/The Escapists 2/steam_settings/settings/user_steam_id.txt"
     ]
   },
   {

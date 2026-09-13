@@ -10,11 +10,12 @@ import initSqlJs from 'sql.js';
 import { readFileSync, writeFileSync, copyFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { adminDbPath, runtimeDbPath } from './scripts/lib/devData.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const INFO = 'D:/AI/games-web/games_info.json';
-const ADMIN = join(__dirname, 'release/data/Admin/library.db');
-const RUNTIME = join(__dirname, 'release/data/library/library.db');
+const ADMIN = adminDbPath();
+const RUNTIME = runtimeDbPath();
 const APPLY = process.argv.includes('--apply');
 
 const SQL = await initSqlJs({ locateFile: (f) => join(__dirname, 'node_modules/sql.js/dist/', f) });

@@ -21,13 +21,14 @@ import { promises as fs } from 'node:fs'
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { adminDbPath, runtimeDbPath } from '../lib/devData.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const require = createRequire(import.meta.url)
 const PLAYDAY_ROOT = path.resolve(__dirname, '..', '..')
-const DEFAULT_DB = existsSync(path.join(PLAYDAY_ROOT, 'release', 'data', 'Admin', 'library.db'))
-  ? path.join(PLAYDAY_ROOT, 'release', 'data', 'Admin', 'library.db')
-  : path.join(PLAYDAY_ROOT, 'release', 'data', 'library', 'library.db')
+// 默认库路径来自规则表（scripts/lib/devData.mjs）：权威库优先，其次运行时副本。
+// 别再把目录名拼在这儿 —— 数据目录挪过位置，拼死的默认值会指到一个不存在的库。
+const DEFAULT_DB = existsSync(adminDbPath()) ? adminDbPath() : runtimeDbPath()
 
 // ─── 字段映射：camelCase(Game) → snake_case(列) ─────────────────────────
 // 第三项：'arr' 数组字段(JSON 序列化) / 'bool' 布尔字段(0/1) / undefined 普通文本

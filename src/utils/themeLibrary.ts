@@ -57,6 +57,196 @@ export interface ThemeEntry {
 
 export const themeLibrary: ThemeEntry[] = [
   {
+    // 来源：**Playnite 原版桌面主题**，色值逐条取自原版源码
+    //   source/Playnite.DesktopApp/Themes/Desktop/Default/Constants.xaml
+    // （原版桌面主题的色板只此一处：MainColor / MainColorDark / GlyphColor / HoverColor …）
+    // 键名 → 本表字段的对照（括号内是原版键）：
+    //   MainColorDark #0D1225            → background / bgBase（窗口底色）
+    //   WindowBackgourndBrush 亮端 #202B4D → bgTop（原版窗口是上亮下暗的竖直渐变，这里同款）
+    //   MainColor #2C3A67                → card / bgPanel（面板、NormalBrush）
+    //   GridItemBackgroundColor #151E3D  → bgSidebar
+    //   PopupBackgroundColor #171E26     → muted
+    //   PopupBackgroundBrush #1F2847     → secondary
+    //   PopupBorderColor #3E6184         → border
+    //   GlyphColor #55CDFF               → primary / accent / ring / borderStrong（原版最标志的青色）
+    //   HoverColor #247BA0               → bgItemHover
+    //   HighlightGlyphColor #8855CDFF    → bgItemActive（53% 青叠在 MainColor 上合成 #4288B7，
+    //                                       因为本表字段只能存纯色、不能带 alpha）
+    //   ButtonBackgroundBrush #0A0E1E    → bgInput
+    //   TextColor #F2F2F2                → textPrimary / foreground
+    //   TextColorDarker #A3A3A3          → textSecondary
+    //   PositiveRatingBrush #78FFA0      → success
+    //   DataChangeNotifColor #FFA500     → warning
+    //   NegativeRatingBrush #FF6B6B      → danger
+    // 原版没有第三级文字色，textDim 按同色系派生（必须过对比度守卫）。
+    id: "p-playnite",
+    name: "Playnite Default",
+    zh: "游戏夜色",
+    desc: "原版 Playnite 桌面主题的同款深藏青蓝底 + 青色（#55CDFF）强调，面板/网格底色与描边都按原版键值还原，老用户一眼认得。",
+    category: "游戏主题",
+    palette: {
+      background: "#0D1225",
+      foreground: "#F2F2F2",
+      card: "#2C3A67",
+      cardForeground: "#F2F2F2",
+      primary: "#55CDFF",
+      primaryForeground: "#0D1225",
+      secondary: "#1F2847",
+      secondaryForeground: "#F2F2F2",
+      muted: "#171E26",
+      mutedForeground: "#A3A3A3",
+      border: "#3E6184",
+      ring: "#55CDFF",
+      bgBase: "#0D1225",
+      bgTop: "#202B4D",
+      bgSidebar: "#151E3D",
+      bgPanel: "#2C3A67",
+      bgItemHover: "#247BA0",
+      bgItemActive: "#4288B7",
+      bgInput: "#0A0E1E",
+      borderStrong: "#55CDFF",
+      textPrimary: "#F2F2F2",
+      textSecondary: "#A3A3A3",
+      textDim: "#7C86A0",
+      accent: "#55CDFF",
+      accentHover: "#7BD9FF",
+      accentSoft: "rgba(85, 205, 255, 0.18)",
+      success: "#78FFA0",
+      warning: "#FFA500",
+      danger: "#FF6B6B",
+    },
+  },
+  {
+    // 来源：**第三方主题 eMixedNite**（作者 eminaguil，v2.60），色值取自它随主题分发的
+    //   Themes/Desktop/eMixedNite_<id>/Constants.xaml
+    // （该主题用 Playnite 的 ThemeModifier 插件做"可改常量"，但 thememodifier.yaml 只声明
+    //   哪些键可改、不含颜色覆盖，所以 Constants.xaml 就是实际生效的色板。）
+    // 键名 → 本表字段的对照（括号内是原版键）：
+    //   WindowBackgourndBrush 起始色 #303030 → bgTop（窗口是"炭黑 → 酒红"的斜向渐变）
+    //   渐变暗端（stop 1.5 截到可视区，实测 ≈66.7% 处）→ bgBase #651010
+    //   MainColor #545B67                 → bgPanel（这主题的面板是中性灰，不是红）
+    //   PopupBackgroundBrush #383C44      → secondary
+    //   PopupBackgroundColor #171E26      → muted
+    //   NormalBorderBrush #4C545D         → border
+    //   PopupBorderColor #FFAF612E        → borderStrong（去掉 alpha 前缀 FF）
+    //   GlyphColor #F4A460                → primary / accent / ring（GlyphBrush 渐变 #F4A460→#D2691E 的亮端）
+    //   HoverColor #9A4545                → bgItemHover（同时是 ButtonBackgroundBrush）
+    //   TextColor #ffe                    → textPrimary / foreground（3 位写法展开为 #FFFFEE）
+    //   TextColorDark #a0a0a0             → textSecondary
+    //   DataChangeNotifColor #ffa500      → warning
+    //   WarningBrush #ff6b6b              → danger
+    //   PlayingStatusBrush #6CC417        → success
+    // 以下几项原值带 alpha 或原版没有对应档，按"叠在哪个底色上"预合成 / 派生（见下方注释）：
+    //   background #3B2A2A  ← 窗口渐变按 8:2 取的代表色（炭黑为主、带酒红）
+    //   card #583838        ← GridItemBackgroundColor #609a4545（38% 砖红）叠在 #303030 上
+    //   bgItemActive #7A3A3A← 砖红家族加深一档（原版选中的 HighlightGlyphColor #c08080 更亮，
+    //                          但白字压在上面只有 3.1:1，且本表不能存 alpha）
+    //   bgSidebar #2E2626   ← 窗口底压暗一档；bgInput #44474F ← 面板灰压暗（原版输入框是透明的）
+    //   accentHover #FFBE7A ← GlyphColor 提亮（原版没有 hover 档）
+    //   textDim #8A8A8A     ← TextColorDarker #707070 提亮一档（#707070 在卡片上只有 2.08:1）
+    id: "p-emixednite",
+    name: "eMixedNite",
+    zh: "游戏红酒",
+    desc: "Playnite 老牌第三方主题 eMixedNite（eminaguil v2.60）同款：中性灰面板叠在「炭黑→酒红」窗口渐变上，砖红悬停 + 琥珀橙强调。",
+    category: "游戏主题",
+    palette: {
+      background: "#3B2A2A",
+      foreground: "#FFFFEE",
+      card: "#583838",
+      cardForeground: "#FFFFEE",
+      primary: "#F4A460",
+      primaryForeground: "#201714",
+      secondary: "#383C44",
+      secondaryForeground: "#FFFFEE",
+      muted: "#171E26",
+      mutedForeground: "#A0A0A0",
+      border: "#4C545D",
+      ring: "#F4A460",
+      bgBase: "#651010",
+      bgTop: "#303030",
+      bgSidebar: "#2E2626",
+      bgPanel: "#545B67",
+      bgItemHover: "#9A4545",
+      bgItemActive: "#7A3A3A",
+      bgInput: "#44474F",
+      borderStrong: "#AF612E",
+      textPrimary: "#FFFFEE",
+      textSecondary: "#A0A0A0",
+      textDim: "#8A8A8A",
+      accent: "#F4A460",
+      accentHover: "#FFBE7A",
+      accentSoft: "rgba(244, 164, 96, 0.18)",
+      success: "#6CC417",
+      warning: "#FFA500",
+      danger: "#FF6B6B",
+    },
+  },
+  {
+    // 来源：**第三方主题 DH_Night**（作者 felixkmh，DuplicateHider 插件作者），色值取自它随主题分发的
+    //   Themes/Desktop/felixkmh_DuplicateHider_Night_Theme/Constants.xaml
+    // （已核对：同目录没有"副本"文件；thememodifier.yaml 只声明可改项、不含颜色覆盖。）
+    // 键名 → 本表字段的对照（括号内是原版键）：
+    //   MainColor #474747                 → bgPanel（面板是中性深灰）
+    //   MainColorDark #1C1C1C             → 近似的窗口暗端
+    //   BackgroundToneColor #1F1F1F       → secondary / bgSidebar
+    //   GridItemBackgroundColor #292929   → card
+    //   PopupBackgroundColor #171E26      → muted
+    //   NormalBorderBrush #553A3A3A       → border（33% 不透明 → 取实色 #3A3A3A）
+    //   GlyphColor #00CCCC                → primary / accent / ring / borderStrong（招牌青绿）
+    //   HighlightGlyphColor #007A7A       → bgItemHover（该主题的 HoverBrush 就是它）
+    //   HoverColor #005252                → bgItemActive
+    //   TextColor #f2f2f2                 → textPrimary / foreground
+    //   TextColorDarker #a3a3a3           → textSecondary / mutedForeground
+    //   PositiveRatingBrush #78ffa0       → success
+    //   MixedRatingBrush #fffca1          → warning（该主题没有橙色档）
+    //   NegativeRatingBrush #ff6b6b       → danger
+    // **窗口底色是贴图、不是纯色**：WindowBackgourndBrush 是 85% 不透明的 noise/background0.png
+    // 叠在 Images/Background.png 上，所以底色从 xaml 抄不出来 —— 这里用 System.Drawing 实测两图
+    // 的平均色再按 85% 合成（实测值留档）：
+    //   Background.png 整体 #38444D / 上 15% #45525B / 下 15% #29333C（轻微上亮下暗）
+    //   noise/background0.png ≈ #1E1E1E
+    //   → 合成后：整体 ≈ #222425、上部 ≈ #242627、下部 ≈ #202123
+    // 其余派生项：bgInput #2F2F2F（InputDefaultBrush = noise/background1 的平均色）、
+    //   accentHover #33DDDD（GlyphColor 提亮，原版没有 hover 档）、
+    //   textDim #808C8C（原版只有两级文字色，派生第三级）。
+    id: "p-dh-night",
+    name: "DH_Night",
+    zh: "暗夜青绿",
+    desc: "DuplicateHider 作者 felixkmh 的第三方主题 DH_Night：近黑灰底（背景为贴图，已实测合成）+ 招牌青绿 #00CCCC，冷峻克制。",
+    category: "游戏主题",
+    palette: {
+      background: "#222425",
+      foreground: "#F2F2F2",
+      card: "#292929",
+      cardForeground: "#F2F2F2",
+      primary: "#00CCCC",
+      primaryForeground: "#001A1A",
+      secondary: "#1F1F1F",
+      secondaryForeground: "#F2F2F2",
+      muted: "#171E26",
+      mutedForeground: "#A3A3A3",
+      border: "#3A3A3A",
+      ring: "#00CCCC",
+      bgBase: "#202123",
+      bgTop: "#242627",
+      bgSidebar: "#1F1F1F",
+      bgPanel: "#474747",
+      bgItemHover: "#007A7A",
+      bgItemActive: "#005252",
+      bgInput: "#2F2F2F",
+      borderStrong: "#00CCCC",
+      textPrimary: "#F2F2F2",
+      textSecondary: "#A3A3A3",
+      textDim: "#808C8C",
+      accent: "#00CCCC",
+      accentHover: "#33DDDD",
+      accentSoft: "rgba(0, 204, 204, 0.18)",
+      success: "#78FFA0",
+      warning: "#FFFCA1",
+      danger: "#FF6B6B",
+    },
+  },
+  {
     id: "p-light",
     name: "Bright",
     zh: "明亮",

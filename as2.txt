@@ -2,7 +2,7 @@
 ==============================================
   Playday 管理端（本地网站）已启动
   本机访问:  http://localhost:8299
-  数据:      D:\AI\Code\Playnite\Playday\release\data
-  权威库:    D:\AI\Code\Playnite\Playday\release\data\Admin\library.db
+  数据:      D:\AI\Code\Playnite\Playday\dev-data
+  权威库:    D:\AI\Code\Playnite\Playday\dev-data\Admin\library.db
   管理令牌:  playday-1bb2e7c7   （写操作需要，见 Authorization: Bearer <token>）
 ==============================================

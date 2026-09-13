@@ -15,7 +15,7 @@ cd /d "%~dp0..\.."
 
 REM 透传参数，例如:
 REM   migrate-playnite.bat --playnite D:\YunGame\PlayNite
-REM   migrate-playnite.bat --data release\data
+REM   migrate-playnite.bat --data dev-data
 REM   migrate-playnite.bat --db D:\path\to\library.db
 node scripts\migrate-playnite\migrate-playnite.mjs %*
 

@@ -2,7 +2,7 @@ chcp 65001
 @echo off
 REM ============================================================
 REM  Playday 网站版一键测试
-REM  1) 检查数据目录（release/data）是否存在
+REM  1) 检查数据目录（由 path-modes.json 的 dev 段决定）是否存在
 REM  2) 构建前端（vite build → dist/）
 REM  3) 启动网站后端服务器（node server/server.mjs）
 REM  4) 自动打开浏览器 http://localhost:8080
@@ -16,13 +16,21 @@ echo  Playday 网站版测试
 echo ============================================
 
 REM ---- 1. 检查数据 ----
-if not exist "release\data\library\library.db" (
-    echo [警告] 未找到 release\data\library\library.db
-    echo         请确认桌面版数据在 release\data 下。
+REM 数据目录由规则表决定（data-dir.bat 从 path-modes.json 的 dev 段取），别写死。
+call "%~dp0data-dir.bat"
+if errorlevel 1 (
+    echo [错误] 取不到开发态数据目录，已中止。
+    pause
+    exit /b 1
+)
+node scripts\data-dir.mjs --exists
+if errorlevel 1 (
+    echo [警告] 数据不完整（缺权威库或运行时副本）：%YUNGAME_DATA_DIR%
+    echo         请确认桌面版数据正常（config.json 的 libraryDir / sourceLibraryDir）。
     choice /C YN /M "继续？"
     if errorlevel 2 exit /b 1
 ) else (
-    echo [1/3] 数据目录 OK：release\data
+    echo [1/3] 数据目录 OK：%YUNGAME_DATA_DIR%
 )
 
 REM ---- 2. 构建前端 ----

@@ -3,7 +3,7 @@
 本文档描述 Playday 游戏库的 SQLite 数据库结构、字段、序列化约定、关系与维护策略。
 是 `data-models.md`（Game 实体的 TypeScript 结构）的**底层存储层**说明。
 
-> 数据源：`release/data/Admin/library.db`（权威库，见下文"双库机制"）。
+> 数据源：`dev-data/Admin/library.db`（权威库，见下文"双库机制"）。
 
 ## 1. 概览
 

@@ -137,8 +137,6 @@ export const api = {
       publicIp: string;
       cafeName: string;
       cafeMatched: boolean;
-      configPath: string;
-      configExists: boolean;
     }>("get_status_bar"),
 
   // 说明：管理端相关命令（admin_*）已随管理端应用一并移除——

@@ -11,9 +11,21 @@ Playday/
 ├── server/              # 网站端后端（Node http，复用同一份数据）
 ├── shared/              # 前后端共享的纯逻辑
 ├── scripts/             # 数据迁移/校验脚本
+├── tools/               # 工具目录（各自带 README / 说明）
+│                        #   yungamestart/     C++ 开机自启：判定黄金/钻石版 + 建桌面快捷方式（见 yungamestart.md）
+│                        #   GameSaveHelper/   存档备份/还原工具（C++ + 自带整套便携 NSIS，origin: NemecSoft/GameSaveHelper）
+│                        #   nircmd/           第三方命令行工具 NirCmd（游戏启动 bat 用它做窗口居中/音量等）；
+│                        #                     生产环境对应 <YunGame>\Tools\nircmd\，游戏 bat 里硬编码的就是那个路径
+│                        #   runtime/          运行库安装包（VC++ 运行库 x64/x86、VP9 解码扩展）；
+│                        #                     随客户端发到 resources\runtime\，启动时静默检测安装（见 runtime-deps.md）
 ├── public/              # 静态资源（字体、图标）
 ├── locales/             # 打包用语言文件
-├── release/             # 打包产物 + 便携数据（data/）
+├── path-modes.json      # 三种模式（dev/prerelease/release）的目录规则：**唯一来源**，config.json 由它生成
+├── config.json          # 生效配置（开发态）。路径字段别手工改，改 path-modes.json 再生成
+├── dev-data/            # 开发/测试态的数据根（库 + 权威库 + 公告；不算构建产物）
+├── release/             # **纯打包产物**：正式包（X 盘 config.json + 随包 data/），整目录不入库
+├── release_test/        # 预发布包（D 盘 config.json，不带数据）—— 与 release/ 分开放
+├── .pack-tmp/           # electron-builder 中转目录（打包成功后自动删除）
 ├── dist/                # 前端构建产物（vite build 输出）
 ├── dist-electron/       # 主进程编译产物（tsc 输出）
 ├── build.config.ts      # 命名/版本配置（APP_NAME 等）
@@ -31,7 +43,10 @@ Playday/
 ├── test-web.bat         # 网站端测试
 ├── sync-tags.bat        # 标签同步（json → 权威库）
 ├── sync-game-content.bat # 游戏内容同步（简介/地区/标签 → 库）
-└── package.bat          # 打包便携 exe
+├── data-dir.bat         # 开发态数据路径（其它 bat 用 call 取，值来自 path-modes.json）
+├── package.bat          # 打包便携 exe 到 <输出目录>（默认 release/；纯产物，不碰数据）
+├── build-release.bat    # 出正式包（X 盘 → release/；双击即用，无参数）
+└── build-prerelease.bat # 出测试/预发布包（D 盘 → release_test/；双击即用，无参数）
 ```
 
 ## 主进程 `electron/`
@@ -84,7 +99,7 @@ Playday/
 
 | 文件 | 职责 |
 | --- | --- |
-| `server.mjs` | Node 内置 http 后端（零依赖），复用 `release/data` 同一份数据，实现 `/api/<cmd>`、`/CoverImages/*`、`/Game_Details/*`、静态 `dist/` |
+| `server.mjs` | Node 内置 http 后端（零依赖），复用 `dev-data` 同一份数据，实现 `/api/<cmd>`、`/CoverImages/*`、`/Game_Details/*`、静态 `dist/` |
 
 ## 脚本 `scripts/`
 
@@ -92,23 +107,36 @@ Playday/
 | --- | --- | --- |
 | 生成 | `gen-tray-icon.mjs` | 生成 16x16 高对比托盘图标 `public/icons/tray.png` |
 | 迁移 | `migrate-cover-paths.mjs` | 迁移数据库封面路径 |
-| 迁移 | `migrate-cover-to-release.mjs` | 封面迁移到 release/data |
+| 迁移 | `migrate-cover-to-release.mjs` | 封面迁移到 dev-data |
 | 迁移 | `migrate-from-release.mjs` | 从 release 迁移数据 |
 | 迁移 | `migrate-libs-to-db.mjs` | 游戏库从 config.json 迁移到数据库表 |
 | 校验 | `verify-*.mjs` / `inspect-*.mjs` | 数据库/迁移结果校验 |
+| 出包 | `prepare-release.mjs` | 按 `path-modes.json` 生成/校验某模式（dev / prerelease / release）的 `config.json`，release 模式顺带复制随包数据；规则逻辑在 `shared/pathModes.ts`（见 [路径模式与出包](./release-build.md)） |
+| 路径 | `lib/devData.mjs` | **开发态数据路径的唯一来源**（读 `path-modes.json` 的 dev 段；支持 `YUNGAME_DATA_DIR` 覆盖） |
+| 路径 | `data-dir.mjs` | 给 cmd 用的薄壳：打印数据根 / 权威库 / 运行时副本（bat 侧入口是仓库根的 `data-dir.bat`） |
 
-## 数据目录 `release/data/`
+## 数据目录：`dev-data/`（开发态）与 `data/`（发布态）
 
-绿色便携模式：数据放 exe 同级的 `data/`，单一数据源。
+同一个"数据根"概念，两套落点（完整说明见 [出包与发布变体](./release-build.md)）：
+
+| 场景 | 数据根 | 谁在用 |
+| --- | --- | --- |
+| 开发 / 测试（D 盘） | 仓库内 `dev-data/`（`config.json` 里是相对路径） | `dev-client.bat`、`npm run dev`、网站端 |
+| 发布包（X 盘） | exe 同级的 `data/`（由 `build-release.bat` 生成） | 打包后的 `PlayniteUI.exe` |
+
+> 历史：2026-09-14 之前数据根是**打包目录下的 `data` 子目录** —— 打包产物和数据共用一条路径，
+> 清一次打包目录就等于清数据，而打包脚本又会反复重写它。现在 `release/` 是纯产物目录
+> （整目录不入库、随时可删掉重打），数据在 `dev-data/`，并且这条边界由架构守卫强制
+> （源码/文档里再出现旧路径会让 `npm run check` 失败）。
 
 ```
 <主程序目录>/config.json   # 应用设置 { settings: {...} }（跟主程序走，不在数据目录里）
 
 <数据根>/
-├── Admin/library.db      # 源库：数据来源（手工维护的 games.json + 脚本写入）
-├── library/library.db    # 运行时库：每次启动从源库复制一份再用
-├── CoverImages/          # 封面图（用户丢图自动匹配）
-├── Game_Details/         # 详情页静态页 + 「修改器」「游戏存档」子目录
+├── Admin/library.db      # 权威库（源库）：数据唯一来源，只读（客户端启动时复制给运行时副本）
+├── library/library.db    # 运行时副本：所有读写都落这一份
+├── CoverImages/          # 封面图（用户丢图自动匹配；本机 config.json 里指向 D 盘独立目录）
+├── Game_Details/         # 详情页静态页 + 「修改器」「游戏存档」子目录（同上，可指向别处）
 ├── announcements/        # 公告 announcement.html
 └── logs/                 # 崩溃日志 / 错误上报限流状态
 ```
@@ -139,7 +167,7 @@ Playday/
 > "同一个相对路径"在不同启动方式下指到不同地方，用户没法预期。exe 所在目录才是能自己判断的锚点
 > （"就在程序旁边"），这也是绿色便携的本意。
 > 因此**同一个值在两种布局下会落到不同位置** —— 这正是"打包版读自己的 `config.json`"的原因：
-> 开发态写 `release/data`（相对工程根），打包版写 `data`（相对 exe 同级），两边指向同一份数据。
+> 开发态写 `dev-data`（相对工程根），打包版写 `data`（相对 exe 同级），两边指向同一份数据。
 
 **分隔符**：写的规范形式是 `/`（JSON 里不用转义，`//NAS/share/...` 直接写）；`\` 也照样认，
 库里现有数据不用改。详见 [启动与路径规则](./launch-and-paths.md) 的「分隔符约定」。

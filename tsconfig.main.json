@@ -17,7 +17,10 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": ["electron", "build.config.ts"],
+  // shared 显式列入：tsc 只会编译"从 include 出发能被 import 到"的文件，而
+  // shared/releaseConfig.ts 的消费者是 scripts/prepare-release.mjs（出包脚本，
+  // 跑纯 node、读 dist-electron 里的编译产物）—— 不被 electron/ 引用就永远不会被产出。
+  "include": ["electron", "shared", "build.config.ts"],
   // 测试文件由 vitest 跑、由 tsconfig.json（含 shared/src 的测试）做类型检查，
   // 不要编进 dist-electron —— 否则发布产物里会多出 __tests__ 目录。
   "exclude": ["node_modules", "dist-electron", "**/__tests__/**", "**/*.test.ts", "**/*.test.tsx"]

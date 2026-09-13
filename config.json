@@ -12,7 +12,7 @@
     "fontsDir": "fonts",
     "musicDir": "D:/KwDownload/song",
     "musicEnabled": true,
-    "musicVolume": 30,
+    "musicVolume": 10,
     "musicMode": "shuffle",
     "gridViewImage": "Cover",
     "detailsViewImage": "Background",
@@ -32,7 +32,6 @@
     "cardGap": 0,
     "cardRowGap": 0,
     "sidebarWidth": 296,
-    "enterpriseConfigPath": "D:/1.json",
     "yunGameUserListPath": "D:/YunGame/PlayNite/YunGameConfig/YunGame_UserList.json",
     "yunGameServerStatusPath": "D:/YunGame/PlayNite/YunGameConfig/YunGame_ServerStatus.json",
     "userLevelOverride": 0,
@@ -64,9 +63,9 @@
     "themeId": "p-light",
     "gameDetailsDir": "D:/Addons",
     "coverImagesDir": "D:/YunGame/PlayNite/CoverImages",
-    "announcementsDir": "release/data/announcements",
-    "libraryDir": "release/data",
-    "sourceLibraryDir": "release/data/Admin",
+    "announcementsDir": "dev-data/announcements",
+    "libraryDir": "dev-data",
+    "sourceLibraryDir": "dev-data/Admin",
     "gameSaveHelperPath": "D:/AI/nsis/GameSaveHelper.exe",
     "defaultGameRootPath": "D:/YunGame/Playnite",
     "showCardDescription": true,
@@ -80,6 +79,8 @@
       "smtpPass": "",
       "toEmail": "97407198@qq.com",
       "maxPerDay": 3
-    }
+    },
+    "runtimeDir": "tools/runtime",
+    "yungamestartDir": "tools/yungamestart"
   }
 }

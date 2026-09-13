@@ -30,7 +30,7 @@
 
 ### 数据可用性（实测，为什么「年代」现阶段基本是空的）
 
-`release/data/Admin/library.db` 与运行时库（1276 个游戏）：
+`dev-data/Admin/library.db` 与运行时库（1276 个游戏）：
 
 | 字段 | 有值的游戏数 |
 | --- | --- |

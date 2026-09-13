@@ -27,17 +27,19 @@
 //   node scripts/sync-tags-from-json.mjs --apply               # 真改权威库（时间戳备份）
 //   node scripts/sync-tags-from-json.mjs --apply --no-backup   # 改库不留备份
 //
-// 数据目录：默认 release/data（Playday 唯一游戏数据源），可用 YUNGAME_DATA_DIR 覆盖。
+// 数据目录：默认 dev-data（Playday 唯一游戏数据源），可用 YUNGAME_DATA_DIR 覆盖。
 // JSON 路径：默认 D:/AI/games-web/games_tags.json，可用 TAGS_JSON 覆盖。
 
 import fs from "fs";
 import path from "path";
 import initSqlJs from "sql.js";
+import { adminDbPath } from "./lib/devData.mjs";
 
 const JSON_FILE = process.env.TAGS_JSON || "D:/AI/games-web/games_tags.json";
-const DATA_DIR = process.env.YUNGAME_DATA_DIR || path.join(process.cwd(), "release", "data");
+// 权威库位置来自规则表（scripts/lib/devData.mjs 读 path-modes.json 的 dev 段，支持
+// YUNGAME_DATA_DIR 覆盖）——别在这里拼目录名：硬写的老地方在数据目录挪动后会静默读到旧库。
 // 权威库：管理端读/改、客户端启动时复制下发的源头。不要把目标指向运行时副本。
-const DB = path.join(DATA_DIR, "Admin", "library.db");
+const DB = adminDbPath();
 
 const apply = process.argv.includes("--apply");
 const noBackup = process.argv.includes("--no-backup");

@@ -5,8 +5,8 @@ REM ============================================================
 REM  Playday 游戏内容同步：data\game-content.json → 数据库
 REM
 REM  来源：data\game-content.json   （人工维护的内容源：每个游戏的简介/地区/标签/存档路径）
-REM  目标：release\data\Admin\library.db     （权威库）
-REM        release\data\library\library.db   （运行时副本，客户端启动时也会自动复制）
+REM  目标：%PLAYDAY_ADMIN_DB%     （权威库）
+REM        %PLAYDAY_RUNTIME_DB%   （运行时副本，客户端启动时也会自动复制）
 REM
 REM  这个批处理做什么：把你在 json 里写的内容同步进数据库，改完双击即可。
 REM  安全措施：先预览（不动库）→ 按 Y 才写 → 写前自动备份两份库（.bak-<时间戳>）。
@@ -55,10 +55,15 @@ if exist "%NODE22%\node.exe" (
     echo [content] 未找到 proto Node 22，使用系统默认 node
 )
 
+REM ---- 2.5 数据目录（由 path-modes.json 的 dev 段决定，见 data-dir.bat）----
+REM       放在 node 就绪之后：取路径本身要调 node。
+call "%~dp0data-dir.bat"
+if errorlevel 1 exit /b 1
+
 echo ============================================
 echo  Playday 游戏内容同步
 echo  内容文件: data\game-content.json
-echo  权威库  : release\data\Admin\library.db
+echo  权威库  : %PLAYDAY_ADMIN_DB%
 echo ============================================
 
 REM ---- 3. 前置检查：文件都在 ----
@@ -69,9 +74,9 @@ if not exist "data\game-content.json" (
     echo        需要重建时运行：node scripts\gen-game-content.mjs
     goto :end
 )
-if not exist "release\data\Admin\library.db" (
+if not exist "%PLAYDAY_ADMIN_DB%" (
     echo.
-    echo [错误] 找不到权威库 release\data\Admin\library.db
+    echo [错误] 找不到权威库 %PLAYDAY_ADMIN_DB%
     echo        请确认程序数据目录正常（见 config.json 的 libraryDir / sourceLibraryDir）。
     goto :end
 )
@@ -121,7 +126,7 @@ if errorlevel 1 (
 
 echo.
 echo [content] 完成
-echo         回退方法：把 release\data\Admin\library.db.bak-^(时间戳^) 复制回 library.db 覆盖即可。
+echo         回退方法：把 %PLAYDAY_ADMIN_DB%.bak-^(时间戳^) 复制回 library.db 覆盖即可。
 echo.
 echo [content] 现在启动（或重启）Playday，就能在界面上看到新的简介 / 地区 / 标签；
 echo [content] 存档路径（save_paths）也一并生效 —— 游戏退出后的"备份存档"提示会用它。

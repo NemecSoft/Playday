@@ -8,11 +8,12 @@ import { createRequire } from 'node:module'
 import { readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { adminDbPath } from './scripts/lib/devData.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const require = createRequire(import.meta.url)
 const ROOT = path.resolve(__dirname)
-const DB = path.join(ROOT, 'release/data/Admin/library.db')
+const DB = adminDbPath()
 const OUT = path.join(ROOT, 'games.json')
 
 const FIELD_MAP = [

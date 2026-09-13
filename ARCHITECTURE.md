@@ -23,7 +23,7 @@
               │ 读写                                          │ 读写（只读为主）
               ▼                                              ▼
     ┌──────────────────────────────────────────────────────────────────┐
-    │              同一份数据（单一数据源）：release/data/              │
+    │              同一份数据（单一数据源）：dev-data/              │
     │  library/library.db（游戏库） │ config.json（设置）              │
     │  CoverImages/（封面） │ Game_Details/（详情页） │ announcements/ │
     └──────────────────────────────────────────────────────────────────┘
@@ -33,7 +33,7 @@
 
 1. **前端代码零分叉**——桌面端和网站端跑的是 `src/` 同一套组件、同一套 store、同一套页面。
 2. **后端逻辑通过「传输层」切换**——前端不关心数据来自 Electron IPC 还是 HTTP，只管调命令。
-3. **数据单一来源**——两端都读写 `release/data/` 下同一份数据（桌面端能写，网站端目前只读）。
+3. **数据单一来源**——两端都读写 `dev-data/` 下同一份数据（桌面端能写，网站端目前只读）。
 
 ---
 
@@ -79,7 +79,7 @@ export function invoke<T>(cmd: string, args?): Promise<T> {
 
 ---
 
-## 四、数据来源：单一数据源 `release/data/`
+## 四、数据来源：单一数据源 `dev-data/`
 
 - `library/library.db` — 游戏库（SQLite，sql.js 读取）
 - `config.json` — 用户设置（主题/风格/语言等）
@@ -87,7 +87,7 @@ export function invoke<T>(cmd: string, args?): Promise<T> {
 - `Game_Details/` — 游戏详情 HTML 页
 - `announcements/` — 公告
 
-**网站端路径**：`server/server.mjs` 里 `DATA_DIR = YUNGAME_DATA_DIR || server/../release/data`，默认复用桌面端同一份数据。可以用环境变量 `YUNGAME_DATA_DIR` 覆盖指向其他数据目录。
+**网站端路径**：`server/server.mjs` 里 `DATA_DIR = YUNGAME_DATA_DIR || server/../dev-data`，默认复用桌面端同一份数据。可以用环境变量 `YUNGAME_DATA_DIR` 覆盖指向其他数据目录。
 
 **注意**：桌面端可以写数据，网站端目前是只读模式（不写库、不写配置）。未来如需网站端写，需在 `server.mjs` 补写接口并加权限校验。
 
@@ -132,8 +132,16 @@ export function invoke<T>(cmd: string, args?): Promise<T> {
 
 ### 桌面端
 
-- `dev-client.bat` 启动开发版（设 `YUNGAME_DATA_DIR` 指向 `release\data`）
-- `package.bat` 打包便携 exe 到 `release/`
+- `dev-client.bat` 启动开发版（设 `YUNGAME_DATA_DIR` 指向 `dev-data`）
+- `package.bat` 打出便携 exe 到 `release/`（**纯产物目录**，不碰数据）
+- `build-release.bat` 出**正式包**（全 X 盘，数据随包）；
+  `build-prerelease.bat` 出**测试/预发布包**（全 D 盘）。
+  两个脚本都**双击即用、不带参数**，内部 = 打包 + 按模式生成 `config.json`。
+  各模式用哪些目录（封面/音乐/详情页+视频/库/公告）只写在 `path-modes.json` 一张表里，
+  `config.json` 由它生成并被测试校验一致 —— 详见 [路径模式与出包](./docs/design/release-build.md)
+
+> `release/` 与 `dev-data/` 的边界是刻意的：前者是随时可删掉重打的产物，后者是开发/测试态的数据根
+> （2026-09-14 之前两者共用一个路径，清一次打包目录就等于清数据）。
 
 ---
 

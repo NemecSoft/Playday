@@ -1,0 +1,71 @@
+{
+  "_note": [
+    "路径模式表：开发 / 预发布 / 发布 三种模式各自用哪些目录（**单一来源**）。",
+    "",
+    "为什么要有它：封面图、音乐、游戏详情（含里面的 videos 视频）、游戏库、公告，都属于",
+    "『环境相关的数据』—— 同一份代码在测试机读 D 盘、在正式机读 X 盘。把它们写死在代码里",
+    "或散落在各处脚本里，就会出现『开发能看、正式机看不到』这种查半天的问题。",
+    "",
+    "怎么用：config.json 里那几个路径字段由本表生成/校验，不要手工改：",
+    "  node scripts/prepare-release.mjs --mode dev --check           # 校验 config.json 与本表一致（npm run check 会跑）",
+    "  node scripts/prepare-release.mjs --mode prerelease --out release_test --dry-run",
+    "  node scripts/prepare-release.mjs --mode release    --out release",
+    "  （--out 省略时的默认目录：dev→工程根 / prerelease→release_test / release→release）",
+    "  或直接双击出包（无参数）：build-release.bat（正式 X 盘）/ build-prerelease.bat（测试 D 盘）",
+    "",
+    "约定：dev / prerelease 是 D 盘（测试环境），release 是 X 盘（正式环境）——",
+    "混进另一个环境的盘符会让校验直接失败（而不是悄悄出一个读不到数据的包）。",
+    "相对路径（如 'dev-data'、'data'）的基准 = 应用所在目录：开发态是工程根，打包版是 exe 同级。",
+    "",
+    "字段说明：video 视频没有独立字段，它就在 gameDetailsDir 下（<gameDetailsDir>/<游戏名>/videos/）。",
+    "",
+    "字段说明续：runtimeDir（运行库安装包：VC++ x64/x86、VP9 解码扩展）与 yungamestartDir（开机自启工具）",
+    "都是『应用目录下的兄弟目录』——正式机 X:/YunGame/Playnite/...、测试机 D:/YunGame/Playnite/...；",
+    "开发态则指仓库里的 tools/...（那是编译与打包的源头）。为什么也放这张表：这两个目录以前是代码里",
+    "写死的默认值（<exe 同级>/runtime 之类），运维想换位置只能重新出包；写成配置后，出包时随盘符一起定死。"
+  ],
+  "modes": {
+    "dev": {
+      "coverImagesDir": "D:/YunGame/PlayNite/CoverImages",
+      "gameDetailsDir": "D:/Addons",
+      "musicDir": "D:/KwDownload/song",
+      "libraryDir": "dev-data",
+      "sourceLibraryDir": "dev-data/Admin",
+      "announcementsDir": "dev-data/announcements",
+      "defaultGameRootPath": "D:/YunGame/Playnite",
+      "runtimeDir": "tools/runtime",
+      "yungamestartDir": "tools/yungamestart",
+      "yunGameUserListPath": "D:/YunGame/PlayNite/YunGameConfig/YunGame_UserList.json",
+      "yunGameServerStatusPath": "D:/YunGame/PlayNite/YunGameConfig/YunGame_ServerStatus.json",
+      "gameSaveHelperPath": "D:/AI/nsis/GameSaveHelper.exe"
+    },
+    "prerelease": {
+      "coverImagesDir": "D:/YunGame/PlayNite/CoverImages",
+      "gameDetailsDir": "D:/Addons",
+      "musicDir": "D:/KwDownload/song",
+      "libraryDir": "D:/AI/Code/Playnite/Playday/dev-data",
+      "sourceLibraryDir": "D:/AI/Code/Playnite/Playday/dev-data/Admin",
+      "announcementsDir": "D:/AI/Code/Playnite/Playday/dev-data/announcements",
+      "defaultGameRootPath": "D:/YunGame/Playnite",
+      "runtimeDir": "D:/YunGame/Playnite/runtime",
+      "yungamestartDir": "D:/YunGame/Playnite/yungamestart",
+      "yunGameUserListPath": "D:/YunGame/PlayNite/YunGameConfig/YunGame_UserList.json",
+      "yunGameServerStatusPath": "D:/YunGame/PlayNite/YunGameConfig/YunGame_ServerStatus.json",
+      "gameSaveHelperPath": "D:/AI/nsis/GameSaveHelper.exe"
+    },
+    "release": {
+      "coverImagesDir": "X:/YunGame/PlayNite/CoverImages",
+      "gameDetailsDir": "X:/Addons",
+      "musicDir": "X:/Addons/song",
+      "libraryDir": "data",
+      "sourceLibraryDir": "data/Admin",
+      "announcementsDir": "data/announcements",
+      "defaultGameRootPath": "X:/YunGame/Playnite",
+      "runtimeDir": "X:/YunGame/Playnite/runtime",
+      "yungamestartDir": "X:/YunGame/Playnite/yungamestart",
+      "yunGameUserListPath": "X:/YunGame/PlayNite/YunGameConfig/YunGame_UserList.json",
+      "yunGameServerStatusPath": "X:/YunGame/PlayNite/YunGameConfig/YunGame_ServerStatus.json",
+      "gameSaveHelperPath": "X:/YunGame/Tools/GameSaveHelper/GameSaveHelper.exe"
+    }
+  }
+}

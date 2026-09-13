@@ -2,13 +2,18 @@ chcp 65001
 @echo off
 REM ============================================================
 REM  Playday 一键推送脚本
-REM  作用：检测 release/data 的 library / announcements / config.json
-REM       是否有更新，有则自动 add + commit + push 到 GitHub。
+REM  作用：检测数据目录的 library / announcements 是否有更新，
+REM       有则自动 add + commit + push 到 GitHub。
+REM       （数据目录来自 path-modes.json 的 dev 段，见 data-dir.bat）
 REM  用法：双击 push.bat
 REM  前置：仓库已 git init，remote 已指向 NemecSoft/Playday
 REM ============================================================
 setlocal
 cd /d "%~dp0"
+
+REM 数据目录相对仓库的路径（git status 里显示的就是它）——由规则表决定，别写死。
+call "%~dp0data-dir.bat"
+if errorlevel 1 exit /b 1
 
 echo ============================================
 echo  Playday 推送脚本
@@ -24,8 +29,14 @@ if errorlevel 1 (
 )
 
 REM ---- 2. 检查是否有未提交的变更 ----
+REM 数据在仓库外（自定义数据根）时，git 里看不到它 —— 那本次就只做"推送"。
+if not defined PLAYDAY_DATA_REL (
+    echo [提示] 开发态数据不在仓库内（%YUNGAME_DATA_DIR%），跳过数据变更检查。
+    goto PUSH_CHECK
+)
+
 git add -A
-git status --porcelain | findstr /R /C:"release/data" >nul 2>&1
+git status --porcelain | findstr /R /C:"%PLAYDAY_DATA_REL%" >nul 2>&1
 set changed=%errorlevel%
 
 if not "%changed%"=="0" (
@@ -36,9 +47,9 @@ if not "%changed%"=="0" (
 )
 
 echo.
-echo [1/2] 检测到 release/data 有更新，正在提交...
+echo [1/2] 检测到数据目录有更新，正在提交...
 echo ------------------------------------------------------------
-git status --porcelain | findstr /R /C:"release/data"
+git status --porcelain | findstr /R /C:"%PLAYDAY_DATA_REL%"
 echo ------------------------------------------------------------
 
 REM 获取当前时间做提交信息

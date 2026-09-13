@@ -136,7 +136,6 @@ export const DEFAULT_SETTINGS = {
   cardGap: 8,
   cardRowGap: 8,
   sidebarWidth: 210,
-  enterpriseConfigPath: "D:/1.json",
   // 用户表（YunGame_UserList.json，明文或原版 JsonCrypt 加密版都能吃）：按本机 IP 判定
   // 黄金版/钻石版。相对路径以「应用 exe 所在目录」为基准（与其它路径字段一致）。
   // 见 docs/design/user-level-detection.md
@@ -581,8 +580,6 @@ export interface AppSettings {
   cardRowGap: number;
   /** 左侧边栏宽度（像素，160~600）。 */
   sidebarWidth: number;
-  /** 企业用户配置文件 JSON 路径（默认 D:/1.json）。 */
-  enterpriseConfigPath: string;
   /**
    * 用户表位置（YunGame_UserList.json）：明文或原版 JsonCrypt 加密版都能解析。
    * 相对路径以**应用 exe 所在目录**为基准；未配置时默认 `<应用目录>/YunGame_UserList.json`。
@@ -646,6 +643,17 @@ export interface AppSettings {
    * 空 = 回退数据根。见 docs/design/launch-and-paths.md。
    */
   defaultGameRootPath?: string;
+  /**
+   * 运行库安装包目录（VC++ 运行库 x64/x86、VP9 解码扩展）。
+   * 空 = `<应用 exe 同级>/runtime`；打包版还有 `<resources>/runtime` 兜底。
+   * 相对路径以应用 exe 所在目录为基准。见 docs/design/runtime-deps.md。
+   */
+  runtimeDir?: string;
+  /**
+   * 开机自启工具 YunGameStart 所在目录（正式机 X 盘 / 测试机 D 盘各一份）。
+   * 空 = `<应用 exe 同级>/yungamestart`。见 docs/design/yungamestart.md。
+   */
+  yungamestartDir?: string;
   /** 网格卡片上是否显示简介（intro）。 */
   showCardDescription: boolean;
   /** 综合主题/配色/字体设计器配置。 */

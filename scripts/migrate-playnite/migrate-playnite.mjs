@@ -6,7 +6,7 @@
  *   1) 调 dump-playnite.ps1（PowerShell + LiteDB.dll）把 Playnite 的 LiteDB
  *      数据库导出为 JSON。
  *   2) 读 JSON，建立 Guid→名称 映射（类型/平台/开发商/发行商…）。
- *   3) 用 sql.js 打开 Playday 目标库（默认权威库 release/data/Admin/library.db），
+ *   3) 用 sql.js 打开 Playday 目标库（默认权威库 dev-data/Admin/library.db），
  *      对每个 Playnite 游戏按【游戏名】做 UPSERT：
  *         - 已存在：更新 Playnite 能提供的字段，保留 Playday 特有字段
  *           （game_library / guide / videos / save_paths / monitor_exe / 会话时长 等）。

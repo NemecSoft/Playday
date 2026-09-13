@@ -21,10 +21,19 @@ if exist "%NODE22%\node.exe" (
 )
 
 REM ---- 2. 关键环境变量 ----
-REM 数据目录：开发态直接指向 release/data，和打包版共享同一份游戏库 + 封面。
-REM 这样 1271 个真实游戏 + 1248 张封面在 dev/release 两个模式都能看到，且不会两边各跑出一份。
-REM （早期 dev 用工程根 data，用户已经把封面图迁去 release 了，工程根只剩个孤儿老库）
-set "YUNGAME_DATA_DIR=%~dp0release\data"
+REM 数据目录：由规则表（path-modes.json 的 dev 段）决定，这里只取一次 ——
+REM 别在本文件里写死目录名，否则挪数据时又是一处会漏的重复（取值见 data-dir.bat）。
+REM 为什么还要显式设 YUNGAME_DATA_DIR：configRoot() 在开发态本来会回退到工程根，
+REM 而 config.json 里的 libraryDir 等字段是**相对路径**（相对 appRoot = 工程根），
+REM 两者必须落在同一个地方，否则会出现"库文件按一套路径找、封面按另一套找"的隐性错位。
+REM 封面/详情页不在数据根里 —— 它们是 config.json 的 coverImagesDir / gameDetailsDir
+REM 指定的 D 盘绝对路径，所以 dev 与打包版看的是同一批封面，不会两边各跑出一份。
+call "%~dp0data-dir.bat"
+if errorlevel 1 (
+    echo [dev] 无法确定开发态数据目录，已中止（先检查 node 与 path-modes.json 的 dev 段）。
+    pause
+    exit /b 1
+)
 REM 让主进程走 Vite 开发服务器
 set "VITE_DEV_SERVER_URL=http://localhost:5173"
 REM 无头服务器若没有显示器，可取消下一行注释（禁 GPU 加速，避免报错）

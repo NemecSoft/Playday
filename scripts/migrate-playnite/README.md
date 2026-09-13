@@ -11,13 +11,13 @@ scripts\migrate-playnite\migrate-playnite.bat
 
 :: 或带参数
 scripts\migrate-playnite\migrate-playnite.bat --playnite D:\YunGame\PlayNite
-scripts\migrate-playnite\migrate-playnite.bat --data release\data
+scripts\migrate-playnite\migrate-playnite.bat --data dev-data
 ```
 
 **命令行直接跑：**
 ```bat
 node scripts/migrate-playnite/migrate-playnite.mjs
-node scripts/migrate-playnite/migrate-playnite.mjs --playnite D:\YunGame\PlayNite --data release\data
+node scripts/migrate-playnite/migrate-playnite.mjs --playnite D:\YunGame\PlayNite --data dev-data
 node scripts/migrate-playnite/migrate-playnite.mjs --db D:\path\to\library.db
 
 :: 清空重导（推荐上线用）：清空目标库 games 表后全量导入，
@@ -87,6 +87,6 @@ node scripts\migrate-playnite\playday-db.mjs import --in games.json
 
 ## 五、常见问题
 
-- **写哪个库？** 默认写**权威库** `release/data/Admin/library.db`（Playday 双库机制，客户端启动自动下发给运行时库）。也可 `--db` 指定。
+- **写哪个库？** 默认写**权威库** `dev-data/Admin/library.db`（Playday 双库机制，客户端启动自动下发给运行时库）。也可 `--db` 指定。
 - **重复运行安全吗？** 安全。按名字匹配，幂等；每次写库前自动备份。
 - **`{InstallDir}` 没被展开？** Playday 启动时 `expandVariables` 会用 `install_directory` 展开 `{InstallDir}`。若某游戏 `install_directory` 为空，则路径需靠 Playday 的 `game_library + install_directory` 逻辑补全（该字段由 Playday 管理端维护）。

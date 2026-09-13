@@ -2,9 +2,10 @@ import initSqlJs from 'sql.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { adminDbPath } from './scripts/lib/devData.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const dbPath = join(__dirname, 'release/data/Admin/library.db');
+const dbPath = adminDbPath();
 const SQL = await initSqlJs({ locateFile: (f) => join(__dirname, 'node_modules/sql.js/dist/', f) });
 const db = new SQL.Database(readFileSync(dbPath));
 

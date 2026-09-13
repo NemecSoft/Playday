@@ -3,7 +3,7 @@ chcp 65001 >nul
 REM ============================================================
 REM  Playday (YunGame) 标签同步脚本（从临时权威 json 更新到权威数据库）
 REM  来源：D:\AI\games-web\games_tags.json  （临时权威源）
-REM  目标：release\data\Admin\library.db    （权威数据库）
+REM  目标：%PLAYDAY_ADMIN_DB%    （权威数据库）
 REM
 REM  适用：你反复核查、修改 json 里的 tag 后，一键同步到数据库。
 REM  每次真改前会生成带时间戳的 .bak 备份，可随时回退。
@@ -22,10 +22,15 @@ if exist "%NODE22%\node.exe" (
     echo [sync] 未找到 proto Node 22，使用系统默认 node
 )
 
+REM ---- 1.5 数据目录（由 path-modes.json 的 dev 段决定，见 data-dir.bat）----
+REM       放在 node 就绪之后：取路径本身要调 node。
+call "%~dp0data-dir.bat"
+if errorlevel 1 exit /b 1
+
 echo ============================================
 echo  Playday 标签同步
 echo  JSON : D:\AI\games-web\games_tags.json
-echo  权威库: release\data\Admin\library.db
+echo  权威库: %PLAYDAY_ADMIN_DB%
 echo ============================================
 
 REM ---- 2. 先跑 dry-run，只看汇总，不改库 ----
@@ -60,7 +65,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [sync] 同步完成 ✅  旧库已备份到 release\data\Admin\library.db.bak-<时间戳>
+echo [sync] 同步完成 ✅  旧库已备份到 %PLAYDAY_ADMIN_DB%.bak-<时间戳>
 echo        如需回退，把对应 .bak 复制回 library.db 覆盖即可。
 echo.
 echo [sync] 提示：客户端下次启动会自动从权威库复制到运行时副本 library\library.db。

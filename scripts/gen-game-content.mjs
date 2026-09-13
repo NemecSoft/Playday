@@ -7,10 +7,10 @@
 //   脚本的职责只是**补空缺**：你手写的值永远优先，绝不被覆盖。
 //
 // 各字段来源（只在"文件里没有/为空"时才去取）：
-//   name/gameid ← games.db（LiteDB）导出 release/data/litedb-games.json
+//   name/gameid ← games.db（LiteDB）导出 dev-data/litedb-games.json
 //                 （导出命令见 scripts/export-litedb-games.ps1 头部注释）
 //   intro       ← 详情页 <gameDetailsDir>/<游戏名>/info.json 的 description
-//   region/tags ← 权威库 release/data/Admin/library.db 的同名列（库里是 JSON 数组文本）
+//   region/tags ← 权威库 dev-data/Admin/library.db 的同名列（库里是 JSON 数组文本）
 //   savepaths   ← 同一份 LiteDB 导出里的 GameActions：指向 GameSaveHelper 的那条 action
 //                 （名字通常叫"备份游戏存档"，识别按**工具路径**，见 scripts/playnite-savepaths.mjs），
 //                 参数是「游戏名 + 若干带引号的路径」→ 取路径、分隔符统一成 `/`
@@ -41,6 +41,7 @@ import fs from "fs";
 import path from "path";
 import initSqlJs from "sql.js";
 import { collectSavePaths } from "./playnite-savepaths.mjs";
+import { adminDbPath, devDataDir } from "./lib/devData.mjs";
 
 const argv = process.argv.slice(2);
 const has = (n) => argv.includes(n);
@@ -50,10 +51,11 @@ const argOf = (name, dflt) => {
 };
 const root = process.cwd();
 const CONTENT = argOf("--out", path.join(root, "data/game-content.json"));
-const GAMES = argOf("--games", path.join(root, "release/data/litedb-games.json"));
+// 数据根与权威库位置来自规则表（scripts/lib/devData.mjs），别硬写目录名。
+const GAMES = argOf("--games", path.join(devDataDir(), "litedb-games.json"));
 const GAMELIST = argOf("--gamelist", "D:/YunGame/PlayNite/YunGameConfig/YunGame_Gamelist.json");
 const DETAILS_DIR = argOf("--details", "D:/Addons");
-const ADMIN_DB = argOf("--db", path.join(root, "release/data/Admin/library.db"));
+const ADMIN_DB = argOf("--db", adminDbPath());
 const DRY = has("--dry-run");
 const REFRESH_LEVEL = has("--refresh-level");
 const REFRESH_SAVEPATHS = has("--refresh-savepaths");

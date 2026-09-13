@@ -244,6 +244,12 @@ const CONFIG_REQUIRED_PATHS = [
   'libraryDir',
   'sourceLibraryDir',
   'defaultGameRootPath',
+  // 下面两个也是"程序自带资源的落位"：runtimeDir 是运行库安装包目录、yungamestartDir 是
+  // 开机自启工具目录。以前它们是代码里写死的默认值（<exe 同级>/xxx），运维想换位置只能重新
+  // 出包；现在由 path-modes.json 定，所以也必须显式写在 config.json 里 —— 否则"实际在用哪个
+  // 目录"又变成隐式的（正是本规则要拦的那件事）。
+  'runtimeDir',
+  'yungamestartDir',
 ]
 // 这几项必须真实存在 —— 配错就是"封面全空 / 读不到库"这类静默故障。
 // defaultGameRootPath 不查存在性：它是"游戏放在哪"的根，新机器上可能还没拷游戏进去。
@@ -329,11 +335,58 @@ if (!fs.existsSync(contentFull)) {
   }
 }
 
+// ---- 11) 数据根已从 release/data 迁到 dev-data：不许再指回去 ----
+// 由来：release/ 曾经是"打包产物 + 便携数据"混在一起的目录 —— 清一次打包目录就等于清数据，
+// 而它同时又会被打包脚本反复重写：两条生命周期完全不同的东西共用一个路径。
+// 2026-09-14 拆开：release/ = 纯打包产物（随时可删掉重打）；dev-data/ = 开发/测试态数据根。
+// 这里把"又指回 release/data"变成自动失败 —— 那种引用要么读到一个不存在的库，
+// 要么更糟：读到上次打包残留的旧副本，表现成"数据莫名其妙回退了"，极难排查。
+// 扫描范围比其它规则宽（补上 .bat / .ps1 / .md）：这些引用绝大多数就写在那几种文件里。
+const LEGACY_DATA_REF = /release[/\\]+data/i
+for (const file of walk(ROOT, [], ['.ts', '.tsx', '.mts', '.mjs', '.js', '.bat', '.ps1', '.md'])) {
+  const r = rel(file)
+  if (r === 'scripts/check-architecture.mjs') continue // 本文件就是这条规则的定义处
+  if (r.startsWith('docs/plans/')) continue // 历史计划文档：记录的是当时的布局，不改写
+  const code = stripComments(fs.readFileSync(file, 'utf8'))
+  if (LEGACY_DATA_REF.test(code)) {
+    violations.push(
+      `${r}: 还在引用已废弃的 release/data —— 开发/测试态数据根是 dev-data/（release/ 是纯打包产物，随时会被重写）。见 docs/design/directory-structure.md`,
+    )
+  }
+}
+
+// ---- 12) 开发态数据目录名只许出现在解析器和它的 cmd 桥里 ----
+// 由来：`dev-data` 这个名字曾经在 8 个 bat + 8 个脚本里各写一遍。挪一次数据位置就得全文搜索着改，
+// 而漏一个的后果**不是报错**，是静默写到别处（脚本往新目录写、客户端还在读老目录，
+// 表现成"改了没生效"）—— 这次真的踩到两次：网站端与几个脚本的默认值还指着旧路径。
+// 现在取值只有两条路：
+//   代码：scripts/lib/devData.mjs（唯一来源，读 path-modes.json 的 dev 段）
+//   cmd ：data-dir.bat → scripts/data-dir.mjs（cmd 里没法 import 模块，所以有个薄壳）
+// 这里把"又写死一处"变成自动失败。
+const DEV_DATA_OWNERS = new Set([
+  'scripts/lib/devData.mjs',
+  'scripts/check-architecture.mjs', // 本规则的定义处（注释里要写出这个值）
+]);
+for (const file of walk(ROOT, [], ['.ts', '.tsx', '.mts', '.mjs', '.js', '.bat', '.ps1'])) {
+  const r = rel(file)
+  if (DEV_DATA_OWNERS.has(r)) continue
+  if (r.startsWith('dev-data/')) continue // 数据本身
+  if (r.includes('__tests__') || /\.test\.(ts|tsx|mjs|js)$/.test(r)) continue // 测试里的样例值
+  if (r.startsWith('_')) continue // 一次性维护脚本
+  if (r.startsWith('scripts/') && (r.includes('verify-') || r.includes('migrate-'))) continue // 历史一次性脚本
+  const code = stripComments(fs.readFileSync(file, 'utf8'))
+  if (/dev-data/i.test(code)) {
+    violations.push(
+      `${r}: 又写死了开发态数据目录名 —— 代码请用 scripts/lib/devData.mjs，bat 请 call data-dir.bat（见 docs/design/release-build.md）`,
+    )
+  }
+}
+
 if (violations.length) {
   console.error(`✗ 架构检查未通过（${violations.length} 项）：`)
   for (const v of violations) console.error('  - ' + v)
   process.exit(1)
 }
 console.log(
-  '✓ 架构检查通过：实体类型单一来源、分层无越界、渲染层无 Node/sql.js 依赖、数据目录名未写死、Tailwind 变量层齐备、内容源文件完好',
+  '✓ 架构检查通过：实体类型单一来源、分层无越界、渲染层无 Node/sql.js 依赖、数据目录名未写死、Tailwind 变量层齐备、内容源文件完好、数据根未指回 release/data',
 )

@@ -1,11 +1,24 @@
 // 重建 themeLibrary.ts：
-//   保留 4 个手工主题（明亮/暗黑/赛博朋克/Catppuccin）+ tweakcn 全部社区预设。
-//   其余旧主题（中国风/游戏联名/渐变特别版等）全部删除。
+//   保留 7 个手工主题 + tweakcn 全部社区预设，其余旧主题（中国风/游戏联名/渐变特别版等）全部删除。
 // 用法：node _rebuild-themes.mjs
+// ⚠️ 手工新增的配色必须加进下面的 KEEP，否则重跑本脚本会把它丢掉。
+//    （目前 p-minecraft / p-gamezone 等手工配色不在 KEEP 里 —— 重跑会丢，需要的话一并补上。）
+// ⚠️ KEEP 的顺序 = 重建后配色列表的顺序（就是用户在设置里看到的顺序）。
+//    前三个是"游戏主题"配色，按需求排在**最前面**（比"明亮/暗黑"还前）。
 import { readFileSync, writeFileSync } from "node:fs";
 
 const LIB = "src/utils/themeLibrary.ts";
-const KEEP = ["p-light", "p-dark", "p-cyberpunk", "p-catppuccin"];
+const KEEP = [
+  // ── 游戏主题（排在最前）──
+  "p-playnite", // 游戏夜色（取材 Playnite 原版）
+  "p-emixednite", // 游戏红酒（取材 eMixedNite）
+  "p-dh-night", // 暗夜青绿（取材 DH_Night）
+  // ── 基础 / 社区手工主题 ──
+  "p-light",
+  "p-dark",
+  "p-cyberpunk",
+  "p-catppuccin",
+];
 
 // ─── 颜色转换（同 _gen-themes.mjs）─────────────────────────
 const clamp = (v) => Math.min(1, Math.max(0, v));

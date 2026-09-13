@@ -62,6 +62,11 @@
 
 ## 二、配色（调色板）规范
 
+> **列表顺序 = 设置里的显示顺序。** 当前最前面三个是"游戏主题"配色
+> —— **游戏夜色 / 游戏红酒 / 暗夜青绿**（见 2.4~2.6），排在「明亮 / 暗黑」之前。
+> 顺序由 `themeLibrary` 数组顺序决定；`_rebuild-themes.mjs` 的 `KEEP` 顺序必须与之一致
+> （那个脚本会整体重建本文件）。
+
 ### 2.1 配色保持现状，不精简
 
 `themeLibrary` 里的全部配色（明亮/暗黑/中国风/渐变/背景主题等）**全部保留**，本次只整理主题，不删配色。
@@ -81,6 +86,128 @@
 | `body.theme-diamond`（global.css L359-385） | 渐变**背景颜色**挂在"主题"下，还按 `data-theme-id` 细分 | 这类渐变背景属于"配色"，应从主题体系剥离，归入配色或独立"背景方案" |
 | `body.theme-reactbits`（global.css L390-418） | 光晕动态**背景**挂在"主题"下 | 属于"背景效果"，应归入配色/背景层，不与形状主题耦合 |
 | `fx` 里的 `cyber` / `neon` 等 | 部分 fx 在 global.css 里可能带霓虹等**颜色效果** | fx 只保留形状/质感/动效，颜色一律走 `var(--accent)` 派生 |
+
+### 2.4 游戏夜色（`p-playnite`，取材 Playnite 原版）
+
+需求原话：*"添加一种配色 playnite 的原始配色，源码里有"*。色值**逐条取自原版源码**，不靠眼睛调：
+
+> 原版 Playnite 仓库的 `source/Playnite.DesktopApp/Themes/Desktop/Default/Constants.xaml`
+> —— 原版桌面主题的色板只此一处（`MainColor` / `MainColorDark` / `GlyphColor` / `HoverColor` …），
+> 改主题就是改这个文件里的键。
+
+| 原版键 | 原值 | 本表字段 | 说明 |
+| --- | --- | --- | --- |
+| `MainColorDark` | `#0D1225` | `background` / `bgBase` | 窗口底色（`WindowBackgourndBrush` 渐变的暗端） |
+| `WindowBackgourndBrush` 亮端 | `#202B4D` | `bgTop` | 原版窗口是"上亮下暗"的竖直渐变，本表同款两段 |
+| `MainColor`（NormalBrush） | `#2C3A67` | `card` / `bgPanel` | 面板底 |
+| `GridItemBackgroundColor` | `#151E3D` | `bgSidebar` | 侧栏 / 网格项底 |
+| `PopupBackgroundColor` | `#171E26` | `muted` | 弹层底 |
+| `PopupBackgroundBrush` | `#1F2847` | `secondary` | 次级面板 |
+| `PopupBorderColor` | `#3E6184` | `border` | 描边 |
+| `GlyphColor` | `#55CDFF` | `primary` / `accent` / `ring` / `borderStrong` | 原版最标志的青色 |
+| `HoverColor` | `#247BA0` | `bgItemHover` | 悬停蓝 |
+| `HighlightGlyphColor` | `#8855CDFF` | `bgItemActive` | 半透明青叠在 `MainColor` 上 → 合成 `#4288B7`（本表字段只能存纯色） |
+| `ButtonBackgroundBrush` | `#0A0E1E` | `bgInput` | 按钮 / 输入框底 |
+| `TextColor` | `#F2F2F2` | `textPrimary` / `foreground` | 主文字 |
+| `TextColorDarker` | `#A3A3A3` | `textSecondary` | 次级文字 |
+| （原版无第三级） | — | `textDim` | 派生 `#7C86A0`（同色系偏蓝的弱化灰），必须过对比度守卫 |
+| `PositiveRatingBrush` | `#78FFA0` | `success` | 好评 |
+| `DataChangeNotifColor` | `#FFA500` | `warning` | 变更提示橙 |
+| `NegativeRatingBrush` | `#FF6B6B` | `danger` | 差评（原版 `WarningBrush` 同值） |
+
+归类为 `游戏主题`（对比度按 FLOOR 档守卫，与「我的世界」同档）。
+
+**两条转换规则**（原版用到、本表存不下的东西）：
+
+1. **渐变 → 两端色**：原版窗口背景是 `LinearGradientBrush`，本表用 `bgTop` → `bgBase` 两个字段
+   近似（界面本来就按"顶 → 底"取这两个变量）。
+2. **半透明 → 预合成实色**：`HighlightGlyphColor`（`#8855CDFF`，53% 青）、`PanelSeparatorColor`
+   这类带 alpha 的原版值，按"它叠在哪个底色上"算成实色再填。
+
+> 想现场对照：设置 → 主题 → 配色里选「**游戏夜色**」（列表第一个），或顶栏主题下拉。
+> 原版是硬朗小圆角 + 深色 HUD 味，配形状主题「苹果 / 软浮雕」更像原版观感。
+
+### 2.5 游戏红酒（`p-emixednite`，取材 eMixedNite）
+
+需求原话：*"还有一种，也配上：[安装目录]\Themes\Desktop\eMixedNite_<id>\Constants.xaml"*。
+色值同样**逐条取自主题源码**，不靠眼睛调：
+
+> `eMixedNite`（作者 **eminaguil**，v2.60，`ThemeApiVersion: 2.5.0`）随主题分发的
+> `Constants.xaml`。两处已核对，避免抄到"不是实际生效"的颜色：
+> - 同目录的 `Constants - 副本.xaml` 与原文件 **MD5 完全相同**（没有分叉版本）；
+> - `thememodifier.yaml` 只是给 ThemeModifier 插件声明"哪些常量可改 + 显示名"，**不含颜色覆盖**。
+
+| 原版键 | 原值 | 本表字段 | 说明 |
+| --- | --- | --- | --- |
+| `WindowBackgourndBrush` 起始 | `#303030` | `bgTop` | 窗口是"炭黑 → 酒红"的斜向渐变 |
+| `WindowBackgourndBrush` 暗端 | `#800000`（stop 在 1.5） | `bgBase` → `#651010` | stop 越界，可视区实测只走到约 66.7%，故按该处取值 |
+| `MainColor`（NormalBrush） | `#545B67` | `bgPanel` | **面板是中性灰**（不是红）——"Mixed"的含义就在这 |
+| `PopupBackgroundBrush` | `#383C44` | `secondary` | |
+| `PopupBackgroundColor` | `#171E26` | `muted` | |
+| `NormalBorderBrush` | `#4C545D` | `border` | |
+| `PopupBorderColor` | `#FFAF612E` | `borderStrong` → `#AF612E` | 前缀 `FF` 是不透明度，去掉才是颜色 |
+| `GlyphColor` | `#F4A460` | `primary` / `accent` / `ring` | `GlyphBrush` 渐变 `#F4A460→#D2691E` 的亮端（琥珀橙） |
+| `HoverColor` | `#9A4545` | `bgItemHover` | 同时是 `ButtonBackgroundBrush`（砖红） |
+| `TextColor` | `#ffe` | `textPrimary` / `foreground` → `#FFFFEE` | 3 位写法展开 |
+| `TextColorDark` | `#a0a0a0` | `textSecondary` | |
+| `PlayingStatusBrush` | `#6CC417` | `success` | 原版 `PositiveRatingBrush` 是淡黄 `#FFFF90`，语义上取状态绿 |
+| `DataChangeNotifColor` | `#ffa500` | `warning` | |
+| `WarningBrush` | `#ff6b6b` | `danger` | 原版 `NegativeRatingBrush` `#D88C8C` 偏软，取更明确的红 |
+
+**派生项**（原值带 alpha、或原版没有对应档）：
+
+| 字段 | 值 | 怎么来的 |
+| --- | --- | --- |
+| `background` | `#3B2A2A` | 窗口渐变按 8:2 取的代表色（以炭黑为主、带酒红），文字对比度 13:1 |
+| `card` | `#583838` | `GridItemBackgroundColor` `#609a4545`（38% 砖红）叠在 `#303030` 上合成 |
+| `bgItemActive` | `#7A3A3A` | 砖红家族加深一档；原版选中的 `HighlightGlyphColor` `#c08080` 太亮（白字压上只有 3.1:1），且本表不能存 alpha |
+| `bgSidebar` / `bgInput` | `#2E2626` / `#44474F` | 窗口底压暗一档 / 面板灰压暗（原版输入框是透明底） |
+| `accentHover` | `#FFBE7A` | `GlyphColor` 提亮（原版没有 hover 档） |
+| `textDim` | `#8A8A8A` | 原值 `TextColorDarker #707070` 在卡片上只有 2.08:1，提亮一档保证"看得见" |
+
+归类同样是 `游戏主题`（FLOOR 档）；实测三级文字对比度：主 10.2~13.0:1、次 3.9~5.2:1、dim 3.0~3.9:1。
+
+### 2.6 暗夜青绿（`p-dh-night`，取材 DH_Night）
+
+需求原话：*"加 2 个就行，一个第三方的绿色，还有这个 eMixedNite。"*（"绿色"经确认指 `DH_Night`
+的青绿；本机装的主题里，作者为第三方的只有它和 eMixedNite 两个。）
+
+> `DH_Night`（作者 **felixkmh**，即 DuplicateHider 插件作者）随主题分发的
+> `Constants.xaml`。同目录没有"副本"文件，`thememodifier.yaml` 只声明可改项、不含颜色覆盖。
+
+| 原版键 | 原值 | 本表字段 |
+| --- | --- | --- |
+| `MainColor`（NormalBrush） | `#474747` | `bgPanel` |
+| `BackgroundToneColor` | `#1F1F1F` | `secondary` / `bgSidebar` |
+| `GridItemBackgroundColor` | `#292929` | `card` |
+| `PopupBackgroundColor` | `#171E26` | `muted` |
+| `NormalBorderBrush` | `#553A3A3A` | `border` → `#3A3A3A`（33% 不透明的实色近似） |
+| **`GlyphColor`** | **`#00CCCC`** | `primary` / `accent` / `ring` / `borderStrong` |
+| `HighlightGlyphColor` | `#007A7A` | `bgItemHover`（该主题的 `HoverBrush` 就是它，不是 `HoverColor`） |
+| `HoverColor` | `#005252` | `bgItemActive` |
+| `TextColor` / `TextColorDarker` | `#f2f2f2` / `#a3a3a3` | `textPrimary` / `textSecondary` |
+| `PositiveRatingBrush` / `MixedRatingBrush` / `NegativeRatingBrush` | `#78ffa0` / `#fffca1` / `#ff6b6b` | `success` / `warning` / `danger` |
+
+**这个主题的底色是贴图，抄不出来 —— 得实测。** `WindowBackgourndBrush` 是
+**85% 不透明的 `noise/background0.png` 叠在 `Images/Background.png` 上**（`PanelSeparatorColor`
+等也都是透明/贴图），所以 xaml 里根本没有"窗口底色"这个值。做法是用 `System.Drawing` 逐像素采样
+（步长 5px）取平均色，再按 85% 合成：
+
+| 测什么 | 结果 |
+| --- | --- |
+| `Images/Background.png`（1920×1080） | 整体 `#38444D`、上 15% `#45525B`、下 15% `#29333C`（轻微上亮下暗） |
+| `Images/noise/background0.png` | ≈ `#1E1E1E` |
+| **合成后的窗口底色** | 整体 ≈ `#222425`、上部 ≈ `#242627`、下部 ≈ `#202123` |
+
+→ 填 `background` / `bgTop` / `bgBase`（`MainColorDark #1C1C1C` 作为交叉验证：与实测值同量级）。
+
+其余派生项：`bgInput #2F2F2F`（`InputDefaultBrush` = `noise/background1` 的平均色）、
+`accentHover #33DDDD`（`GlyphColor` 提亮，原版无 hover 档）、`textDim #808C8C`（原版只有两级文字色）。
+
+归类 `游戏主题`；实测三级文字对比度：主 13.1~13.9:1、次 5.8~6.2:1、dim 4.2~4.5:1。
+
+> **可复用的判据**：给"第三方主题"取色时先看 `WindowBackgourndBrush` 是 `SolidColorBrush` 还是
+> `ImageBrush`。前者直接抄；后者（DH_Night 属于这种）得实测图片平均色，否则配色会明显偏亮。
 
 ---
 

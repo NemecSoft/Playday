@@ -15,14 +15,15 @@
 //   node scripts/force-fill-descriptions.mjs --apply               # 真写权威库（时间戳备份）
 //   node scripts/force-fill-descriptions.mjs --apply --no-backup   # 改库不留备份
 //
-// 数据目录：默认 release/data，可用 YUNGAME_DATA_DIR 覆盖。
+// 数据目录：默认 dev-data，可用 YUNGAME_DATA_DIR 覆盖。
 
 import fs from "fs";
 import path from "path";
 import initSqlJs from "sql.js";
+import { adminDbPath } from "./lib/devData.mjs";
 
-const DATA_DIR = process.env.YUNGAME_DATA_DIR || path.join(process.cwd(), "release", "data");
-const DB = path.join(DATA_DIR, "Admin", "library.db");
+// 权威库位置来自规则表（scripts/lib/devData.mjs，读 path-modes.json 的 dev 段）。
+const DB = adminDbPath();
 
 const apply = process.argv.includes("--apply");
 const noBackup = process.argv.includes("--no-backup");

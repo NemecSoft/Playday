@@ -1,6 +1,6 @@
 # 打包配置：把 Playday 打成"免安装便携版"（绿色版）。
 # 产物形态：release/win-unpacked/ 下一个文件夹，里面是
-#   Playnite.DesktopApp.exe（客户端）
+#   PlayniteUI.exe（客户端）
 #   以及运行所需的 electron 运行时、资源、node_modules 依赖。
 # data 目录（游戏库数据库 + CoverImages 封面图）是"绿色存储"，由用户放到 exe 同级，
 # 因为主进程 configRoot() 在生产环境就用 exe 所在目录，data 放 exe 同级即可被找到。
@@ -10,15 +10,22 @@ productName: Playday
 # 主进程编译产物入口在 package.json 的 main 字段（dist-electron/electron/main.js）
 
 # 打包后 exe 文件名（配合 build.config.ts 的 CLIENT_EXE_NAME）
+# 必须是 PlayniteUI：YunGameStart 建的桌面快捷方式目标就是 <游戏根>\PlayniteUI.exe
 win:
-  executableName: Playnite.DesktopApp
+  executableName: PlayniteUI
   # exe 文件自身的图标（替换 Electron 默认图标）
   icon: public/icons/icon.png
 
 # 只打免安装目录，不打安装包（用户要"拷走就能跑"，用 --dir 时该 target 生效）
-# 产物会落在 <output>/win-unpacked/
+# 产物先落在 <output>/win-unpacked/，再由 package.bat 分发到真正的发布目录：
+#   release_test\   预发布（D 盘 config.json，不随包带数据）
+#   release\        正式（X 盘 config.json + 随包 data/，直接拷去生产机的那份）
+# 这里 output 只是**中转**：它不区分变体（变体由 package.bat 的 robocopy 目标决定），
+# 打完 package.bat 会整个删掉它 —— 别把需要保留的东西放进这个目录。
+# 注：别试图用命令行 -c.directories.output 覆盖它，electron-builder 25 会把 "-c.xxx"
+#     当成配置文件路径，报 ENOENT: 打不开 .directories.output=xxx。
 directories:
-  output: release
+  output: .pack-tmp
   buildResources: build
 
 files:
@@ -46,6 +53,10 @@ extraResources:
       - "**/*.ttf"
       - "**/*.otf"
       - "**/*.ttc"
+  # 注：运行库安装包（VC++ x64/x86、VP9 解码扩展）**不在这里** —— 它由 package.bat
+  # 复制成 <包>\runtime\（与 yungamestart\ 同一套"exe 同级目录"布局），正好就是
+  # config.json 的 settings.runtimeDir 指的是那个路径。放这里是另一份 45 MB 的重复
+  # （resources\runtime\ 与 <exe 同级>\runtime\ 各一份），不值得。见 runtime-deps.md。
 
 # 禁止 electron-builder 自动下载/打包我们不需要的东西
 npmRebuild: false

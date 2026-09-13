@@ -33,6 +33,9 @@ import {
   Feather, // 水墨·夜：羽毛笔（夜写水墨）
   Cloud, // 仙侠：流云（御剑青冥）
   Blocks, // 我的世界：方块
+  Joystick, // Playnite 原版：摇杆（游戏库管理器本家）
+  Eclipse, // eMixedNite：明暗交界（Mixed + Nite）
+  MoonStar, // DH_Night：夜
 } from "lucide-react";
 import { themeLibrary } from "../../utils/themeLibrary";
 import { styleLibrary } from "../../utils/styleLibrary";
@@ -68,6 +71,9 @@ const styleIconMap: Record<string, LucideIcon> = {
 // 一直走 Palette 兜底。已修正为真实 id。
 const paletteIconMap: Record<string, LucideIcon> = {
   "p-minecraft": Blocks, // 我的世界：方块
+  "p-playnite": Joystick, // Playnite 原版：摇杆
+  "p-emixednite": Eclipse, // eMixedNite：明暗交界
+  "p-dh-night": MoonStar, // DH_Night：夜
   "p-reactbits": Sparkles, // 紫色流光：闪光
   "p-light": Sun, // 明亮：太阳
   "p-dark": Moon, // 暗黑：月亮

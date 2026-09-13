@@ -27,15 +27,13 @@ export { DEFAULT_CARD_TEXT } from "../../shared/models";
 // 前端独有的视图模型（主进程只把它们当返回值，不参与持久化）
 // ============================================================================
 
-/** get_current_user 返回的"已解析用户"（比 SessionUser 多出企业配置状态）。 */
+/** get_current_user 返回的"已解析用户"（比 SessionUser 多一个"是否由用户表按 IP 命中"的标记）。 */
 export interface CurrentUser {
   kind: "enterprise" | "personal" | "guest";
   name: string;
   account: string;
   level: number;
   enterprise: boolean;
-  configPath: string;
-  configExists: boolean;
 }
 
 /** 个人用户（管理端视角，不含密码）。 */

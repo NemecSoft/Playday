@@ -201,16 +201,47 @@ export const useMusicStore = create<MusicState>((set, get) => ({
         });
         return;
       }
-      const q = orderFor(tracks.length, get().mode);
+      const st = get();
+      // ⚠️ 幂等：**曲库内容没变时绝不重排队列、绝不动当前曲**。
+      // 为什么必须是幂等的：src/main.tsx 开了 React.StrictMode，开发态会把 App 的 effect
+      // 跑两遍 → load() 被并发调用两次。旧实现每次 load 都按"随机"模式重洗一遍牌：
+      // 第二遍洗完把 trackIndex 指到另一首，而 <audio> 里放着的仍是第一遍那首 ——
+      // 现象正是"刚启动时状态栏显示的曲名和实际播放的不一致"。
+      // 同理，这条也让"重挂载 / 目录没变但重新 load"这类无关动作不再换曲。
+      const sameLibrary =
+        tracks.length === st.tracks.length && tracks.every((t, i) => t.rel === st.tracks[i]?.rel);
+      if (sameLibrary && st.trackIndex >= 0 && st.trackIndex < tracks.length) {
+        // 只刷新"曲库 + 目录名"这类元信息，其余一概不动（包括正在播的那首与进度）。
+        set({ tracks, dir: lib.dir ?? "", loaded: true });
+        return;
+      }
+
+      // 曲库真的变了（换目录 / 文件增删）：按当前模式重排，但**尽量留住正在放的那首** ——
+      // 它还在新曲库里的话，"换个目录"不该把正在听的歌打断。
+      const keepIdx = loadedRel ? tracks.findIndex((t) => t.rel === loadedRel) : -1;
+      const q = orderFor(tracks.length, st.mode);
+      let order = q.order;
+      let pos = q.pos;
+      if (keepIdx >= 0) {
+        const at = order.indexOf(keepIdx);
+        if (at >= 0) {
+          pos = at; // 重排结果里已经有它 → 定位过去
+        } else {
+          order = [keepIdx, ...order.filter((i) => i !== keepIdx)]; // 没有就插到队首
+          pos = 0;
+        }
+      }
+      const trackIndex = currentTrackIndex(order, pos);
+      // 换上的这首如果就是 <audio> 里已加载的那首，就别把进度打回 0（否则进度条莫名跳回开头）。
+      const keepsLoaded = keepIdx >= 0 && tracks[trackIndex]?.rel === loadedRel;
       set({
         tracks,
         dir: lib.dir ?? "",
         loaded: true,
-        order: q.order,
-        pos: q.pos,
-        trackIndex: currentTrackIndex(q.order, q.pos),
-        currentTime: 0,
-        duration: 0,
+        order,
+        pos,
+        trackIndex,
+        ...(keepsLoaded ? {} : { currentTime: 0, duration: 0 }),
       });
     } catch (e) {
       console.warn("[music] 读取音乐目录失败:", e);

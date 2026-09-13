@@ -49,31 +49,56 @@ temp/
 
 # ---- 本地开发配置（不入仓库）----
 .codebuddy/
+.workbuddy/
 .prototools
 *.log
 dev-client-err.log
 
 # ============================================================
-# 发布目录 release/：运行时文件体积巨大，不入库。
-# 仅放行 data/library（含 library.db，忽略 .bak）、
-#       data/announcements、data/config.json 三样。
+# tools/GameSaveHelper（搬进来的独立项目）
+#   它原本是一个独立 git 仓库（origin: github.com/NemecSoft/GameSaveHelper）。
+#   搬进来时把它的 .git 改名成 .git_disabled 保留着 —— 不这么做的话，git 会把
+#   整个目录当成"嵌套仓库"，一个文件都纳不进来。历史在 GitHub 上，确认无误后
+#   可以直接删掉 .git_disabled（约 7MB）。
+#   它自己的 .gitignore（tools/GameSaveHelper/.gitignore）负责排除编译产物
+#   （*.obj / *.res / *.exe / build/ / out/ / release/ / logs/ / _test/ 等）。
 # ============================================================
-release/*
-!release/data/
+tools/GameSaveHelper/.git_disabled/
 
-# data 下：只保留 library、announcements、config.json
-release/data/*
-!release/data/library/
-!release/data/announcements/
-!release/data/config.json
+# ============================================================
+# 打包产物目录：全部可重新生成（package.bat / prepare-release），整目录不入库。
+#   release/      正式包（X 盘 config.json + 随包 data/）—— 直接拷去生产机的那份
+#   release_test/ 预发布包（D 盘 config.json，不随包带数据）
+#   两者只差 config.json 里的盘符，所以**必须分开放**：混在一个目录里就分不清
+#   哪个包能上生产机。
+#   .pack-tmp/    electron-builder 的中转目录（打包成功后自动删除，只在失败时残留）
+# 开发/测试态的数据在 dev-data/ —— 见下。
+# ============================================================
+release/
+release_test/
+.pack-tmp/
 
-# 其他数据目录（封面/详情页体积大，不入库）
-release/data/CoverImages/
-release/data/Game_Details/
-
-# library 里只推 database，忽略备份
-release/data/library/*
-!release/data/library/library.db
+# ============================================================
+# dev-data/：开发/测试态的数据根（config.json 的 libraryDir / sourceLibraryDir /
+# announcementsDir 指向它）。**以前它是 release/data** —— 那让"打包产物"和"数据"
+# 挤在同一条路径上：清一次打包目录就等于清数据（2026-09-14 拆开）。
+#   Admin/library.db      权威库：数据唯一来源，只读（db.ts 启动时复制给运行时副本）
+#   library/library.db    运行时副本：入库（体积小、跟代码演进；克隆下来就能跑）
+#   announcements/        公告 announcement.html，入库
+#   litedb-games.json     旧 LiteDB 导出（gen-game-content.mjs 的输入）
+#   _archive/             从旧 release/data 抢救出来的留档（一次性，可删）
+# 封面图不在这里 —— 那是 <coverImagesDir> 的事（见 config.json）。
+# ⚠️ 权威库必须入库：运行时副本损坏 + 权威库缺失时 db.ts 会**直接报错**
+#    （"无法自动恢复"），克隆出来的仓库根本起不来。
+# ============================================================
+dev-data/*
+!dev-data/Admin/
+dev-data/Admin/*
+!dev-data/Admin/library.db
+!dev-data/library/
+dev-data/library/*
+!dev-data/library/library.db
+!dev-data/announcements/
 
 # ============================================================
 # data/（仓库根）：**故意入库**，别加忽略规则

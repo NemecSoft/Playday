@@ -12,10 +12,18 @@
 param(
     [string]$DbPath = "D:/YunGame/PlayNite/library/games.db",
     [string]$DllPath = "D:/YunGame/PlayNite/LiteDB.dll",
-    [string]$Out = "release/data/litedb-games.json"
+    # 输出位置：默认写到"数据根" —— 数据根由规则表决定（path-modes.json 的 dev 段），
+    # 这里问 node 要（scripts/data-dir.mjs），别把目录名写死在脚本里。
+    [string]$Out = ""
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $Out) {
+    $dataRoot = & node (Join-Path $PSScriptRoot "data-dir.mjs")
+    if (-not $dataRoot) { throw "取不到数据根（node 不可用？见 path-modes.json 的 dev 段）" }
+    $Out = Join-Path $dataRoot "litedb-games.json"
+}
 
 # 只读打开**副本**：绝不直接读用户的实时库（避免任一分支下写坏它）
 if (-not (Test-Path $DbPath)) { throw "找不到数据库: $DbPath" }

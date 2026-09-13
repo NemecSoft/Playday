@@ -8,6 +8,7 @@ import { readSettings } from "./core/settings";
 import { stopGameServer } from "./core/gameServer";
 import { createTray, destroyTray } from "./core/tray";
 import { registerErrorCollector } from "./core/errorCollector";
+import { ensureRuntimeDeps } from "./core/runtimeSetup";
 import {
   createClientWindow,
   createAnnouncementWindow,
@@ -55,6 +56,12 @@ app.whenReady().then(async () => {
   // 先弹公告窗口（独立引导窗口）。数据库打开是重活（整库复制 + 读入内存），
   // 推迟到点"进入系统"时再执行（见 enterSystem），让公告窗口第一时间出现，启动更快。
   announcementWin = createAnnouncementWindow();
+
+  // 运行库静默检测安装（VC++ 运行库 x64/x86、VP9 解码扩展）：
+  // 完全后台 —— 本调用同步立刻返回，且内部还刻意延后几秒才开始，不阻塞也不抢启动期的资源；
+  // 缺哪个装哪个，装不上只写 <数据根>\logs\runtime-setup.log，不弹任何窗口。
+  // 放在"公告窗口已创建"之后，是为了把启动路径上的活干完再谈后台任务。
+  ensureRuntimeDeps();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {

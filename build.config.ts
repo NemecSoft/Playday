@@ -10,5 +10,7 @@
 export const APP_NAME = "YunGame";
 
 // 客户端可执行文件名（不含 .exe 后缀）。
-// 用户可能要求改成 Playday.DesktopApp 等。
-export const CLIENT_EXE_NAME = "Playnite.DesktopApp";
+// 现名 PlayniteUI：与 YunGameStart（开机自启、建桌面快捷方式）里的 LauncherFile 一致。
+// ⚠️ 改这里必须同步三处：electron-builder.yml 的 win.executableName、
+//    package.bat / build-*.bat 的提示文案（bat 读不到 TS，只能各自写死）。
+export const CLIENT_EXE_NAME = "PlayniteUI";

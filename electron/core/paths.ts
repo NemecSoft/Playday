@@ -161,6 +161,22 @@ export function fontsDir(): string {
   return resolveConfiguredDir(readSettingsField("fontsDir"), appRoot(), "fonts", appRoot());
 }
 
+// 运行库安装包目录（settings.runtimeDir）：VC++ 运行库 x64/x86、VP9 解码扩展。
+// 未配置 → <应用 exe 同级>/runtime；打包版还有 <resources>/runtime 兜底（见 runtimeSetup.ts）。
+// ⚠️ 默认基准是 appRoot 而不是数据根：这是"程序自带资源"，跟程序走 —— 与 fontsDir 同一个道理。
+// 取值由 path-modes.json 定（正式机 X:/YunGame/Playnite/runtime、测试机 D:/... 同路径）。
+export function runtimeDir(): string {
+  return resolveConfiguredDir(readSettingsField("runtimeDir"), appRoot(), "runtime", appRoot());
+}
+
+// 开机自启工具 YunGameStart 所在目录（settings.yungamestartDir）。
+// 未配置 → <应用 exe 同级>/yungamestart。目前**没有代码消费者**：工具由用户自己开机启动
+// （快捷键丢进 shell:startup，见 docs/design/yungamestart.md）。落位是为了让"工具在哪"
+// 从配置里读得到 —— 运维脚本可以直接读 config.json，将来要在客户端里拉起它也不必再找路径。
+export function yungamestartDir(): string {
+  return resolveConfiguredDir(readSettingsField("yungamestartDir"), appRoot(), "yungamestart", appRoot());
+}
+
 // 背景音乐目录（settings.musicDir）。
 // 未配置 → <数据根>/music（与封面/详情页等数据目录的约定一致，留空时是"数据旁边的 music"）；
 // 目录不存在或没有音频文件 → 视为没有背景音乐（前端不显示音乐控件）。

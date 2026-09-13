@@ -193,7 +193,7 @@ registerCommand(ipc, "get_game_server_url", async () => {
 | 能力 | 桌面端（Electron） | 网站端（`server/server.mjs`） |
 |------|:---:|:---:|
 | 详情页托管 | 本地 HTTP 服务器 `gameServer.ts` | `/Game_Details/*` 静态路由 |
-| 目录 | `gamesHtmlDir()`（默认 `<数据根>/Game_Details`） | `DETAILS_DIR`（固定 `release/data/Game_Details`） |
+| 目录 | `gamesHtmlDir()`（默认 `<数据根>/Game_Details`） | 与桌面端同一套解析（`server/paths.mjs` 读 config.json 的 `gameDetailsDir`） |
 | 惰性启动 | ✅（第一次打开详情页时） | 网站端服务器常驻，无此概念 |
 | `get_game_html_page` | ✅ | ✅ |
 | `get_game_server_url` | ✅ | 网站端无此命令（页面直接同源访问 `/Game_Details/*`） |

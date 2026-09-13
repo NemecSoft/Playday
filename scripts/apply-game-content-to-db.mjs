@@ -39,6 +39,7 @@
 import fs from "fs";
 import path from "path";
 import initSqlJs from "sql.js";
+import { adminDbPath, runtimeDbPath } from "./lib/devData.mjs";
 
 const argv = process.argv.slice(2);
 const has = (n) => argv.includes(n);
@@ -48,8 +49,9 @@ const argOf = (name, dflt) => {
 };
 const root = process.cwd();
 const CONTENT = argOf("--in", path.join(root, "data/game-content.json"));
-const ADMIN = argOf("--admin", path.join(root, "release/data/Admin/library.db"));
-const RUNTIME = argOf("--runtime", path.join(root, "release/data/library/library.db"));
+// 库路径的唯一来源：scripts/lib/devData.mjs（读 path-modes.json 的 dev 段，支持 YUNGAME_DATA_DIR）。
+const ADMIN = argOf("--admin", adminDbPath());
+const RUNTIME = argOf("--runtime", runtimeDbPath());
 const APPLY = has("--apply");
 /**
  * 简介**默认全部写入**（长的人工简介也是内容，不能漏）。
