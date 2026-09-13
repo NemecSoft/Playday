@@ -22,6 +22,25 @@
 | `tags` | string | 标签，**用 `#` 分隔**：`"#休闲#生存#卡通#烧脑"`；没有就写 `""` | `games.tags`（同上） |
 | `gamelevel` | number | **玩这个游戏需要的权限等级**：`1` = 黄金版、`2` = 钻石版（黄金用户只能玩 1，钻石用户 1/2 都能玩）。来源 `YunGame_Gamelist.json`，取不到 = 2 | `games.game_level`（**默认就写** —— 它是黄金/钻石门禁的判据，不写门禁就形同虚设） |
 | `score` | number | **社区评分**（人工填）：大于阈值时卡片右上角亮「人气火爆」小火苗（阈值 = `src/utils/hotBadge.ts` 的 `HOT_SCORE_MIN`，默认 100）。**没填过就不写这个键** —— 写 0 / 空等于没设，同步时不会去动库里原值 | `games.community_score` |
+| `savepaths` | string[] | **存档路径**（游戏退出后"是否备份存档"用的就是它）：元素可含通配符（`*.*`）与 `{游戏库名}` 占位符，分隔符统一 `/`。来源 = LiteDB 里那条指向 `GameSaveHelper` 的 action（见下节）。**没有存档的游戏不写这个键** | `games.save_paths`（库里是 JSON 数组文本，如 `["X:/YunGame/V/XX/Save/*.*"]`） |
+
+### `savepaths` 从哪来（不是手写的）
+
+```jsonc
+"savepaths": ["C:/Users/Administrator/Documents/StarCraft II/*.*"]
+"savepaths": ["C:/Users/Administrator/AppData/Local/Ride/*.*", "X:/YunGame/W/Ride/settings/*.*"]
+```
+
+它由 `scripts/gen-game-content.mjs` 从 games.db（LiteDB）导出的 `GameActions` 里自动提取，
+解析规则与判据在 `scripts/playnite-savepaths.mjs`（有完整注释），要点：
+
+| 问题 | 做法 | 为什么 |
+| --- | --- | --- |
+| 怎么认出"备份存档"那条 action | **`Path` 含 `GameSaveHelper`**（不是按名字等于"备份游戏存档"） | 实测 1250 个游戏有这条 action，名字有 8 种变体（`备份服务端游戏存档` / `备份游戏存档（注册表格式）` / `游戏存档备份` / 误写成`开始游戏` / 写成游戏自己的名字）——按名字会漏 8 条；按路径是名字的超集，且"名字对但路径不对"的为 0 条 |
+| 路径怎么切出来 | 取参数里**所有引号内的片段**（兼容中文引号 `“”`） | 参数是「游戏名 + 若干带引号的路径」；路径里含空格（`Two Point Campus`、`Getting Over It`、`Circle Empires 2`），按空格切会切坏；而且实测 147/1243 条参数的"首词"与库里的游戏名并不一致，不能靠首词定位 |
+| 分隔符 | 反斜杠统一转 `/` | App 内部路径规范就是 `/`（`shared/launchPaths.ts` 的 `normalizePath`），库里/界面上只该有一种写法。⚠️ 注册表格式的存档（`HKEY_CURRENT_USER\...`，2 个游戏）也会被转成 `/` |
+| 多个路径 | 全部保留，顺序不变 | 同一个游戏多份存档（本体 + 设置 + 云存档）实测 116 个 |
+| 覆盖规则 | 文件里**非空就保留**（手写优先）；空/缺失才补 | 与 `intro`/`region`/`tags` 同一条规则。想按 LiteDB 强制重取：`--refresh-savepaths` |
 
 ### 手写格式（地区 / 标签）
 
@@ -42,9 +61,11 @@
 ## 常用命令
 
 ```bash
-# 1) 补齐空缺（只补空/缺，永不覆盖你已有的非空值）
+# 1) 补齐空缺（只补空/缺，永不覆盖你已有的非空值）—— 存档路径也在这一步补
 node scripts/gen-game-content.mjs --dry-run
 node scripts/gen-game-content.mjs                # 真正写文件
+node scripts/gen-game-content.mjs --refresh-savepaths   # 存档路径强制按 LiteDB 重取
+
 
 # 2) 写简介的素材（游戏名 + 详情页标签 + 爬来的介绍，分批看）
 node scripts/dump-intro-material.mjs --offset 0 --limit 150 --brief
@@ -71,15 +92,20 @@ node scripts/apply-game-content-to-db.mjs --apply
 附加开关（命令行加参数，或建个快捷方式带上）：
 
 ```bat
-sync-game-content.bat                  :: 默认：简介/地区/标签/社区评分/权限等级 全部写进库
+sync-game-content.bat                  :: 默认：简介/地区/标签/社区评分/权限等级/存档路径 全部写进库
 sync-game-content.bat --short-only     :: 只写 <=48 字的短简介（历史遗留，现在基本用不到）
 sync-game-content.bat --yes            :: 跳过"按 Y 确认"（给自动化调用用）
 ```
 
+> 存档路径这一步的完整链路是：`scripts/export-litedb-games.ps1`（LiteDB → JSON，手动跑）
+> → `node scripts/gen-game-content.mjs`（把路径补进内容表）
+> → 双击 `sync-game-content.bat`（内容表 → 数据库）。批处理只做最后一步。
+
 ## 几条硬规则（都有自动化把关，不靠自觉）
 
-1. **生成脚本只补空**：文件里非空的 `intro`/`region`/`tags` 永不被覆盖；`gamelevel` 默认保留，
-   想按游戏列表重算加 `--refresh-level`。
+1. **生成脚本只补空**：文件里非空的 `intro`/`region`/`tags`/`savepaths` 永不被覆盖；
+   `gamelevel` 默认保留（想按游戏列表重算加 `--refresh-level`），
+   `savepaths` 同理（想按 LiteDB 重取加 `--refresh-savepaths`）。
 2. **简介默认全部写入**（长的短的一律进库）。曾经有过"超过 48 字就跳过"的闸门，
    结果把人工写的长简介（如「苏丹的游戏」77 字）悄悄漏掉了 —— 已去掉。
    （`--short-only` 是那次留下的开关，只写 ≤48 字的简介；现在内容表里的简介都是长简介，

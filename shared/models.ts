@@ -57,6 +57,16 @@ export interface CardTextStyle {
   colorMode?: "theme" | "random";
 }
 
+/**
+ * 背景音乐播放模式（设置项 `AppSettings.musicMode`）：
+ *   shuffle    随机循环 —— 洗一轮 → 放完重新洗牌（默认，保持原有行为）
+ *   sequential 顺序循环 —— 按曲库顺序，到末尾回第一首
+ *   single     单曲循环 —— 自动播完重放这首；手动点"下一首"仍然换曲
+ * 定义放这里（而不是 src/utils/musicQueue.ts）是因为它要存进 config.json：
+ * 设置字段的类型（AppSettings）与实现分居两处时，最容易出现"存得进读不出"。
+ */
+export type MusicMode = "shuffle" | "sequential" | "single";
+
 /** 默认卡片文字样式：暖白 + 紫光 + 黑色描边（接近"史诗紫金"预设） */
 export const DEFAULT_CARD_TEXT: CardTextStyle = {
   color: "#fff8e7",
@@ -91,7 +101,22 @@ export const DEFAULT_SETTINGS = {
   // 说明：数据库路径不做配置（固定双库机制：管理端 Admin/library.db、
   // 客户端 library/library.db 每次启动从 Admin 下发复制）。
   // 允许自定义会让"配置的库"和"下发的库"变成两个不同文件，数据来源就不唯一了。
-  autoBackupEnabled: true,
+  // 游戏退出后的存档备份：默认"每次都问"（需求指定）。
+  // as const：这是**联合类型**字段，不加就会被推宽成 string，赋值给 AppSettings 时类型报错。
+  saveBackupMode: "ask" as const,
+  // 字体大小（百分比；100 = 原始大小）。
+  // 只放大文字，不动界面尺寸（实现见 postcss-font-scale.cjs + src/utils/uiFont.ts）。
+  uiFontScale: 100,
+  // 自带字体目录（可配置）。空 = <应用 exe 同级>/fonts；打包版另有 <resources>/fonts 兜底。
+  fontsDir: "",
+  // 背景音乐目录（可配置）。空 = <数据根>/music；目录不存在 = 没有音乐（界面不显示控件）。
+  musicDir: "",
+  // 背景音乐：是否启用 + 音量（0~100）+ 播放模式。
+  musicEnabled: true,
+  musicVolume: 50,
+  // 播放模式：单曲 / 顺序 / 随机。as const 是因为它是**联合类型**字段，
+  // 不加会被推宽成 string，赋回 AppSettings 时报类型错（同 saveBackupMode）。
+  musicMode: "shuffle" as const,
   gridViewImage: "Cover",
   detailsViewImage: "Background",
   listViewImage: "Icon",
@@ -479,6 +504,15 @@ export interface LibraryPluginInfo {
 }
 
 /**
+ * 游戏退出后的存档备份行为。
+ *   ask   —— 每次都弹"是否备份存档？"（默认，需求指定）
+ *   auto  —— 直接静默备份（GameSaveHelper 传 /q，不弹任何窗口；失败才通知）
+ *   never —— 不提示也不备份
+ * 判定在主进程（electron/ipc/saveManager.ts），不能只靠前端拦。
+ */
+export type SaveBackupMode = "ask" | "auto" | "never";
+
+/**
  * 应用设置（存 config.json，不在数据库里）。
  * 主进程与前端共用这一份；缺字段时的兜底值见 DEFAULT_SETTINGS。
  */
@@ -493,7 +527,32 @@ export interface AppSettings {
   firstTimeWizardComplete: boolean;
   /** 【已废弃，不再读取】数据库路径固定为双库机制；读取配置时会剔除该键。 */
   databasePath?: string;
-  autoBackupEnabled: boolean;
+  /** 游戏退出后的存档备份行为（见上 SaveBackupMode）。 */
+  saveBackupMode: SaveBackupMode;
+  /**
+   * 字体大小：百分比（85~140，100 = 原始）。
+   * **只管文字，不管界面尺寸**（需求明确：不要调整界面大小）——
+   * 实现是给每一处 font-size 乘一个 `--ui-font-scale`（构建期由 postcss-font-scale.cjs
+   * 加上，运行时由 src/utils/uiFont.ts 的 applyUiFontScale() 改值）。
+   * ⚠️ 与顶栏 Ctrl+滚轮的原生整页缩放是两回事：那个是临时的、会连布局一起放大。
+   */
+  uiFontScale: number;
+  /**
+   * 自带字体目录。空 = `<应用 exe 同级>/fonts`（开发态 = 工程根 fonts/）；
+   * 打包版还会去找 `<resources>/fonts` 兜底。相对路径以应用 exe 所在目录为基准。
+   */
+  fontsDir: string;
+  /**
+   * 背景音乐目录。空 = `<数据根>/music`；目录不存在/没有音频文件 = 没有音乐。
+   * 相对路径以应用 exe 所在目录为基准（与其它路径字段一致）。
+   */
+  musicDir: string;
+  /** 是否启用背景音乐（随机循环播放音乐目录里的音频）。 */
+  musicEnabled: boolean;
+  /** 背景音乐音量（0~100）。 */
+  musicVolume: number;
+  /** 背景音乐播放模式（单曲循环 / 顺序循环 / 随机循环）。 */
+  musicMode: MusicMode;
   gridViewImage: string;
   detailsViewImage: string;
   listViewImage: string;

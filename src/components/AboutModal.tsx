@@ -41,9 +41,12 @@ export default function AboutModal({ onClose }: Props) {
         </div>
         <div className="settings-content" style={{ padding: "20px 22px 22px" }}>
           <div style={{ textAlign: "center", marginBottom: 14 }}>
+            {/* 字号一律用 Tailwind 的 text-[Npx] 类，**不要用内联 fontSize**：
+                内联是构建期生成不了的，postcss-font-scale.cjs 覆盖不到它 →
+                改"字体大小"设置时这些字不会跟着变（本次审计修的就是这类漏网）。 */}
             <div
+              className="text-[22px]"
               style={{
-                fontSize: 22,
                 fontWeight: 700,
                 color: "var(--text-primary)",
                 marginBottom: 4,
@@ -52,8 +55,8 @@ export default function AboutModal({ onClose }: Props) {
               YunGame
             </div>
             <div
+              className="text-[12px]"
               style={{
-                fontSize: 12,
                 color: "var(--text-dim)",
                 marginBottom: 12,
               }}
@@ -61,8 +64,8 @@ export default function AboutModal({ onClose }: Props) {
               {t("about_version", { version: "v0.2.0" })}
             </div>
             <div
+              className="text-[13px]"
               style={{
-                fontSize: 13,
                 lineHeight: 1.6,
                 color: "var(--text-secondary)",
               }}

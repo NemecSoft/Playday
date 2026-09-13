@@ -13,7 +13,7 @@ import { Slider } from "../ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
-import { FONT_OPTIONS } from "../../utils/fonts";
+import { useFontOptions } from "../../hooks/useFontOptions";
 import { useI18n } from "../../i18n";
 import type { DesignerConfig } from "../../../shared/models";
 
@@ -48,6 +48,8 @@ const CARD_TEXT_PRESETS: Array<{ id: string; label: string; style: DesignerConfi
 export default function DesignerSection() {
   const settings = useSettingsStore((s) => s.settings);
   const save = useSettingsStore((s) => s.save);
+  // 可用字体 = 自带字体目录里实际存在的字体（fonts 目录不存在时只剩"系统默认字体"）。
+  const fontOptions = useFontOptions();
 
   // 本地 designer 状态（从 settings.designer 初始化）。
   const [designer, setDesigner] = useState<DesignerConfig>(() => ({
@@ -262,7 +264,9 @@ export default function DesignerSection() {
           />
         </div>
 
-        {/* 字体 */}
+        {/* 字体：选项 = 应用自带字体目录（<应用目录>/fonts）里实际存在的文件，
+            由主进程扫描后报给前端（见 src/hooks/useFontOptions.ts）。
+            "系统默认字体"这一项 = 不指定，回退系统/主题字体。 */}
         <div className="designer-field">
           <Label>界面字体</Label>
           <Select
@@ -273,9 +277,9 @@ export default function DesignerSection() {
               <SelectValue placeholder="选择字体" />
             </SelectTrigger>
             <SelectContent>
-              {FONT_OPTIONS.map((f) => (
+              {fontOptions.map((f) => (
                 <SelectItem key={f.value || "default"} value={f.value}>
-                  {t(f.labelKey)}
+                  {f.labelKey ? t(f.labelKey) : f.label ?? f.value}
                 </SelectItem>
               ))}
             </SelectContent>

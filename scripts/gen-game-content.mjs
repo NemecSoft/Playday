@@ -11,6 +11,9 @@
 //                 （导出命令见 scripts/export-litedb-games.ps1 头部注释）
 //   intro       ← 详情页 <gameDetailsDir>/<游戏名>/info.json 的 description
 //   region/tags ← 权威库 release/data/Admin/library.db 的同名列（库里是 JSON 数组文本）
+//   savepaths   ← 同一份 LiteDB 导出里的 GameActions：指向 GameSaveHelper 的那条 action
+//                 （名字通常叫"备份游戏存档"，识别按**工具路径**，见 scripts/playnite-savepaths.mjs），
+//                 参数是「游戏名 + 若干带引号的路径」→ 取路径、分隔符统一成 `/`
 //   gamelevel  ← YunGame_Gamelist.json（按 id 匹配，取不到 = 2）。它是"玩这个游戏
 //                 需要的**权限等级**"：1 = 黄金版、2 = 钻石版（黄金用户只能玩 1，
 //                 钻石用户 1/2 都能玩）—— **不是**关卡难度等级，别写错注释。
@@ -25,6 +28,7 @@
 // 覆盖规则（重要）：
 //   · intro / region / tags：文件里非空 → **原样保留**；空或缺失 → 用上面的来源补。
 //   · gamelevel：默认也**保留**文件里的值；想按游戏列表重算，加 --refresh-level。
+//   · savepaths：同上（手写优先）；想按 LiteDB 里的 action 重取一遍，加 --refresh-savepaths。
 //   · 文件里有、但 games.db 里已不存在的条目：**保留**（那是你的编辑），并在报告里列出；
 //     确认要清理时加 --drop-orphans。
 //
@@ -36,6 +40,7 @@
 import fs from "fs";
 import path from "path";
 import initSqlJs from "sql.js";
+import { collectSavePaths } from "./playnite-savepaths.mjs";
 
 const argv = process.argv.slice(2);
 const has = (n) => argv.includes(n);
@@ -51,6 +56,7 @@ const DETAILS_DIR = argOf("--details", "D:/Addons");
 const ADMIN_DB = argOf("--db", path.join(root, "release/data/Admin/library.db"));
 const DRY = has("--dry-run");
 const REFRESH_LEVEL = has("--refresh-level");
+const REFRESH_SAVEPATHS = has("--refresh-savepaths");
 const DROP_ORPHANS = has("--drop-orphans");
 
 console.log("== 生成/补齐 游戏内容总表 ==");
@@ -59,7 +65,13 @@ console.log("游戏清单:", GAMES);
 console.log("游戏列表:", GAMELIST);
 console.log("详情页  :", DETAILS_DIR);
 console.log("权威库  :", ADMIN_DB);
-console.log("模式    :", DRY ? "DRY-RUN（不写文件）" : "写文件", REFRESH_LEVEL ? "｜重算 gamelevel" : "｜保留已有 gamelevel", "\n");
+console.log(
+  "模式    :",
+  DRY ? "DRY-RUN（不写文件）" : "写文件",
+  REFRESH_LEVEL ? "｜重算 gamelevel" : "｜保留已有 gamelevel",
+  REFRESH_SAVEPATHS ? "｜重取 savepaths" : "｜保留已有 savepaths",
+  "\n"
+);
 
 const normId = (s) => String(s ?? "").trim().toLowerCase().replace(/-/g, "");
 const guidOf = (v) =>
@@ -103,6 +115,20 @@ if (fs.existsSync(CONTENT)) {
 
 // ---- 1. 游戏清单（games.db 导出）----
 const games = JSON.parse(fs.readFileSync(GAMES, "utf-8"));
+
+// ---- 1.5 存档路径（同一份导出里的 GameActions）----
+// 识别/解析规则见 scripts/playnite-savepaths.mjs 的文件头
+// （为什么按"工具路径"识别、为什么取"引号里的片段"而不是去掉第一个词）。
+const savedPaths = collectSavePaths(games);
+console.log(
+  `存档路径: ${savedPaths.stats.withPaths}/${savedPaths.stats.games} 个游戏有路径（多路径 ${savedPaths.stats.multiPath} 个）`,
+);
+if (savedPaths.stats.oddActionNames.length) {
+  console.log(
+    `   注意：${savedPaths.stats.oddActionNames.length} 条的 action 名字不是"备份游戏存档"（按工具路径仍认了出来，供你确认）：`,
+  );
+  for (const s of savedPaths.stats.oddActionNames) console.log(`     · ${s}`);
+}
 
 // ---- 2. gamelevel（YunGame_Gamelist.json）----
 const levelById = new Map();
@@ -183,6 +209,8 @@ let keptLevel = 0;
 let refreshedLevel = 0;
 let keptScore = 0;
 let filledScore = 0;
+let keptSavePaths = 0;
+let filledSavePaths = 0;
 
 for (const g of games) {
   const name = String(g.Name ?? "").trim();
@@ -224,6 +252,16 @@ for (const g of games) {
     refreshedLevel++;
   }
 
+  // 存档路径：文件里写过就保留（手写优先），否则用 LiteDB 里的那条 action 解析出来的。
+  // --refresh-savepaths 时强制用 LiteDB 重取（比如工具里的备份路径改过之后）。
+  const spPrev = Array.isArray(prev?.savepaths)
+    ? prev.savepaths.map((x) => String(x).trim()).filter(Boolean)
+    : [];
+  const spSrc = savedPaths.byGameId.get(normId(gameId)) ?? savedPaths.byName.get(name) ?? [];
+  const savepaths = spPrev.length > 0 && !REFRESH_SAVEPATHS ? spPrev : spSrc;
+  if (spPrev.length > 0 && !REFRESH_SAVEPATHS) keptSavePaths++;
+  else if (savepaths.length > 0) filledSavePaths++;
+
   const entry = {
     gameid: gameId || String(prev?.gameid ?? ""),
     name,
@@ -235,6 +273,8 @@ for (const g of games) {
   };
   // 社区评分只在你填过时才写出这个键（0 / 空 = 没设过）
   if (score > 0) entry.score = score;
+  // 存档路径同理：没有路径的游戏不写这个键（免得 1200 多条里塞一堆空数组）
+  if (savepaths.length > 0) entry.savepaths = savepaths;
   out.push(entry);
   seen.add(normId(gameId));
   seen.add(normName(name));
@@ -268,6 +308,9 @@ console.log(`  intro : 保留 ${keptIntro} 条 / 新补 ${filledIntro} 条 / 仍
 console.log(`  region: 保留 ${keptRegion} 条 / 新补 ${filledRegion} 条 / 为空 ${out.filter((x) => !x.region?.length).length} 条`);
 console.log(`  tags  : 保留 ${keptTags} 条 / 新补 ${filledTags} 条 / 为空 ${out.filter((x) => !x.tags?.length).length} 条`);
 console.log(`  level : 保留 ${keptLevel} 条 / 重算 ${refreshedLevel} 条`);
+console.log(
+  `  savep.: 保留 ${keptSavePaths} 条 / 新补 ${filledSavePaths} 条 / 为空 ${out.filter((x) => !x.savepaths || x.savepaths.length === 0).length} 条`,
+);
 console.log(
   `  score : 保留 ${keptScore} 条 / 从库里补 ${filledScore} 条 / 未设置 ${out.filter((x) => !x.score).length} 条（未设置 = 卡片不亮火爆角标）`,
 );

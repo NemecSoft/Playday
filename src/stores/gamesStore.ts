@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { api } from "../api/client";
 import { t } from "../i18n";
 import { useAuthStore } from "./authStore";
+import { useMusicStore } from "./musicStore";
 import { preloadImages } from "../utils/assets";
 import type { Game, GameAction } from "../types/models";
 import type { FacetKey, SortKey } from "../utils/selectors";
@@ -276,6 +277,17 @@ export const useGamesStore = create<GamesState>((set, get) => ({
     // 进入启动流程：先给出醒目的"正在启动《游戏名》…"反馈（可能要先跑前置脚本
     // / spawn 进程，耗时几百毫秒到几秒，不能让用户感觉"点了没反应"）。
     const launchName = game?.name ?? "";
+    // 启动游戏 = 背景音乐必须退场：游戏一出声，音乐再响就是两层声音叠在一起；
+    // 而且游戏多半是全屏，主界面已经被挡住，用户根本找不到播放控件去关掉它。
+    // 放在这里（而不是函数开头）是刻意的：前面两条 return —— "等级不够"和
+    // "有多个启动项、等用户选"——都还**没有真的启动**，那时候把音乐掐掉是误伤。
+    //
+    // 为什么是 pause()（"停了就不自动恢复"）而不是视频那套"让位 → 关掉后恢复"：
+    // 主进程的 game_exited 只在"退出后要问用户是否备份存档"时才推给前端
+    // （saveBackupMode 为 auto/never、或该游戏没配存档路径时根本不发，见
+    // electron/ipc/saveManager.ts），拿它当"游戏结束"的恢复信号会时灵时不灵。
+    // 宁可"只停不恢复"：退出游戏后想继续听，状态栏点一下播放键即可。
+    useMusicStore.getState().pause();
     if (launchName) get().setLaunching(id, launchName);
 
     // launch_game 返回的是 { launched, error } 对象，不是裸 boolean。

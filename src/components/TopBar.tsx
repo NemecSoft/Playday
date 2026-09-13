@@ -1,12 +1,18 @@
 // Browser-style top bar:
-//   [Settings]  [Home | Videos | Tools]  ............  [YunGame - Gold]  [− □ ×]
+//   [Settings]  [Home | Videos | Tools]  ......  [黄金版/钻石版]  [⛶ ─ □ ×]
 //
-// - Left: a hamburger/menu button that opens a dropdown (Settings, Regenerate
-//   Tags, Reload). This replaces the old standalone TitleBar.
+// - Left: a hamburger/menu button that opens a dropdown (Settings, About).
+//   This replaces the old standalone TitleBar.
 // - Middle: top-level tabs (Home / Videos / Tools).
-// - Right of the tabs: the resolved current-user edition label
-//   (e.g. "YunGame——黄金版").
-// - Far right: window controls (minimize / maximize / close).
+// - Center: the current version badge (黄金版 / 钻石版), with a "稀有度高光"
+//   animation every 10s (样式与动效在 global.css 的 .topbar-tier)。
+// - Far right: window controls (fullscreen / minimize / maximize / close).
+//
+// ⚠️ 右上角原来还有一个 `YunGame——<用户表里的门店名>` 胶囊，按需求**已整块去掉**
+//    （不想让门店名显示在界面上，所以直接不渲染，不是 CSS 隐藏）。
+//    · 门店名的"按 IP 解析版本"逻辑仍在 utils/edition.ts（暂时没有调用方）；
+//    · 门店名现在只出现在中央徽章的 hover 提示里（排查"命中了哪家店"时有用）；
+//    · 将来要恢复右上角展示：把 .topbar-edition 的 JSX 和 CSS 从 git 历史取回即可。
 //
 // The whole bar is draggable for the frameless window; interactive controls
 // set `-webkit-app-region: no-drag` so clicks still work.
@@ -29,7 +35,6 @@ import { api } from "../api/client";
 import { useI18n } from "../i18n";
 import { useAuthStore } from "../stores/authStore";
 import { useUIStore, type ActiveTab } from "../stores/uiStore";
-import { resolveEditionName } from "../utils/edition";
 import AboutModal from "./AboutModal";
 import ThemeTopPicker from "./ThemeTopPicker";
 
@@ -41,8 +46,9 @@ const TABS: { key: ActiveTab; labelKey: string; icon: typeof Home }[] = [
 
 export default function TopBar() {
   const { t } = useI18n();
-  const currentUser = useAuthStore((s) => s.currentUser);
   // 当前用户等级（黄金/钻石）——顶部中央的版本标识用它。
+  // 注意：这里**不再订阅 currentUser**。它原来只用于右上角胶囊与徽章悬停提示里的
+  // 门店名，两处按需求都去掉了；留着会白白订阅一次 store、还会让人以为哪处在用。
   const userLevel = useAuthStore((s) => s.userLevel);
 
   const menuOpen = useUIStore((s) => s.menuOpen);
@@ -141,24 +147,6 @@ export default function TopBar() {
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [menuOpen, closeMenu]);
 
-  // Build the edition label (right side). Always a non-empty Chinese label,
-  // never the literal "Playnite" / "Guest".
-  const rawName = currentUser?.name?.trim() ?? "";
-  const isGuest =
-    !currentUser ||
-    currentUser.kind === "guest" ||
-    rawName === "" ||
-    rawName === "Guest";
-
-  let titleText = isGuest
-    ? t("default_edition")
-    : resolveEditionName(rawName, currentUser!.level);
-
-  const PREFIX = "YunGame——";
-  if (!titleText.startsWith("YunGame")) {
-    titleText = PREFIX + titleText;
-  }
-
   return (
     <header className="topbar" onDoubleClick={onDoubleClick}>
       {/* Far left: settings / app menu (circle 2 in the reference image) */}
@@ -223,22 +211,26 @@ export default function TopBar() {
       {/* 顶部中央：当前版本标识（黄金版 / 钻石版）—— 原系统就在这个位置用图标+文字显示，
           我们也照做（绝对居中，不参与左右两组的流式排布）。
           等级由主进程按用户表 IP 判定（docs/design/user-level-detection.md）：
-          1 = 黄金版、≥2 = 钻石版（3 是 config 的调试覆盖值，同样显示钻石版）。 */}
+          1 = 黄金版、≥2 = 钻石版（3 是 config 的调试覆盖值，同样显示钻石版）。
+
+          每 10 秒来一次的"稀有度高光"动效全在 CSS 里（global.css 的 .tier-sheen /
+          tier-glow / tier-icon-pop），这里只需要挂一个空的裁切容器：
+          它负责把扫光裁在徽章内部，不给徽章加 overflow:hidden（那会裁掉文字光晕）。
+
+          ⚠️ 刻意**不加 title 提示**：以前悬停会弹出"钻石版 · 某某电竞酒店"，
+          按需求去掉（鼠标放上去不该显示任何东西）。 */}
       <div
         className={`topbar-tier ${userLevel >= 2 ? "diamond" : "gold"}`}
-        title={`${userLevel >= 2 ? t("tier_diamond") : t("tier_gold")}${
-          currentUser?.name ? ` · ${currentUser.name}` : ""
-        }`}
         onDoubleClick={(e) => e.stopPropagation()}
       >
+        <span className="tier-sheen" aria-hidden="true" />
         {userLevel >= 2 ? <Gem size={14} /> : <Crown size={14} />}
         <span>{userLevel >= 2 ? t("tier_diamond") : t("tier_gold")}</span>
       </div>
 
-      {/* Right of the tabs: edition label (circle 1 in the reference image) */}
-      <div className="topbar-edition" title={titleText}>
-        {titleText}
-      </div>
+      {/* 右上角：原来这里是 `YunGame——<门店名>` 胶囊，按需求整块去掉
+          （不让门店名出现在界面上）。保留这块位置给窗口按钮即可，
+          版本信息由上方居中的徽章承担。 */}
 
       {/* Far right: window controls: [Fullscreen] [Minimize] [Maximize] [Close] */}
       <div

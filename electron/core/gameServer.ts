@@ -9,9 +9,10 @@
 import * as http from "http";
 import * as fs from "fs";
 import * as path from "path";
-
-// 作为视频的文件扩展名（列出时用）。
-const VIDEO_EXTS = [".mp4", ".webm", ".ogv", ".mov", ".m4v", ".mkv", ".flv", ".avi"];
+import { resolveFontRequest } from "./fonts";
+import { resolveMusicRequest } from "./music";
+import { findVideoPoster, scanVideos } from "./videoLibrary";
+import { buildVideoSection, injectVideoSection } from "./gameDetailInject";
 
 // 根据扩展名猜 MIME 类型。
 function mimeFromExt(file: string): string {
@@ -42,14 +43,17 @@ function mimeFromExt(file: string): string {
     ".woff": "font/woff",
     ".woff2": "font/woff2",
     ".ttf": "font/ttf",
+    // 背景音乐（.mp3 等必须给正确类型：octet-stream 有的解码器会拒绝播）
+    ".mp3": "audio/mpeg",
+    ".flac": "audio/flac",
+    ".wav": "audio/wav",
+    ".m4a": "audio/mp4",
+    ".aac": "audio/aac",
+    ".ogg": "audio/ogg",
+    ".opus": "audio/ogg",
+    ".wma": "audio/x-ms-wma",
   };
   return map[ext] || "application/octet-stream";
-}
-
-// 是否属于视频文件。
-function isVideo(name: string): boolean {
-  const ext = path.extname(name).toLowerCase();
-  return VIDEO_EXTS.includes(ext);
 }
 
 // 把 `dir` 参数规范成根目录下的一个相对文件夹名。
@@ -59,25 +63,6 @@ function normalizeDir(dir: string): string {
   if (rel.startsWith("games/")) rel = rel.slice("games/".length);
   else if (rel === "games") rel = "";
   return rel;
-}
-
-// 生成"自然排序"键：数字段补零到定宽，让字符串比较时按数值排（实况2 < 实况10）。
-function naturalKey(s: string): string {
-  let out = "";
-  let digits = "";
-  for (const ch of s) {
-    if (ch >= "0" && ch <= "9") {
-      digits += ch;
-    } else {
-      if (digits) {
-        out += digits.padStart(12, "0");
-        digits = "";
-      }
-      out += ch;
-    }
-  }
-  if (digits) out += digits.padStart(12, "0");
-  return out;
 }
 
 // 本机运行的 HTTP 服务器句柄。
@@ -97,6 +82,35 @@ export async function startGameServer(root: string): Promise<string> {
     // 动态接口：列出某游戏 videos/ 文件夹下的视频。
     if (pathname === "/api/videos") {
       handleVideosApi(root, dir, res);
+      return;
+    }
+
+    // 应用自带字体：`/fonts/<文件名>` → 生效的 fonts 目录下的那个文件。
+    // 为什么要走这里而不是让前端直接读 file://：开发态页面是 http://localhost:5173，
+    // Chromium 不允许 http 页面加载 file:// 子资源（字体也算），所以统一由本服务器提供；
+    // 这条路由必须带 CORS 头（字体是跨源请求），见 serveFileAt 的 cors 选项。
+    if (pathname.startsWith("/fonts/")) {
+      const full = resolveFontRequest(pathname.slice("/fonts/".length));
+      if (!full) {
+        res.writeHead(404);
+        res.end("Not Found");
+        return;
+      }
+      serveFileAt(full, req, res, { cors: true });
+      return;
+    }
+
+    // 背景音乐：`/music/<相对路径>` → 配置的音乐目录下那个文件。
+    // 同样必须带 CORS 头（开发态页面在 http://localhost:5173）；Range 由 serveFileAt 支持，
+    // 所以进度条可以拖动、不必整首下完再播。
+    if (pathname.startsWith("/music/")) {
+      const full = resolveMusicRequest(pathname.slice("/music/".length));
+      if (!full) {
+        res.writeHead(404);
+        res.end("Not Found");
+        return;
+      }
+      serveFileAt(full, req, res, { cors: true });
       return;
     }
 
@@ -126,7 +140,7 @@ export async function startGameServer(root: string): Promise<string> {
   });
 }
 
-// 静态文件服务：支持 Range 请求（视频拖动播放关键），读文件流式返回。
+// 静态文件服务（按"根目录 + 相对路径"）：支持 Range 请求（视频拖动播放关键），读文件流式返回。
 function serveFile(root: string, rel: string, req: http.IncomingMessage, res: http.ServerResponse): void {
   let filePath = path.join(root, rel);
   // 目录访问：尝试补 index.html。
@@ -137,6 +151,75 @@ function serveFile(root: string, rel: string, req: http.IncomingMessage, res: ht
   } catch {
     /* ignore */
   }
+  // 游戏详情页首页：注入「游戏视频」区块后再发（见 core/gameDetailInject.ts）。
+  // 更深层的 index.html（游戏自己页面里的子目录）不动 —— 那不是详情页首页。
+  if (isGameDetailIndex(root, filePath)) {
+    serveGameDetailIndex(filePath, req, res);
+    return;
+  }
+  serveFileAt(filePath, req, res);
+}
+
+/** 是否是"某个游戏的详情页首页"：相对详情根目录正好是 `<一级目录>/index.html`。 */
+function isGameDetailIndex(root: string, filePath: string): boolean {
+  if (path.basename(filePath).toLowerCase() !== "index.html") return false;
+  const rel = path.relative(root, filePath);
+  if (!rel || rel.startsWith("..") || path.isAbsolute(rel)) return false;
+  return rel.split(path.sep).length === 2;
+}
+
+/**
+ * 发详情页首页，并在页面里注入「视频」区块。
+ *
+ * 需求：视频丢进 `<详情根>/<游戏名>/videos/` 后，要在**页面内往下罗列**出来，
+ * 有子目录就按子目录分组（详情页是跨源 iframe，前端塞不进去，只能在发文件这一步做）。
+ *
+ * 几个刻意的选择：
+ *   · 不缓存（Cache-Control: no-store）：视频是运行期丢进目录的，缓存住就会出现
+ *     "明明加了文件、页面里却没有"这种最难查的问题；页面本身只有几 KB，现读现拼没成本。
+ *   · 不做 Range：那是留给音视频拖进度用的，HTML 文档用不上。
+ *   · 语言从页面 URL 的 `?lang=` 取（前端拼 iframe 地址时带上），注入文案与界面语言一致。
+ */
+function serveGameDetailIndex(filePath: string, req: http.IncomingMessage, res: http.ServerResponse): void {
+  let html: string;
+  try {
+    if (!fs.statSync(filePath).isFile()) throw new Error("not a file");
+    html = fs.readFileSync(filePath, "utf-8");
+  } catch {
+    res.writeHead(404);
+    res.end("Not Found");
+    return;
+  }
+  const lang = new URL(req.url || "/", "http://127.0.0.1").searchParams.get("lang");
+  const videosDir = path.join(path.dirname(filePath), "videos");
+  const scan = scanVideos(videosDir);
+  const out = injectVideoSection(
+    html,
+    buildVideoSection({
+      scan,
+      lang,
+      // 与视频同名的图片（1.mp4 + 1.jpg）直接当预览封面；没有则由页面脚本抓帧。
+      posterFor: (rel) => findVideoPoster(videosDir, rel),
+    })
+  );
+  const buf = Buffer.from(out, "utf-8");
+  res.writeHead(200, {
+    "Content-Type": "text/html; charset=utf-8",
+    "Content-Length": buf.length,
+    "Cache-Control": "no-store",
+  });
+  res.end(buf);
+}
+
+// 静态文件服务（按绝对路径）。
+// opts.cors：带上 `Access-Control-Allow-Origin: *` —— 只有字体路由需要
+// （开发态页面在 http://localhost:5173，字体文件是跨源请求，没有这个头会被浏览器拦掉）。
+function serveFileAt(
+  filePath: string,
+  req: http.IncomingMessage,
+  res: http.ServerResponse,
+  opts: { cors?: boolean } = {},
+): void {
   let stat;
   try {
     stat = fs.statSync(filePath);
@@ -154,6 +237,7 @@ function serveFile(root: string, rel: string, req: http.IncomingMessage, res: ht
   const mime = mimeFromExt(filePath);
   const size = stat.size;
   const range = req.headers.range;
+  const cors = opts.cors ? { "Access-Control-Allow-Origin": "*" } : {};
 
   // 处理 Range（支持单段，如 bytes=0-1023）。
   if (range) {
@@ -173,6 +257,7 @@ function serveFile(root: string, rel: string, req: http.IncomingMessage, res: ht
         "Content-Length": end - start + 1,
         "Content-Range": `bytes ${start}-${end}/${size}`,
         "Accept-Ranges": "bytes",
+        ...cors,
       });
       const stream = fs.createReadStream(filePath, { start, end });
       stream.pipe(res);
@@ -185,11 +270,14 @@ function serveFile(root: string, rel: string, req: http.IncomingMessage, res: ht
     "Content-Type": mime,
     "Content-Length": size,
     "Accept-Ranges": "bytes",
+    ...cors,
   });
   fs.createReadStream(filePath).pipe(res);
 }
 
 // `/api/videos` 接口：列出某游戏 videos/ 目录下的视频（含子文件夹分组）。
+// 扫描细节（哪些算视频、怎么分组/排序）在 core/videoLibrary.ts —— 与详情页前端用的
+// `get_game_videos`（ipc/gameVideos.ts）共用同一份，避免"接口列得出、界面列不出"。
 function handleVideosApi(root: string, dir: string, res: http.ServerResponse): void {
   const rel = normalizeDir(dir);
   // 防路径穿越：不允许 ..、空目录或绝对路径。
@@ -198,34 +286,8 @@ function handleVideosApi(root: string, dir: string, res: http.ServerResponse): v
     res.end(JSON.stringify({ error: "forbidden" }));
     return;
   }
-  const videosRoot = path.join(root, rel, "videos");
-  const rootFiles: string[] = [];
-  const dirs: { name: string; files: string[] }[] = [];
-  try {
-    for (const entry of fs.readdirSync(videosRoot, { withFileTypes: true })) {
-      const name = entry.name;
-      if (entry.isFile() && isVideo(name)) {
-        rootFiles.push(name);
-      } else if (entry.isDirectory()) {
-        const files: string[] = [];
-        try {
-          for (const se of fs.readdirSync(path.join(videosRoot, name), { withFileTypes: true })) {
-            if (se.isFile() && isVideo(se.name)) files.push(`${name}/${se.name}`);
-          }
-        } catch {
-          /* ignore */
-        }
-        if (files.length) dirs.push({ name, files });
-      }
-    }
-  } catch {
-    // videos 目录不存在
-  }
-  rootFiles.sort((a, b) => naturalKey(a).localeCompare(naturalKey(b)));
-  dirs.sort((a, b) => naturalKey(a.name).localeCompare(naturalKey(b.name)));
-  for (const d of dirs) d.files.sort((a, b) => naturalKey(a).localeCompare(naturalKey(b)));
   res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ root: rootFiles, dirs }));
+  res.end(JSON.stringify(scanVideos(path.join(root, rel, "videos"))));
 }
 
 // 返回服务器 base URL（未启动返回空）。

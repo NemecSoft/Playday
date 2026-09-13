@@ -7,20 +7,16 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGamesStore } from "../stores/gamesStore";
 import { useI18n } from "../i18n";
-import { api } from "../api/client";
-import { ArrowLeft, PlayCircle, Wrench, Archive } from "lucide-react";
+import { api, type GameVideoItem } from "../api/client";
+import { useMusicStore } from "../stores/musicStore";
+import { useSettingsStore } from "../stores/settingsStore";
+import { formatClock } from "../utils/clock";
+import { ArrowLeft, PlayCircle, Wrench, Archive, Clapperboard } from "lucide-react";
 import { Button } from "../components/ui/button";
 
-// 把秒数格式化成"时:分:秒"，比如 3661 秒 → "1:01:01"。
-function formatDuration(totalSec: number) {
-  const s = Math.max(0, Math.floor(totalSec));
-  const h = Math.floor(s / 3600);
-  const m = Math.floor((s % 3600) / 60);
-  const sec = s % 60;
-  const mm = String(m).padStart(2, "0");
-  const ss = String(sec).padStart(2, "0");
-  return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
-}
+// 运行时长按"计时器"风格显示（分钟补零）：1:01:01 / 00:12。
+// 进位与补零规则在 utils/clock.ts —— 音乐面板的播放进度用的是同一套（那边不补零）。
+const runClock = (sec: number) => formatClock(sec, { padMinutes: true });
 
 // 详情页顶部"运行状态"后台轮询。
 //
@@ -96,6 +92,8 @@ export default function GameDetailPage() {
   const navigate = useNavigate();
   const { t } = useI18n();
   const games = useGamesStore((s) => s.games);
+  // 界面语言：拼详情页 URL 时带上（`?lang=`），服务器据此生成注入区块的文案。
+  const language = useSettingsStore((s) => s.settings.language);
 
   const game = useMemo(() => games.find((g) => g.id === id), [games, id]);
 
@@ -174,6 +172,18 @@ export default function GameDetailPage() {
     }
   };
 
+  // 用系统默认播放器打开某个视频文件。
+  // 内置播放器放不了的封装（mkv/flv/avi…）走这条路 —— 不引入任何解码依赖，
+  // 交给人装在机器上的播放器（网吧机器一般都有）。
+  const openExternal = async (absPath: string) => {
+    try {
+      const r = await api.openVideoExternal(absPath);
+      if (!r.opened) console.error("系统播放器打开失败:", r.error);
+    } catch (e) {
+      console.error("系统播放器打开失败:", e);
+    }
+  };
+
   // Every game links to its standalone static detail page
   // (Game_Details/<游戏名>/index.html), served by the `yungame-game://` custom
   // scheme so the webview natively loads css/js/images and handles anchors.
@@ -211,10 +221,73 @@ export default function GameDetailPage() {
   }, [game?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Absolute URL for the game's page, served by the local HTTP server.
+  // 带 `?lang=`：服务器会用这个语言生成注入的「游戏视频」区块文案，保证与界面一致。
+  // （页面旁的其它内容由详情页自己的模板决定，不受影响。）
   const gamePageUrl =
     game && serverUrl
-      ? `${serverUrl}/games/${encodeURIComponent(game.name)}/index.html`
+      ? `${serverUrl}/games/${encodeURIComponent(game.name)}/index.html?lang=${encodeURIComponent(
+          language || "zh-CN"
+        )}`
       : "";
+
+  // —— 本地视频（详情目录下的 videos/ 文件夹）——
+  // 视频**罗列在详情页 HTML 里**（服务器发页面时注入「游戏视频」区块，按 videos/ 的
+  // 子目录分组，见 electron/core/gameDetailInject.ts）—— 不弹浮层、不放在页面外面。
+  // 这里只负责两件事：
+  //   ① 顶栏显示数量，点一下把页面滚到那个区块（跨源 iframe 父页面滚不了它的内容，得请它自己滚）；
+  //   ② 页面里的视频开始/停止播放时让背景音乐让位/恢复。
+  //      iframe 是跨源的，父页面收不到 <video> 事件，只能靠注入脚本 postMessage 通知我们。
+  const [videos, setVideos] = useState<GameVideoItem[]>([]);
+  useEffect(() => {
+    if (!game) return;
+    let cancelled = false;
+    setVideos([]);
+    api
+      .getGameVideos(game.id, game.name)
+      .then((r) => {
+        if (!cancelled) setVideos(r.items);
+      })
+      .catch(() => {
+        // 没有视频（或读不到）都不是错误：按钮不显示即可，页面照常。
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [game?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 详情页里的视频：开始播 → 背景音乐让位；暂停/放完 → 恢复。
+  // playday-video-external：mkv/flv/avi 这类内置播放器解不了的，页面会点名要系统播放器打开
+  // （它自己在 iframe 里拉不起系统播放器，只能请主界面代劳）。
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      const d = e.data as { type?: string; rel?: string } | null;
+      if (!d || typeof d.type !== "string") return;
+      const ms = useMusicStore.getState();
+      if (d.type === "playday-video-play") {
+        ms.duckForVideo();
+      } else if (d.type === "playday-video-stop") {
+        ms.unduckAfterVideo();
+      } else if (d.type === "playday-video-external" && typeof d.rel === "string") {
+        const hit = videos.find((v) => v.rel === d.rel);
+        if (!hit) return;
+        // 系统播放器是个独立窗口，我们感知不到它何时关 —— 只暂停，不自动恢复。
+        ms.duckForVideo({ resume: false });
+        void openExternal(hit.absPath);
+      }
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, [videos]);
+
+  // 顶栏「视频」按钮：请详情页自己滚到视频区块。
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const scrollToVideos = () => {
+    try {
+      iframeRef.current?.contentWindow?.postMessage({ type: "playday-scroll-to-videos" }, "*");
+    } catch (err) {
+      console.error("滚动到视频区块失败:", err);
+    }
+  };
 
   const backButton = (
     <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
@@ -224,7 +297,7 @@ export default function GameDetailPage() {
 
   if (!game) {
     return (
-      <div className="h-full overflow-y-auto p-[16px_24px_48px]">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-[16px_24px_48px]">
         {backButton}
         <div className="p-10 text-center text-dim">{t("details_notFound")}</div>
       </div>
@@ -241,13 +314,13 @@ export default function GameDetailPage() {
     runBadge = (
       <span className="run-badge run-badge-running">
         <PlayCircle size={13} />
-        {t("details_run_running")} {formatDuration(run.elapsedSec)}
+        {t("details_run_running")} {runClock(run.elapsedSec)}
       </span>
     );
   } else if (run.state === "stopped") {
     runBadge = (
       <span className="run-badge run-badge-stopped">
-        {t("details_run_exited", { time: formatDuration(run.lastSessionSec) })}
+        {t("details_run_exited", { time: runClock(run.lastSessionSec) })}
       </span>
     );
   } else if (run.state === "never") {
@@ -329,6 +402,20 @@ export default function GameDetailPage() {
   const detailTopbar = (
     <div className="flex items-center gap-2 border-b border-border bg-base px-5 py-3.5">
       {backButton}
+      {/* 视频按钮：视频本身罗列在页面里（服务器注入，按子目录分组），
+          这里只显示数量；点一下把页面滚到那个区块。
+          没有视频、或这个游戏根本没有详情页（没有 iframe 可滚）时不显示。 */}
+      {htmlFound && videos.length > 0 && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={scrollToVideos}
+          className="flex items-center gap-1.5"
+        >
+          <Clapperboard size={15} /> {t("details_videos")}
+          <span className="video-count">{videos.length}</span>
+        </Button>
+      )}
       {/* 修改器按钮：点击展开下拉，列出该游戏的修改器 exe。 */}
       <div className="relative">
         <Button
@@ -357,23 +444,28 @@ export default function GameDetailPage() {
     </div>
   );
 
+  // 三种状态：加载中 / 找到资料页（iframe）/ 没找到（404）。
+  // 先把"内容"算出来，最后统一挂播放浮层 —— 浮层必须是 iframe 的兄弟节点才能盖住它，
+  // 所以不能只塞进某个分支里（否则 404 的游戏就播不了视频）。
+  let content: ReactNode;
   if (htmlLoading) {
-    return (
-      <div className="h-full overflow-y-auto">
+    content = (
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         {detailTopbar}
         <div className="flex items-center justify-center p-10 text-sm text-secondary-text">
           {t("details_loading")}
         </div>
       </div>
     );
-  }
-
-  if (htmlFound) {
-    return (
-      <div className="h-full overflow-y-auto">
+  } else if (htmlFound) {
+    // 高度用 flex 撑满（而不是写死 100vh 减一个数）：外壳里除了顶栏还有底部状态栏，
+    // 原来那个 calc(100vh-56px) 既漏算了顶栏、也没给状态栏留位置，底部会被裁掉。
+    content = (
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {detailTopbar}
         <iframe
-          className="block h-[calc(100vh-56px)] w-full border-0 bg-white"
+          ref={iframeRef}
+          className="block min-h-0 w-full flex-1 border-0 bg-white"
           title={`${game.name} page`}
           src={gamePageUrl}
           // Allow the embedded static page's own player (DPlayer / <video> /
@@ -384,17 +476,19 @@ export default function GameDetailPage() {
         />
       </div>
     );
+  } else {
+    // 404: no static page for this game（视频仍可用：它来自 videos/ 目录，与该 HTML 无关）。
+    content = (
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        {detailTopbar}
+        <div className="flex flex-col items-center p-10 text-center">
+          <div className="mb-2 text-[72px] font-extrabold leading-none text-accent">404</div>
+          <p className="m-0">{t("details_page404", { name: game.name })}</p>
+          <p className="text-[13px] text-secondary-text">{t("details_page404hint")}</p>
+        </div>
+      </div>
+    );
   }
 
-  // 404: no static page for this game.
-  return (
-    <div className="h-full overflow-y-auto">
-      {detailTopbar}
-      <div className="flex flex-col items-center p-10 text-center">
-        <div className="mb-2 text-[72px] font-extrabold leading-none text-accent">404</div>
-        <p className="m-0">{t("details_page404", { name: game.name })}</p>
-        <p className="text-[13px] text-secondary-text">{t("details_page404hint")}</p>
-      </div>
-    </div>
-  );
+  return <>{content}</>;
 }

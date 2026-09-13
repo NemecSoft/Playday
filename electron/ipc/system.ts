@@ -7,7 +7,7 @@ import { APP_NAME, APP_VERSION } from "../config";
 import { configRoot, appRoot } from "../core/paths";
 import { readSettings } from "../core/settings";
 import { getClientWindow, enterSystem } from "../main";
-import { resolveMaintenanceState } from "../core/auth";
+import { resolveMaintenanceState, resolveLibraryAgeState } from "../core/auth";
 import { registerCommand } from "./registry";
 
 // 取"发起命令的窗口"；没有则回退到主客户端窗口。
@@ -47,13 +47,32 @@ export function registerSystemIpc(ipc: typeof ipcMain) {
     };
   });
 
+  // 库"年龄"：公告窗口启动时问一次，决定"能不能进系统"。
+  // 规则：权威库文件超过 30 天没变化 → outdated（见 shared/libraryAge.ts）。
+  registerCommand(ipc, "get_library_age", async () => {
+    const age = resolveLibraryAgeState();
+    return {
+      outdated: age.outdated,
+      ageDays: age.ageDays,
+      mtimeMs: age.mtimeMs,
+      filePath: age.filePath,
+      fileExists: age.fileExists,
+    };
+  });
+
   // "进入系统"：公告窗口点按钮后，先打开数据库，再关闭公告窗口并创建主窗口。
   // await enterSystem()：等数据库就绪后再返回，主窗口渲染时数据一定可用。
-  // ⚠️ 维护中一律拒绝（前端也会查一次，但那只是为了早点提示 —— 不能只靠前端拦）。
+  // ⚠️ 两道拦截都在这里再判一次（前端也会查，但那只是为了早点提示 ——
+  //    不能只靠前端拦：改前端就能绕过，必须由主进程说了算）：
+  //     ① 服务器维护中；② 游戏库超过 30 天没更新（系统过旧）。
   registerCommand(ipc, "enter_system", async () => {
     const m = await resolveMaintenanceState();
     if (m.maintenance) {
       return { ok: false, reason: "maintenance", level: m.level, status: m.status };
+    }
+    const age = resolveLibraryAgeState();
+    if (age.outdated) {
+      return { ok: false, reason: "outdated", ageDays: age.ageDays, filePath: age.filePath };
     }
     await enterSystem();
     return { ok: true };

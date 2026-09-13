@@ -93,6 +93,30 @@ try {
     } catch {
       /* ignore */
     }
+    // 应用自带字体（fonts 目录）：把 @font-face 注入好、把界面字体设过去。
+    // 故意 **不 await** —— 字体顺不出来也绝不能卡住启动；字体晚到由 font-display: swap
+    // 自动替换。规则与兜底见 src/utils/uiFont.ts。
+    void (async () => {
+      try {
+        const { setupUiFonts } = await import("./utils/uiFont");
+        const preferred = (preloadedSettings as { fontFamily?: string } | null)?.fontFamily;
+        await setupUiFonts(preferred);
+      } catch (e) {
+        console.warn("[boot] 加载自带字体失败（改用系统字体）:", e);
+      }
+    })();
+
+    // 应用上次的"字体大小"（设置 → 通用 → 界面字体里那个滑杆）。
+    // 只是把 --ui-font-scale 设成保存的百分比，**不动界面尺寸**（见 src/utils/uiFont.ts）。
+    void (async () => {
+      try {
+        const { applyUiFontScale } = await import("./utils/uiFont");
+        applyUiFontScale((preloadedSettings as { uiFontScale?: number } | null)?.uiFontScale);
+      } catch (e) {
+        console.warn("[boot] 应用字体大小失败:", e);
+      }
+    })();
+
     if (preloadedSettings) {
       try {
         const s = preloadedSettings as {

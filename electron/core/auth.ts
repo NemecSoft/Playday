@@ -10,8 +10,9 @@ import * as os from "os";
 import * as path from "path";
 import { getUserByAccount, getUserByIp } from "./db";
 import type { AppUser, SessionUser } from "./models";
-import { appRoot, configuredPath } from "./paths";
+import { appRoot, configuredPath, sourceDatabasePath } from "./paths";
 import { readSettings } from "./settings";
+import { evaluateLibraryAge, type LibraryAgeInfo } from "../../shared/libraryAge";
 import {
   parseServerStatusRaw,
   parseUserListRaw,
@@ -275,5 +276,40 @@ export async function resolveMaintenanceState(): Promise<MaintenanceInfo> {
     recordCount: records.length,
     parseError,
   };
+}
+
+// ============================================================================
+// 库过旧（进系统的第二道门禁）
+// ----------------------------------------------------------------------------
+// 需求：数据库一个月没有发生变化 → 提示"系统过旧"，只能退出，不允许进入。
+// 判定用的是**权威库文件**（<sourceLibraryDir>/library.db）的最后修改时间 ——
+// 那是"库内容最后被改动的时间"，脚本导入/标签同步/手工改库都会刷新它。
+//
+// ⚠️ 绝对不能改用运行时副本的时间：副本在运行期会被写设置刷新（实测比权威库还新），
+//    用它判定等于永远"刚更新过"，这条校验就废了。
+// ⚠️ 源库不存在时按"不过旧"处理（不锁）：宁可在库缺失时放过，
+//    也不能因为路径配错/新装机没拷库就把所有用户挡在门外。判定规则与单测见
+//    shared/libraryAge.ts（evaluateLibraryAge）。
+// ============================================================================
+
+export interface LibraryAgeState extends LibraryAgeInfo {
+  /** 实际检查的库文件路径（排查"到底看的是哪个文件"）。 */
+  filePath: string;
+  fileExists: boolean;
+}
+
+/** 解析库的"年龄"（是否过旧）。读文件失败不抛错，按"不过旧"处理。 */
+export function resolveLibraryAgeState(nowMs: number = Date.now()): LibraryAgeState {
+  const filePath = sourceDatabasePath();
+  let mtimeMs: number | null = null;
+  let fileExists = false;
+  try {
+    const st = fs.statSync(filePath);
+    mtimeMs = st.mtimeMs;
+    fileExists = true;
+  } catch {
+    // 文件不存在 / 没权限：保持 mtimeMs=null → evaluateLibraryAge 判为"不过旧"。
+  }
+  return { ...evaluateLibraryAge(mtimeMs, nowMs), filePath, fileExists };
 }
 

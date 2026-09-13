@@ -13,7 +13,8 @@
     "lint:arch": "node scripts/check-architecture.mjs",
     "lint:i18n": "node scripts/check-i18n.mjs",
     "lint:docs": "node scripts/check-docs.mjs",
-    "check": "npm run typecheck && npm run test && npm run lint:arch && npm run lint:i18n && npm run lint:docs",
+    "lint:fonts": "node scripts/audit-font-sizes.mjs",
+    "check": "npm run typecheck && npm run test && npm run lint:arch && npm run lint:i18n && npm run lint:docs && npm run lint:fonts",
     "build": "tsc -p tsconfig.main.json && tsc -p tsconfig.json --noEmit && vite build",
     "start": "electron .",
     "package": "npm run build && electron-builder"

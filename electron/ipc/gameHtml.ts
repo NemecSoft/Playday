@@ -6,24 +6,17 @@ import { ipcMain } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { gamesHtmlDir } from "../core/paths";
+import { resolveGameSubpath } from "../core/gameDirs";
 import { startGameServer, getGameServerBaseUrl } from "../core/gameServer";
 import { registerCommand } from "./registry";
 
 // 返回某游戏的详情页 HTML 文件路径。规则：
-//   1. 有 id 子目录 `Game_Details/<id>/index.html` → 用它
-//   2. 否则用游戏名子目录 `Game_Details/<name>/index.html`
+//   1. 有 id 子目录 `<详情根>/<id>/index.html` → 用它
+//   2. 否则用游戏名子目录 `<详情根>/<name>/index.html`
 //   3. 都没有 → 返回 null（前端显示"未找到详情页"）
+// 这条"优先 id、其次游戏名"的规则统一在 core/gameDirs.ts，这里只声明要 index.html。
 export function gameHtmlPagePath(gameId: string, gameName: string): string | null {
-  const root = gamesHtmlDir();
-  const idCandidates = [gameId, gameName];
-  for (const c of idCandidates) {
-    if (!c) continue;
-    const p = path.join(root, c, "index.html");
-    if (fs.existsSync(p) && fs.statSync(p).isFile()) {
-      return p;
-    }
-  }
-  return null;
+  return resolveGameSubpath(gameId, gameName, "index.html", "file")?.path ?? null;
 }
 
 export function registerGameHtmlIpc(ipc: typeof ipcMain) {

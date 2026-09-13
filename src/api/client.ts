@@ -28,6 +28,30 @@ export interface CoverDirInfo {
   coverFiles: number;
   images: string[];
 }
+/** 一条游戏本地视频（来自 `get_game_videos`；对应详情目录下的 videos/ 文件）。 */
+export interface GameVideoItem {
+  /** 显示名（纯文件名，不含子目录）。 */
+  name: string;
+  /** 相对 videos 目录的路径（`/` 分隔）。 */
+  rel: string;
+  /** 所在子文件夹名；直接放在 videos/ 下时为 ""。 */
+  group: string;
+  /** 相对游戏目录、且已做 URL 编码的路径 —— 直接拼 base URL 就能播。 */
+  urlPath: string;
+  /** 绝对路径（"用系统播放器打开"时回传给主进程）。 */
+  absPath: string;
+  /** 能否被内置 `<video>` 直接播；false → 走系统播放器。 */
+  playable: boolean;
+}
+export interface GameVideosResult {
+  /** 是否真有视频（目录不存在或里面没视频都是 false，不算错误）。 */
+  found: boolean;
+  /** 实际命中的子目录名（游戏 id 或游戏名）—— 拼播放 URL 必须用它。 */
+  dirName: string;
+  /** videos 目录的绝对路径（排查"到底看的是哪个目录"）。 */
+  dir: string;
+  items: GameVideoItem[];
+}
 export interface PublicUser {
   id: string;
   account: string;
@@ -125,9 +149,16 @@ export const api = {
   getAnnouncement: () => call<string>("get_announcement").then((html) => ({ html, fromFile: !!html })),
 
   // 公告窗口点"进入系统"：通知主进程关闭公告窗口并创建主窗口。
-  // 服务器维护中时主进程会拒绝（返回 ok:false），前端据此切到"维护中"态。
+  // 被拒时返回 {ok:false, reason}（"maintenance" 维护中 / "outdated" 库过旧），
+  // 前端据此切到对应拦截态，避免"点了没反应"。
   enterSystem: () =>
-    call<{ ok: boolean; reason?: string; level?: number; status?: number | null }>("enter_system"),
+    call<{
+      ok: boolean;
+      reason?: string;
+      level?: number;
+      status?: number | null;
+      ageDays?: number | null;
+    }>("enter_system"),
 
   // 服务器维护状态（公告窗口一启动就问一次）：Status=0 = 该等级维护中，不允许进入系统。
   // 按用户等级分别控（黄金版定期维护只关黄金版）。见 docs/design/user-level-detection.md
@@ -141,6 +172,17 @@ export const api = {
       recordCount: number;
       parseError?: string;
     }>("get_server_status"),
+
+  // 游戏库"年龄"（公告窗口一启动就问一次）：权威库文件超过 30 天没变化 = 系统过旧，
+  // 不允许进入系统（只能退出，去找管理员要新版）。规则与单测见 shared/libraryAge.ts
+  getLibraryAge: () =>
+    call<{
+      outdated: boolean;
+      ageDays: number | null;
+      mtimeMs: number | null;
+      filePath: string;
+      fileExists: boolean;
+    }>("get_library_age"),
 
   // —— 游戏详情页 ——
   getGameHtmlPage: (gameId: string, gameName?: string) =>
@@ -171,11 +213,54 @@ export const api = {
   launchSave: (exePath: string) =>
     call<{ launched: boolean; error?: string }>("launch_save", { exePath }),
 
+  // —— 游戏本地视频（详情目录下的 videos/ 文件夹）——
+  // 列出某游戏 videos/ 里的视频（含子文件夹分组、自然序）。
+  // 播放地址 = `${serverUrl}/games/${encodeURIComponent(dirName)}/${item.urlPath}`
+  // （走本地 HTTP 服务器，支持 Range，进度条可拖）。
+  // ⚠️ Web 端（server.mjs）不实现这条命令、返回 null，这里兜底成空列表 ——
+  //    否则调用方 `.items` 会直接抛错。
+  getGameVideos: (gameId: string, gameName: string) =>
+    call<GameVideosResult | null>("get_game_videos", {
+      gameId,
+      gameName: gameName ?? null,
+    }).then((r) => r ?? { found: false, dirName: "", dir: "", items: [] }),
+  // 用系统默认播放器打开某个视频（浏览器放不了的封装走这条路）。
+  openVideoExternal: (path: string) =>
+    call<{ opened: boolean; error?: string }>("open_video_external", { path }),
+
   // —— 存档备份 ——
   // 备份某游戏的存档：启动 GameSaveHelper.exe，由它生成自解压恢复包。
   // 返回的 ok 只表示"工具已启动"；备份是否成功由工具窗口自己呈现。
   backupGameSave: (gameId: string) =>
     call<{ ok: boolean; error?: string }>("backup_game_save", { gameId }),
+
+  // —— 应用自带字体 ——
+  // 主进程扫描 <应用目录>/fonts（找不到再看 <resources>/fonts），返回字体清单 +
+  // 默认字体 + 每个字体的可访问 URL（走本地 HTTP 服务器）。
+  // fonts 目录不存在 → found:false、fonts 为空 → 前端保持系统字体。
+  getUiFonts: () =>
+    call<{
+      found: boolean;
+      dir: string;
+      defaultFamily: string;
+      fonts: { family: string; fileName: string; url: string }[];
+    }>("get_ui_fonts"),
+
+  // —— 背景音乐 ——
+  // 主进程扫描配置的音乐目录（settings.musicDir，未配置 = <数据根>/music），
+  // 返回曲目列表 + 每首可播放的 URL（走本地 HTTP 服务器，支持 Range）。
+  // 目录不存在/没有音频 → tracks 为空，前端不显示音乐控件。
+  getMusicLibrary: () =>
+    call<{
+      dir: string;
+      exists: boolean;
+      tracks: { name: string; rel: string; url: string }[];
+    }>("get_music_library"),
+
+  // —— 目录/文件选择 ——
+  // 主进程系统对话框（设置里的"浏览…"按钮用）。返回绝对路径；用户取消返回 null。
+  pickDirectory: (title?: string, defaultPath?: string) =>
+    call<string | null>("open_dialog", { mode: "directory", title, defaultPath }),
 
   // —— 系统 ——
   getAppInfo: () =>

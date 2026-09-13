@@ -141,22 +141,13 @@
   --tw-contain-style:  ;
 }
 
-/* Bundled fonts (served from /fonts/*). */
-@font-face {
-  font-family: "FangZheng LiShu";
-  src: url("/fonts/方正隶书_GBK.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: "ZiKuTang QingKai";
-  src: url("/fonts/字酷堂清楷体.ttf") format("truetype");
-  font-display: swap;
-}
-@font-face {
-  font-family: "HarmonyOS Sans SC";
-  src: url("/fonts/HarmonyOS_Sans_SC_Regular.ttf") format("truetype");
-  font-display: swap;
-}
+/* 自带字体的 @font-face **不在这里写死** —— 见 src/utils/uiFont.ts。
+   以前这里写死了三条，src 指向 /fonts/方正隶书_GBK.ttf、/fonts/HarmonyOS_Sans_SC_Regular.ttf，
+   而 fonts 目录里根本没有这两个文件（真实文件是 方正聚珍新仿+GBK.TTF、字酷堂清楷 简.ttf 等），
+   打包后 /fonts/... 又会解析成盘根 file:///fonts/... 直接 404 —— 表现就是"选了字体没变化"。
+   现在改成：主进程扫描 <应用目录>/fonts（兜底 <resources>/fonts），把清单 + 可访问 URL
+   报给前端，前端注入 <style id="playday-ui-fonts">，并设置 --font-ui。
+   fonts 目录不存在 → 不注入任何东西，自然回退系统字体（electron/core/fonts.ts）。 */
 
 :root {
   /* Default (dark) theme */
@@ -893,6 +884,14 @@ textarea {
    仅使用主题变量与 color-mix 派生色，保证所有配色下都成立。
    ============================================================ */
 :root {
+  /* 字体大小缩放因子（设置 → 通用 → 界面字体 → 字体大小）。
+     1 = 100% = 原始大小；运行时由 src/utils/uiFont.ts 的 applyUiFontScale() 改写。
+     ✔ 它只作用在**文字**上：构建时 postcss-font-scale.cjs 会把每一处 `font-size: Npx`
+       包成 `calc(Npx * var(--ui-font-scale))`（Tailwind 的 text-* 工具类也一起覆盖），
+       宽度/高度/padding/间距一律不碰 —— 所以调它不会把界面一起放大（需求明确要求）。
+     ⚠️ 卡片文字（游戏名/简介/别名）的字号来自 JS 注入的 --card-* 变量，插件按"含 var() 不动"
+       的规则跳过了它们，所以那三处是在 CSS 里手写 calc 相乘的（见 .grid-card .title 等）。 */
+  --ui-font-scale: 1;
   /* 动效 */
   --dur-fast: 130ms;
   --dur-base: 200ms;
@@ -1020,22 +1019,119 @@ textarea {
   --tier-color: var(--tier-diamond-color, #6ee7ff);
 }
 
-/* Right of the tabs: edition label (YunGame——黄金版) */
-.topbar-edition {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  height: calc(var(--top-height) - 6px);
-  padding: 0 14px;
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--text-primary);
-  background: var(--bg-base);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  white-space: nowrap;
-  -webkit-app-region: drag;
-  cursor: default;
+/* ============================================================================
+   版本徽章的"稀有度高光"动效：每 10 秒来一次，约 1s 演完
+   ----------------------------------------------------------------------------
+   为什么用这个方案（而不是"持续呼吸脉冲"）：
+     徽章要"偶尔被注意到"，但不能像通知角标那样一直提醒自己。
+     持续脉冲的语义是"有新东西待处理"，用在这里会像个假提醒、看久了还烦。
+     稀有度高光（游戏稀有度 / 成就弹窗 / 卡片扫光的常见做法）语义正好：
+     "你这台机器是这个版本"，扫一下就够了。
+
+   时间轴（三者共用同一个周期，前 12% 是动作，后 88% 静止；周期改 --tier-anim-cycle）：
+     0.0s ~ 0.9s  高光斜扫过徽章（同时光晕涨一下、图标弹起来）
+     0.9s ~ 10s   完全静止（不动、不闪，绝不打扰）
+   纯 CSS 实现（一条 10s infinite 的 keyframes），不需要 JS 定时器。
+
+   ⚠️ 扫光为什么套了一层 .tier-sheen 子元素：扫光必须"只出现在徽章内部"，
+     否则那条白光会在徽章左右两侧的顶栏上也能看见。最省事的裁切是给徽章加
+     overflow:hidden，但那会把徽章文字自己的 text-shadow 光晕一起裁掉
+     （垂直方向 padding 只有 3px，光晕必然被切）；所以改用一层绝对定位的
+     子元素来裁 —— 它只裁自己里面的扫光，不动徽章的其它任何效果。
+   （写成独立的一条 .topbar-tier 规则是故意的：这一整段动效将来不想要时，
+     直接从"版本徽章的稀有度高光动效"这个注释块删到 prefers-reduced-motion 即可。）
+   ============================================================================ */
+.topbar-tier {
+  /* 唯一旋钮：动效周期。改这里就同时改掉扫光/光晕/图标三者的节奏，
+     不用去三个 animation 里各改一遍（也就不会三处不同步）。 */
+  --tier-anim-cycle: 10s;
+  animation: tier-glow var(--tier-anim-cycle) ease-in-out infinite;
+}
+/* 扫光的裁切容器：尺寸/圆角跟着徽章走，超出部分被这里裁掉 */
+.tier-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+/* 高光带本体：两端透明、中间是混了一点 --tier-color 的白（黄金偏暖、钻石偏冷） */
+.tier-sheen::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 34%;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    color-mix(in srgb, #ffffff 82%, var(--tier-color)) 50%,
+    transparent 100%
+  );
+  transform: translateX(-160%);
+  opacity: 0;
+  animation: tier-sheen-sweep var(--tier-anim-cycle) ease-out infinite;
+}
+/* 光晕涨落：跟着 --tier-color 走，38 套配色都自动协调 */
+@keyframes tier-glow {
+  0%,
+  12%,
+  100% {
+    box-shadow: 0 0 14px color-mix(in srgb, var(--tier-color) 30%, transparent);
+  }
+  3% {
+    box-shadow:
+      0 0 30px color-mix(in srgb, var(--tier-color) 78%, transparent),
+      0 0 8px color-mix(in srgb, var(--tier-color) 60%, transparent);
+  }
+  7% {
+    box-shadow: 0 0 20px color-mix(in srgb, var(--tier-color) 46%, transparent);
+  }
+}
+@keyframes tier-sheen-sweep {
+  0% {
+    transform: translateX(-160%);
+    opacity: 0;
+  }
+  1.5% {
+    opacity: 1;
+  }
+  /* 0.9s 扫完（再慢就像"加载中"，再快就像"闪一下"） */
+  9% {
+    transform: translateX(330%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(330%);
+    opacity: 0;
+  }
+}
+/* 图标弹一下（缩放 + 轻微转角），与扫光同一拍 */
+.topbar-tier > svg {
+  transform-origin: center;
+  animation: tier-icon-pop var(--tier-anim-cycle) ease-in-out infinite;
+}
+@keyframes tier-icon-pop {
+  0%,
+  12%,
+  100% {
+    transform: none;
+  }
+  3% {
+    transform: scale(1.28) rotate(-8deg);
+  }
+  7% {
+    transform: scale(1.04) rotate(2deg);
+  }
+}
+/* 系统减弱动效偏好：整体关掉（这纯属装饰，关掉不影响任何信息） */
+@media (prefers-reduced-motion: reduce) {
+  .topbar-tier,
+  .tier-sheen::after,
+  .topbar-tier > svg {
+    animation: none;
+  }
 }
 
 /* ---- 底部提示栏（内嵌在状态栏同一行；数据在 src/data/tips.json） ----
@@ -1056,6 +1152,242 @@ textarea {
 }
 .tips-bar:hover {
   color: var(--text-secondary);
+}
+
+/* ---- 背景音乐控件（状态栏最右侧，见 src/components/MusicPlayer.tsx）----
+   只在"确实有曲目"时渲染，所以状态栏平时不会多出空控件。 */
+.music-player {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  margin-left: 6px;
+  padding-left: 10px;
+  border-left: 1px solid var(--border);
+  color: var(--text-dim);
+}
+.music-player .music-icon {
+  flex: none;
+  margin-right: 2px;
+  opacity: 0.8;
+}
+.music-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast);
+}
+.music-btn:hover {
+  background: var(--bg-item-hover);
+  color: var(--text-primary);
+}
+.music-title {
+  /* 曲名 = 打开音乐面板的按钮（需求：点曲名显示音乐列表）。
+     外观保持"像文字"：平时无背景，悬停/展开时才亮起来。 */
+  max-width: 180px;
+  margin-left: 4px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  color: inherit;
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast);
+}
+.music-title:hover,
+.music-title.is-open {
+  background: var(--bg-item-hover);
+  color: var(--text-primary);
+}
+/* 减弱动效偏好：不必要，但保持一致（这类控件没有动画，仅作说明） */
+@media (prefers-reduced-motion: reduce) {
+  .music-btn {
+    transition: none;
+  }
+}
+
+/* ---- 音乐面板（点状态栏曲名弹出：进度 / 音量 / 循环模式 / 曲目列表）----
+   定位：fixed，"贴着窗口右下、位于状态栏上方"。为什么不用 absolute —— 外壳
+   .app-shell 是 overflow:hidden（防止页面内容把状态栏顶走），absolute 会被裁掉；
+   而状态栏永远在窗口底部，所以 bottom = 状态栏高度(26px) + 间距 正好贴住它上沿。
+   层级 90：盖得住页面内容（那些占位的 z-index 都是个位数），但要低于
+   视频播放浮层（120）与遮罩弹窗（.modal-overlay 1000）—— 打开视频/设置时
+   不该有半张音乐面板浮在上面。
+   字号必须显式给：它挂在状态栏（text-[11px]）里面，不写就整面板都是 11px。 */
+.music-panel {
+  position: fixed;
+  right: 10px;
+  bottom: 32px;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 360px;
+  max-height: 62vh;
+  padding: 10px;
+  font-size: 12px;
+  text-align: left;
+  color: var(--text-primary);
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+.music-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.music-panel-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+/* 子目录名（只有文件在子文件夹里才显示）：同名文件靠它区分，不显示完整路径 */
+.music-panel-group {
+  flex: none;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 5px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.music-panel-close {
+  display: inline-flex;
+  flex: none;
+  padding: 3px;
+  border-radius: 4px;
+  color: var(--text-dim);
+}
+.music-panel-close:hover {
+  background: var(--bg-item-hover);
+  color: var(--text-primary);
+}
+.music-panel-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.music-panel-time {
+  flex: none;
+  min-width: 34px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--text-dim);
+}
+/* 进度与音量共用（原生 range 的颜色各主题不一致，统一成主题色） */
+.music-panel-range {
+  flex: 1;
+  height: 4px;
+  margin: 0;
+  appearance: none;
+  border-radius: 2px;
+  background: var(--border);
+  cursor: pointer;
+}
+.music-panel-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  border: none;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.music-panel-volume {
+  flex: none;
+  width: 84px;
+}
+.music-panel-modes {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+}
+/* 当前播放模式：高亮（三个按钮共用 .music-btn 的尺寸） */
+.music-btn-on {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+.music-panel-vol {
+  display: inline-flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  gap: 6px;
+}
+/* 曲目列表：自己滚动，不把面板顶出屏幕（只显示文件名） */
+.music-panel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow-y: auto;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+.music-panel-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 4px 6px;
+  border-radius: 4px;
+  text-align: left;
+  color: var(--text-secondary);
+}
+.music-panel-item:hover {
+  background: var(--bg-item-hover);
+  color: var(--text-primary);
+}
+.music-panel-item.is-current {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+.music-panel-item-icon {
+  display: inline-flex;
+  flex: none;
+  width: 12px;
+  justify-content: center;
+}
+.music-panel-item-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.music-panel-item-group {
+  flex: none;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-dim);
+}
+.music-panel-item-dot {
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 .tips-icon {
   color: color-mix(in srgb, var(--accent) 85%, var(--text-dim));
@@ -1155,6 +1487,10 @@ textarea {
   -webkit-app-region: no-drag;
   z-index: 2;
   flex-shrink: 0;
+  /* 顶栏"弹性空白"由这里吸收：把主题下拉和右侧窗口按钮一起顶到最右边。
+     原来这个 margin-left: auto 挂在右上角那个 `YunGame——门店名` 胶囊上，
+     胶囊按需求删掉后必须挪到这里，否则窗口按钮会紧贴着 tab 跑，右上一大片空。 */
+  margin-left: auto;
 }
 .theme-top-picker-btn {
   display: inline-flex;
@@ -1648,7 +1984,7 @@ textarea {
      发光/阴影同理：小字 + 10px 光晕 = 发虚。
      颜色交给 .sidebar-tag 的主题令牌，三态自然生效：
      常态 --text-secondary / hover --text-primary / checked --accent-hover。 */
-  font-size: max(12px, min(calc(var(--card-title-size, 15px) * 0.75), 15px));
+  font-size: calc(max(12px, min(calc(var(--card-title-size, 15px) * 0.75), 15px)) * var(--ui-font-scale));
   font-weight: var(--card-title-weight, 500);
   /* 主动把描边归零：有些主题在 body 上设了全局 --text-stroke（0.5px），不显式覆盖
      的话这些文字会继承到那条细描边 —— 小字发虚的来源之一。
@@ -1750,6 +2086,26 @@ textarea {
   font-size: 11px;
   color: var(--accent-hover);
   opacity: 0.85;
+}
+
+/* —— 游戏本地视频：顶栏「视频」按钮上的数量标签 ——
+   视频本身**罗列在详情页页面里**（服务器发页面时注入「游戏视频」区块，按 videos/
+   的子目录分组，样式见 electron/core/gameDetailInject.ts）—— 所以这里只有一个数量标签，
+   播放器浮层那套已经删掉了。 */
+.video-count {
+  /* 不做成大徽章，避免和「修改器 / 应用存档」抢注意力 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  font-size: 11px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Right-edge resize handle for the sidebar */
@@ -2448,7 +2804,11 @@ textarea {
   border: 2px solid rgba(0, 0, 0, 0.6);
 }
 .grid-card .title {
-  font-size: var(--card-title-size, 15px);
+  /* 乘 --ui-font-scale：卡片文字的字号来自 JS 注入的 --card-title-size，
+     postcss-font-scale.cjs 按"含 var() 不动"跳过它，所以这里手写相乘
+     （否则设置里调"字体大小"时，卡片标题不跟着变）。
+     ⚠️ 改了这里要同步改 GridView 的行高公式（它按字号算行高，见 GridView.tsx 的 titleLineHeight）。 */
+  font-size: calc(var(--card-title-size, 15px) * var(--ui-font-scale));
   font-weight: var(--card-title-weight, 600);
   margin-top: 7px;
   text-align: center;
@@ -2531,8 +2891,8 @@ textarea {
 .grid-card .grid-desc {
   margin-top: 6px;
   padding: 6px 10px 2px;
-  /* 字号由 settings.cardDescFontSize 注入（默认 11px）。*/
-  font-size: var(--card-desc-font-size, 11px);
+  /* 字号由 settings.cardDescFontSize 注入（默认 11px），再乘全局字体缩放。*/
+  font-size: calc(var(--card-desc-font-size, 11px) * var(--ui-font-scale));
   line-height: 1.55;
   color: var(--text-secondary);
   text-align: center;
@@ -3190,6 +3550,45 @@ textarea {
   color: var(--text-dim);
   line-height: 1.5;
 }
+/* "路径 + 浏览…"一行（字体文件夹 / 音乐文件夹这类可配置目录）：
+   输入框占满剩余宽度，浏览按钮靠右；等宽字体便于核对盘符与路径。 */
+.set-path-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.set-path-input {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+  outline: none;
+}
+.set-path-input:focus {
+  border-color: var(--border-strong);
+}
+.set-browse-btn {
+  flex: none;
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background var(--dur-fast),
+    color var(--dur-fast);
+}
+.set-browse-btn:hover {
+  background: var(--bg-item-hover);
+  color: var(--text-primary);
+}
 
 /* 全局"正在启动游戏"醒目横幅：固定在屏幕顶部中央，高 z-index，
    带旋转加载图标 + 游戏名，让用户清楚看到启动正在进行。 */
@@ -3586,7 +3985,7 @@ textarea {
   gap: 4px;
   margin-top: 4px;
   line-height: 1.4;
-  font-size: var(--card-alt-size, 12px);
+  font-size: calc(var(--card-alt-size, 12px) * var(--ui-font-scale));
   font-weight: var(--card-title-weight, 500);
   /* 别名（容器 + 单个 badge）可被鼠标选中复制。 */
   user-select: text;
@@ -3845,9 +4244,11 @@ textarea {
   overflow: hidden;
 }
 
-/* 公告窗口的维护提示条：压在公告内容之上（红警示色），必须一眼看到 ——
-   见 docs/design/user-level-detection.md 的维护状态一节。 */
-.ann-maintenance {
+/* 公告窗口的"进系统拦截条"：压在公告内容之上（红警示色），必须一眼看到 ——
+   见 docs/design/user-level-detection.md 的门禁两节（维护中 / 库过旧）。
+   两种命中情况共用这一套样式（原来叫 .ann-maintenance，只管维护；现在两处都用，
+   所以改成中性的 .ann-gate）。 */
+.ann-gate {
   position: relative;
   z-index: 3;
   display: flex;
@@ -3860,21 +4261,21 @@ textarea {
   background: color-mix(in srgb, var(--danger, #e5484d) 26%, rgba(0, 0, 0, 0.55));
   border: 1px solid color-mix(in srgb, var(--danger, #e5484d) 60%, transparent);
 }
-.ann-maintenance svg {
+.ann-gate svg {
   flex: none;
   margin-top: 1px;
 }
-.ann-maintenance-title {
+.ann-gate-title {
   font-weight: 700;
   font-size: 14px;
   margin-bottom: 2px;
 }
-.ann-maintenance-body {
+.ann-gate-body {
   font-size: 12px;
   line-height: 1.5;
   opacity: 0.9;
 }
-/* 维护时的"退出"按钮：与"进入系统"同形，改成警示色 */
+/* 被拦住时的"退出"按钮：与"进入系统"同形，改成警示色 */
 .ann-enter-btn.ann-exit-btn {
   background: color-mix(in srgb, var(--danger, #e5484d) 70%, #000);
 }

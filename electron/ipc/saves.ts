@@ -18,22 +18,13 @@ import { ipcMain, app } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { spawn } from "child_process";
-import { gamesHtmlDir } from "../core/paths";
+import { resolveGameSubpath } from "../core/gameDirs";
 import { registerCommand } from "./registry";
 
 // 返回某游戏"游戏存档"目录的绝对路径（不存在返回 null）。
-// 规则与详情页/修改器一致：优先游戏 id 子目录，其次游戏名子目录，再拼 "游戏存档"。
+// "优先游戏 id 子目录，其次游戏名子目录"这条规则统一在 core/gameDirs.ts。
 export function savesDir(gameId: string, gameName: string): string | null {
-  const root = gamesHtmlDir();
-  const candidates = [gameId, gameName];
-  for (const c of candidates) {
-    if (!c) continue;
-    const dir = path.join(root, c, "游戏存档");
-    if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
-      return dir;
-    }
-  }
-  return null;
+  return resolveGameSubpath(gameId, gameName, "游戏存档")?.path ?? null;
 }
 
 // 扫描"游戏存档"目录，列出所有 .exe（含图标 dataURL）。

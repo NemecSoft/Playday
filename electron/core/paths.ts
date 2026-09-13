@@ -152,6 +152,22 @@ export function gamesHtmlDir(): string {
   return resolveConfiguredDir(readSettingsField("gameDetailsDir"), configRoot(), "Game_Details", appRoot());
 }
 
+// 应用自带字体目录（settings.fontsDir）。
+// 未配置 → <应用 exe 同级>/fonts（开发态 = 工程根），**与旧行为完全一致**；
+// 打包版还会去 <resources>/fonts 兜底（见 electron/core/fonts.ts 的 fontsDirCandidates）。
+// ⚠️ 默认基准是 appRoot 而不是数据根：字体是"程序自带资源"，跟程序走；数据根会被
+//    YUNGAME_DATA_DIR / 便携布局改变，拿它当默认会变成"换个启动方式就找不到字体"。
+export function fontsDir(): string {
+  return resolveConfiguredDir(readSettingsField("fontsDir"), appRoot(), "fonts", appRoot());
+}
+
+// 背景音乐目录（settings.musicDir）。
+// 未配置 → <数据根>/music（与封面/详情页等数据目录的约定一致，留空时是"数据旁边的 music"）；
+// 目录不存在或没有音频文件 → 视为没有背景音乐（前端不显示音乐控件）。
+export function musicDir(): string {
+  return resolveConfiguredDir(readSettingsField("musicDir"), configRoot(), "music", appRoot());
+}
+
 // 公告目录。
 export function announcementsDir(): string {
   return resolveConfiguredDir(readSettingsField("announcementsDir"), configRoot(), "announcements", appRoot());

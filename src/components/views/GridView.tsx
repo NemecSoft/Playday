@@ -24,6 +24,12 @@ import { isDarkBackground, paletteForRow } from "../../utils/titlePalette";
 import { clampCardFontSize, effectiveCardDescFontSize } from "../../utils/cardText";
 import { isHotGame } from "../../utils/hotBadge";
 import { useAuthStore } from "../../stores/authStore";
+import {
+  CARD_WIDTH_MIN,
+  clampCardGap,
+  contentWidthOf,
+  singleColumnCardWidth,
+} from "../../utils/gridLayout";
 
 interface Props {
   groups: Group[];
@@ -44,6 +50,8 @@ export default function GridView({ groups }: Props) {
   // 0 = 跟随游戏名字号，所以还要拿 title 的字号当基准。
   const cardDescFontSize = useSettingsStore((s) => s.settings.cardDescFontSize);
   const cardFontSize = useSettingsStore((s) => s.settings.cardFontSize);
+  // 全局字体大小（百分比）——卡片文字也跟着缩放，行高公式要用它（见下方 fontScale）。
+  const uiFontScale = useSettingsStore((s) => s.settings.uiFontScale);
   // 标题配色模式："random" 时按行注入 --title-fill
   // （每组配色见 utils/titlePalette）。默认 "theme" = 跟随主题。
   const titleColorMode = useSettingsStore((s) => s.settings.cardText?.colorMode) ?? "theme";
@@ -94,14 +102,21 @@ export default function GridView({ groups }: Props) {
   //
   // 把这些加起来让 rowHeight = coverHeight + titleHeight + cardRowGap 精确等于真实渲染高度。
   // 这样 cardRowGap=0 时两行紧贴（除去下一张卡片自身无法消除的 padding-top）。
-  const descFontSize = effectiveCardDescFontSize(cardDescFontSize, cardFontSize);
+  // 全局"字体大小"缩放（设置 → 通用 → 界面字体）：卡片文字也会跟着放大，
+  // 所以行高公式必须一起乘这个系数，否则估算偏小 → 虚拟列表认为行更矮 → 间距忽大忽小。
+  const fontScale = useMemo(() => {
+    const n = Number(uiFontScale);
+    return Number.isFinite(n) && n > 0 ? Math.max(0.5, Math.min(2.5, n / 100)) : 1;
+  }, [uiFontScale]);
+
+  const descFontSize = effectiveCardDescFontSize(cardDescFontSize, cardFontSize) * fontScale;
   // 标题行高随字号动态计算 —— 原来写死 22px 是按 15px 字号估的，字号调大后公式会低估，
   // 行高就靠 ResizeObserver 校正，滚动时会出现"间距忽大忽小"。这里让它一开始就准。
-  const titleLineHeight = Math.round(clampCardFontSize(cardFontSize) * 1.2) + 4;
+  const titleLineHeight = Math.round(clampCardFontSize(cardFontSize) * fontScale * 1.2) + 4;
   // 副标题（英文原名）行高：库里很多游戏有本地化中文名，副标题普遍存在，
   // 统一预留 15px 行高最稳（避免有副标题的卡片溢出盖住下方）。没副标题的卡片
   // 实际更矮，虚拟列表按行内最高卡片排布，不影响正确性。
-  const origNameHeight = 15;
+  const origNameHeight = Math.round(15 * fontScale);
   const titlePlusDesc =
     6 +        // .grid-card padding-top
     7 +        // .title-wrap margin-top
@@ -120,7 +135,8 @@ export default function GridView({ groups }: Props) {
 
   // 滚轮约定（与浏览器一致）：
   //   Ctrl+滚轮 → 整页缩放（全局处理在 ZoomIndicator，这里不再管）；
-  //   Alt+滚轮  → 调整封面大小（120~400px，即时生效，停手 300ms 后落盘）。
+  //   Alt+滚轮  → 调整封面大小（下限 120px，**上限 = 当前窗口"正好一行一个"的宽度**，
+  //                所以窗口越宽上限越大；即时生效，停手 300ms 后落盘）。
   // 必须用原生 wheel 监听 + passive:false 才能拦掉默认行为（Alt+滚轮默认会滚列表）。
   const applySettings = useSettingsStore((s) => s.apply);
   const saveSettings = useSettingsStore((s) => s.save);
@@ -132,8 +148,18 @@ export default function GridView({ groups }: Props) {
       // Alt+滚轮：封面大小（Ctrl+滚轮的整页缩放由 ZoomIndicator 全局处理）。
       if (!e.altKey) return;
       e.preventDefault();
-      const cur = useSettingsStore.getState().settings.cardWidth;
-      const next = Math.max(120, Math.min(400, cur + (e.deltaY < 0 ? 10 : -10)));
+      const st = useSettingsStore.getState().settings;
+      const cur = st.cardWidth;
+      // 上限 = "一行一个"的临界宽度（公式见 utils/gridLayout）。用临界值而不是窗口宽度，
+      // 是为了滚到头正好停在 1 列，不会出现"继续滚但画面不变"的死区。
+      const maxWidth = singleColumnCardWidth(contentWidthOf(el), clampCardGap(st.cardGap));
+      // 步长随封面变大而变大：小尺寸仍是 10px 的精细档，大了按 6% 加速 ——
+      // 否则从 400px 滚到 900px+ 要滚上百下，根本没法用。
+      const step = Math.max(10, Math.round(cur * 0.06));
+      const next = Math.max(
+        CARD_WIDTH_MIN,
+        Math.min(maxWidth, cur + (e.deltaY < 0 ? step : -step)),
+      );
       if (next === cur) return;
       applySettings({ cardWidth: next });
       if (cardWidthSaveTimer.current) clearTimeout(cardWidthSaveTimer.current);
@@ -167,8 +193,9 @@ export default function GridView({ groups }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalSize]);
 
-  // 水平间距：卡片左右之间，用 cardGap（上限 20）。
-  const gap = Math.max(0, Math.min(20, cardGap ?? 8));
+  // 水平间距：卡片左右之间，用 cardGap（上限 20）。与 useVirtualGrid 用同一个
+  // clamp（utils/gridLayout），保证"渲染间距"和"算列数用的间距"永远一致。
+  const gap = clampCardGap(cardGap);
 
   // 行内子内容（封面/简介/alt-names）首次 mount 时可能还没渲染好，
   // measureElement 第一次测得高度偏低。只在"初次挂载 / 简介开关 / 列数变化"时

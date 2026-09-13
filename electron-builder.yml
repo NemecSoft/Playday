@@ -37,6 +37,15 @@ extraResources:
     to: tray.png
   - from: public/icons/icon.png
     to: icon.png
+  # 应用自带字体：整目录带到 resources/fonts，打包版不依赖用户机器上装了什么字体。
+  # 查找顺序见 electron/core/fonts.ts：优先 <exe 同级>/fonts（运维可直接替换），
+  # 找不到才用这份 resources/fonts。
+  - from: fonts
+    to: fonts
+    filter:
+      - "**/*.ttf"
+      - "**/*.otf"
+      - "**/*.ttc"
 
 # 禁止 electron-builder 自动下载/打包我们不需要的东西
 npmRebuild: false

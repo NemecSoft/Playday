@@ -36,6 +36,20 @@ cipher = base64( UTF8(明文) XOR key[i % key.length] )      // XOR 对称，解
   同目录下**没有**加密文件。生产机部署的可能是加密版。
 - 因此实现必须**自动判别**：内容以 `[` / `{` 开头 → 当明文解析；否则按上面的算法解一次。
   （只认一种会在这两种部署里挂掉一种。）
+- **一键加密**：`encrypt-userlist.bat`（实现在 `scripts/encrypt-userlist.mjs`）。
+  默认就是"把 jsoncrypt 里的明文加密成线上密文"这一步：
+
+  ```
+  源  ：D:\AI\Code\YunGameProject\YunGameTools\JsonCrypt\jsoncrypt\bin\Debug\YunGame_UserList.json
+  目标：D:\YunGame\PlayNite\YunGameConfig\YunGame_UserList.json
+  ```
+
+  可用参数覆盖（一个参数换源、两个参数源与目标都换；脚本层还支持 `--in/--out`）。
+  三道安全闸：① 目标已存在时先备份 `<文件>.bak-<时间戳>`；② **源文件已经是密文就直接拒绝**
+  （二次加密会毁数据）；③ 源文件不是合法 JSON 也拒绝。
+  另外**部署前会报出"会改掉哪些记录"**（只提示不阻拦）—— 加密是原样搬运，源与目标若是不同
+  版本会静默替换线上数据（真实踩过：源里「鹊踏枝酒店」是 L2、线上是 L1）。
+  已用**字节级比对**验证：对同一份明文，本工具与原版 JsonCrypt 的输出 **SHA256 完全相同**。
 
 ### 1.3 判定优先级（单一入口，别在多处各判一遍）
 
@@ -100,6 +114,44 @@ config.json 里，不影响生产**。
 | 进系统 | 主进程 `enter_system` **再判一次**并拒绝（`{ok:false, reason:"maintenance"}`）—— 不能只靠前端拦（改前端就能绕过） |
 | 前端兜底 | 若点击时刚被置为维护，前端据 `{ok:false}` 切到维护态，避免"点了没反应" |
 
+## 2.6 库过旧（不能进入系统）
+
+需求：**数据库一个月没有发生变化 → 提示「系统过旧」，只能退出，不允许进入**。
+
+判定依据 = **权威库文件**（`<sourceLibraryDir>/library.db`，默认 `<数据根>/Admin/library.db`）
+的**最后修改时间**：满 30 天未变化即判为过旧。阈值写死在 `shared/libraryAge.ts`
+（`MAX_LIBRARY_AGE_DAYS = 30`），**不给配置开关** —— 给了开关就等于给了绕过方式。
+
+为什么用"库文件时间"而不是"库里存一个版本日期字段"：
+
+1. **零维护**：脚本导入游戏、同步标签、手工改库……任何改动都会刷新文件时间，
+   不需要每个写入方都记得去更新某个字段（漏改一处就静默失效）；
+2. **与既有体系一致**：`electron/core/db.ts` 把权威库复制成运行时副本时刻意**保留 mtime**
+   （`shared/librarySync.ts` 的 `shouldSyncDatabase` 正是靠它判断要不要复制），
+   说明「文件时间 = 内容最后变化时间」这条语义在本体系里已经成立。
+
+> ⚠️ **绝不能用运行时副本的时间**：副本在运行期会被写设置刷新（实测比权威库还新），
+> 拿它判定等于永远"刚更新过"，这条校验就废了。
+
+行为（与维护状态同构）：
+
+| 位置 | 行为 |
+| --- | --- |
+| 公告窗口 | 启动即查一次；过旧 → 顶部压一条红警示条「系统过旧」（文案带"已 N 天未更新"），公告内容照常显示 |
+| 底部按钮 | 「进入系统」**换成「退出」**，点击直接退出程序 |
+| 进系统 | 主进程 `enter_system` **再判一次**并拒绝（`{ok:false, reason:"outdated", ageDays}`） |
+| 前端兜底 | 若点击时刚好被判过旧，前端据 `{ok:false}` 切到过旧态，避免"点了没反应" |
+
+三条**不锁**的兜底（宁可放过，不可错锁 —— 被锁的人是**真进不去**；实现见 `shared/libraryAge.ts`）：
+
+1. 读不到库文件（不存在 / 没权限 / 新装机还没拷库）→ 不锁；
+2. 文件时间比"现在"还新（系统时间被往前调过、或从别的机器拷来未来时间）→ 不锁；
+3. 差 1 天以内 → 不锁（**满 30 天才锁**）。
+
+> 运维对应关系：开发/测试机若被拦，把本机权威库的时间刷一下即可
+> （`(Get-Item "<数据根>/Admin/library.db").LastWriteTime = Get-Date`）；
+> 生产上就是"每月至少更新一次库"，与本需求初衷一致。
+
 ## 3. 黄金版用户的「强烈反馈」（UX 规范）
 
 需求原话：*"给黄金版用户有强烈的反馈，知道自己能看到但玩不到"*。所以锁定态不能只是"按钮灰了"，
@@ -112,7 +164,7 @@ config.json 里，不影响生产**。
 | 点击游玩 | 明确弹提示：**「需要升级为钻石版网吧（网咖）才能玩」**；**不会启动游戏** |
 | 详情按钮 | 正常可用（能看不能玩，看详情是允许的） |
 | 游戏退出后 | 不弹"是否备份存档"（黄金版不能存档） |
-| 状态栏 / 顶栏中央 | 显示当前版本（黄金版 / 钻石版）与命中门店名 |
+| 顶栏中央 | 显示当前版本（黄金版 / 钻石版）。**不再显示命中门店名**（2026-09 需求：门店名不出现在界面上，连 hover 提示也去掉；原右上角那个 `YunGame——门店名` 胶囊已整块移除） |
 
 **文案规范（用户明确要求过，别改回去）**
 
@@ -132,15 +184,18 @@ config.json 里，不影响生产**。
 | --- | --- |
 | `shared/userLevel.ts` | **纯逻辑**（零依赖、可单测）：密文/明文判别与解析、`resolveUserLevel()`、`parseServerStatusRaw()`/`resolveMaintenance()`、`canPlay()` 语义 |
 | `shared/userLevel.test.ts` | 单测：加解密往返、命中/未命中、L1→黄金、L2→钻石、内网兜底、覆盖开关、维护状态 |
-| `electron/core/auth.ts` | 读文件（`fs`）+ 本机/公网 IP（会话级缓存）+ 调用 `shared/userLevel.ts`；`resolveMaintenanceState()` |
+| `shared/libraryAge.ts` | **纯逻辑**（零依赖、可单测）：`evaluateLibraryAge()` + 写死的 30 天阈值 `MAX_LIBRARY_AGE_DAYS`（库过旧判定） |
+| `shared/libraryAge.test.ts` | 单测：30 天边界、以及"读不到文件 / 文件时间在未来 / 差 1 天"三种必须不锁的兜底 |
+| `electron/core/auth.ts` | 读文件（`fs`）+ 本机/公网 IP（会话级缓存）+ 调用 `shared/userLevel.ts`；`resolveMaintenanceState()`、`resolveLibraryAgeState()`（读权威库 mtime） |
 | `electron/ipc/auth.ts` | `get_current_user` / `resolve_enterprise` / `get_status_bar` 走本机制 |
-| `electron/ipc/system.ts` | `get_server_status` + `enter_system` 的维护拦截 |
+| `electron/ipc/system.ts` | `get_server_status` + `get_library_age` + `enter_system` 的两道门禁拦截（维护 / 库过旧） |
 | `electron/core/process.ts` | `launchGame` 启动前校验（**已存在**，保持单一入口） |
 | `electron/ipc/saveManager.ts` | 备份存档前校验 + 退出后不提示黄金版用户 |
 | `src/stores/authStore.ts` | 前端缓存 `userLevel` + `canPlay()` |
 | `src/components/TopBar.tsx` | **顶部中央**的版本标识（图标 + 黄金版/钻石版） |
 | `src/components/views/GridView.tsx` | 卡片锁定态（封面降饱和 + 锁标 + 游玩按钮改造） |
-| `src/components/AnnouncementWindow.tsx` | 维护提示条 + 维护时把「进入系统」换成「退出」 |
+| `src/components/AnnouncementWindow.tsx` | 两道门禁的提示条（维护 / 库过旧，样式 `.ann-gate`）+ 被拦时把「进入系统」换成「退出」 |
+| `src/api/client.ts` | `getServerStatus()` / `getLibraryAge()` / `enterSystem()`（被拒时带 `reason`） |
 | `config.json` → `yunGameUserListPath` / `yunGameServerStatusPath` / `userLevelOverride` | 用户表与维护表路径（相对路径以应用 exe 所在目录为基准，同其它路径字段）+ 调试覆盖 |
 
 ## 5. 配置项

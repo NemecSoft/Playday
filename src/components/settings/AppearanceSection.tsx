@@ -1,7 +1,7 @@
 // Appearance settings: theme, default view images, card size/gap & card text editor.
 
 import { useSettingsStore } from "../../stores/settingsStore";
-import { FONT_OPTIONS } from "../../utils/fonts";
+import { useFontOptions } from "../../hooks/useFontOptions";
 import { useI18n } from "../../i18n";
 import { Checkbox } from "../ui/checkbox";
 import { Slider } from "../ui/slider";
@@ -191,6 +191,8 @@ export default function AppearanceSection() {
   const settings = useSettingsStore((s) => s.settings);
   const save = useSettingsStore((s) => s.save);
   const { t } = useI18n();
+  // 可用字体 = 应用自带字体目录里实际存在的字体（与 DesignSection 同一个来源）。
+  const fontOptions = useFontOptions();
 
   const imageOptions = [
     { value: "Cover", label: t("settings_imageCover") },
@@ -236,7 +238,7 @@ export default function AppearanceSection() {
         </label>
         <Slider
           min={120}
-          max={320}
+          max={2000}
           step={10}
           value={[settings.cardWidth]}
           onValueChange={(v) => save({ cardWidth: v[0] ?? 180 })}
@@ -244,7 +246,7 @@ export default function AppearanceSection() {
         />
         <div className="flex justify-between text-[11px] text-dim">
           <span>120</span>
-          <span>320</span>
+          <span>2000</span>
         </div>
       </div>
 
@@ -255,9 +257,9 @@ export default function AppearanceSection() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {FONT_OPTIONS.map((o) => (
-              <SelectItem key={o.value} value={o.value} style={{ fontFamily: o.value || undefined }}>
-                {t(o.labelKey)}
+            {fontOptions.map((o) => (
+              <SelectItem key={o.value || "default"} value={o.value} style={{ fontFamily: o.value || undefined }}>
+                {o.labelKey ? t(o.labelKey) : o.label ?? o.value}
               </SelectItem>
             ))}
           </SelectContent>
@@ -427,9 +429,11 @@ export default function AppearanceSection() {
                     borderRadius: showBg ? 4 : 0,
                     padding: showBg ? "1px 8px" : 0,
                     fontWeight: 600,
-                    fontSize: "14px",
                     lineHeight: 1,
                   }}
+                  // 字号走类而不是内联 fontSize：内联样式构建期覆盖不到，
+                  // 改"字体大小"设置时不会跟着变（见 postcss-font-scale.cjs 文件头）。
+                  className="text-[14px]"
                 >
                   {t("settings_presetSample", { defaultValue: "样式" })}
                 </span>
@@ -485,7 +489,9 @@ export default function AppearanceSection() {
         <div className="mb-3 flex h-12 items-center justify-center rounded-md border border-border bg-input/50">
           <span
             style={{
-              fontSize: `${settings.cardFontSize ?? 15}px`,
+              // 这个字号是"设置值 × 全局字体缩放"，跟卡片上的实际渲染保持一致
+              // （卡片那边 CSS 写的是 calc(--card-title-size * --ui-font-scale)）。
+              fontSize: `calc(${settings.cardFontSize ?? 15}px * var(--ui-font-scale))`,
               fontWeight: settings.cardFontBold ? 700 : 500,
               color: settings.cardText?.color ?? "#fff8e7",
               WebkitTextStroke: `${

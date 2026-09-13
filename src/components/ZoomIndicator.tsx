@@ -9,6 +9,9 @@ import { useZoomStore } from "../stores/zoomStore";
 
 const ZOOM_STEP = 0.5; // zoomLevel 一档（≈浏览器一档）
 
+// 注意：这里的 Ctrl+滚轮缩放是 **Chromium 原生整页缩放**（连布局一起放大），
+// 与设置里的"字体大小"（只放大文字，见 src/utils/uiFont.ts）**是两回事**，
+// 因此它**不写回设置**、也不在启动时恢复 —— 就是一个和浏览器一致的临时操作。
 function applyZoom(deltaOrLevel: { delta: number } | { level: number }) {
   void invoke<number>("zoom_page", deltaOrLevel).then((lv) => {
     if (typeof lv === "number") {

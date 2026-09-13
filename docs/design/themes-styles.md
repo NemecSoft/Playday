@@ -161,3 +161,108 @@
 真要换成自己做的 GIF/位图：给 `.grid-card .hot-flag` 加
 `background-image: var(--hot-badge-image)`（配 `background-size: contain` + `color: transparent`）即可，
 **不需要改任何代码** —— 详见 `global.css` 里该规则末尾的注释。
+
+## 六、应用自带字体（fonts 目录）
+
+需求：界面字体用**应用自带的字体**（默认 `fonts/字酷堂清楷 简.ttf`），**不依赖系统字体**；
+只有 fonts 文件夹不存在时才回退系统字体。
+
+### 6.1 字体从哪来
+
+| 顺序 | 目录 | 说明 |
+| --- | --- | --- |
+| 1 | `settings.fontsDir`（**可配置**） | 未配置 = `<应用 exe 同级>/fonts`；绿色版运维直接往这里丢字体（开发态 = 仓库根 `fonts/`）。设置界面里可改（设置 → 通用 → 界面字体 → 字体文件夹，带"浏览…"）。相对路径以应用 exe 所在目录为基准 |
+| 2 | `<resources>/fonts` | 打包时由 `electron-builder.yml` 的 extraResources 带进去的兜底 |
+
+扫描 `*.ttf` / `*.otf` / `*.ttc`，**文件名（去掉扩展名）就是字体名**（既当 CSS font-family，
+也当下拉里的显示名）。往 fonts 里丢一个新字体、重启后下拉里就能选 —— 不用改代码、不用改配置。
+
+**默认字体** = `fonts/字酷堂清楷 简.ttf`，按"归一化名"匹配（忽略空格/全角空格/加号/大小写，
+所以 `字酷堂清楷 简.ttf` 与 `字酷堂清楷简.TTF` 都认）；精确名找不到就退一步找同系列的
+`字酷堂清楷*`；再找不到 → 默认字体为空，界面回退系统字体。
+
+### 6.2 为什么要走本地 HTTP 服务器
+
+字体不能直接给渲染进程 `file://` 路径：开发态页面是 `http://localhost:5173`，
+Chromium 不允许 http 页面加载 `file://` 子资源（字体同样被拦）。所以复用详情页那个本地服务器，
+按 `/fonts/<文件名>` 提供，并**带上 CORS 头**（`Access-Control-Allow-Origin: *`，字体属跨源请求）；
+只放行裸文件名（防路径穿越），非字体扩展名一律 404。
+
+全链路：`electron/core/fonts.ts`（扫描 + 请求校验）→ `electron/core/gameServer.ts`（`/fonts/*` 路由）
+→ `electron/ipc/fonts.ts`（`get_ui_fonts`）→ `src/utils/uiFont.ts`（注入 `@font-face` + 设 `--font-ui`）
+→ `src/hooks/useFontOptions.ts`（设置界面下拉用）。
+
+> 中文字体动辄 8MB：走 HTTP 流式读取，比"读成 base64 塞进 IPC"省内存、也不拖慢启动。
+
+### 6.3 优先级：自带字体盖过主题字体
+
+`src/utils/uiFont.ts` 写的是**内联** CSS 变量（优先级最高），所以：
+
+1. 用户在「设置 → 通用 → 界面字体」里显式选过 → 用选的；
+2. 没选（`fontFamily` 为空）→ 用自带默认字体；
+3. 自带字体不可用（fonts 目录不存在 / 找不到默认文件）→ 移除内联变量，回到**系统/主题字体**。
+
+> 设置入口就是 **设置 → 通用 → 界面字体**（选字体 + 调界面大小）。这一块本来在"设计器"tab 的
+> 分项微调里，而设计器 tab 后来被移除（`SettingsModal` 现在只有"通用"一个 tab），
+> 于是字体一度没有任何入口 —— 已在通用里补成独立区块（`src/components/settings/GeneralSection.tsx`）。
+
+**已知代价**：中国风、漫画等主题本来各有一套 `--font-ui`，现在会被自带字体盖掉 ——
+这是"不依赖系统字体"的直接结果。想恢复某主题的字体，就在这个下拉里显式选一项，或把 fonts 目录挪走。
+
+### 6.4 字体大小：只放大文字，不动界面尺寸
+
+设置里的"**字体大小**"（85%~140%）只改文字，**弹窗/按钮/封面/间距一律不变**（需求明确：
+"不要调整界面大小，只要调整字体大小"）。
+
+机制是一枚 CSS 变量 `--ui-font-scale`（默认 1）：
+
+| 环节 | 落点 |
+| --- | --- |
+| 构建期 | `postcss-font-scale.cjs`（本项目自己的 PostCSS 插件，排在 `tailwindcss` **之后**）把每一处 `font-size: Npx` / `Nrem` 包成 `calc(N * var(--ui-font-scale))`；顺带把**同一条规则里的绝对 `line-height`** 一起包（Tailwind 的 `text-*` 是 font-size + line-height 成对给的，只放大字号会让多行文字挤在没变大的行框里） |
+| 变量默认值 | `src/styles/global.css` 的 `:root`（`--ui-font-scale: 1`） |
+| 运行时 | `src/utils/uiFont.ts` 的 `applyUiFontScale(percent)`；设置滑杆即时生效、落盘 320ms 防抖 |
+| 启动恢复 | `src/main.tsx`（读 `settings.uiFontScale`）+ `src/App.tsx` 的 effect（改设置立刻生效） |
+| 持久化字段 | `settings.uiFontScale`（shared 模型，默认 100 = 原始大小） |
+
+**为什么用 PostCSS 插件而不是手改**：`global.css` 里有 148 处 font-size，界面里还有大量 Tailwind
+工具类（`text-xs` / `text-[11px]`…）**是构建时生成的**，手改源码根本改不到；放插件里一次性覆盖两者，
+而且以后新写的 CSS 也不会漏。
+
+**边界（三条刻意的不做）**：
+
+1. 值里已经含 `var()` / `calc()` 的**一律跳过**（避免套娃）——例如卡片文字用的
+   `var(--card-desc-font-size)`。所以卡片文字（游戏名/简介/别名）是在 CSS 里**手写相乘**的，
+   见 `.grid-card .title` / `.grid-card .grid-desc` / `.list-alt-names`；
+   ⚠️ 改这三处要同步改 `src/components/views/GridView.tsx` 的行高公式（它按字号算行高）。
+2. `width` / `height` / `padding` / `margin` / `gap` 一律不碰 —— 碰了就变成"界面缩放"了。
+3. 与顶栏 **Ctrl+滚轮**的原生整页缩放（`electron/ipc/zoom.ts`）是**两回事**：那个连布局一起放大、
+   临时、不写进设置；本节的"字体大小"才是持久化的只改文字。
+
+### 6.5 字号写法规范（写死字号一律不要）
+
+**一句话规则：TSX 里的字号必须是类名 `text-[Npx]`，不允许内联 `style={{ fontSize }}`。**
+
+原因：`--ui-font-scale` 是**构建期**由 `postcss-font-scale.cjs` 加进 CSS 的，只能覆盖
+"CSS 文件 + Tailwind 生成的工具类"。内联样式是运行时直接写进 DOM 的，构建期碰不到 ——
+所以写成 `style={{ fontSize: 13 }}` 的那处，用户在设置里调"字体大小"时**不会变**。
+（2026-09 审计出 9 处这类漏网：`src/App.tsx` 的出错兜底页 4 处、`src/components/AboutModal.tsx` 3 处、
+`src/components/settings/AppearanceSection.tsx` 2 处，已全部改掉。）
+
+| 写法 | 受"字体大小"控制 | 说明 |
+| --- | --- | --- |
+| CSS 里 `font-size: 13px` | ✅ | 插件自动包成 `calc(13px * var(--ui-font-scale))` |
+| TSX 类名 `text-[13px]` | ✅ | Tailwind 生成 CSS，走同一条路 |
+| TSX 内联 `style={{ fontSize: 13 }}` | ❌ | **禁止** |
+| 内联但值里自带 `var(--ui-font-scale)` | ✅ | 仅限"JS 算出来的动态预览"（如卡片字号预览） |
+
+自查命令：`node scripts/audit-font-sizes.mjs` —— 已接进 `npm run check`（`lint:fonts`），
+有漏网的内联 `fontSize` 时**退出码非 0**。它会把全部字号分成"受控 / 漏网"两类列出来，
+并列出所有写死的 `font-family`（目前 8 处：6 处是 `inherit`，2 处是刻意指定的等宽字体与
+漫画主题的 Impact —— 这两个**不该**跟着全局字体变，保持写死）。
+
+### 6.6 历史坑（别再写死路径）
+
+`global.css` 里曾写死三条 `@font-face`，`src` 指向 `/fonts/方正隶书_GBK.ttf`、
+`/fonts/HarmonyOS_Sans_SC_Regular.ttf` —— 这两个文件**根本不存在**（真实文件是
+`fonts/方正聚珍新仿+GBK.TTF`、`fonts/字酷堂清楷 简.ttf`），而且打包后 `/fonts/...` 会解析成
+盘根 `file:///fonts/...` 直接 404。表现就是"选了字体没变化"。现在全部改为运行时扫描 + 动态注入。

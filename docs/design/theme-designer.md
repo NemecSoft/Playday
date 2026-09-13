@@ -1,5 +1,11 @@
 # 综合主题/配色/字体设计器（Theme Designer）
 
+> **现状（2026-09）**：设计器 tab **已从设置里移除** —— 设置面板现在只有"通用"一个 tab
+> （见 `src/components/settings/SettingsModal.tsx` 顶部注释）。主题改为顶栏下拉预设切换
+> （`src/components/TopBar.tsx` 的 `ThemeTopPicker`）；字体设置搬到了「设置 → 通用 → 界面字体」。
+> `src/components/settings/DesignerSection.tsx` 与 `designerApply.ts` 保留在仓库备用，但**没有任何入口**。
+> 本文档自此作为"当时的设计"备查，不要按它去找设置入口。
+
 ## 一、需求背景
 
 Playday 当前的视觉定制能力**分散在多个地方、且不够统一**：

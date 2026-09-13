@@ -14,6 +14,9 @@ import * as path from "path";
 import { spawn } from "child_process";
 import { gameSaveHelperExePath } from "./paths";
 
+/** 静默开关：传了就不开窗口（"一直自动备份"模式用，不让工具窗口打扰用户）。 */
+export const QUIET_FLAG = "/q";
+
 // 拼装命令行参数：第 1 个是游戏名，其余是存档路径（含通配符，由工具自己匹配）。
 // 单独抽成纯函数，便于排查"到底传了什么"。
 export function buildBackupArgs(gameName: string, savePaths: string[]): string[] {
@@ -36,22 +39,33 @@ export function resolveHelperExe(): { path: string } | { error: string } {
 // 启动备份工具（不等待它退出）。
 // 工具会打开窗口并在用户关闭前一直存活，所以 detached + unref，不阻塞主进程。
 // cwd 设为 exe 所在目录：保证工具找得到自己的 template\ / settings.json / logs\。
+//
+// @param opts.quiet  传 /q：静默执行、不开窗口（"一直自动备份"用）。
+// @param opts.onDone 工具退出后回调退出码（0/1/2）。静默模式靠它判断成败 ——
+//                    静默失败是最难受的（用户以为备好了其实没有），必须有人告诉用户。
 export function launchSaveBackup(
   gameName: string,
-  savePaths: string[]
+  savePaths: string[],
+  opts: { quiet?: boolean; onDone?: (code: number | null) => void } = {}
 ): { ok: boolean; error?: string } {
   const resolved = resolveHelperExe();
   if ("error" in resolved) return { ok: false, error: resolved.error };
   const exePath = resolved.path;
+  const args = buildBackupArgs(gameName, savePaths);
+  if (opts.quiet) args.push(QUIET_FLAG);
   try {
-    const child = spawn(exePath, buildBackupArgs(gameName, savePaths), {
+    const child = spawn(exePath, args, {
       cwd: path.dirname(exePath),
       detached: true,
       stdio: "ignore",
     });
     child.on("error", (err) => {
       console.error("[gameSaveHelper] 启动备份工具失败:", exePath, err.message);
+      opts.onDone?.(null);
     });
+    if (opts.onDone) {
+      child.on("exit", (code) => opts.onDone?.(code));
+    }
     child.unref();
     return { ok: true };
   } catch (err) {

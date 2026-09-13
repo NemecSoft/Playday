@@ -6,6 +6,7 @@ import { Network, Globe, MapPin } from "lucide-react";
 import { api } from "../api/client";
 import { useI18n } from "../i18n";
 import TipsBar from "./TipsBar";
+import MusicPlayer from "./MusicPlayer";
 
 interface StatusBarData {
   localIp: string;
@@ -59,6 +60,9 @@ export default function StatusBar() {
       </span>
       {/* 右侧：轮播小技巧（与网络信息同一行，见 src/data/tips.json） */}
       <TipsBar />
+      {/* 最右：背景音乐控件（上一首/播放暂停/下一首 + 曲名）。
+          没有配置音乐目录、或目录里没有音频时它自己返回 null，不占地方。 */}
+      <MusicPlayer />
     </div>
   );
 }

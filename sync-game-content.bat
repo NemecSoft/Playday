@@ -1,10 +1,10 @@
 @echo off
 chcp 65001 >nul
-title Playday - 游戏内容同步（简介 / 地区 / 标签）
+title Playday - 游戏内容同步（简介 / 地区 / 标签 / 存档路径）
 REM ============================================================
 REM  Playday 游戏内容同步：data\game-content.json → 数据库
 REM
-REM  来源：data\game-content.json   （人工维护的内容源：每个游戏的简介/地区/标签）
+REM  来源：data\game-content.json   （人工维护的内容源：每个游戏的简介/地区/标签/存档路径）
 REM  目标：release\data\Admin\library.db     （权威库）
 REM        release\data\library\library.db   （运行时副本，客户端启动时也会自动复制）
 REM
@@ -18,7 +18,15 @@ REM    地区 region ：单个直写 "国产"；多个用 # 连 "国产#日本"�
 REM    标签 tags   ：用 # 分隔，如 "#休闲#生存#卡通#烧脑"；没有写 ""
 REM    （地区/标签的 # 写法由脚本自动转成库里需要的数组格式，你不用管库格式）
 REM
-REM  默认就会写：简介（长短都写）、地区、标签、社区评分、**权限等级 game_level**
+REM    存档路径 savepaths ：数组，如 ["X:/YunGame/V/XX/Save/*.*"]。**一般不用手写** ——
+REM      它来自 games.db（LiteDB）里那条指向 GameSaveHelper 的 action（名字通常叫
+REM      "备份游戏存档"，参数是「游戏名 + 若干带引号的路径」）。要更新时先跑一次：
+REM          node scripts\gen-game-content.mjs          （只补空，不覆盖你手写的）
+REM          node scripts\gen-game-content.mjs --refresh-savepaths   （强制按 LiteDB 重取）
+REM      把路径填进 json 之后，再双击本批处理写进库。
+REM
+REM  默认就会写：简介（长短都写）、地区、标签、社区评分、**权限等级 game_level**、
+REM              **存档路径 save_paths**（游戏退出后"是否备份存档"用的就是它）
 REM              （gamelevel = 玩这个游戏需要的权限等级：1 = 黄金版，2 = 钻石版。
 REM                它是黄金/钻石门禁的判据，所以必须进库）
 REM  可选：只想先写短的那批简介：sync-game-content.bat --short-only
@@ -115,7 +123,8 @@ echo.
 echo [content] 完成
 echo         回退方法：把 release\data\Admin\library.db.bak-^(时间戳^) 复制回 library.db 覆盖即可。
 echo.
-echo [content] 现在启动（或重启）Playday，就能在界面上看到新的简介 / 地区 / 标签。
+echo [content] 现在启动（或重启）Playday，就能在界面上看到新的简介 / 地区 / 标签；
+echo [content] 存档路径（save_paths）也一并生效 —— 游戏退出后的"备份存档"提示会用它。
 
 :end
 echo.

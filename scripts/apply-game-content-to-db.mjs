@@ -6,6 +6,10 @@
 //   intro  ← item.intro
 //   region ← item.region   （库里存的是 JSON 数组文本，如 ["国产"]）
 //   tags   ← item.tags     （同上，如 ["3D","恐怖"]）
+//   save_paths ← item.savepaths（存档路径数组，备份/恢复用；App 侧类型是
+//                Game.savePaths: string[]，元素可含通配符与 {游戏库名} 占位符）。
+//                比较时按**解析后的数组**比，不做文本比较 —— 库里的老值是 `["A\\B"]`、
+//                内容表里是 `["A/B"]`，纯文本比会每次都被判成"变了"来回刷库。
 //   community_score ← item.score（社区评分，**人工填**；> HOT_SCORE_MIN=100 的会在卡片
 //                右上角亮"人气火爆"小火苗，见 src/utils/hotBadge.ts）
 //   game_level ← item.gamelevel。它不是"关卡等级"，而是**玩这个游戏需要的权限等级**：
@@ -83,6 +87,25 @@ const asArr = (v) => {
 /** 库里这几列存 JSON 数组文本（空值就是 "[]"）。 */
 const arrText = (v) => JSON.stringify(asArr(v));
 
+/**
+ * 存档路径：手写容错 —— 数组正常；写成字符串时按换行拆（一条一行，省得写一长串 JSON）。
+ * 分隔符不在这里转：生成脚本写进内容表时已经是 `/`（见 scripts/playnite-savepaths.mjs）。
+ */
+const toPathArr = (v) => {
+  if (Array.isArray(v)) return v.map((x) => String(x).trim()).filter(Boolean);
+  const s = typeof v === "string" ? v.trim() : "";
+  return s ? s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean) : [];
+};
+/** 库里的 JSON 数组文本 → 数组（解析不了当空数组，绝不让坏值把整次同步打断）。 */
+const parseJsonArr = (s) => {
+  try {
+    const v = JSON.parse(String(s ?? "[]"));
+    return Array.isArray(v) ? v.map((x) => String(x)) : [];
+  } catch {
+    return [];
+  }
+};
+
 const items = JSON.parse(fs.readFileSync(CONTENT, "utf-8"));
 console.log("== 同步 游戏内容总表 → 数据库 ==");
 console.log("内容文件:", path.relative(root, CONTENT));
@@ -124,6 +147,8 @@ const FIELDS = [
   { key: "score", col: "community_score", kind: "num", positiveOnly: true },
   // 权限等级（1 黄金 / 2 钻石）：门禁的判据，必须跟着内容表进库（见文件头说明）
   { key: "gamelevel", col: "game_level", kind: "num" },
+  // 存档路径（备份/恢复用）：数组 → 库里 JSON 数组文本；按解析后的数组比较（见文件头说明）
+  { key: "savepaths", col: "save_paths", kind: "jsonArray" },
 ];
 
 function syncDb(dbPath, { dryRun }) {
@@ -131,13 +156,13 @@ function syncDb(dbPath, { dryRun }) {
   // 取列必须覆盖 FIELDS 里要用到的每一列 —— 少取一列不会报错，只会把那一列当成
   // undefined（→ 0 / ""）从而"每次都判定要改"，白写一遍库（踩过：score 漏了 community_score）。
   const rows = db.exec(
-    "SELECT id, game_id, name, intro, region, tags, game_level, community_score FROM games",
+    "SELECT id, game_id, name, intro, region, tags, game_level, community_score, save_paths FROM games",
   )[0].values;
   const stats = { byId: 0, byName: 0, changed: {}, unchanged: 0, unmatched: [], skippedLongIntro: 0 };
   for (const f of FIELDS) stats.changed[f.key] = 0;
 
   const updates = [];
-  for (const [id, gameId, name, intro, region, tags, level, communityScore] of rows) {
+  for (const [id, gameId, name, intro, region, tags, level, communityScore, savePaths] of rows) {
     const hit = byId.get(normId(gameId)) ?? byName.get(normName(name));
     if (!hit) {
       stats.unmatched.push(String(name));
@@ -146,7 +171,14 @@ function syncDb(dbPath, { dryRun }) {
     if (byId.has(normId(gameId))) stats.byId++;
     else stats.byName++;
 
-    const cur = { intro, region, tags, gamelevel: level, score: communityScore };
+    const cur = {
+      intro,
+      region,
+      tags,
+      gamelevel: level,
+      score: communityScore,
+      savepaths: savePaths,
+    };
     const next = {};
     let touched = false;
     for (const f of FIELDS) {
@@ -158,13 +190,25 @@ function syncDb(dbPath, { dryRun }) {
         stats.skippedLongIntro++;
         continue;
       }
+      // 每类字段各自算"想要的值"和"库里现在的值"，两边同一个口径才好比。
+      // jsonArray（存档路径）两边都先规范化成 JSON 文本再比：库里的老值分隔符是 `\`、
+      // 内容表里是 `/`，纯文本比会每次都被判成"变了"，白写一遍库。
       const want =
-        f.kind === "array"
-          ? arrText(hit[f.key])
-          : f.kind === "num"
-            ? Number(hit[f.key]) || 0
-            : String(hit[f.key] ?? "").replace(/\s+/g, " ").trim();
-      const now = f.kind === "array" ? String(cur[f.key] ?? "[]") : f.kind === "num" ? Number(cur[f.key]) || 0 : String(cur[f.key] ?? "");
+        f.kind === "jsonArray"
+          ? JSON.stringify(toPathArr(hit[f.key]))
+          : f.kind === "array"
+            ? arrText(hit[f.key])
+            : f.kind === "num"
+              ? Number(hit[f.key]) || 0
+              : String(hit[f.key] ?? "").replace(/\s+/g, " ").trim();
+      const now =
+        f.kind === "jsonArray"
+          ? JSON.stringify(parseJsonArr(cur[f.key]))
+          : f.kind === "array"
+            ? String(cur[f.key] ?? "[]")
+            : f.kind === "num"
+              ? Number(cur[f.key]) || 0
+              : String(cur[f.key] ?? "");
       if (want === now) continue;
       next[f.col] = want;
       stats.changed[f.key]++;

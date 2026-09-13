@@ -13,6 +13,16 @@
       "en": "Hold Alt + mouse wheel to resize covers — this also changes how many fit in each row."
     },
     {
+      "id": "scroll-keys",
+      "zh": "Ctrl+Home / Ctrl+End 一键到最上 / 最下；PageUp / PageDown 翻上一页 / 下一页；空格也能翻页。",
+      "en": "Ctrl+Home / Ctrl+End jump to top / bottom; PageUp / PageDown (or Space) page through the list."
+    },
+    {
+      "id": "back-forward",
+      "zh": "Alt+← 返回上一页、Alt+→ 前进（和浏览器一样，从游戏详情回到主页最方便）。",
+      "en": "Alt+← goes back and Alt+→ goes forward, just like a browser."
+    },
+    {
       "id": "search-focus",
       "zh": "按 / 或 Ctrl+F 可以直接跳到搜索框，不用先用鼠标点。",
       "en": "Press / or Ctrl+F to jump straight to the search box."

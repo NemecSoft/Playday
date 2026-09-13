@@ -14,8 +14,11 @@ import { registerSystemIpc } from "./system";
 import { registerSaveManagerIpc } from "./saveManager";
 import { registerTrainerIpc } from "./trainer";
 import { registerSavesIpc } from "./saves";
+import { registerGameVideosIpc } from "./gameVideos";
 import { registerErrorReportIpc } from "./errorReport";
 import { registerZoomIpc } from "./zoom";
+import { registerFontsIpc } from "./fonts";
+import { registerMusicIpc } from "./music";
 
 export function registerIpc() {
   registerGamesIpc(ipcMain);
@@ -27,6 +30,9 @@ export function registerIpc() {
   registerSaveManagerIpc(ipcMain);
   registerTrainerIpc(ipcMain);
   registerSavesIpc(ipcMain);
+  registerGameVideosIpc(ipcMain);
   registerErrorReportIpc(ipcMain);
   registerZoomIpc();
+  registerFontsIpc(ipcMain);
+  registerMusicIpc(ipcMain);
 }

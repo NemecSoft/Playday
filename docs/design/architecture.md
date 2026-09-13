@@ -123,3 +123,39 @@ sql.js (library/library.db) / config.json / 文件系统 / 进程启动
 8. **主题与配色解耦**：主题（视觉风格）只保留苹果 / 浮雕 / 机械感 3 个，且**只做形状与质感、不含颜色**；配色（调色板）全部保留、独立于主题。主题与配色互不冲突（见 [主题与配色规范](./themes-styles.md)）。
 9. **多人氛围营造**：通过 provider 抽象层实现"在线用户 / 弹幕 / 活动流"——默认用随机模拟（mockProvider），预留真实后端（realProvider）可无缝切换（见 [多人氛围营造](./community-atmosphere.md)）。
 10. **管理端本地网站化**：管理端不再用 Electron GUI 窗口，改为"本地网站"形式——Node http + sql.js 读写权威库，浏览器访问管理页面（复用 admin/src 前端），需 admin 令牌认证（见 [双端架构](./dual-end.md)）。
+11. **背景音乐**：目录可配置、随机循环、进主界面自动播放；音频文件走**本地 HTTP 服务器**（`/music/*`）而不是 `file://`，与自带字体同一套理由（见 [背景音乐](./background-music.md)）。
+12. **自带字体与字号**：字体来自可配置的 fonts 目录（不依赖系统字体）；"字体大小"是构建期给每处 `font-size` 乘 `--ui-font-scale`，**只放大文字、不动界面尺寸**（见 [主题与配色规范](./themes-styles.md) 第六节）。
+
+## 键盘快捷键
+
+键位选择的总原则：**照抄 Chromium**（本项目就是个 Electron 浏览器壳，用户对 Home / End / PageUp /
+PageDown / 空格 / Alt+← 的预期就是浏览器那套），而不是自己发明一套。
+
+| 快捷键 | 作用 | 实现位置 |
+| --- | --- | --- |
+| `Ctrl+Home` / `Home` | 滚到最上面（**Ctrl 版本在搜索框里也生效**，见下） | `src/hooks/useGlobalShortcuts.ts` |
+| `Ctrl+End` / `End` | 滚到最下面（同上） | 同上 |
+| `PageUp` / `PageDown` | 翻上一屏 / 下一屏（一屏 = 可视高 − 40px，同 Chromium） | 同上 |
+| `Space` / `Shift+Space` | 翻下一页 / 上一页（浏览器习惯） | 同上 |
+| `Alt+←` / `Alt+→` | 后退 / 前进（主页 ↔ 游戏详情） | 同上 |
+| `/` 或 `Ctrl+F` | 聚焦搜索框 | `src/components/Toolbar.tsx` |
+| `Ctrl+滚轮` | 整页缩放（临时，不写设置） | `src/components/ZoomIndicator.tsx` |
+| `Alt+滚轮` | 调封面大小（连带每行列数） | `src/components/views/GridView.tsx` |
+| `F11` | 全屏切换 | `src/components/TopBar.tsx` |
+| `Esc` | 关闭设置弹窗 | `src/components/settings/SettingsModal.tsx` |
+
+设计规则（都是踩过的坑，别绕过）：
+
+1. **判定与 DOM 分离**：键位映射 / 翻页步长 / "该不该让键"都是纯函数，放在
+   `src/utils/keyboardScroll.ts`，单测在 `src/utils/__tests__/keyboardScroll.test.ts`；
+   hook 只负责装监听与派发。这样加键位 = 改一处纯函数 + 加一条测试。
+2. **滚谁由"焦点 → 指针"决定**（`resolveScrollTarget`）：焦点所在的可滚区优先（侧栏、详情页各滚各的），
+   其次是指针下的可滚区；**有弹窗时只滚弹窗内部**——否则指针停在背景网格上按 PageDown，
+   会出现"弹窗没动、后面的列表滚了"。
+3. **绝不抢键**：输入框 / 文本域 / 可编辑区里的 Home/End/空格属于输入框；
+   焦点在按钮上时空格是"激活按钮"；`Ctrl+Space`（输入法切换）、`Ctrl+PageUp/PageDown`（浏览器切标签页）
+   一律不拦；`Alt` / `Win` 组合键留给别的功能。
+   **唯一一处刻意偏离浏览器**：`Ctrl+Home` / `Ctrl+End` 即使在搜索框里也照样滚列表 ——
+   浏览器里它们是"光标移到开头/结尾"，但本应用要的是"一键到最上/最下"，
+   而"搜完想回列表顶部"正是焦点还在搜索框时最常发生的场景。
+4. **尊重 `prefers-reduced-motion`**：减弱动效时用瞬时滚动，不做平滑动画。

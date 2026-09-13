@@ -17,6 +17,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useVirtualizer, type Virtualizer } from "@tanstack/react-virtual";
 import type { Group } from "../utils/selectors";
 import type { Game } from "../types/models";
+import { clampCardGap, columnsForWidth, contentWidthOf, minColumnWidth } from "../utils/gridLayout";
 
 /** A single windowable row: either a group header or a row of cards. */
 export type VirtualGridRow =
@@ -110,11 +111,11 @@ export function useVirtualGrid({
 
   // 水平间距：卡片左右之间，用 cardGap（上限 20）。
   // 注意用 ?? 而不是 ||：cardGap 为 0 时不能回退成 8，否则间距永远缩不小。
-  const gap = Math.max(0, Math.min(20, cardGap ?? 8));
+  const gap = clampCardGap(cardGap);
   // 垂直间距：卡片行与行之间的上下间距，用独立的 cardRowGap（上限 60）。
   // 同样用 ??：cardRowGap=0 时按真实 0 处理，否则"调到 0 却还是很大"。
   const rowGap = Math.max(0, Math.min(60, cardRowGap ?? 8));
-  const minColWidth = Math.max(120, cardWidth || 180);
+  const minColWidth = minColumnWidth(cardWidth);
 
   // Track the scroll container's *content-box* width so we can derive the
   // column count. clientWidth includes padding; the grid lives inside the
@@ -122,23 +123,17 @@ export function useVirtualGrid({
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const update = () => {
-      const style = getComputedStyle(el);
-      const padX =
-        parseFloat(style.paddingLeft || "0") +
-        parseFloat(style.paddingRight || "0");
-      setContainerWidth(Math.max(0, el.clientWidth - padX));
-    };
+    const update = () => setContainerWidth(contentWidthOf(el));
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
-  const cols = useMemo(() => {
-    if (containerWidth <= 0) return 0;
-    return Math.max(1, Math.floor((containerWidth + gap) / (minColWidth + gap)));
-  }, [containerWidth, gap, minColWidth]);
+  const cols = useMemo(
+    () => columnsForWidth(containerWidth, gap, minColWidth),
+    [containerWidth, gap, minColWidth],
+  );
 
   // 一行卡片的高度：封面（16:9）+ 标题 + 垂直行间距。
   // 垂直间距用 rowGap（cardRowGap），与水平间距 cardGap 相互独立。

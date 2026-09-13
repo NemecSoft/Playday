@@ -312,6 +312,20 @@ if (!fs.existsSync(contentFull)) {
         `${CONTENT_FILE}: ${lackKey.length} 条缺字段（每条应有 ${CONTENT_REQUIRED_KEYS.join(' / ')}），例如 "${lackKey[0]?.name ?? '?'}"`,
       )
     }
+    // savepaths 是**可选**字段（没配存档的游戏就不该有这个键），但一旦写了必须是
+    // "非空字符串数组"：手写时最容易写成字符串或塞空数组，而坏值会让"备份存档"
+    // 拿着错路径去找文件 —— 只在这类静默故障上下守卫（与 cover_image 那次同理）。
+    const badSavePaths = items.filter(
+      (it) =>
+        it &&
+        'savepaths' in it &&
+        !(Array.isArray(it.savepaths) && it.savepaths.length > 0 && it.savepaths.every((p) => typeof p === 'string' && p.trim())),
+    )
+    if (badSavePaths.length) {
+      violations.push(
+        `${CONTENT_FILE}: ${badSavePaths.length} 条 savepaths 不是「非空字符串数组」（例如 "${badSavePaths[0]?.name ?? '?'}"）—— 留空就别写这个键`,
+      )
+    }
   }
 }
 

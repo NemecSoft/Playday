@@ -1,11 +1,11 @@
-// Layout of the main app: the new browser-style TopBar is rendered separately
-// by App.tsx. AppBody just composes (sidebar + main content) and the bottom
-// status bar. The sidebar (tag filtering) is only relevant on the Home tab;
+// Layout of the main app: the browser-style TopBar and the bottom status bar
+// are rendered separately by App.tsx (so the status bar also shows on the
+// game detail page). AppBody just composes sidebar + main content.
+// The sidebar (tag filtering) is only relevant on the Home tab;
 // Videos / Tools tabs get the full content width.
 
 import Sidebar from "./Sidebar";
 import MainContent from "./MainContent";
-import StatusBar from "./StatusBar";
 import { useUIStore } from "../stores/uiStore";
 
 export default function AppBody() {
@@ -17,8 +17,6 @@ export default function AppBody() {
         {activeTab === "home" && <Sidebar />}
         <MainContent />
       </div>
-      {/* 状态栏（右侧内嵌提示栏 TipsBar，同一行） */}
-      <StatusBar />
     </div>
   );
 }

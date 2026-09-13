@@ -12,6 +12,7 @@ import {
 } from "react-router-dom";
 import TopBar from "./components/TopBar";
 import AppBody from "./components/AppBody";
+import StatusBar from "./components/StatusBar";
 import LoginScreen from "./components/LoginScreen";
 
 import LaunchActionModal from "./components/LaunchActionModal";
@@ -28,9 +29,14 @@ import { useLibraryStore } from "./stores/libraryStore";
 import { useAuthStore } from "./stores/authStore";
 import { useUIStore } from "./stores/uiStore";
 import { useCommunityStore } from "./utils/community/store";
+import { useMusicStore } from "./stores/musicStore";
 import DanmakuOverlay from "./components/community/DanmakuOverlay";
 import ActivityToast from "./components/community/ActivityToast";
+import { applyUiFont, applyUiFontScale, uiFontsState } from "./utils/uiFont";
+import { useGlobalShortcuts } from "./hooks/useGlobalShortcuts";
 import { useI18n, type LanguageCode } from "./i18n";
+
+import { isMusicMode } from "./utils/musicQueue";
 
 export default function App() {
   const loadSettings = useSettingsStore((s) => s.load);
@@ -42,6 +48,7 @@ export default function App() {
   const loginEnabled = useSettingsStore((s) => s.settings.loginEnabled);
   const loggedIn = useSettingsStore((s) => s.settings.loggedIn);
   const fontFamily = useSettingsStore((s) => s.settings.fontFamily);
+  const uiFontScale = useSettingsStore((s) => s.settings.uiFontScale);
   const { setLang } = useI18n();
 
   useEffect(() => {
@@ -52,16 +59,21 @@ export default function App() {
     loadAuth();
   }, [loadSettings, loadPlatforms, loadGames, loadStats, loadAuth]);
 
-  // Apply the user-selected font instantly (no restart). Setting the inline
-  // CSS variable overrides each theme's default --font-ui.
+  // 界面字体（改动即时生效，不用重启）：
+  //   显式选过字体 → 用它；
+  //   没选 → 用应用自带字体（fonts\字酷堂清楷 简.ttf）；
+  //   自带字体也没有（fonts 目录不存在/找不到默认文件）→ 回退系统字体。
+  // 这里写的是内联 CSS 变量（优先级最高），所以自带字体盖过主题自带的字体；
+  // 字体清单与 @font-face 见 src/utils/uiFont.ts。
   useEffect(() => {
-    const el = document.documentElement;
-    if (fontFamily && fontFamily.trim()) {
-      el.style.setProperty("--font-ui", `${fontFamily.trim()}, "Segoe UI", "Microsoft YaHei", system-ui, sans-serif`);
-    } else {
-      el.style.removeProperty("--font-ui");
-    }
+    const chosen = fontFamily && fontFamily.trim() ? fontFamily.trim() : uiFontsState().defaultFamily;
+    applyUiFont(chosen);
   }, [fontFamily]);
+
+  // 字体大小（百分比）：只放大文字，界面尺寸不动（见 src/utils/uiFont.ts）。
+  useEffect(() => {
+    applyUiFontScale(uiFontScale);
+  }, [uiFontScale]);
 
   // Sync the persisted language to the i18n context (instant switching).
   useEffect(() => {
@@ -90,6 +102,39 @@ export default function App() {
  *  "game just launched" by navigating to the detail page. */
 function AppShell() {
   const navigate = useNavigate();
+  // 通用快捷键（滚动到顶/底、翻页、Alt+←/→ 后退前进）：
+  // 全局一处注册，网格/列表/侧栏/详情页/设置弹窗都生效（滚谁由"焦点 → 指针"决定）。
+  useGlobalShortcuts(navigate);
+
+  // —— 背景音乐 ——
+  // 三件事分开接线（都在设置里可控）：
+  //   ① 换音乐目录 → 重新拉曲库；
+  //   ② 开关 → 播/停（等曲库拉完再播，否则"刚进来有 0 首"会导致不播）；
+  //   ③ 音量 → 同步到 <audio>。
+  // 自动播放是需求：进入主界面（本组件挂载）就开始放。播放逻辑见 src/stores/musicStore.ts。
+  const musicEnabled = useSettingsStore((s) => s.settings.musicEnabled);
+  const musicVolume = useSettingsStore((s) => s.settings.musicVolume);
+  const musicDir = useSettingsStore((s) => s.settings.musicDir);
+  const musicMode = useSettingsStore((s) => s.settings.musicMode);
+  const musicLoaded = useMusicStore((s) => s.loaded);
+  useEffect(() => {
+    void useMusicStore.getState().load();
+  }, [musicDir]);
+  useEffect(() => {
+    const ms = useMusicStore.getState();
+    if (musicEnabled && musicLoaded) ms.play();
+    else ms.pause();
+  }, [musicEnabled, musicLoaded]);
+  useEffect(() => {
+    useMusicStore.getState().setVolume(musicVolume ?? 50);
+  }, [musicVolume]);
+  useEffect(() => {
+    // ④ 播放模式：设置 → store（单曲/顺序/随机）。config.json 是外部可改的，
+    //    非法值一律回退随机。只在真的不一致时才写 —— 否则"面板里切一下模式"
+    //    会先写 store、再被设置回流重排一次队列（多洗一次牌）。
+    const want = isMusicMode(musicMode) ? musicMode : "shuffle";
+    if (useMusicStore.getState().mode !== want) useMusicStore.getState().setMode(want);
+  }, [musicMode]);
   const lastLaunchedId = useGamesStore((s) => s.lastLaunchedId);
   const clearLastLaunched = useGamesStore((s) => s.clearLastLaunched);
   const settingsOpen = useUIStore((s) => s.settingsOpen);
@@ -136,16 +181,23 @@ function AppShell() {
   return (
     <div className="app">
       <TopBar />
-      <RoutesErrorBoundary>
-        <Routes>
-          <Route path="/" element={<AppBody />} />
-          <Route path="/game/:id" element={<GameDetailPage />} />
-          {/* 兜底：任何未匹配路径回到主页，避免空白。
-              注意：v7 里把 <Navigate> 直接作为 path="*" element 报"pure is not invalid"，
-              v6 没有这个问题。 */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </RoutesErrorBoundary>
+      {/* 外壳 = 路由内容 + 底部状态栏。状态栏属于"主界面"而不是某个页面：
+          放在这里，主页/详情页（/game/:id）都能看到 IP、门店名、小技巧和音乐控件。
+          （以前它挂在 AppBody 里，一进详情页整条就消失了。）
+          .app-shell 是 flex 纵向 + flex:1 + overflow:hidden（见 global.css）。 */}
+      <div className="app-shell">
+        <RoutesErrorBoundary>
+          <Routes>
+            <Route path="/" element={<AppBody />} />
+            <Route path="/game/:id" element={<GameDetailPage />} />
+            {/* 兜底：任何未匹配路径回到主页，避免空白。
+                注意：v7 里把 <Navigate> 直接作为 path="*" element 报"pure is not invalid"，
+                v6 没有这个问题。 */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </RoutesErrorBoundary>
+        <StatusBar />
+      </div>
       <ToastContainer />
       {/* 社区氛围：顶部弹幕 + 活动流 toast（可设置关闭） */}
       <DanmakuOverlay />
@@ -202,26 +254,31 @@ class RoutesErrorBoundary extends Component<
           }}
         >
           <div style={{ maxWidth: 560 }}>
-            <div style={{ fontSize: 48, fontWeight: 800, marginBottom: 8 }}>
+            {/* 字号用 Tailwind 的 text-[Npx] 类而不是内联 fontSize：
+                内联样式构建期覆盖不到，改"字体大小"设置时这里不会跟着变。 */}
+            <div className="text-[48px]" style={{ fontWeight: 800, marginBottom: 8 }}>
               出错了
             </div>
             <p style={{ opacity: 0.75, marginBottom: 16 }}>
               路由渲染时发生异常，已被捕获。点下方按钮返回主页。
             </p>
             <pre
+              className="text-[12px]"
               style={{
                 background: "rgba(0,0,0,0.06)",
                 padding: 12,
                 borderRadius: 8,
                 overflow: "auto",
-                fontSize: 12,
                 textAlign: "left",
                 marginBottom: 16,
               }}
             >
               {String(e?.message || e)}
               {e?.stack ? (
-                <div style={{ marginTop: 8, fontSize: 10, opacity: 0.7, whiteSpace: "pre-wrap" }}>
+                <div
+                  className="text-[10px]"
+                  style={{ marginTop: 8, opacity: 0.7, whiteSpace: "pre-wrap" }}
+                >
                   {e.stack}
                 </div>
               ) : null}
@@ -229,13 +286,13 @@ class RoutesErrorBoundary extends Component<
             <button
               type="button"
               onClick={() => (window.location.hash = "#/")}
+              className="text-[13px]"
               style={{
                 padding: "8px 20px",
                 border: "1px solid rgba(255,255,255,0.2)",
                 borderRadius: 8,
                 background: "var(--accent, #2d7ff9)",
                 color: "var(--text-primary)",
-                fontSize: 13,
                 fontWeight: 600,
                 cursor: "pointer",
               }}
