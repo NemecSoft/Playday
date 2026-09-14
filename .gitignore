@@ -48,7 +48,13 @@ coverage/
 temp/
 
 # ---- 本地开发配置（不入仓库）----
-.codebuddy/
+# .codebuddy/ 是本机目录（skills 体积大、且可从 marketplace 重装），默认不入库。
+# 但 rules/ 必须入库：它是"项目记忆在仓库里"的指路牌 —— 重装系统后新会话靠它找到
+# docs/PROJECT-MEMORY.md。注意 gitignore 的语义：想放行一个子目录，必须让 git 能进到
+# 父目录，所以这里写 `.codebuddy/*`（而不是 `.codebuddy/`，后者会让 git 根本不进这个目录，
+# 后面的 `!` 规则会失效）。
+.codebuddy/*
+!.codebuddy/rules/
 .workbuddy/
 .prototools
 *.log
