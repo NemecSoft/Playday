@@ -67,6 +67,32 @@ export function toCmdPath(p: string): string {
   return normalizePath(p).replace(/\//g, SEP_WIN);
 }
 
+/**
+ * "显示控制台窗口"地启动 `.bat` / `.cmd` 时，交给 `spawn(comspec, argv)` 的**参数表**
+ * （第一个参数 comspec 由调用方传，这里只出参数）。规则见
+ * docs/design/launch-and-paths.md §5，几条都是实测定下来的：
+ *
+ * 1) **必须经 `start`**：把 bat 直接交给 `cmd /c` 跑，在 Electron 这种 GUI 父进程里
+ *    不会弹出窗口（窗口能否创建受父进程控制台状态影响）。
+ * 2) **`start` 里必须再套一层 `cmd /c`**（2026-09-14 修）：`start` 对 `.bat` 是用
+ *    **`cmd /K`** 跑的 —— 实测能抓到常驻的 `cmd.exe /K <bat>` 进程。于是脚本结束后
+ *    那个 shell 不退：控制台窗口卡在提示符上、外层 `/wait` 也永远不返回
+ *    （用户报的现象就是"退出游戏后窗口留在 `D:\...>` 不动"）。
+ *    显式写 `cmd /c` 后：脚本结束 → 该 shell 退出 → 窗口自动关闭。
+ * 3) `/wait` 保留"脚本退出 = 启动器退出"的语义（§6 的计时依赖它）。实测改法前后
+ *    外层都在**脚本结束时刻**退出（脚本 5s、外层 5.2s 退），语义未变。
+ * 4) 路径含空格、带参数都实测通过（bat 里 `%*` 拿到了传参）。
+ */
+export function batConsoleArgs(
+  comspec: string,
+  batPath: string,
+  args: readonly string[] = [],
+): string[] {
+  // toCmdPath：内部统一用 `/`，但 cmd 会把以 `/` 开头的 token 当开关
+  // （`//NAS/share/x.bat` 直接传会被判成非法开关），拼命令行前换回 `\`。
+  return ["/d", "/s", "/c", "start", "", "/wait", comspec, "/c", toCmdPath(batPath), ...args];
+}
+
 /** 是否以 `{占位符}` 开头（只认开头的占位符，与老实现一致）。 */
 export function startsWithPlaceholder(p: string): boolean {
   return p.trimStart().startsWith("{");

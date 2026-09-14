@@ -33,11 +33,6 @@
       "en": "Search accepts pinyin initials: typing zy finds 自由之翼 (Wings of Liberty)."
     },
     {
-      "id": "multi-select",
-      "zh": "按住 Ctrl 再点卡片，可以一次选中多个游戏。",
-      "en": "Ctrl + click cards to select several games at once."
-    },
-    {
       "id": "context-menu",
       "zh": "在卡片上点右键，会弹出快捷菜单（详情、收藏、启动等）。",
       "en": "Right-click a card for a quick menu (details, favourite, launch…)."
@@ -49,12 +44,12 @@
     },
     {
       "id": "desc-toggle",
-      "zh": "工具栏的「显示简介」开关能一键隐藏所有简介，网格会变得更紧凑。",
+      "zh": "不知道游戏是什么内容？打开工具栏的「显示简介」会简要告诉你这是什么游戏",
       "en": "The “show description” switch in the toolbar hides every description for a denser grid."
     },
     {
       "id": "tag-filter",
-      "zh": "左侧标签可以搜索和按标签筛选；边缘拖一下就能调整侧栏宽度。",
+      "zh": "左侧标签可以搜索和按标签、类型等筛选；边缘拖一下就能调整侧栏宽度。",
       "en": "Filter games by tag in the left sidebar — drag its edge to resize, and use the box to search tags."
     },
     {
@@ -69,48 +64,33 @@
     },
     {
       "id": "game-extras",
-      "zh": "详情页里有「修改器」和「应用存档」：把文件放进对应游戏目录，就能一键调用。",
-      "en": "Game detail pages offer Trainers and Save-applying: drop files into the game's folder to use them in one click."
-    },
-    {
-      "id": "covers",
-      "zh": "封面按「游戏名同名文件」自动匹配，放进 CoverImages 目录即可，重启后生效。",
-      "en": "Covers are matched by filename: drop “<game name>.jpg” into the CoverImages folder and restart."
+      "zh": "详情页里有「修改器」和「应用存档」两个入口，点一下就能用，注意，这个存档是管理员给你预置的，不是你自己打的。",
+      "en": "Game detail pages have Trainers and Apply-save entries — one click to use them."
     },
     {
       "id": "game-fullscreen",
-      "zh": "大多数 PC 游戏按 Alt+Enter 就能在窗口和全屏之间切换，不用进设置菜单。",
-      "en": "Most PC games switch between windowed and full screen with Alt+Enter — no settings menu needed."
+      "zh": "你知道吗，大多数游戏可以用 Alt+Enter 在「全屏」和「窗口」之间切换，不用进设置菜单。",
+      "en": "Did you know? Most games toggle between full screen and windowed with Alt+Enter — no settings menu needed."
     },
     {
-      "id": "game-bar",
-      "zh": "Win+G 打开 Xbox 游戏栏，可以录屏、截图、看帧率。",
-      "en": "Win+G opens the Xbox Game Bar for recording, screenshots and frame-rate stats."
+      "id": "task-manager",
+      "zh": "你知道吗，游戏卡死时可以按 Ctrl+Shift+Esc 直接叫出任务管理器结束它，不用重启整台机器。",
+      "en": "Did you know? Ctrl+Shift+Esc opens Task Manager directly, so a frozen game can be killed without rebooting."
     },
     {
-      "id": "record-screen",
-      "zh": "Win+Alt+R 直接开始/停止录屏，Win+Shift+S 框选截图，都能用来记录精彩瞬间。",
-      "en": "Win+Alt+R starts/stops recording; Win+Shift+S captures a screen region — handy for saving highlights."
+      "id": "alt-tab-switch",
+      "zh": "你知道吗，Alt+Tab 能在游戏和桌面之间来回切；按住 Alt 多敲几下 Tab 可以跳到更靠后的窗口。",
+      "en": "Did you know? Alt+Tab switches between the game and the desktop — keep Alt held and tap Tab again to reach windows further back."
     },
     {
-      "id": "snap-window",
-      "zh": "Win+方向键可以把窗口贴到屏幕左半边或右半边，边玩边查攻略很方便。",
-      "en": "Win+arrow keys snap windows to a half of the screen — great for reading a guide while playing."
+      "id": "resolution-mismatch",
+      "zh": "你知道吗，画面有黑边或者发糊，多半是游戏分辨率和显示器不一致；先按 Alt+Enter 切窗口模式再调分辨率最快。",
+      "en": "Did you know? Black bars or a blurry picture usually mean the game resolution does not match the monitor — Alt+Enter, then adjust it."
     },
     {
-      "id": "steam-screenshot",
-      "zh": "Steam 游戏按 F12 截图，进度卡住时先试试 Win+Tab 看有没有后台更新在抢资源。",
-      "en": "Steam games screenshot with F12. If performance drops, check Win+Tab for background updates stealing resources."
-    },
-    {
-      "id": "perf-dgpu",
-      "zh": "游戏掉帧时：关掉后台浏览器与下载，并在「图形设置」里指定用独显运行。",
-      "en": "Stuttering? Close background browsers/downloads and set the game to use your dedicated GPU in Graphics settings."
-    },
-    {
-      "id": "save-backup",
-      "zh": "存档最容易丢，养成定期备份的习惯——游戏详情页里的「应用存档」就是为此准备的。",
-      "en": "Save files are fragile — back them up regularly. The detail page's save-apply feature exists for exactly this."
+      "id": "vsync-lag",
+      "zh": "你知道吗，觉得操作「发飘、慢半拍」，先看游戏里有没有开垂直同步，关掉往往立刻好转。",
+      "en": "Did you know? If controls feel floaty or laggy, try turning V-Sync off in the game's video settings first."
     }
   ]
 }

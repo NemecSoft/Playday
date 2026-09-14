@@ -11,6 +11,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { resolveFontRequest } from "./fonts";
 import { resolveMusicRequest } from "./music";
+import { resolveVendorRequest } from "./vendorAssets";
 import { findVideoPoster, scanVideos } from "./videoLibrary";
 import { buildVideoSection, injectVideoSection } from "./gameDetailInject";
 
@@ -111,6 +112,20 @@ export async function startGameServer(root: string): Promise<string> {
         return;
       }
       serveFileAt(full, req, res, { cors: true });
+      return;
+    }
+
+    // 随包第三方前端资源：`/vendor/<文件名>` → vendor 目录下那个文件（内置播放器 DPlayer）。
+    // 详情页与它**同源**（页面就是这个服务器发的），所以不需要 CORS 头。
+    // 只放行裸文件名 + 扩展名白名单，见 vendorAssets.ts。
+    if (pathname.startsWith("/vendor/")) {
+      const full = resolveVendorRequest(pathname.slice("/vendor/".length));
+      if (!full) {
+        res.writeHead(404);
+        res.end("Not Found");
+        return;
+      }
+      serveFileAt(full, req, res);
       return;
     }
 

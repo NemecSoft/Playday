@@ -4,6 +4,7 @@
 // 分隔符约定：**输出的规范形式是 `/`**，输入 `\` 与 `/` 都收（见 launchPaths.ts 顶部）。
 import { describe, expect, it } from "vitest";
 import {
+  batConsoleArgs,
   isAbsolutePath,
   joinPaths,
   normalizePath,
@@ -53,6 +54,46 @@ describe("normalizePath / joinPaths / toCmdPath", () => {
     expect(toCmdPath("D:/YunGame/X/golan.bat")).toBe("D:\\YunGame\\X\\golan.bat");
     expect(toCmdPath("//NAS/share/x.bat")).toBe("\\\\NAS\\share\\x.bat");
     expect(toCmdPath("D:\\YunGame\\X")).toBe("D:\\YunGame\\X");
+  });
+});
+
+// §5 的"显示控制台窗口"启动参数。2026-09-14 修过：用户报"退出游戏后那个窗口卡在
+// 提示符上不关"，根因就在这一串（`start` 对 .bat 是用 `cmd /K` 跑的）。所以把形状
+// 钉住，谁想简化成旧写法就会红。
+describe("batConsoleArgs：显示控制台地启动 .bat", () => {
+  const COMSPEC = "C:\\Windows\\system32\\cmd.exe";
+  const BAT = "D:/YunGame/X/Sephiria/golan.bat"; // 用户报问题的那一个
+
+  it("必须经 start（直接把 bat 交给 cmd /c，在 GUI 父进程里不会弹窗口）", () => {
+    expect(batConsoleArgs(COMSPEC, BAT).slice(0, 6)).toEqual(["/d", "/s", "/c", "start", "", "/wait"]);
+  });
+
+  it("start 里必须再套一层 cmd /c：否则 start 用 cmd /K 跑脚本 → 窗口不关、/wait 不返回", () => {
+    const a = batConsoleArgs(COMSPEC, BAT);
+    const i = a.indexOf(toCmdPath(BAT));
+    expect(i).toBeGreaterThan(0);
+    expect(a[i - 1]).toBe("/c"); // 脚本前面紧跟 /c
+    expect(a[i - 2]).toBe(COMSPEC); // 且这个 /c 属于 comspec（不是把脚本直接丢给 start）
+  });
+
+  it("脚本路径用 cmd 的反斜杠形式（//NAS/... 不能被当成开关）", () => {
+    expect(batConsoleArgs(COMSPEC, "//NAS/share/x.bat")).toContain("\\\\NAS\\share\\x.bat");
+  });
+
+  it("脚本参数原样跟在路径后面，顺序不变", () => {
+    expect(batConsoleArgs(COMSPEC, BAT, ["-a", "b c"])).toEqual([
+      "/d",
+      "/s",
+      "/c",
+      "start",
+      "",
+      "/wait",
+      COMSPEC,
+      "/c",
+      toCmdPath(BAT),
+      "-a",
+      "b c",
+    ]);
   });
 });
 

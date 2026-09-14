@@ -17,7 +17,7 @@ import path from 'node:path'
 const ROOT = process.cwd()
 // 只检查"代码/文档"目录下的路径。release/ 是运行时数据目录（Game_Details 等
 // 由程序运行时创建），文档里提到它不代表漂移，所以不纳入检查。
-const REPO_PREFIXES = ['src/', 'electron/', 'shared/', 'scripts/', 'docs/', 'locales/', 'server/']
+const REPO_PREFIXES = ['src/', 'electron/', 'shared/', 'scripts/', 'docs/', 'locales/', 'server/', 'vendor/']
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'dist-electron', 'release', '.git'])
 
 // 已删除/改名的东西：文档里再出现就是漂移。

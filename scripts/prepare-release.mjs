@@ -151,7 +151,9 @@ if (check) {
   for (const c of changes) {
     console.error(`    ${c.field.replace(/^settings\./, "")}: ${c.from || "(空)"} → ${c.to}`);
   }
-  console.error("  修法：node scripts/prepare-release.mjs --mode " + mode);
+  console.error(
+    "  修法：node scripts/prepare-release.mjs --mode " + mode + (mode === "dev" ? "（或双击 sync-config.bat）" : ""),
+  );
   process.exit(1);
 }
 

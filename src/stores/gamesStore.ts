@@ -29,6 +29,7 @@ interface GamesState {
   error?: string;
 
   activePage: ActivePage;
+  /** 当前高亮的那一张卡片（单选；点卡片写入，见 selectGame）。 */
   selectedGameIds: string[];
   searchQuery: string;
   sortOrder: SortOrder;
@@ -37,6 +38,12 @@ interface GamesState {
   showHidden: boolean;
   showFavorites: boolean;
   groupBy: string;
+  /**
+   * 分组是否已被"定过"（用户手动选过，或"按用户等级的默认分组"已经生效过一次）。
+   * 自动默认只应用一次 —— 否则用户手动改成"不分组"后，切一次标签页（本组件重新挂载）
+   * 又会被改回"游戏级别"。见 GamesView 与 utils/selectors 的 defaultGroupByFor。
+   */
+  groupByDecided: boolean;
   /** 已折叠的分组 key（仅本次会话记忆，不写 config.json）。 */
   collapsedGroups: string[];
   activePlatformFilter: string;
@@ -51,6 +58,13 @@ interface GamesState {
   facetMode: "and" | "or";
   /** Whether the sidebar is expanded. Auto-hides by default. */
   sidebarVisible: boolean;
+  /**
+   * 侧栏展开时**多占**的宽度（px）= 展开态 root 宽 − 常驻开关按钮的外宽
+   * （收起态 root 宽就等于按钮外宽，所以这是个不依赖缓存的精确值）。
+   * 网格用它把宽度加回来，从而"侧栏开合/拖动只缩放、不重排列数"
+   * （见 utils/gridLayout.ts 的 gridReferenceWidth）。由 Sidebar 实测上报。
+   */
+  sidebarOccupiedWidth: number;
 
   /** Set when a game has just been launched; consumers (App.tsx) navigate to the
    * game-detail page so the user can read the guide / instructions while
@@ -82,9 +96,11 @@ interface GamesState {
   setFacetMode: (m: "and" | "or") => void;
   setSidebarVisible: (v: boolean) => void;
   toggleSidebar: () => void;
+  /** 由 Sidebar 实测上报"展开时多占的宽度"（见 sidebarOccupiedWidth 字段）。 */
+  setSidebarOccupiedWidth: (w: number) => void;
   clearFilters: () => void;
-  selectGame: (id: string, multi?: boolean) => void;
-  clearSelection: () => void;
+  /** 选中（单选）一张卡片：只用于网格的高亮。 */
+  selectGame: (id: string) => void;
   toggleFavorite: (id: string) => Promise<void>;
   toggleHiddenGame: (id: string) => Promise<void>;
   deleteGame: (id: string) => Promise<void>;
@@ -112,6 +128,7 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   showHidden: false,
   showFavorites: false,
   groupBy: "none",
+  groupByDecided: false,
   collapsedGroups: [],
   activePlatformFilter: "all",
   activeCategoryFilter: "all",
@@ -121,6 +138,7 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   facetValues: [],
   facetMode: "and",
   sidebarVisible: false,
+  sidebarOccupiedWidth: 0,
   lastLaunchedId: null,
   pendingLaunch: null,
   launchingGame: null,
@@ -147,7 +165,7 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   toggleInstalledOnly: () => set((s) => ({ showInstalledOnly: !s.showInstalledOnly })),
   toggleHidden: () => set((s) => ({ showHidden: !s.showHidden })),
   toggleFavorites: () => set((s) => ({ showFavorites: !s.showFavorites })),
-  setGroupBy: (g) => set({ groupBy: g }),
+  setGroupBy: (g) => set({ groupBy: g, groupByDecided: true }),
   // 折叠/展开某个分组；key 就是分组的 label（groupGames 的 Group.key）。
   toggleGroupCollapsed: (key) =>
     set((s) => ({
@@ -174,6 +192,9 @@ export const useGamesStore = create<GamesState>((set, get) => ({
   setFacetMode: (m) => set({ facetMode: m }),
   setSidebarVisible: (v) => set({ sidebarVisible: v }),
   toggleSidebar: () => set((s) => ({ sidebarVisible: !s.sidebarVisible })),
+  // 只在真的变了才 set：ResizeObserver 每次回调都 set 会白触发一轮网格重渲染。
+  setSidebarOccupiedWidth: (w) =>
+    set((s) => (s.sidebarOccupiedWidth === w ? s : { sidebarOccupiedWidth: w })),
   clearLastLaunched: () => set({ lastLaunchedId: null }),
   setLaunching: (id, name) => {
     // 记录横幅开始显示的时刻，用于保证"至少显示满 MIN_LAUNCH_BANNER_MS"。
@@ -208,20 +229,11 @@ export const useGamesStore = create<GamesState>((set, get) => ({
       facetValues: [],
     }),
 
-  selectGame: (id, multi = false) =>
-    set((s) => {
-      if (multi) {
-        const has = s.selectedGameIds.includes(id);
-        return {
-          selectedGameIds: has
-            ? s.selectedGameIds.filter((x) => x !== id)
-            : [...s.selectedGameIds, id],
-        };
-      }
-      return { selectedGameIds: [id] };
-    }),
-
-  clearSelection: () => set({ selectedGameIds: [] }),
+  // 单选：点一张卡片就只高亮这一张。
+  // 2026-09-14 需求去掉 Ctrl/⌘+点多选 —— 选中集合**没有任何消费方**（没有批量启动、
+  // 批量隐藏之类的操作），只有网格自己在画高亮，纯多余。原先的 `multi` 参数一并删掉，
+  // 免得留着让人以为还有多选这条路。
+  selectGame: (id) => set({ selectedGameIds: [id] }),
 
   toggleFavorite: async (id) => {
     const game = get().games.find((g) => g.id === id);

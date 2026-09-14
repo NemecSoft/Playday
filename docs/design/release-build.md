@@ -187,6 +187,7 @@ build-release.bat      # 正式包（X 盘）→ release\ ：package.bat release
 | `scripts/prepare-release.mjs` | 按模式生成或校验 `config.json`；release 模式顺带复制随包数据（`--out` 默认按模式分开） |
 | `build-release.bat` / `build-prerelease.bat` | 出包入口（双击即用、无参数）：`package.bat` + `prepare-release`，输出到 `release\` / `release_test\` |
 | `config.json` | 开发态生效配置（由规则生成，别手工改路径字段） |
+| `sync-config.bat` | **dev 模式的同步入口**（双击即用、无参数）：预演 → 写入 → 复核三步；`dev-client.bat` 启动前自动调用，同步失败即中止启动 |
 | `scripts/lib/devData.mjs` | **开发态数据路径的唯一来源**（读规则表 + 支持 `YUNGAME_DATA_DIR` 覆盖） |
 | `scripts/data-dir.mjs` | 给 cmd 用的薄壳（打印数据根/权威库/运行时副本，供 bat `for /f` 取） |
 | `data-dir.bat` | bat 的入口：`call data-dir.bat` 后即可用 `%YUNGAME_DATA_DIR%` 等变量 |
@@ -216,3 +217,32 @@ import { adminDbPath, runtimeDbPath, devDataDir } from "./lib/devData.mjs";
 `scripts/check-architecture.mjs` 的规则 12 会**拦下任何再写死的地方**（连 bat 注释里出现这个
 目录名都算），所以不会第三次漂移。历史一次性脚本（`verify-*` / `migrate-*` / `_` 前缀）
 不在管辖内 —— 它们的默认值可能已过期，但都是一次性工具。
+
+## 八、打包取舍：**性能优先，体积可以让**（2026-09-14 定）
+
+需求原话：*"我们的打包，要以性能优先，空间可以大一点"*。据此逐项的取舍：
+
+| 项 | 决定 | 为什么 |
+| --- | --- | --- |
+| `vite` 的 `target` | `esnext` | Electron 自带 Chromium 很新，不再为老浏览器转译/打 polyfill |
+| `vite` 的 `minify` | `esbuild`（2026-09-14 恢复） | 此前被人为关掉（为诊断 `t.pure is not invalid` 那条只在压缩产物里出现的错误），之后一直没还原 —— 发布包跑的其实是**未压缩**代码，每次启动多解析约 1.1 MB 源码 |
+| `vite` 的 `sourcemap` | **开启** | 体积换可调试性：压缩后仍能在 DevTools 看到原始源码与精确行号（当初正是为了读错误栈才关掉压缩，现在用 sourcemap 拿到同样信息而不牺牲启动速度；`.map` 只在打开 DevTools 时才读） |
+| `manualChunks` | 收敛成 3 类（react / vendor / 业务） | 本地应用读本地文件，chunk 越多启动越慢；原先"每个 npm 包一个 chunk"= **68 个**，`index.html` 里有 62 条 `modulepreload` |
+| `asar` | 保持开启（默认） | Electron 官方说明：asar 在 Windows 上减少昂贵的文件系统操作 |
+| 体积裁剪 | **不做**（`node_modules` 全量、字体、live2d、sourcemap 都留着） | 用户明确允许体积变大；这些都不在启动关键路径上（按需加载） |
+| `package.bat` 的 robocopy | 加 `/MT:16` | 出包要拷约 250 MB，多线程压缩墙钟时间；退出码语义不变（0-7 = 成功，≥8 = 失败，脚本的判断不用改） |
+
+实测（同一台机器、同一份源码）：
+
+| 指标 | 改前 | 改后 |
+| --- | --- | --- |
+| 渲染层 js 文件数 | 68 | **7**（启动实际加载 **3** 个） |
+| 渲染层 js 体积 | 2.5 MB | **1.4 MB**（启动实际解码约 1.05 MB） |
+| 启动时 `modulepreload` 条数 | 62 | 0（收敛成 3 个 chunk 后无需预载） |
+| 构建耗时 | — | 11.6 s |
+
+> ⚠️ 动 `minify` / `manualChunks` 之后**必须真的把产物跑起来看一次**，不能只看构建成功 ——
+> 当初关掉压缩就是因为它会在**运行期**报错。验证方法：本地起个静态服务打开
+> `dist/index.html?window=client`，确认 `#root` 有子节点、console 里没有 error
+> （2026-09-14 用浏览器自动化实测：`root=1`、加载 3 个 js、控制台 0 error，
+> 只有"没有 IPC 时读字体/音乐目录"的两条正常降级 warning）。

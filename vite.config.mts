@@ -17,27 +17,28 @@ export default defineConfig({
     // （含 107 个 HorrorValleyView 历史副本、一个 1.27MB 的已删依赖 chunk）。
     // 陈旧产物不参与运行，但会让"这个 chunk 还在不在"这类判断失真（删依赖后以为没删干净）。
     emptyOutDir: true,
-    // 性能优先（不关心体积）：
+    // ---- 打包取舍：**性能优先，体积可以让**（2026-09-14 用户明确要求）----
     // 1. target: esnext —— Electron 的 Chromium 很新，原生支持最新 JS 语法。
     //    不再为老浏览器转译/打 polyfill，代码原样输出，运行时更快、更省内存。
-    // 2. manualChunks —— 把 React 框架等"几乎不变"的依赖单独拆成 vendor chunk。
-    //    启动时 vendor 与业务代码分开解析；业务代码改动不会触发 vendor 重新
-    //    解析，二次启动/热更更快。
+    // 2. minify: "esbuild" —— 2026-09-14 恢复。此前是"临时诊断配置"（minify: false，
+    //    为定位 "t.pure is not invalid" 那种被压成一行的运行时错误），之后一直没还原：
+    //    结果是发布包里跑的是**未压缩**、68 个碎 chunk 的代码，每次启动都要多解析约 1.4 MB 源码。
+    //    压缩只影响源码文本量，不改语义 —— 启动解析更快、内存更省（收益虽不巨大但零风险）。
+    // 3. sourcemap: true —— 体积换可调试性：压缩后仍能在 DevTools 里看到原始源码与精确行号
+    //    （当初要靠"关压缩 + 按包拆 chunk"才能读错误栈，现在用 sourcemap 拿到同样信息，
+    //    却不必牺牲启动速度）。.map 只在打开 DevTools 时才读，运行期零成本。
+    // 4. manualChunks —— 从"每个 npm 包一个 chunk"（68 个）收敛成 3 类：React 运行时、
+    //    其余第三方、业务代码。本地应用读本地文件，chunk 越多启动越慢（每次都是一个
+    //    独立的加载+解析回合，且拿不到"大 chunk 惰性解析"的好处）。
     target: "esnext",
-    // 临时诊断配置：关闭压缩 + 按包拆分，便于定位 "t.pure is not invalid"
-    // 这类只在 vendor 里出现、被 minify 压成一行的运行时错误。
-    // 定位后需恢复 minify: "esbuild" 和下方 manualChunks 的生产优化配置。
-    minify: false,
+    minify: "esbuild",
+    sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // 按 node_modules 下的顶层包名拆分成独立 chunk（如 vendor-react、vendor-router）。
-          // 这样浏览器错误栈会精确指向具体是哪个第三方库抛的错，而不是挤在一行 vendor。
-          if (id.includes("node_modules")) {
-            const match = id.match(/node_modules\/(@[^/]+\/[^/]+|[^/]+)/);
-            const name = match ? match[1].replace("@", "").replace("/", "-") : "misc";
-            return "vendor-" + name;
-          }
+          if (!id.includes("node_modules")) return; // 业务代码留在各自的入口 chunk 里
+          if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) return "vendor-react";
+          return "vendor";
         },
       },
     },

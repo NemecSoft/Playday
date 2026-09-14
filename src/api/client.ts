@@ -118,10 +118,12 @@ export const api = {
   scanCovers: () =>
     call<{ games: Game[]; outcome: CoverScanOutcome }>("scan_covers"),
   getCoverDirInfo: () => call<CoverDirInfo>("get_cover_dir_info"),
+  // data 的形态两端不同：桌面端是裸字节（Uint8Array，结构化克隆），网站端是 base64 字符串
+  // （HTTP JSON 传不了二进制）。转换在 utils/assets.ts 里统一处理。
   readImage: (path: string) =>
-    call<{ data: string; mime: string }>("read_image", { path }),
+    call<{ data: string | Uint8Array; mime: string }>("read_image", { path }),
   readImagesBatch: (paths: string[]) =>
-    call<Array<{ data: string; mime: string } | null>>("read_images_batch", { paths }),
+    call<Array<{ data: string | Uint8Array; mime: string } | null>>("read_images_batch", { paths }),
   clearImageCache: () => call<number>("clear_image_cache"),
 
   // —— 登录 / 权限（客户端） ——

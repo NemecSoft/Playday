@@ -26,7 +26,6 @@ import {
   Settings as SettingsIcon,
   Info,
   Home,
-  Clapperboard,
   Wrench,
   Crown,
   Gem,
@@ -40,7 +39,9 @@ import ThemeTopPicker from "./ThemeTopPicker";
 
 const TABS: { key: ActiveTab; labelKey: string; icon: typeof Home }[] = [
   { key: "home", labelKey: "tab_home", icon: Home },
-  { key: "videos", labelKey: "tab_videos", icon: Clapperboard },
+  // 2026-09-14 需求：去掉「视频」页签 —— 视频区块已经**注入在游戏详情页里**（见 game-details.md），
+  // 顶部再挂一个总入口是重复的。视图与渲染分支都保留（VideosView / MainContent 里 activeTab==="videos"），
+  // 只是界面不再给入口；`ActiveTab` 类型也保留，免得将来要恢复还得改一圈类型。
   { key: "tools", labelKey: "tab_tools", icon: Wrench },
 ];
 

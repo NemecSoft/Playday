@@ -112,7 +112,11 @@ if exist "%OUTDIR%" (
     echo [ERROR] could not clear %OUTDIR% - close whatever is using it, then retry.
     exit /b 1
 )
-robocopy "%STAGING%\win-unpacked" "%OUTDIR%" /E /NJH /NJS /NDL /NP /R:1 /W:1 >nul
+REM  /MT:16 (2026-09-14, performance-first): copy with 16 threads instead of one.
+REM  The payload is ~250 MB (electron runtime + asar + runtime installers), and the
+REM  exit-code contract is unchanged (/MT still returns 0-7 = success, >=8 = failure),
+REM  so the checks below keep working. Safe here: the source dir is our own staging.
+robocopy "%STAGING%\win-unpacked" "%OUTDIR%" /E /NJH /NJS /NDL /NP /R:1 /W:1 /MT:16 >nul
 if errorlevel 8 (
     echo [ERROR] robocopy failed - return code %errorlevel%.
     exit /b 1
@@ -125,7 +129,7 @@ REM  (yungamestart.exe + 1.ico + 2.ico), which is exactly the layout the tool
 REM  expects at runtime (it reads 1.ico / 2.ico from its own directory).
 REM  Not built yet = not an error: the package is still valid, just without it.
 if exist "tools\yungamestart\dist\yungamestart.exe" (
-    robocopy "tools\yungamestart\dist" "%OUTDIR%\yungamestart" /E /NJH /NJS /NDL /NP /R:1 /W:1 >nul
+    robocopy "tools\yungamestart\dist" "%OUTDIR%\yungamestart" /E /NJH /NJS /NDL /NP /R:1 /W:1 /MT:16 >nul
     if errorlevel 8 (
         echo [ERROR] robocopy yungamestart failed - return code %errorlevel%.
         exit /b 1
@@ -146,7 +150,7 @@ if not exist "tools\runtime" (
     echo [ERROR] tools\runtime not found - cannot ship the runtime installers.
     exit /b 1
 )
-robocopy "tools\runtime" "%OUTDIR%\runtime" /E /NJH /NJS /NDL /NP /R:1 /W:1 >nul
+robocopy "tools\runtime" "%OUTDIR%\runtime" /E /NJH /NJS /NDL /NP /R:1 /W:1 /MT:16 >nul
 if errorlevel 8 (
     echo [ERROR] robocopy runtime failed - return code %errorlevel%.
     exit /b 1

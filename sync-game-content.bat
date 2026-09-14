@@ -82,10 +82,13 @@ if not exist "%PLAYDAY_ADMIN_DB%" (
 )
 
 REM ---- 4. 程序在跑就提醒一句（运行中它读的是启动时复制的运行时副本）----
-tasklist /fi "imagename eq Playday.exe" 2>nul | find /i "Playday.exe" >nul
+REM  ⚠️ exe 名在这里是写死的（bat 读不到 build.config.ts）：现名 PlayniteUI。
+REM     改名时必须同步这里 —— 2026-09-14 之前写的还是旧名 Playday.exe，
+REM     于是"检测到程序在运行"这句话永远不会出现（提醒静默失效）。
+tasklist /fi "imagename eq PlayniteUI.exe" 2>nul | find /i "PlayniteUI.exe" >nul
 if not errorlevel 1 (
     echo.
-    echo [提示] 检测到 Playday 正在运行。同步会改写两份库，
+    echo [提示] 检测到 PlayniteUI 正在运行。同步会改写两份库，
     echo        建议先关掉程序，写完再启动，免得它仍显示旧数据。
 )
 

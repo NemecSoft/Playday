@@ -48,7 +48,7 @@
 /** 侧栏可筛选的维度。 */
 export type FacetKey = "tag" | "genre" | "series" | "region" | "decade";
 
-/** 主界面分组维度：none + 可筛选维度 + 代码已支持但 UI 暂不暴露的维度。 */
+/** 主界面分组维度：none + 可筛选维度 + 代码已支持但 UI 暂不暴露的维度 + gameLevel（已暴露）。 */
 export type GroupKey =
   | "none"
   | FacetKey
@@ -56,7 +56,8 @@ export type GroupKey =
   | "category"
   | "developer"
   | "source"
-  | "favorite";
+  | "favorite"
+  | "gameLevel"; // 2026-09-14 追加：1 黄金版 / 2 钻石版 —— 见文末「游戏级别分组」
 ```
 
 新增两个纯函数：
@@ -99,6 +100,9 @@ if (opts.facetValues.length > 0) {
 `groupGames` 增加 4 个 case：`tag` → `g.tags`、`series` → `g.series`、`region` → `g.region`、
 `decade` → `decadeOf(g.releaseDate) ?? [L.unknown]`。
 
+（2026-09-14 又加了第 5 个 case：`gameLevel` → 黄金版 / 钻石版两组，并带 `order` 显式排序 ——
+见文末「游戏级别分组」。）
+
 **顺带修一个潜在缺陷**：现有 `switch` 的 `default: values = []` 会让游戏**不进入任何分组**
 （即从界面上凭空消失）。改为兜底归入「未知」，这样即使传入尚未实现的维度也不会丢游戏。
 
@@ -119,6 +123,9 @@ if (opts.facetValues.length > 0) {
 `setSearch` 与 `clearFilters` 里原有的 `selectedTags: []` 一并改为 `facetValues: []`。
 
 `groupBy: string` 保持现状（默认 `"none"`）；`setGroupBy` 已存在，本次只补 UI 入口。
+
+（2026-09-14 补充：默认值仍是不分组，但**黄金版用户开屏会自动切到「游戏级别」**；同时加了
+`groupByDecided` 标记，保证这个自动默认只生效一次 —— 见文末「游戏级别分组」。）
 
 `facet` / `facetMode` **不持久化**到 config.json（与 `selectedTags` 保持一致，都是会话内状态）。
 
@@ -149,7 +156,7 @@ if (opts.facetValues.length > 0) {
 在 `view-switcher` 内新增分组下拉：
 
 ```
-分组： [不分组 ▾]     ← 不分组 / 类型 / 系列 / 地区 / 年代
+分组： [不分组 ▾]     ← 不分组 / 游戏级别 / 类型 / 系列 / 地区 / 年代
 ```
 
 绑定 `groupBy` / `setGroupBy`。
@@ -177,6 +184,7 @@ if (opts.facetValues.length > 0) {
 | `facet_mode_or` | 任一匹配 | Match any |
 | `facet_mode_label` | 匹配 | Match |
 | `group_none` | 不分组 | No grouping |
+| `group_gameLevel` | 游戏级别 | Game level |
 | `sidebar_noFacetValues` | 该维度下没有可选项 | No values for this facet |
 | `toolbar_groupBy` | 分组 | Group |
 
@@ -201,7 +209,38 @@ if (opts.facetValues.length > 0) {
 4. 不清理 `src/i18n/locales/*.ts` 死代码（另开任务）。
 5. 不给侧栏筛选结果加"筛选项在结果中被过滤掉"的联动（`faceted search`），保持当前简单行为。
 
-## 九、验证
+## 九、游戏级别分组（2026-09-14 追加）
+
+> 需求原话：*"添加一个分组：游戏级别，1黄金版、2钻石版。如果判断是黄金版用户，默认按照分组
+> 游戏级别，黄金版在上，钻石版在下。这样黄金版用户默认看到的就是可以玩的，而不是大多是
+> 钻石版专享，找不到可玩的游戏。"*
+
+**为什么值得做**：`data/game-content.json` 1283 条里 **169 条黄金版、1114 条钻石版（约 87%）** ——
+黄金用户不分组打开就是满屏「钻石版专享」，确实"找不到可玩的"。
+
+| 决策 | 内容 |
+| --- | --- |
+| 维度 | `GroupKey` 加 `"gameLevel"`；工具栏「分组」下拉第二项「游戏级别」 |
+| 组名 | 复用 `tier_gold` / `tier_diamond`（与 TopBar 的版本标识同源，避免两处措辞不一致） |
+| 排序 | 黄金版在上、钻石版在下：`Group` 加可选 `order`（值 = 级别数字），只有这个维度填；其余维度仍纯按 label 排序，行为不变 |
+| 其它级别值 | 兜底归「未知」并排到最后（现有数据只有 1/2，纯防御） |
+| 默认 | `defaultGroupByFor(userLevel)`：黄金版（1）→ `"gameLevel"`，其余 → `null`（不改默认） |
+| 锁定卡 | **照旧可见**（与 `user-level-detection.md` 的"禁止隐藏"一致）—— 本次只调顺序 |
+
+**默认分组只生效一次**：`gamesStore` 加 `groupByDecided`（`setGroupBy` 会置真）。两个原因：
+
+1. 用户手动改成「不分组」后，切一次标签页（`GamesView` 重新挂载）不该被改回去；
+2. `authStore.userLevel` 在等级算出来之前**暂定是 3**（宽松值），所以自动默认必须等
+   `authStore.loaded` 之后再判断 —— 否则永远得不出"黄金版"这个结论。
+
+**影响面**：`src/utils/selectors.ts`（维度 + `order` + `defaultGroupByFor`）、
+`src/stores/gamesStore.ts`（`groupByDecided`）、`src/components/Toolbar.tsx`（下拉项）、
+`src/components/views/GamesView.tsx`（注入组名 + 应用默认）、`locales/{zh-CN,zh-TW,en}.json`（1 个新键）、
+`src/utils/__tests__/selectors.test.ts`（6 条用例）。
+
+**非目标**：不把"游戏级别"加进侧栏筛选维度（只做分组）；不做"隐藏钻石版"之类开关。
+
+## 十、验证
 
 1. 打开侧栏 → 顶部两个下拉存在；默认「标签」+「全部匹配」；值列表是标签及各标签计数。
 2. 勾选两个标签 → 与改动前行为一致（AND，交集）。

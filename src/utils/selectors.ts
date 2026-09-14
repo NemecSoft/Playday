@@ -162,12 +162,19 @@ export type GroupKey =
   | "category"
   | "developer"
   | "source"
-  | "favorite";
+  | "favorite"
+  /** 按"玩这个游戏需要的等级"分组：1 = 黄金版、2 = 钻石版（见 Game.gameLevel）。 */
+  | "gameLevel";
 
 export interface Group {
   key: string;
   label: string;
   games: Game[];
+  /**
+   * 组的显式排序权重（小的在前）。只有"游戏级别"维度填它 —— 黄金版在上、钻石版在下；
+   * 其余维度不填，仍走原来的"按 label 排序"，行为不变。
+   */
+  order?: number;
 }
 
 export interface GroupLabels {
@@ -177,6 +184,9 @@ export interface GroupLabels {
   manual: string;
   favorites: string;
   other: string;
+  /** 游戏级别维度的两个组名，与 TopBar 版本标识同源（locales 的 tier_gold / tier_diamond）。 */
+  tierGold: string;
+  tierDiamond: string;
 }
 
 const DEFAULT_LABELS: GroupLabels = {
@@ -186,6 +196,8 @@ const DEFAULT_LABELS: GroupLabels = {
   manual: "Manual",
   favorites: "Favorites",
   other: "Other",
+  tierGold: "Gold",
+  tierDiamond: "Diamond",
 };
 
 export function groupGames(games: Game[], groupBy: GroupKey, labels?: Partial<GroupLabels>): Group[] {
@@ -194,6 +206,8 @@ export function groupGames(games: Game[], groupBy: GroupKey, labels?: Partial<Gr
     return [{ key: "all", label: L.all, games }];
   }
   const map = new Map<string, Game[]>();
+  /** 组的显式排序权重（label → order）。只有"游戏级别"维度会写它。 */
+  const orderOf = new Map<string, number>();
   const add = (label: string, g: Game) => {
     const k = label || L.unknown;
     if (!map.has(k)) map.set(k, []);
@@ -222,6 +236,17 @@ export function groupGames(games: Game[], groupBy: GroupKey, labels?: Partial<Gr
       case "platform":
         values = g.platform.length ? g.platform : [L.unknown];
         break;
+      case "gameLevel": {
+        // 1 = 黄金版、钻石版 = 2（见 shared/models.ts 的 Game.gameLevel）。
+        // order 直接用级别数字：黄金版在上、钻石版在下 —— 黄金版用户因此先看到自己能玩的
+        // （库里的盘点：1283 条里 1114 条是钻石版，不排序就是满屏打不开的卡）。
+        // 其它取值（数据里目前没有）兜底归"未知"并排到最后。
+        const lv = Number(g.gameLevel) || 0;
+        const label = lv === 1 ? L.tierGold : lv === 2 ? L.tierDiamond : L.unknown;
+        orderOf.set(label, lv === 1 || lv === 2 ? lv : Number.MAX_SAFE_INTEGER);
+        values = [label];
+        break;
+      }
       case "category":
         values = g.category.length ? g.category : [L.uncategorized];
         break;
@@ -242,6 +267,21 @@ export function groupGames(games: Game[], groupBy: GroupKey, labels?: Partial<Gr
     for (const v of values) add(v, g);
   }
   return Array.from(map.entries())
-    .map(([key, games]) => ({ key, label: key, games }))
-    .sort((a, b) => a.label.localeCompare(b.label));
+    .map(([key, games]) => ({ key, label: key, games, order: orderOf.get(key) }))
+    // 先按显式权重（只有游戏级别维度有），再按 label —— 后者是原来的唯一规则。
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || a.label.localeCompare(b.label));
+}
+
+/**
+ * 用户等级对应的"默认分组"：黄金版（1）默认按**游戏级别**分组，让黄金用户先看到自己能玩的；
+ * 其余等级返回 null（= 不改动默认值"不分组"）。
+ *
+ * 为什么只对黄金版做：钻石版能玩全部，分组与否不影响"找得到玩得了"；黄金版才被这件事卡住
+ * （库里约 87% 是钻石版专享，不排序就是满屏"钻石版专享"）。
+ *
+ * ⚠️ 调用方必须在用户等级**算完**之后再用（`authStore.loaded` 为真）：算完之前
+ * `userLevel` 暂定是 3，拿它判断永远得不出"黄金版"这个结论。
+ */
+export function defaultGroupByFor(userLevel: number): GroupKey | null {
+  return Number(userLevel) === 1 ? "gameLevel" : null;
 }

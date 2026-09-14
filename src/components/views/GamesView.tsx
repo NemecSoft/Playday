@@ -1,8 +1,15 @@
 // Applies filtering / sorting / grouping and renders the grid view.
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useGamesStore } from "../../stores/gamesStore";
-import { filterGames, sortGames, groupGames, type SortKey } from "../../utils/selectors";
+import { useAuthStore } from "../../stores/authStore";
+import {
+  defaultGroupByFor,
+  filterGames,
+  sortGames,
+  groupGames,
+  type SortKey,
+} from "../../utils/selectors";
 import GridView from "./GridView";
 import EmptyState from "./EmptyState";
 import { useI18n } from "../../i18n";
@@ -22,6 +29,20 @@ export default function GamesView() {
   const facet = useGamesStore((s) => s.facet);
   const facetValues = useGamesStore((s) => s.facetValues);
   const facetMode = useGamesStore((s) => s.facetMode);
+  const setGroupBy = useGamesStore((s) => s.setGroupBy);
+  const groupByDecided = useGamesStore((s) => s.groupByDecided);
+  const authLoaded = useAuthStore((s) => s.loaded);
+  const userLevel = useAuthStore((s) => s.userLevel);
+
+  // 黄金版用户默认按"游戏级别"分组：黄金版在上、钻石版在下 —— 开屏先看到自己能玩的。
+  // 两个前提：① 用户等级已经算出来（算完之前 authStore.userLevel 暂定是 3，那不是结论）；
+  //          ② 分组还没被"定过"（用户手动选过就尊重他的选择，不再自动改回去）。
+  // 注意：setGroupBy 会把 groupByDecided 置真，所以这里天然只生效一次。
+  useEffect(() => {
+    if (!authLoaded || groupByDecided) return;
+    const want = defaultGroupByFor(userLevel);
+    if (want) setGroupBy(want);
+  }, [authLoaded, groupByDecided, userLevel, setGroupBy]);
 
   const groups = useMemo(() => {
     const f = filterGames(games, {
@@ -45,6 +66,9 @@ export default function GamesView() {
       manual: t("group_manual"),
       favorites: t("group_favorites"),
       other: t("group_other"),
+      // 游戏级别维度的组名与 TopBar 的版本标识同源，避免两处措辞不一致。
+      tierGold: t("tier_gold"),
+      tierDiamond: t("tier_diamond"),
     });
   }, [
     games,

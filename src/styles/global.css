@@ -2088,25 +2088,9 @@ textarea {
   opacity: 0.85;
 }
 
-/* —— 游戏本地视频：顶栏「视频」按钮上的数量标签 ——
-   视频本身**罗列在详情页页面里**（服务器发页面时注入「游戏视频」区块，按 videos/
-   的子目录分组，样式见 electron/core/gameDetailInject.ts）—— 所以这里只有一个数量标签，
-   播放器浮层那套已经删掉了。 */
-.video-count {
-  /* 不做成大徽章，避免和「修改器 / 应用存档」抢注意力 */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 5px;
-  border-radius: 8px;
-  background: var(--accent-soft);
-  color: var(--accent-hover);
-  font-size: 11px;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
+/* 说明：原先这里是顶栏「视频」按钮上的数量标签（.video-count）。
+   2026-09-14 需求去掉 app 侧的视频入口（视频区块由服务器注入到详情页 HTML 里，
+   页面自己显示），这个类已无消费者，一并删除。 */
 
 /* Right-edge resize handle for the sidebar */
 .sidebar-resizer {
@@ -2819,8 +2803,11 @@ textarea {
      所有 CSS 变量都由 applyCardTextStyles() 从 settings.cardText 注入。
      关闭某项（如描边/发光/阴影）= 该变量 blur=0 + color=transparent，
      CSS 自然不渲染，效果开关无需额外条件分支。*/
-  /* 标题文字色默认跟随主题（--ui-accent）；"随机彩色"模式下由所在行注入
-     --title-fill 覆盖它（见 GridView 的 rowStyle）。 */
+  /* 标题文字色：默认跟随主题强调色（--ui-accent）。两种覆盖都走 --title-fill，
+     且优先级都高于它：
+       ① 主题自带固定标题色 → themeApply 注入（例："游戏红酒"的亮金 #FFCC00，
+          见 docs/design/themes-styles.md 的「游戏名固定色」）；
+       ② "随机彩色"模式 → 每一行内联注入（见 GridView 的 rowStyle，内联优先级更高）。 */
   color: var(--title-fill, var(--ui-accent));
   /* 主动把描边归零：有些主题在 body 上设了全局 --text-stroke（0.5px），不显式覆盖
      的话标题会继承到那条细描边 —— 小字发虚的来源之一。

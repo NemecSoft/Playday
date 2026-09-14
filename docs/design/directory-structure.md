@@ -17,8 +17,11 @@ Playday/
 │                        #   nircmd/           第三方命令行工具 NirCmd（游戏启动 bat 用它做窗口居中/音量等）；
 │                        #                     生产环境对应 <YunGame>\Tools\nircmd\，游戏 bat 里硬编码的就是那个路径
 │                        #   runtime/          运行库安装包（VC++ 运行库 x64/x86、VP9 解码扩展）；
-│                        #                     随客户端发到 resources\runtime\，启动时静默检测安装（见 runtime-deps.md）
+│                        #                     出包时由 package.bat 放到 <exe 同级>\runtime\，启动时静默检测安装（见 runtime-deps.md）
+│                        #   cover-optimizer/  封面图规范化/瘦身：AI 大图 → 成品封面；或给现有库瘦身（见 cover-images.md）
 ├── public/              # 静态资源（字体、图标）
+├── vendor/              # 随包第三方前端资源（内置播放器 DPlayer 的 js + MIT 许可 + README）；
+│                        #   由本地服务器按 /vendor/<文件名> 发给详情页（见 game-details.md）
 ├── locales/             # 打包用语言文件
 ├── path-modes.json      # 三种模式（dev/prerelease/release）的目录规则：**唯一来源**，config.json 由它生成
 ├── config.json          # 生效配置（开发态）。路径字段别手工改，改 path-modes.json 再生成
@@ -37,8 +40,8 @@ Playday/
 ├── postcss.config.js    # PostCSS 配置
 ├── ARCHITECTURE.md      # 双端架构总览
 ├── push.bat             # 一键推送脚本
-├── dev-client.bat       # 开发启动（客户端）
-├── dev-admin.bat        # 开发启动（管理端）
+├── dev-client.bat       # 开发启动（客户端；启动前自动把 path-modes.json 同步进 config.json）
+├── sync-config.bat      # path-modes.json → config.json（dev 模式；双击即用，无参数）
 ├── deploy-web.bat       # 一键部署网站端
 ├── test-web.bat         # 网站端测试
 ├── sync-tags.bat        # 标签同步（json → 权威库）
@@ -63,11 +66,14 @@ Playday/
 | `core/settings.ts` | 设置读写（`config.json`），`getLibraries()` 游戏库 |
 | `core/auth.ts` | 登录/权限（用户等级）、企业用户 IP 匹配 |
 | `core/covers.ts` | 封面图库匹配、图片读取 |
+| `core/imageCache.ts` | 图片字节缓存：**按总字节数封顶的 LRU**（纯逻辑 + 单测，见 [封面图](./cover-images.md)） |
 | `core/tags.ts` | 自动标签 |
 | `core/process.ts` | 游戏进程启动、时长追踪 |
 | `core/scriptRunner.ts` | 脚本启动（pre/post launch/exit） |
 | `core/tray.ts` | 托盘图标（tray.png）+ 右键菜单 |
 | `core/gameServer.ts` | 静态详情页容器（本地 HTTP 服务器） |
+| `core/runtimeDeps.ts` / `core/runtimeSetup.ts` | 运行库（VC++ / VP9）检测与静默安装：判据/参数（纯函数 + 单测）+ 启动时的执行层（见 [运行库依赖](./runtime-deps.md)） |
+| `core/gpuStatus.ts` / `core/gpuReport.ts` | GPU 加速状态判读（纯函数 + 单测）+ 启动时往 `<数据根>\logs\gpu.log` 记一行（见 [GPU 加速](./gpu-acceleration.md)） |
 | `ipc/*.ts` | IPC 命令注册：`games` / `covers` / `auth` / `admin` / `announcement` / `gameHtml` / `system` / `register` |
 
 ## 渲染进程 `src/`
@@ -114,6 +120,9 @@ Playday/
 | 出包 | `prepare-release.mjs` | 按 `path-modes.json` 生成/校验某模式（dev / prerelease / release）的 `config.json`，release 模式顺带复制随包数据；规则逻辑在 `shared/pathModes.ts`（见 [路径模式与出包](./release-build.md)） |
 | 路径 | `lib/devData.mjs` | **开发态数据路径的唯一来源**（读 `path-modes.json` 的 dev 段；支持 `YUNGAME_DATA_DIR` 覆盖） |
 | 路径 | `data-dir.mjs` | 给 cmd 用的薄壳：打印数据根 / 权威库 / 运行时副本（bat 侧入口是仓库根的 `data-dir.bat`） |
+
+> 封面瘦身不是脚本目录的东西：它在 `tools/cover-optimizer/`（2026-09-14 从
+> 「仓库根 bat + `scripts/` 下的 ps1」搬过去，见 [封面图](./cover-images.md)）。
 
 ## 数据目录：`dev-data/`（开发态）与 `data/`（发布态）
 

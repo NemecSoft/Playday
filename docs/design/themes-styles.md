@@ -163,9 +163,37 @@
 | `bgItemActive` | `#7A3A3A` | 砖红家族加深一档；原版选中的 `HighlightGlyphColor` `#c08080` 太亮（白字压上只有 3.1:1），且本表不能存 alpha |
 | `bgSidebar` / `bgInput` | `#2E2626` / `#44474F` | 窗口底压暗一档 / 面板灰压暗（原版输入框是透明底） |
 | `accentHover` | `#FFBE7A` | `GlyphColor` 提亮（原版没有 hover 档） |
-| `textDim` | `#8A8A8A` | 原值 `TextColorDarker #707070` 在卡片上只有 2.08:1，提亮一档保证"看得见" |
+| `textDim` | `#B89448` | 原值 `TextColorDarker #707070` 在卡片上只有 2.08:1，提亮一档保证"看得见"；**2026-09-14 起整体换成金色系**，见下 |
+
+**游戏名固定色（2026-09-14 需求）**：本主题的**卡片标题（游戏名）固定 `#FFCC00` 亮金**，
+不跟随 `accent` —— 琥珀橙 `#F4A460` 压在砖红卡片 `#583838` 上偏"融进背景"，标题在 15px 上不够抓眼。
+
+实现方式（主题可选项，别的主题也能用）：
+
+| 环节 | 说明 |
+| --- | --- |
+| 数据 | `ThemePaletteTokens` 的可选字段 `titleColor`（本主题 = `#FFCC00`） |
+| 注入 | `themeApply.ts` 把它映射到 CSS 变量 `--title-fill`（与其它 token 一样注入 `:root`） |
+| 生效 | `global.css` 里标题是 `color: var(--title-fill, var(--ui-accent))`：主题给值就用，没给就跟随强调色 |
+| 清理 | `--title-fill` 进了 `KEY_TO_VAR`，所以**切主题会被自动清掉**，不会串色 |
+| 例外 | 卡片标题设为「随机彩色」时，每一行内联注入 `--title-fill`，优先级更高（那是用户显式选的模式） |
+
+对比度实算：`#FFCC00` 压在本主题卡片色 `#583838` 上 = **6.81:1**（AA 正文 ≥ 4.5 ✓）。
 
 归类同样是 `游戏主题`（FLOOR 档）；实测三级文字对比度：主 10.2~13.0:1、次 3.9~5.2:1、dim 3.0~3.9:1。
+
+**文字色统一成亮金（2026-09-14 需求）**：需求原话*"咱这游戏[红酒主题]的文字都改成和游戏名一样的亮金色"*，
+于是把本主题的**文字系令牌整体换成金色系**（不再用原主题的暖白 + 灰）：
+
+| 令牌 | 原（原主题） | 现 | 理由 |
+| --- | --- | --- | --- |
+| `textPrimary` / `foreground` / `cardForeground` / `secondaryForeground` | `#FFFFEE` | **`#FFCC00`** | 与卡片游戏名**同一个金**（`titleColor`）——"和游戏名一样"是字面意思 |
+| `textSecondary` / `mutedForeground` | `#A0A0A0` | `#E0B84A` | 同色系压暗一级，保住"次要"层级 |
+| `textDim` | `#8A8A8A` | `#B89448` | 再压一级（提示 / 计数层级） |
+
+`accent` 仍是琥珀橙 `#F4A460`（本主题的招牌色，也不是文字色，没动）。换色后
+`src/utils/__tests__/themeContrast.test.ts` **仍然通过**（FLOOR 档：主 ≥ 4.5、次 ≥ 2.4、dim ≥ 1.7）——
+以后动这几个值请一并跑 `npm run check`。
 
 ### 2.6 暗夜青绿（`p-dh-night`，取材 DH_Night）
 

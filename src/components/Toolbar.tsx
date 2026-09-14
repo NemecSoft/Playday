@@ -105,7 +105,7 @@ export default function Toolbar() {
         />
       </div>
       <div className="view-switcher">
-        {/* 分组下拉：不分组 / 类型 / 系列 / 地区 / 年代。 */}
+        {/* 分组下拉：不分组 / 游戏级别 / 类型 / 系列 / 地区 / 年代。 */}
         <div className="toolbar-group-by">
           <span className="toolbar-group-label">{t("toolbar_groupBy")}</span>
           <Select value={groupBy} onValueChange={setGroupBy}>
@@ -114,6 +114,8 @@ export default function Toolbar() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">{t("group_none")}</SelectItem>
+              {/* 游戏级别：黄金版在上、钻石版在下。黄金版用户开屏会默认选中它。 */}
+              <SelectItem value="gameLevel">{t("group_gameLevel")}</SelectItem>
               <SelectItem value="genre">{t("facet_genre")}</SelectItem>
               <SelectItem value="series">{t("facet_series")}</SelectItem>
               <SelectItem value="region">{t("facet_region")}</SelectItem>

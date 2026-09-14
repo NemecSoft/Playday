@@ -74,11 +74,30 @@
 | --- | --- |
 | 能否直接 spawn | **不能**。Windows 的 CreateProcess 不认脚本文件，Node 会抛 `EINVAL`。必须经 `cmd.exe` 执行。 |
 | 隐藏执行（`showBatConsole=false`） | `spawn('"<bat>"', args, { shell: true, windowsHide: true })` |
-| 显示窗口（`showBatConsole=true`） | `cmd /d /s /c start "" /wait "<bat>"` —— `start` 会为目标进程新建控制台窗口（`CREATE_NEW_CONSOLE`），不受父进程控制台状态影响 |
+| 显示窗口（`showBatConsole=true`） | `cmd /d /s /c start "" /wait "<comspec>" /c "<bat>"` —— `start` 会为目标进程新建控制台窗口（`CREATE_NEW_CONSOLE`），不受父进程控制台状态影响；**`start` 里必须再套一层 `cmd /c`**（理由见下一条）
 | 设置入口 | 设置 → 通用 → 「运行 .bat/.cmd 指令时显示控制台窗口」（`showBatConsole`） |
 
 > 顺带一条踩坑记录：显式调 `cmd.exe /c "<bat>"`（自己拼引号）在**路径含空格**时会被
 > cmd 拆断，实测只有 `shell: true`（Node 负责引号）+ `start` 两种组合是稳的。
+
+**`start` 里为什么还要再套一层 `cmd /c`（2026-09-14 修的，用户报"退出游戏后窗口不关"）**：
+
+`start` 对 `.bat` 是用 **`cmd /K`** 跑的 —— 真机探针抓到常驻进程
+`cmd.exe /K <bat>`。后果有两个，都不是"看着别扭"而是功能故障：
+
+1. 脚本结束后那个 shell 不退 → 控制台窗口卡在 `D:\...>` 提示符上（就是用户截图那个状态）；
+2. 外层 `/wait` **永远不返回** → §6 里"脚本退出 = 计时结束"不再成立，只能靠 exe 轮询兜底。
+
+显式写 `cmd /c` 后实测（真 Electron 引擎 + GUI 父进程 + 脚本固定跑 5 秒）：
+
+| | 脚本跑完 | 外层 cmd 退出 | 结束后残留 |
+| --- | --- | --- | --- |
+| 旧写法 `start "" /wait "<bat>"` | 7.5s | **永不退出** | **2 个（`/K` shell + 外层）** |
+| 现写法 `start "" /wait "<comspec>" /c "<bat>"` | 5s | 5.2s（= 脚本结束） | **0 个** |
+
+含空格路径、带参数（bat 里 `%*` 拿到传参）也一并实测通过。
+参数表由 `shared/launchPaths.ts` 的 `batConsoleArgs()` 生成，单测
+`shared/launchPaths.test.ts` 钉住形状（含"不许退回旧写法"的反向断言）。
 
 ## 6. 计时（进程监控）
 
@@ -96,6 +115,8 @@
 - 进程名单来自安装目录下递归枚举的 `*.exe`（按目录缓存）。
 - 逐游戏覆盖：`monitor_exe` 字段（`进程名|窗口标题关键字`）优先于上面的自动判定。
 - 查询失败时**保守当作"还在运行"**，宁可多算也不误判退出。
+- ⚠️ 前提：§5 那条命令行必须让"脚本结束 = 启动器结束"成立。`start` 用 `cmd /K` 跑脚本的
+  问题（2026-09-14 修）会同时破坏这一点 —— 外层 `/wait` 永不返回，计时只能靠 exe 轮询兜住。
 
 ## 7. 数据里的约定与特殊用法
 
@@ -103,6 +124,51 @@
   会把它们排在最前，用来把重点游戏钉在顶部。
 - 存档备份动作的路径形如 `..\Tools\GameSaveHelper\GameSaveHelper`（辅助动作，
   不参与启动选择）。
+
+## 8. 自检模式：`exe --check`（不起 GUI，服务器上可跑）
+
+用途：**上线前 / 运维巡检**，一次跑完全库，回答两个问题：
+
+1. 每个游戏 `action` 指定的启动项，在这台机器上是否**存在**；
+2. 每个游戏的 `savePaths` 是否**存在**。
+
+只写日志、**不创建任何窗口**（服务器、无人值守环境可能根本跑不了图形界面）。
+
+```bat
+REM 正式机上（在 exe 所在目录执行）
+REM exe 名 = build.config.ts 的 CLIENT_EXE_NAME（现名 PlayniteUI，命令行里要写全 .exe）
+PlayniteUI.exe --check
+```
+
+> 开发机自测：`npx electron . --check`（跑的是 `dist-electron` 编译产物）。
+
+输出（**以日志文件为准**：打包后的 exe 是 GUI 子系统程序，直接跑时 stdout 可能看不到）：
+
+| 文件 | 说明 |
+| --- | --- |
+| `<数据根>\logs\check-<时间戳>.log` | 留档 |
+| `<数据根>\logs\check-latest.log` | 最新一次，固定路径（脚本/运维直接取这个） |
+
+退出码：`0` = 没问题；`1` = 发现问题；`2` = 自检本身失败（读不到库等）。
+
+判据**不是另写一份**，而是复用真实启动链路的函数：动作选择 `process.resolveAction`、
+路径解析 `shared/launchPaths.ts` 的 `resolveActionPath`、存在性/可执行校验 `process.validateLaunchPath`、
+自动找 exe `process.findGameExecutable`；存档路径也与备份链路一致（只做 `resolvePath`，
+**不额外展开** `{InstallDir}`）—— 自检要回答的是"用户点下去会不会成功"，不是"理想情况"。
+把整个库跑一遍不建窗口的代价：不需要 Chromium 窗口栈，`app.whenReady()` 之前就发起、跑完 `app.exit()`。
+
+规则层单测：`electron/core/launchCheck.test.ts`（含 `{InstallDir}` 未配、
+`*.*` 要匹配无扩展名文件这类真实踩过的坑）。
+
+两类发现的读法：
+
+- **启动项问题** = 这个游戏在这台机器上点"开始游戏"会失败（路径/配置问题，必须处理）。
+- **存档路径「无匹配文件」** 多数是"这个游戏还没人玩过"（存档目录本来就还没生成），不一定是配置错；
+  但「目录不存在」若**整片**出现，多半是盘符 / 游戏库路径配错了。
+
+> ⚠️ 跑在**没装游戏**的机器上（典型：开发机）会得到满屏"不存在" —— 那是正常的，
+> 它要跑在目标机器上才有意义。参考：开发机 1277 个游戏里 1275 个报启动项问题（库里指向 D 盘，
+> 而这台开发机并没有那些目录）。
 
 ## 待确认
 

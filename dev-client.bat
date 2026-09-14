@@ -68,6 +68,23 @@ if errorlevel 1 (
 )
 echo [dev] 主进程编译完成。
 
+REM ---- 4.5 同步 config.json（path-modes.json 是路径的唯一来源）----
+REM 为什么必须有这一步：path-modes.json 是"单一来源"，但客户端真正读的是 config.json。
+REM 改了表忘了同步 → 客户端拿**旧路径**跑（封面 / 库 / GameSaveHelper 静默失配），
+REM 不报错、不提示 —— 和本文件顶上注释踩过的"改了代码没重编"是同一类假象。
+REM 位置必须在编译之后：prepare-release 要求 dist-electron/shared/pathModes.js 不比源码旧。
+echo [dev] 同步 config.json (path-modes.json -> config.json)...
+call "%~dp0sync-config.bat"
+if errorlevel 1 (
+    echo.
+    echo [dev] ***********************************************************
+    echo [dev]  路径配置同步失败，已中止启动（config.json 与 path-modes.json 不一致）
+    echo [dev]  宁可不开，也不要用旧路径跑出"好像没问题"的假象
+    echo [dev] ***********************************************************
+    pause
+    exit /b 1
+)
+
 REM ---- 5. 等待 Vite 就绪（最多 30 秒）----
 echo [dev] 等待 Vite 就绪...
 set /a tries=0

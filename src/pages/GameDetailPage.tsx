@@ -11,8 +11,11 @@ import { api, type GameVideoItem } from "../api/client";
 import { useMusicStore } from "../stores/musicStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { formatClock } from "../utils/clock";
-import { ArrowLeft, PlayCircle, Wrench, Archive, Clapperboard } from "lucide-react";
+import { ArrowLeft, Play, PlayCircle, Wrench, Archive } from "lucide-react";
 import { Button } from "../components/ui/button";
+import { useAuthStore } from "../stores/authStore";
+// 能不能玩某游戏 = 唯一判据（与主进程共用同一份实现，见 docs/design/user-level-detection.md）
+import { canPlay } from "../../shared/userLevel";
 
 // 运行时长按"计时器"风格显示（分钟补零）：1:01:01 / 00:12。
 // 进位与补零规则在 utils/clock.ts —— 音乐面板的播放进度用的是同一套（那边不补零）。
@@ -92,10 +95,21 @@ export default function GameDetailPage() {
   const navigate = useNavigate();
   const { t } = useI18n();
   const games = useGamesStore((s) => s.games);
+  const launchGame = useGamesStore((s) => s.launchGame);
   // 界面语言：拼详情页 URL 时带上（`?lang=`），服务器据此生成注入区块的文案。
   const language = useSettingsStore((s) => s.settings.language);
 
   const game = useMemo(() => games.find((g) => g.id === id), [games, id]);
+
+  // 顶栏正中「开始游戏」按钮是否显示（2026-09-15 需求）：
+  //   loaded   —— 等级算完之前 authStore.userLevel 暂定是 3（宽松），只看 canPlay 会让
+  //               黄金版用户先看到按钮、再消失（闪一下）。所以必须等 loaded。
+  //   canPlay  —— 判定只走唯一事实来源（与主进程同一份）：黄金版看钻石版游戏**不渲染**。
+  // 为什么订阅 userLevel 后在渲染期算、而不写进 zustand 选择器：同一个组件实例会在不同
+  // 详情页之间复用（只变路由 id），选择器的缓存结果未必跟着 game 变 —— 这样算没有那个坑。
+  const authLoaded = useAuthStore((s) => s.loaded);
+  const userLevel = useAuthStore((s) => s.userLevel);
+  const canLaunchGame = authLoaded && !!game && canPlay(userLevel, game.gameLevel);
 
   // 运行状态监控（详情页顶部显示"运行中/已退出/未运行"）。
   const run = useRunState(id ?? "");
@@ -279,15 +293,11 @@ export default function GameDetailPage() {
     return () => window.removeEventListener("message", onMsg);
   }, [videos]);
 
-  // 顶栏「视频」按钮：请详情页自己滚到视频区块。
+  // 详情页 iframe 的引用。
+  // 注：顶栏那个「视频」按钮已按 2026-09-14 需求移除 —— 视频区块由服务器注入到详情页
+  // HTML 里（gameDetailInject），页面自己就显示，app 侧再来一个按钮是重复的
+  // （原按钮唯一的作用就是"滚到那个区块"）。
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const scrollToVideos = () => {
-    try {
-      iframeRef.current?.contentWindow?.postMessage({ type: "playday-scroll-to-videos" }, "*");
-    } catch (err) {
-      console.error("滚动到视频区块失败:", err);
-    }
-  };
 
   const backButton = (
     <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
@@ -400,46 +410,56 @@ export default function GameDetailPage() {
   );
 
   const detailTopbar = (
-    <div className="flex items-center gap-2 border-b border-border bg-base px-5 py-3.5">
+    // relative：给下面那个"绝对居中"的「开始游戏」按钮当定位基准。
+    <div className="relative flex items-center gap-2 border-b border-border bg-base px-5 py-3.5">
       {backButton}
-      {/* 视频按钮：视频本身罗列在页面里（服务器注入，按子目录分组），
-          这里只显示数量；点一下把页面滚到那个区块。
-          没有视频、或这个游戏根本没有详情页（没有 iframe 可滚）时不显示。 */}
-      {htmlFound && videos.length > 0 && (
+      {/* 视频：**app 侧不显示按钮**（2026-09-14 需求）—— 视频区块由服务器注入到详情页
+          HTML 里，页面自己会显示。`videos` 状态仍保留：页面里的 <video> 播放/停止时
+          要靠它通知主界面让背景音乐让位（见上面的 postMessage 处理）。
+          注：游戏**没有**详情页 HTML 时也就没有视频区块（视频只存在于 HTML 里）。 */}
+      {/* 修改器按钮：**只有真的有修改器才显示**（"修改器"目录里至少有一个 .exe）。
+          目录不存在、目录为空、或扫描失败（都会得到空列表）时都不显示 —— 否则是个
+          点开只有"暂无修改器"的无效入口。数据来自 get_game_trainers。 */}
+      {trainers.length > 0 && (
+        <div className="relative">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTrainersOpen((v) => !v)}
+            className="flex items-center gap-1.5"
+          >
+            <Wrench size={15} /> {t("details_trainers")}
+          </Button>
+          {trainersOpen && trainerDropdown}
+        </div>
+      )}
+      {/* 应用存档按钮：与修改器同一条规则 —— "游戏存档"目录里没有 .exe 就不显示。 */}
+      {saves.length > 0 && (
+        <div className="relative">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSavesOpen((v) => !v)}
+            className="flex items-center gap-1.5"
+          >
+            <Archive size={15} /> {t("details_saves")}
+          </Button>
+          {savesOpen && savesDropdown}
+        </div>
+      )}
+      {/* 「开始游戏」（2026-09-15 需求）：**绝对居中** —— 不靠 flex 顺序，左边
+          「返回 / 修改器 / 应用存档」有几个都不影响它落在正中间。
+          显示条件见上面 canLaunchGame（黄金版看钻石版游戏不渲染这个按钮）。
+          行为（用户要求"不要太严格"）：游戏运行中也照旧可点，点了就是再启动一次。 */}
+      {canLaunchGame && (
         <Button
-          variant="ghost"
           size="sm"
-          onClick={scrollToVideos}
-          className="flex items-center gap-1.5"
+          className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1.5"
+          onClick={() => void launchGame(game.id)}
         >
-          <Clapperboard size={15} /> {t("details_videos")}
-          <span className="video-count">{videos.length}</span>
+          <Play size={15} fill="currentColor" /> {t("details_play")}
         </Button>
       )}
-      {/* 修改器按钮：点击展开下拉，列出该游戏的修改器 exe。 */}
-      <div className="relative">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setTrainersOpen((v) => !v)}
-          className="flex items-center gap-1.5"
-        >
-          <Wrench size={15} /> {t("details_trainers")}
-        </Button>
-        {trainersOpen && trainerDropdown}
-      </div>
-      {/* 应用存档按钮：与修改器同逻辑，列出"游戏存档"目录下的 exe，点击应用。 */}
-      <div className="relative">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setSavesOpen((v) => !v)}
-          className="flex items-center gap-1.5"
-        >
-          <Archive size={15} /> {t("details_saves")}
-        </Button>
-        {savesOpen && savesDropdown}
-      </div>
       <div className="ml-auto">{runBadge}</div>
     </div>
   );
@@ -471,13 +491,17 @@ export default function GameDetailPage() {
           // Allow the embedded static page's own player (DPlayer / <video> /
           // YouTube embed) to enter fullscreen. Without this, the browser
           // blocks `requestFullscreen()` inside a cross-origin iframe.
-          allowFullScreen
+          // 只写 allow、不写 allowFullScreen（2026-09-15）：两个同时写时 React 会警告
+          // "Allow attribute will take precedence over 'allowfullscreen'."，而 allow 里的
+          // fullscreen 本来就是同一个权限、且优先级更高 —— 删掉冗余那个**不改变任何行为**
+          // （一直是 allow 生效），只是让控制台干净。
           allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
         />
       </div>
     );
   } else {
-    // 404: no static page for this game（视频仍可用：它来自 videos/ 目录，与该 HTML 无关）。
+    // 404: no static page for this game（没有详情页 HTML 就没有视频区块 ——
+    // 视频是服务器注入进 HTML 的，app 侧自 2026-09-14 起不再单独展示视频）。
     content = (
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         {detailTopbar}

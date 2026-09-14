@@ -9,6 +9,12 @@
 // `read_images_batch` 命令，一次能把多张图的原始字节和类型一起读回来。
 // 前端再把字节转成 `blob:` 地址，并用 LRU 缓存，保证每个文件只读一次，
 // 占用的内存也有上限，不会越攒越多。
+//
+// 字节的**形态两端不同**（2026-09 实测，这直接决定滚动卡不卡）：
+//   桌面端：`data` 是裸字节（主进程发 Buffer，结构化克隆到渲染进程就是 Uint8Array）→ 直接进 Blob；
+//   网站端：`data` 是 base64 字符串（HTTP JSON 传不了二进制，见 server/server.mjs）→ 走 atob + 逐字节填。
+// 所以下面的转换两种都要容。实测渲染进程落地成本（含 IPC 反序列化，见 docs/design/cover-images.md）：
+//   1920×1080 PNG 43.1ms → 2.7ms；1500×843 PNG 19.9ms → 1.5ms。
 
 import { api } from "../api/client";
 import { useImageProgressStore } from "../stores/imageProgressStore";
@@ -29,29 +35,31 @@ function base64ToBytes(b64: string): Uint8Array<ArrayBuffer> {
 }
 
 /**
- * 把一张 base64 图片解码成 `blob:` 地址，并且先让出浏览器的空闲/渲染帧。
- * 因为 atob、复制到 Uint8Array、建 Blob 这些操作都会卡住主线程；如果一次性
- * 连续解码很多张（比如一下子滚动进视口几十张封面），就会把 React 的动画帧
- * 堵住，让公告这类弹窗明显卡顿。改成让浏览器"有空再解码"，这样图片加载和
- * 界面动画就不会互相抢主线程了。
+ * 后端读回来的图片数据 → 字节。两种形态都容（见文件头说明）：
+ *   Uint8Array（桌面端）—— 直接用，不再逐字节拷贝；
+ *   string（网站端 base64）—— atob + 逐字节填。
  */
-function decodeBlobInIdle(
-  b64: string,
-  mime: string,
-): Promise<string> {
-  return new Promise((resolve) => {
-    const run = () => {
-      const bytes = base64ToBytes(b64);
-      const blob = new Blob([bytes], { type: mime });
-      resolve(URL.createObjectURL(blob));
-    };
-    if (typeof requestIdleCallback === "function") {
-      requestIdleCallback(run, { timeout: 900 });
-    } else {
-      // 兜底：至少让出一个任务，好让浏览器先画一帧。
-      setTimeout(run, 0);
-    }
-  });
+export function payloadToBytes(data: string | Uint8Array): Uint8Array<ArrayBuffer> {
+  if (typeof data === "string") return base64ToBytes(data);
+  if (data instanceof Uint8Array) return data as Uint8Array<ArrayBuffer>;
+  return new Uint8Array(data as unknown as ArrayBuffer);
+}
+
+/**
+ * 把后端读回来的图片数据做成 `blob:` 地址。
+ *
+ * ⚠️ 这里**故意不用 requestIdleCallback 推迟**（2026-09 实测改的）：
+ *   二进制过 IPC 之后，每张图的落地成本只有 0.5–2.8ms（见 docs/design/cover-images.md），
+ *   而 `requestIdleCallback(run, { timeout: 900 })` 在主线程忙时会一直等到 timeout ——
+ *   等于给每张图白加最多 900ms 的等待。它和 useLazyImage 里那层 1500ms 叠起来，
+ *   就是用户看到的"图片要两三秒才出来"。
+ *   真需要让路时用 suspendImageLoading()（弹窗期间挂起），那是确定的、可恢复的，
+ *   而不是"等到空闲"这种不确定的延迟。
+ */
+function decodeBlob(data: string | Uint8Array, mime: string): Promise<string> {
+  const bytes = payloadToBytes(data);
+  const blob = new Blob([bytes], { type: mime });
+  return Promise.resolve(URL.createObjectURL(blob));
 }
 
 // ---- 挂起机制（让后台加载别和弹窗动画抢资源） -----------------------------
@@ -144,10 +152,12 @@ function getBlob(path: string): string | undefined {
 
 // ---- Single-image loading (concurrency-limited) --------------------------
 
-/** Maximum concurrent single-image IPC requests in flight. Prevents the UI
- * from being flooded when a large grid mounts all at once. Kept small so
- * images fade in progressively instead of all at once. */
-const SINGLE_CONCURRENCY = 3;
+/**
+ * 同时在飞的单图请求数。原来是 3 —— 实测一屏 30 张：并发 3 要 133ms，并发 8 只要 79ms
+ * （见 docs/design/cover-images.md）。图片解码本身不在主线程，多放几个不吃主线程，
+ * 但能明显缩短"一屏铺满"的时间，所以放宽到 6。
+ */
+const SINGLE_CONCURRENCY = 6;
 let activeSingle = 0;
 const singleQueue: Array<() => void> = [];
 
@@ -159,7 +169,10 @@ function acquireSingle(): Promise<void> {
   return new Promise((resolve) => singleQueue.push(resolve));
 }
 function releaseSingle() {
-  const next = singleQueue.shift();
+  // ⚠️ 后进先出（pop），不是先进先出（shift）。滚动时用户的视线落在**最近**触发的那批图上，
+  // 队列前面那些是"已经滚过去"的行。实测（前面排了 100 条已滚过的请求）：FIFO 时当前视野
+  // 那 6 张要等 208ms，后进先出只要 19ms —— 差 10 倍，而这正是"滚过去再停下来看"的日常动作。
+  const next = singleQueue.pop();
   if (next) {
     next(); // hand off the slot
   } else {
@@ -175,7 +188,7 @@ async function loadOne(path: string): Promise<string | undefined> {
     await acquireSingle();
     try {
       const res = await api.readImage(path);
-      const url = await decodeBlobInIdle(res.data, res.mime);
+      const url = await decodeBlob(res.data, res.mime);
       putBlob(path, url);
       return url;
     } catch {
@@ -193,23 +206,50 @@ async function loadOne(path: string): Promise<string | undefined> {
 
 async function loadBatch(paths: string[]): Promise<void> {
   if (paths.length === 0) return;
+  // 先把这一批登记成"在飞"：并发的 ensureImageLoaded()（卡片刚好滚进视野时）会等这批的
+  // 结果，而不会对同一张图另起一次单图请求。
+  // ⚠️ 这里以前写的是 `inflight.set(p, loadOne(p))` —— 那不是"登记"，是**真的又取了一遍**：
+  // 同一张图被单图 IPC + 批量 IPC 各读一次，预载的耗时、IPC 流量、内存全部翻倍。
+  // 占位 promise 只登记不加载，整批结束后各自解析成自己那张图的 blob 地址。
+  let settle: () => void = () => {};
+  const done = new Promise<void>((resolve) => {
+    settle = resolve;
+  });
+  // 这一批里"已经有人读过或在读"的挑出来不读：卡片可能抢在预载前面发了单图请求
+  // （视口内的图就是这么来的），那种路径再读一次就是纯浪费。
+  // 不变式：**同一张图、同一时刻，只有一条读取在飞**。
+  // ⚠️ 必须在下面"登记占位"**之前**挑，否则刚登记的占位会被自己当成"有人在读"，
+  // 整批都被跳过（写完立刻被单测抓到了）。
+  const toRead = paths.filter((p) => !getBlob(p) && !inflight.has(p));
+  for (const p of paths) {
+    if (!inflight.has(p)) inflight.set(p, done.then(() => getBlob(p)));
+  }
+  if (toRead.length === 0) {
+    for (const p of paths) inflight.delete(p);
+    settle();
+    return;
+  }
   try {
-    const results = await api.readImagesBatch(paths);
-    // Decode one payload at a time through idle scheduling so a large batch
+    const results = await api.readImagesBatch(toRead);
+    // Decode one payload at a time, yielding a frame between them so a large batch
     // never blocks the main thread / animation frames in one synchronous burst.
     // Also pause while an overlay is shown so the overlay animates smoothly.
     await waitIfSuspended();
-    for (let i = 0; i < paths.length; i++) {
+    for (let i = 0; i < toRead.length; i++) {
       const r = results[i];
       if (!r) continue;
-      const url = await decodeBlobInIdle(r.data, r.mime);
-      putBlob(paths[i], url);
+      const url = await decodeBlob(r.data, r.mime);
+      putBlob(toRead[i], url);
+      // 只让出**一帧**，不是"等到空闲"：一批 24 张连着做有几十毫秒，让一帧就够，
+      // 而 requestIdleCallback 那种推迟的延迟是不确定的（最多可到 timeout）。
+      await new Promise((resolve) => setTimeout(resolve, 0));
     }
   } catch {
     /* swallow — individual paths can be retried later */
   } finally {
     // Mark all in-flight entries for these paths as done.
     for (const p of paths) inflight.delete(p);
+    settle(); // 放掉上面登记的占位（各自的 then 会去缓存里取自己的 blob 地址）
   }
 }
 
@@ -278,11 +318,8 @@ export async function preloadImages(paths: Array<string | undefined>): Promise<v
       const myIdx = cursor++;
       if (myIdx >= chunks.length) return;
       const chunk = chunks[myIdx];
-      // Mark every path in this chunk as in-flight so a concurrent preload
-      // call doesn't double-fetch the same paths.
-      for (const p of chunk) {
-        inflight.set(p, loadOne(p).then((u) => u));
-      }
+      // 只取一次：loadBatch 内部会把这一批登记成"在飞"，供并发的单图请求复用。
+      // （以前这里还额外对每个路径调了 loadOne，等于整批读两遍 —— 见 loadBatch 的注释。）
       await loadBatch(chunk);
       for (let k = 0; k < chunk.length; k++) progress.tick();
     }

@@ -55,6 +55,10 @@
 8. **不要未经许可删文件**（用户明确要求）。
 9. **第三方二进制随包发**（`tools/nircmd`、VC 运行库、GameSaveHelper 的 NSIS）：
    注意代码签名范围与许可，别让打包器给微软原版安装包再签一次名。
+10. **第三方前端资源只放 `vendor/`**：必须带 `README.md`（版本 / 来源 / SHA256 / 许可 / 升级步骤）
+    与许可原文；由本地服务器按 `/vendor/<文件名>` 发出（白名单：裸文件名 + `.js`/`.css`）。
+    换播放器这类动播放链路的改动，**先跑真引擎探针再定** —— 见 `docs/design/game-details.md`
+    的「内置播放器」一节（那里记着两次实测翻车：模板里的 `transform` 祖先会让 `fixed` 失效）。
 
 ## 四、要查什么去哪里
 
@@ -87,8 +91,22 @@
 - **已落地并验证**：运行库静默检测安装（VC++ x64/x86 + VP9 扩展，真机跑通）；
   `runtimeDir` / `yungamestartDir` 进配置链；封面传输改裸字节 + 并发 6 + 队列后进先出；
   去掉两层 `requestIdleCallback` 延迟（用户回报"现在就很快啦"）；预载重复读修掉。
-- **未做**：封面瘦身工具（`optimize-covers.bat` / `scripts/optimize-covers.ps1`）还没在真实库上跑
-  —— 库里 15% 是超大 PNG（单张空解码 463ms），这是下一个还能明显提速的杠杆。
+- **工具**：封面瘦身已按约定搬进 `tools/cover-optimizer/`（自带 README，2026-09-14）。
+  搬家时修掉一个隐藏坑：脚本原来靠"上一级目录"找 `config.json`（住在 `scripts/` 时正好对），
+  进 `tools/` 后会去找 `tools\config.json` —— 已改成"向上找 path-modes.json 标记"，与目录深度无关。
+  在临时目录实测：含中文文件名的大 PNG 1,706 KB → 233 KB（省 86%），带透明通道的那张按规则不动。
+- **规则变更（2026-09-14）**：存档备份不再看用户等级 —— 黄金版也能备份钻石版游戏的存档，
+  退出后照常提示。"能不能玩"的门禁仍只在启动那一条路上（`electron/core/process.ts`）。
+  改动点：`electron/ipc/saveManager.ts` 删掉两处 `canPlay`（前端菜单与退出弹窗本来就没拦）。
+  文档：`docs/design/user-level-detection.md` §2/§3、`docs/design/save-backup-tool.md` §4.3。
+- **新增自检模式（2026-09-14）**：`PlayniteUI.exe --check`（exe 名见 `build.config.ts` 的
+  `CLIENT_EXE_NAME`）—— 检查"每个游戏的启动项是否存在"与"每个游戏的 savePaths 是否存在"，
+  **只写日志、不建任何窗口**（服务器/无人值守环境用）。
+  日志：`<数据根>\logs\check-latest.log`（另有带时间戳的留档）；退出码 0/1/2 = 正常/发现问题/自检失败。
+  关键设计：判据复用真实启动链路的函数（不是另写一份），所以它预测的就是"用户点下去会不会成功"；
+  规则层单测在 `electron/core/launchCheck.test.ts`。文档见 `docs/design/launch-and-paths.md` §8。
+- **未做**：这个工具还没在**真实封面库**上跑过 —— 库里 15% 是超大 PNG（单张空解码 463ms），
+  这是下一个还能明显提速的杠杆。
 - **仓库卫生**：有 3 个垃圾文件（`0`、`as2err.txt`、`{http.get(url`）曾被误提交、删除动作未提交；
   根目录还留着一个临时探针 `_img-perf.js`。
 - **注意**：本文件写下的那一刻，工作区有 38 条未提交改动 —— 没提交 = 重装会丢。

@@ -12,6 +12,8 @@
     "  node scripts/prepare-release.mjs --mode release    --out release",
     "  （--out 省略时的默认目录：dev→工程根 / prerelease→release_test / release→release）",
     "  或直接双击出包（无参数）：build-release.bat（正式 X 盘）/ build-prerelease.bat（测试 D 盘）",
+    "  dev 模式改完本表：双击 sync-config.bat 同步（dev-client.bat 启动前也会自动同步一次）——",
+    "  这样‘改了表忘了同步’不会让客户端静默地拿旧路径跑。",
     "",
     "约定：dev / prerelease 是 D 盘（测试环境），release 是 X 盘（正式环境）——",
     "混进另一个环境的盘符会让校验直接失败（而不是悄悄出一个读不到数据的包）。",
@@ -37,7 +39,7 @@
       "yungamestartDir": "tools/yungamestart",
       "yunGameUserListPath": "D:/YunGame/PlayNite/YunGameConfig/YunGame_UserList.json",
       "yunGameServerStatusPath": "D:/YunGame/PlayNite/YunGameConfig/YunGame_ServerStatus.json",
-      "gameSaveHelperPath": "D:/AI/nsis/GameSaveHelper.exe"
+      "gameSaveHelperPath": "D:/AI/Code/Playnite/Playday/tools/GameSaveHelper/GameSaveHelper.exe"
     },
     "prerelease": {
       "coverImagesDir": "D:/YunGame/PlayNite/CoverImages",
@@ -51,7 +53,7 @@
       "yungamestartDir": "D:/YunGame/Playnite/yungamestart",
       "yunGameUserListPath": "D:/YunGame/PlayNite/YunGameConfig/YunGame_UserList.json",
       "yunGameServerStatusPath": "D:/YunGame/PlayNite/YunGameConfig/YunGame_ServerStatus.json",
-      "gameSaveHelperPath": "D:/AI/nsis/GameSaveHelper.exe"
+      "gameSaveHelperPath": "D:/AI/Code/Playnite/Playday/tools/GameSaveHelper/GameSaveHelper.exe"
     },
     "release": {
       "coverImagesDir": "X:/YunGame/PlayNite/CoverImages",

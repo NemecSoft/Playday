@@ -17,7 +17,14 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { useVirtualizer, type Virtualizer } from "@tanstack/react-virtual";
 import type { Group } from "../utils/selectors";
 import type { Game } from "../types/models";
-import { clampCardGap, columnsForWidth, contentWidthOf, minColumnWidth } from "../utils/gridLayout";
+import {
+  clampCardGap,
+  columnsForScaledWidth,
+  contentWidthOf,
+  gridReferenceWidth,
+  minColumnWidth,
+  rowHeightFor,
+} from "../utils/gridLayout";
 
 /** A single windowable row: either a group header or a row of cards. */
 export type VirtualGridRow =
@@ -58,6 +65,12 @@ export interface UseVirtualGridOptions {
   cardWidth: number;
   /** Configured horizontal gap between cards (px). */
   cardGap: number;
+  /**
+   * 侧栏展开时多占的宽度（px，由 Sidebar 实测上报）。
+   * 列数按"把它加回来"的参照宽度算 —— 侧栏开合/拖动只让卡片等比缩放，不重排列数
+   * （见 utils/gridLayout 的 columnsForScaledWidth）。默认 0 = 没有侧栏。
+   */
+  sidebarOccupiedWidth?: number;
   /** Configured vertical gap between card rows (px). */
   cardRowGap?: number;
   /** Height of the title line + padding below a cover, added to row height. */
@@ -75,6 +88,9 @@ export interface UseVirtualGridResult {
   scrollRef: React.RefObject<HTMLDivElement>;
   /** Columns per row for the current container width. */
   cols: number;
+  /** 算列数用的**参照宽度**（侧栏占的宽度已加回）。Alt+滚轮的"一行一个"上限也用它，
+   *  保证与列数同一把尺子（见 utils/gridLayout 的 gridReferenceWidth）。 */
+  referenceWidth: number;
   /** Height of a card row (cover height + title + padding). */
   rowHeight: number;
   /** Total pixel height of all rows (sets the scroll spacer). */
@@ -100,6 +116,7 @@ export function useVirtualGrid({
   groups,
   cardWidth,
   cardGap,
+  sidebarOccupiedWidth = 0,
   cardRowGap = 8,
   titleHeight = 46,
   groupGap = 22,
@@ -130,18 +147,26 @@ export function useVirtualGrid({
     return () => ro.disconnect();
   }, []);
 
+  // 参照宽度 = 当前实测宽 + 侧栏多占的宽（≈ 侧栏没打开时该有多宽）。
+  const referenceWidth = useMemo(
+    () => gridReferenceWidth(containerWidth, sidebarOccupiedWidth),
+    [containerWidth, sidebarOccupiedWidth],
+  );
+
+  // 列数按参照宽度算：侧栏开合/拖动只让卡片等比缩放，不改变"一行几个"。
   const cols = useMemo(
-    () => columnsForWidth(containerWidth, gap, minColWidth),
-    [containerWidth, gap, minColWidth],
+    () => columnsForScaledWidth(containerWidth, sidebarOccupiedWidth, gap, minColWidth),
+    [containerWidth, sidebarOccupiedWidth, gap, minColWidth],
   );
 
   // 一行卡片的高度：封面（16:9）+ 标题 + 垂直行间距。
   // 垂直间距用 rowGap（cardRowGap），与水平间距 cardGap 相互独立。
-  const rowHeight = useMemo(() => {
-    if (cols <= 0) return 0;
-    const colWidth = (containerWidth - gap * (cols - 1)) / cols;
-    return Math.round(colWidth * (9 / 16)) + titleHeight + rowGap;
-  }, [containerWidth, cols, gap, titleHeight, rowGap]);
+  // 公式在 utils/gridLayout 里（纯函数、有单测）—— 它和列数是同一条缩放链：
+  // 列数不变而容器变窄时 colWidth 变小、行高跟着变小（"只缩放"里的缩放）。
+  const rowHeight = useMemo(
+    () => rowHeightFor(containerWidth, cols, gap, titleHeight, rowGap),
+    [containerWidth, cols, gap, titleHeight, rowGap],
+  );
 
   // A header row reserves the visible header height PLUS the trailing group gap,
   // so the next group starts with the same breathing room as the old
@@ -275,6 +300,7 @@ export function useVirtualGrid({
   return {
     scrollRef,
     cols,
+    referenceWidth,
     rowHeight,
     totalSize: virtualizer.getTotalSize(),
     items,

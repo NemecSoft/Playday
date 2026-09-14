@@ -38,6 +38,18 @@ export interface ThemePaletteTokens {
   success: string;
   warning: string;
   danger: string;
+  /**
+   * 可选：**游戏名（卡片标题）固定色**。
+   *
+   * 存在时由 themeApply 注入 `--title-fill`，覆盖 CSS 里的默认
+   * `color: var(--title-fill, var(--ui-accent))`（默认 = 主题强调色）。
+   * 用途：某些主题的 accent 压在卡片上"融进背景"，需要一个专门的高对比标题色
+   * （例：`p-emixednite` 的亮金 `#FFCC00`，见 docs/design/themes-styles.md）。
+   *
+   * ⚠️ 只在该主题下生效，且只在卡片标题设为「跟随主题」时可见；
+   *    「随机彩色」模式是给每一行内联注入 `--title-fill`，优先级更高。
+   */
+  titleColor?: string;
 }
 
 export interface ThemeEntry {
@@ -151,15 +163,16 @@ export const themeLibrary: ThemeEntry[] = [
     category: "游戏主题",
     palette: {
       background: "#3B2A2A",
-      foreground: "#FFFFEE",
+      // 文字色：2026-09-14 用户要求统一成"和游戏名一样的亮金"，见下方 textPrimary 处的说明。
+      foreground: "#FFCC00",
       card: "#583838",
-      cardForeground: "#FFFFEE",
+      cardForeground: "#FFCC00",
       primary: "#F4A460",
       primaryForeground: "#201714",
       secondary: "#383C44",
-      secondaryForeground: "#FFFFEE",
+      secondaryForeground: "#FFCC00",
       muted: "#171E26",
-      mutedForeground: "#A0A0A0",
+      mutedForeground: "#E0B84A",
       border: "#4C545D",
       ring: "#F4A460",
       bgBase: "#651010",
@@ -170,15 +183,27 @@ export const themeLibrary: ThemeEntry[] = [
       bgItemActive: "#7A3A3A",
       bgInput: "#44474F",
       borderStrong: "#AF612E",
-      textPrimary: "#FFFFEE",
-      textSecondary: "#A0A0A0",
-      textDim: "#8A8A8A",
+      // ↓ 文字色 = 2026-09-14 用户指定："都改成和游戏名一样的亮金色"。
+      //   原主题是 TextColor #ffe（暖白）/ TextColorDark #a0a0a0（灰），这里整体换成金色系：
+      //   主文字用**标题同款亮金 #FFCC00**（同一色的好处：界面文字与卡片游戏名是同一个金），
+      //   次要/提示档用同色系压暗两级，保住层级差异（对比度由 src/utils/__tests__/themeContrast.test.ts 守着，
+      //   改这几个值请一并跑 `npm run check`）。
+      textPrimary: "#FFCC00",
+      textSecondary: "#E0B84A",
+      textDim: "#B89448",
       accent: "#F4A460",
       accentHover: "#FFBE7A",
       accentSoft: "rgba(244, 164, 96, 0.18)",
       success: "#6CC417",
       warning: "#FFA500",
       danger: "#FF6B6B",
+      // 游戏名固定色（用户指定，2026-09-14）：亮金。
+      // 为什么不直接用 accent：#F4A460 琥珀橙压在砖红卡片 #583838 上偏"融进背景"，
+      // 标题在 15px 上不够抓眼。
+      // 对比度实算：#FFCC00 压在本主题卡片色 #583838 上 = **6.81:1**（AA 正文 ≥4.5 ✓）；
+      // 若开了标题底片 rgba(0,0,0,.5) 则更高。改这个值请重新算一遍
+      // （算法与核对清单见 src/utils/titlePalette.ts 末尾）。
+      titleColor: "#FFCC00",
     },
   },
   {

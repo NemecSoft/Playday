@@ -34,6 +34,64 @@ export function columnsForWidth(availWidth: number, gap: number, colWidth: numbe
 }
 
 /**
+ * 网格列数的**参照宽度**：把侧边栏当前多占的宽度加回来。
+ *
+ * 由来：列数是按容器实测宽度算的，而侧边栏一开一合会直接改变内容区宽度 ——
+ * 于是"一行 5 个"会因为点开侧栏变成 4 个：卡片在眼前重排，看着像错乱。
+ * 用"侧边栏没打开时该有多宽"当参照来算列数，侧栏开合就只让卡片等比缩放
+ * （卡宽由 CSS 的 1fr 决定、行高公式又跟着卡宽走，缩放是自动的）。
+ *
+ * `sidebarOccupied` 传的是"**多占**了多少"（展开态 root 宽 − 收起态 root 宽），
+ * 不是侧栏总宽 —— 那个常驻的 toggle 按钮在两种状态下都占位置，加回来就多算了。
+ */
+export function gridReferenceWidth(containerWidth: number, sidebarOccupied: number): number {
+  if (containerWidth <= 0) return containerWidth;
+  return containerWidth + Math.max(0, sidebarOccupied || 0);
+}
+
+/**
+ * 按参照宽度算列数，带一个"缩到看不清就允许回流"的下限。
+ *
+ * 两个最小宽度是**不同**的东西，别合并成一个：
+ *   colWidth（= minColumnWidth(cardWidth)）—— 决定"参照宽度下该有几列"；
+ *   CARD_WIDTH_MIN —— 决定"卡片还能缩多小"，缩不下去才回到真实宽度正常换行。
+ * 若拿 colWidth 当下限，那"侧栏一开就换行"会原样复现：因为 1fr 拉伸后的实际卡宽
+ * 本来就会小于用户配的 cardWidth（配置是"一行放几个"的依据，不是"卡不允许更小"）。
+ */
+export function columnsForScaledWidth(
+  containerWidth: number,
+  sidebarOccupied: number,
+  gap: number,
+  colWidth: number,
+): number {
+  const cols = columnsForWidth(gridReferenceWidth(containerWidth, sidebarOccupied), gap, colWidth);
+  if (cols <= 1) return cols;
+  const actualCardWidth = (containerWidth - gap * (cols - 1)) / cols;
+  if (actualCardWidth >= CARD_WIDTH_MIN) return cols;
+  // 已经缩到最小可读宽度以下：退回真实宽度，让它正常换行（宁可换行，也不要小到看不清）。
+  return columnsForWidth(containerWidth, gap, colWidth);
+}
+
+/**
+ * 一行卡片的高度：封面（16:9，高由列宽决定）+ 标题区 + 垂直行距。
+ *
+ * 它和列数是同一条缩放链的下一环：列数不变而容器变窄 → colWidth 变小 → 行高跟着变小。
+ * 这就是"侧栏开合只缩放不重排"里"缩放"那一半，所以放在这里跟列数一起被单测锁住，
+ * 而不是散在 useVirtualGrid 的 useMemo 里（那样没法测，也容易和后加的东西脱节）。
+ */
+export function rowHeightFor(
+  containerWidth: number,
+  cols: number,
+  gap: number,
+  titleHeight: number,
+  rowGap: number,
+): number {
+  if (cols <= 0) return 0;
+  const colWidth = (containerWidth - gap * (cols - 1)) / cols;
+  return Math.round(colWidth * (9 / 16)) + titleHeight + rowGap;
+}
+
+/**
  * "正好一行一个"所需的最小卡片宽度（随窗口宽度变化）。
  *
  * 为什么用它当 Alt+滚轮的上限，而不是直接拿窗口宽度当上限：

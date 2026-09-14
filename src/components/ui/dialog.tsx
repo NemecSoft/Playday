@@ -9,20 +9,25 @@ const DialogTrigger = DialogPrimitive.Trigger;
 const DialogPortal = DialogPrimitive.Portal;
 const DialogClose = DialogPrimitive.Close;
 
-function DialogOverlay({
-  className,
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
-  return (
-    <DialogPrimitive.Overlay
-      className={cn(
-        "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
+// ⚠️ 必须 forwardRef（2026-09-15 修）：Radix 会把 ref 塞给 Overlay，而普通函数组件**收不到**
+// ref（它不在 props 里）—— 之前控制台一直报
+// "Function components cannot be given refs ... Check the render method of `Primitive.div.Slot`"
+// （从游戏退出后的备份提示弹窗触发），同时那个 ref 也真的落空了。
+// React 18 下只能用 forwardRef（19 才允许把 ref 当普通 prop 传）。
+const DialogOverlay = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Overlay
+    ref={ref}
+    className={cn(
+      "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out",
+      className,
+    )}
+    {...props}
+  />
+));
+DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 function DialogContent({
   className,

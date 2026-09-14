@@ -19,7 +19,7 @@ export interface YunGameUser {
   level: number;
 }
 
-/** 判定结果里的等级：1 = 黄金，2 = 钻石，3 = 全解锁（只有覆盖开关会产生 3）。 */
+/** 判定结果里的等级：1 = 黄金，2 = 钻石，3 = 全解锁（只可能来自"个人会话"账号等级，见 §1.3）。 */
 export type UserLevel = number;
 
 export interface ResolveUserLevelResult {
@@ -29,7 +29,7 @@ export interface ResolveUserLevelResult {
   /** 命中的门店名（未命中为空串）。 */
   cafeName: string;
   /** 等级来源，便于状态栏/日志说明"为什么是这个版本"。 */
-  source: "override" | "userlist" | "personal" | "fallback";
+  source: "userlist" | "personal" | "fallback";
   /** 命中的那条记录（未命中为 undefined）。 */
   record?: YunGameUser;
 }
@@ -164,40 +164,36 @@ export function resolveMaintenance(records: ServerStatusRecord[], userLevel: num
 /**
  * 判定当前机器的用户等级。优先级（与设计文档 §1.3 一致）：
  *
- *   1. override（config.json 的调试开关，非 0 直接生效；3 = 全解锁）
- *   2. 用户表按 IP 命中 → UserLevel === 2 ? 钻石(2) : 黄金(1)
- *   3. 已登录的个人会话 → 该账号的等级
- *   4. 都没有 → 黄金(1)
+ *   1. 用户表按 IP 命中 → UserLevel === 2 ? 钻石(2) : 黄金(1)
+ *   2. 已登录的个人会话 → 该账号的等级（账号等级可以是 3 = 全解锁，管理端用）
+ *   3. 都没有 → 黄金(1)
  *
- * ⚠️ 第 4 条与旧行为相反：以前"没命中 = 游客 3 = 全权限"，现在**没命中 = 黄金 1**。
- * 这是需求（"否则就是黄金版用户"）的直接结果，开发机因此也会被锁，故保留第 1 条开关。
+ * ⚠️ 这里**没有**任何"等级覆盖开关"这类后门（2026-09-14 用户要求彻底去掉）：想在开发/测试机上
+ * 自测，就把**本机当前的 IP 写进用户表**（公网 IP 优先、内网 IPv4 兜底）——做法见设计文档 §1.4。
+ *
+ * ⚠️ 第 3 条与更早的行为相反：以前"没命中 = 游客 3 = 全权限"，现在**没命中 = 黄金 1**。
+ * 这是需求（"否则就是黄金版用户"）的直接结果。
  *
  * @param ips 本机的候选 IP 列表（调用方把公网 IP 放前面、内网 IPv4 放后面）。
  */
 export function resolveUserLevel(
   records: YunGameUser[],
   ips: string[],
-  opts: { override?: number; personalLevel?: number } = {},
+  opts: { personalLevel?: number } = {},
 ): ResolveUserLevelResult {
   const normalized = ips.map((s) => String(s ?? "").trim()).filter(Boolean);
 
-  // 1) 覆盖开关（调试/自救；0 = 关闭）
-  const override = Math.trunc(Number(opts.override) || 0);
   const hit = records.find((r) => normalized.includes(r.ipAddress));
   const hitInfo = hit
     ? { matched: true, cafeName: hit.name || hit.ipAddress, record: hit }
     : { matched: false, cafeName: "", record: undefined };
 
-  if (override > 0) {
-    return { level: override, ...hitInfo, source: "override" };
-  }
-
-  // 2) 用户表命中：只有 level 恰好为 2 才是钻石，其余（1 / 其它脏值）都是黄金
+  // 1) 用户表命中：只有 level 恰好为 2 才是钻石，其余（1 / 其它脏值）都是黄金
   if (hit) {
     return { level: hit.level === 2 ? 2 : 1, ...hitInfo, source: "userlist" };
   }
 
-  // 3) 已登录的个人会话（管理员建的账号；排障时可以用等级 3 的账号提权）
+  // 2) 已登录的个人会话（管理员建的账号；账号等级 3 = 全解锁）
   //    注意：这里**不**夹到 1|2 —— 账号等级本来就是 1|2|3（3 = 全解锁，管理端会用到）。
   const personal = Math.trunc(Number(opts.personalLevel) || 0);
   if (personal > 0) {

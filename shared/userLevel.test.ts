@@ -94,18 +94,9 @@ describe("resolveUserLevel：黄金 / 钻石判定", () => {
   });
 });
 
-describe("优先级：override > 用户表 > 个人会话 > 黄金", () => {
-  it("override 非 0 时直接生效（3 = 全解锁）", () => {
-    expect(resolveUserLevel([rec({ level: 1 })], ["1.2.3.4"], { override: 2 }).level).toBe(2);
-    expect(resolveUserLevel([], ["1.2.3.4"], { override: 3 }).source).toBe("override");
-    // 命中信息仍然带出来（状态栏要显示门店名）
-    expect(resolveUserLevel([rec({ level: 1 })], ["1.2.3.4"], { override: 2 }).matched).toBe(true);
-  });
-
-  it("override=0 视为关闭", () => {
-    expect(resolveUserLevel([rec({ level: 1 })], ["1.2.3.4"], { override: 0 }).source).toBe("userlist");
-  });
-
+// 注：这里曾经有两条"等级覆盖开关（override）"的用例，随该后门一起删掉了（2026-09-14 用户要求）——
+// 本机自测改成"把本机 IP 写进用户表"，所以优先级只剩下：用户表 > 个人会话 > 黄金。
+describe("优先级：用户表 > 个人会话 > 黄金（没有覆盖开关）", () => {
   it("用户表命中优先于个人会话等级", () => {
     const r = resolveUserLevel([rec({ level: 1 })], ["1.2.3.4"], { personalLevel: 3 });
     expect(r).toMatchObject({ level: 1, source: "userlist" });

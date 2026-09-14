@@ -161,6 +161,14 @@ export function fontsDir(): string {
   return resolveConfiguredDir(readSettingsField("fontsDir"), appRoot(), "fonts", appRoot());
 }
 
+// 随包发布的第三方前端资源目录（`vendor/`，目前只有内置播放器 DPlayer 的 js）。
+// 不进 config.json：它是"程序自带资源"，跟程序走 —— 与 fontsDir 同一个道理，
+// 所以基准是 appRoot（开发态 = 工程根），打包版还有 <resources>/vendor 兜底
+//（见 electron/core/vendorAssets.ts）。由本地 HTTP 服务器按 `/vendor/<文件名>` 发出去。
+export function vendorDir(): string {
+  return path.join(appRoot(), "vendor");
+}
+
 // 运行库安装包目录（settings.runtimeDir）：VC++ 运行库 x64/x86、VP9 解码扩展。
 // 未配置 → <应用 exe 同级>/runtime；打包版还有 <resources>/runtime 兜底（见 runtimeSetup.ts）。
 // ⚠️ 默认基准是 appRoot 而不是数据根：这是"程序自带资源"，跟程序走 —— 与 fontsDir 同一个道理。

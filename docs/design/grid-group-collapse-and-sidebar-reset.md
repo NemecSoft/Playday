@@ -102,3 +102,71 @@ toggleGroupCollapsed: (key: string) => void;
 5. 侧栏勾选若干值 → 标题右侧「重置」可点；点击后勾选清空、**维度不变、AND/OR 不变**。
 6. 侧栏没勾选任何值时 →「重置」按钮为禁用态。
 7. `npx tsc -p tsconfig.json --noEmit` 报错数仍为 43（基线）；`npx tsc -p tsconfig.main.json --noEmit` 无错误；`npm run build` 通过。
+
+---
+
+# 附：侧栏开合只缩放、不重排列数（2026-09-14）
+
+> 需求原话：*"点击侧边栏，主界面的排列不要变，只要缩放，不然会出现视觉错乱。
+> 比如之前一行 5 个，弹出侧边栏，会变成 4 个。"*
+
+## 根因
+
+列数是**按容器实测宽度**算的：`useVirtualGrid` 用 `ResizeObserver` 观察滚动容器 `.content`，
+宽度一变就重算 `columnsForWidth(availWidth, gap, colWidth)`（`src/utils/gridLayout.ts`），
+再由 `GridView` 内联成 `repeat(cols, minmax(0, 1fr))`。
+
+而侧栏收起时 `.sidebar-panel` **整块不渲染**（`Sidebar.tsx` 里的条件渲染），内容区因此宽出
+一个侧栏（296px）—— 于是侧栏一开，列数从 5 掉到 4：卡片在眼前重排。
+
+## 方案：列数改用"参照宽度"
+
+**参照宽度 = 容器实测宽 + 侧栏展开时多占的宽**（≈ 侧栏没打开时该有多宽）。列数按它算，
+侧栏开合/拖动时参照宽度几乎不变 → **列数不变**；而卡宽由 CSS `1fr` 拉伸决定、行高公式又跟着
+卡宽走（`rowHeightFor` = 封面 16:9 + 标题 + 行距），所以卡片**自动等比缩小** —— 这就是"只缩放"。
+
+关键取舍：**上报的是"多占的宽度"，不是侧栏总宽** —— 那个常驻的 `toggle` 按钮在收起态也占
+位置，算进去会让"收起时反而多算一截"，边界上莫名多一列。差值用
+`展开态 root 宽 − 常驻按钮的外宽`（含按钮与抽屉之间的间距）算：收起态的 root 宽就等于按钮
+外宽，所以这是个**不需要缓存"上次收起时多宽"**的精确值。这一点踩过一次：早先版本缓存了
+"收起态宽度"当基准，结果"切到别的标签再切回来"（组件重新挂载、侧栏仍开着）时缓存不存在，
+整个 root 都被当成占用宽度，多算了约一个按钮宽。
+
+## 缩放下限：缩到看不清才允许回流
+
+两个最小宽度是**不同**的东西，不能合并：
+
+| 常量 | 作用 |
+| --- | --- |
+| `colWidth = minColumnWidth(cardWidth)` | 决定"参照宽度下该有几列"（用户配的 320 是这一层） |
+| `CARD_WIDTH_MIN`（120） | 决定"卡片还能缩多小"；实际卡宽低于它才退回真实宽度正常换行 |
+
+若拿 `colWidth` 当下限，"侧栏一开就换行"会原样复现 —— 因为 `1fr` 拉伸后的实际卡宽本来就会
+小于用户配的 `cardWidth`（配置是"一行放几个"的依据，不是"卡片不允许更小"）。
+
+## Alt+滚轮必须用同一把尺子
+
+Alt+滚轮的"上限 = 正好一行一个"原来用**当前实测宽**算（`contentWidthOf(el)`）。列数改按参照
+宽度算之后两者会不一致：侧栏开着时滚到头变成"说是 1 列、实际 2 列"—— 正是 `gridLayout.ts`
+头注释警告过的那个坑。现在两处都用 `referenceWidth`（由 `useVirtualGrid` 暴露）。
+
+## 改动与验证
+
+| 文件 | 改动 |
+| --- | --- |
+| `src/utils/gridLayout.ts` | 新增 `gridReferenceWidth` / `columnsForScaledWidth` / `rowHeightFor`（纯函数） |
+| `src/hooks/useVirtualGrid.ts` | 新入参 `sidebarOccupiedWidth`；列数改走 `columnsForScaledWidth`；行高改调 `rowHeightFor`；暴露 `referenceWidth` |
+| `src/stores/gamesStore.ts` | `sidebarOccupiedWidth`（会话态）+ setter（值没变就不 set，避免白重渲染） |
+| `src/components/Sidebar.tsx` | `ResizeObserver` 实测 `.sidebar-root`，`useLayoutEffect` 上报差值；卸载时归零 |
+| `src/components/views/GridView.tsx` | 传入 `sidebarOccupiedWidth`；Alt+滚轮改用 `referenceWidth`（经 ref 取最新值） |
+| `src/utils/__tests__/gridLayout.test.ts` | 新增：列数不随侧栏变、缩放下限临界值、行高随之缩放、无侧栏时与改动前恒等 |
+
+实测（cardWidth=320、cardGap=20、sidebarWidth=296，容器收起时 1704）：
+
+| 侧栏占用 | 改动前 | 改动后 | 卡宽 | 行高 |
+| --- | --- | --- | --- | --- |
+| 0 | 5 列 | 5 列 | 325px | 237px |
+| 296 | **4 列** | **5 列** | 266px | 203px |
+| 600 | **3 列** | **5 列** | 205px | 169px |
+
+**非目标**：其它视图（`VideosView` / `ToolsView` 用的 `auto-fill`）不动 —— 需求说的是主界面网格。

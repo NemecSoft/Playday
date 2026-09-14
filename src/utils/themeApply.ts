@@ -70,6 +70,10 @@ const KEY_TO_VAR: Record<keyof ThemePaletteTokens, string> = {
   success: "--success",
   warning: "--warning",
   danger: "--danger",
+  // 可选字段：游戏名固定色（见 themeLibrary.ts 的 titleColor 说明）。
+  // 放进这张表还有两个附带好处：切主题时会被 clearPaletteTheme() 一并清掉（不会串色）；
+  // 主题没定义该字段时下面是 undefined，不注入，自动回落到 CSS 默认的 var(--ui-accent)。
+  titleColor: "--title-fill",
 };
 
 /** Apply a palette's tokens onto :root (documentElement inline style). */
@@ -80,7 +84,11 @@ export function applyPaletteTheme(palette: ThemePaletteTokens): void {
   // 造成"切换配色后颜色残留/串色"的问题。
   clearPaletteTheme();
   (Object.keys(palette) as (keyof ThemePaletteTokens)[]).forEach((k) => {
-    root.style.setProperty(KEY_TO_VAR[k], palette[k]);
+    const value = palette[k];
+    // 可选字段（目前只有 titleColor）没定义时**什么都不注入**：让它回落到 CSS 默认值，
+    // 而不是写一个空串把变量清成空（那会让标题变透明/继承错色）。
+    if (!value) return;
+    root.style.setProperty(KEY_TO_VAR[k], value);
   });
 }
 

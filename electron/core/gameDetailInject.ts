@@ -34,6 +34,11 @@ export interface VideoSectionLabels {
   external: string;
   /** 收起播放器 */
   collapse: string;
+  /**
+   * 内置播放器（DPlayer）的界面语言 —— 用**它的键名**（`zh-cn` / `zh-tw` / `en`），
+   * 不是我们的 `zh-CN` 写法：它的控制条文案（页面全屏 / 全屏 / 设置…）全由它自己渲染。
+   */
+  playerLang: string;
 }
 
 /**
@@ -48,18 +53,21 @@ const LABELS: Record<string, VideoSectionLabels> = {
     play: "播放",
     external: "可能需外部播放器",
     collapse: "收起",
+    playerLang: "zh-cn",
   },
   "zh-TW": {
     title: "遊戲影片",
     play: "播放",
     external: "可能需外部播放器",
     collapse: "收合",
+    playerLang: "zh-tw",
   },
   en: {
     title: "Game videos",
     play: "Play",
     external: "May need an external player",
     collapse: "Collapse",
+    playerLang: "en",
   },
 };
 
@@ -160,23 +168,62 @@ const SECTION_CSS = `<style>
 .yungame-videos .yungame-video-card.is-open .yungame-video-play,
 .yungame-videos .yungame-video-card.is-open .yungame-video-dur,
 .yungame-videos .yungame-video-card.is-open .yungame-video-badge { display: none; }
-.yungame-videos video { display: block; width: 100%; max-height: 62vh; background: #000; }
+/* 内置播放器（DPlayer）挂在这个容器里：它的根元素按容器铺满，所以要给显式高度
+   （原来是原生 <video> + max-height: 62vh，观感一致）。 */
+.yungame-video-player { width: 100%; height: 62vh; background: #000; }
+.yungame-video-player video { display: block; width: 100%; height: 100%; object-fit: contain; background: #000; }
+/* 本地视频用不到的控件藏掉：我们放的是本地 mp4/webm，没有弹幕源，也用不到无线投屏。
+   留下的就是：播放/暂停、进度、时间、音量、倍速设置、**页面全屏、全屏**。
+   ⚠️ 这些选择器**故意不挂在 .yungame-videos 下面**：进网页全屏时整个播放器容器会被搬进
+   body 上的覆盖层，那时它已经不在 .yungame-videos 里面了，挂上去就会失效。 */
+.yungame-video-player .dplayer-send-icon,
+.yungame-video-player .dplayer-comment-icon,
+.yungame-video-player .dplayer-comment-setting-icon,
+.yungame-video-player .dplayer-airplay-icon { display: none !important; }
+/* 「页面全屏」按钮：DPlayer 默认把它藏起来（display:none，鼠标悬停全屏键才浮出来，
+   位置还飘在全屏键**上方** 30px）。用户要的是"页面全屏 | 全屏"两个键**并排、一直看得见**，
+   所以只把它的 display/position 改回行内流即可 —— DOM 顺序本就是 页面全屏 在前，
+   自然就排在 全屏 左边（两者的 padding / vertical-align 与其它图标同一套，盒子自然一样高）。
+   ⚠️ 别去改父容器 .dplayer-full 的 display（改 flex 会让它旁边的「设置」齿轮错位 6px：
+   2026-09-14 实测齿轮 y=743/底 781、两个全屏键 y=737/底 775 —— 用户报的"三个按钮高度不一致"）。
+   ⚠️ 注释里别用反引号（这段是拼进字符串的 CSS，反引号会截断 TS 模板串）。 */
+.yungame-video-player .dplayer-full-in-icon { display: inline-block !important; position: static !important; }
+/* 网页全屏：借 DPlayer 的按钮与状态，但**由我们把它搬到挂在 document.body 上的覆盖层**。
+   为什么不靠它自己：它的做法是给 body 加 .dplayer-web-fullscreen-fix（position: fixed），
+   而模板里只要有祖先带 transform，fixed 的包含块就不再是视口 —— 真引擎实测：播放器只有
+   550x482 而不是窗口 1200x800。覆盖层的祖先只有 body，绕开这一整类坑。
+   尺寸再兜一层：不管它内部怎么算，在覆盖层里就是铺满。 */
+.yungame-player-overlay { display: none; position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 2147483000; background: #000; }
+.yungame-player-overlay.is-on { display: block; }
+.yungame-player-overlay .yungame-video-player,
+.yungame-player-overlay .dplayer { width: 100% !important; height: 100% !important; }
+html.yungame-lock-scroll, body.yungame-lock-scroll { overflow: hidden !important; }
+/* 展开播放时关掉卡片的 hover 位移：transform 会成为 fixed 后代的包含块，干扰全屏定位
+   （与上面覆盖层要绕开的是同一个原因）。 */
+.yungame-videos .yungame-video-card.is-open:hover { transform: none; }
 </style>`;
 
 /**
  * 区块脚本：找同名封面图不需要脚本；这里做三件事 ——
  *   ① 抓视频首帧当预览封面（没有同名图片时）+ 顺手把时长填进角标；
- *   ② 点卡片就地展开播放器（同一时刻只放一个），再点收起；
- *   ③ 把播放状态 postMessage 给主界面（跨源 iframe 父页面收不到 <video> 事件）。
+ *   ② 点卡片就地展开播放器（同一时刻只放一个）—— 收起只走「收起」按钮，
+ *      播放器内部的点击归 DPlayer（它用点击切播放/暂停）；
+ *   ③ 把播放状态 postMessage 给主界面（跨源 iframe 父页面收不到 <video> 事件），
+ *      并在它的网页全屏事件里接管定位（见 toOverlay / exitWebFull 的注释）。
  */
 function sectionScript(labels: VideoSectionLabels): string {
-  const L = JSON.stringify({ collapse: labels.collapse });
+  const L = JSON.stringify({
+    collapse: labels.collapse,
+    playerLang: labels.playerLang,
+  });
   return `<script>
 (function () {
   var root = document.getElementById("${VIDEO_SECTION_ID}");
   if (!root || root.getAttribute("data-ready") === "1") return;
   root.setAttribute("data-ready", "1");
   var L = ${L};
+  // 网页全屏用的覆盖层 id（挂在 body 末尾，见样式与 overlayEl 的注释）
+  var OVERLAY_ID = "yungame-player-overlay";
 
   function post(type, extra) {
     try {
@@ -185,7 +232,8 @@ function sectionScript(labels: VideoSectionLabels): string {
       parent.postMessage(m, "*");
     } catch (e) {}
   }
-  function allVideos() { return root.getElementsByTagName("video"); }
+  // 从 document 上取视频：网页全屏时 <video> 被搬到 body 上的覆盖层里，已经不在 root 里了。
+  function allVideos() { return document.getElementsByTagName("video"); }
   function pauseOthers(cur) {
     var vs = allVideos();
     for (var i = 0; i < vs.length; i++) if (vs[i] !== cur && !vs[i].paused) vs[i].pause();
@@ -204,32 +252,150 @@ function sectionScript(labels: VideoSectionLabels): string {
     return (h > 0 ? h + ":" : "") + mm + ":" + ss;
   }
 
-  function closeCard(card) {
-    var v = card.getElementsByTagName("video")[0];
-    if (v) {
-      // 先显式暂停：直接摘掉 <video> 不一定触发 pause，
-      // 那样父页面收不到停止通知、背景音乐就一直停着（用户会以为音乐坏了）。
-      if (!v.paused) v.pause();
-      if (v.parentNode) v.parentNode.removeChild(v);
+  // 网页全屏：DPlayer 自己也会做（它给 body 加 .dplayer-web-fullscreen-fix，position: fixed），
+  // 但模板里只要有祖先带 transform，fixed 的包含块就不再是视口 —— 真引擎实测：播放器只有
+  // 550x482 而不是窗口 1200x800。所以这里**借它的事件与状态，自己把播放器容器搬进挂在
+  // body 上的覆盖层**（覆盖层的祖先只有 body，绕开这一整类坑）。
+  function toOverlay(card) {
+    var holder = el(card, "yungame-video-player");
+    if (!holder) return;
+    var ov = overlayEl();
+    ov.__card = card;
+    ov.appendChild(holder);
+    ov.classList.add("is-on");
+    document.documentElement.classList.add("yungame-lock-scroll");
+    document.body.classList.add("yungame-lock-scroll");
+  }
+  // 退出网页全屏：**先让 DPlayer 退出它自己的状态，再搬我们的容器**。
+  // 为什么顺序重要：它退出时会清掉 .dplayer-fulled 与 body 上的 dplayer-web-fullscreen-fix；
+  // 只搬容器不通知它的话，它那套样式会留在容器上 —— 真引擎实测退出后播放器变成 302x524
+  //（该是卡片内的 866x496）。
+  // 另外：DPlayer 的键盘热键里**没有 Esc**（只有空格 / ←→ / ↑↓ / M / F），所以这个 Esc
+  // 支持是我们加的，必须自己调它的 API。
+  function exitWebFull(card) {
+    var dp = card && card.__dp;
+    if (dp && dp.fullScreen && dp.fullScreen.cancel) {
+      try { dp.fullScreen.cancel(); } catch (e) {}
     }
+    leaveOverlay(card);
+    // ⚠️ 下面两行是**必需的**，别以为是多余清理：
+    // 聚焦探针实测 —— 调完它的 cancel() 之后状态一点没变（D 步），
+    // 而它留下的 .dplayer-fulled（玩家上）与 dplayer-web-fullscreen-fix（body 上）会让
+    // 缩略图塌成 0 高、播放器变成 302x375；手动清掉这两个类后立刻恢复 866x496（E 步）。
+    // 原因是我们中途搬走了容器，它自己的簿记对不上，不会替我们收尾。
+    var player = card ? card.getElementsByClassName("dplayer")[0] : null;
+    if (player) player.classList.remove("dplayer-fulled");
+    document.body.classList.remove("dplayer-web-fullscreen-fix");
+  }
+  function leaveOverlay(card) {
+    var ov = document.getElementById(OVERLAY_ID);
+    if (!ov) return;
+    var holder = ov.getElementsByClassName("yungame-video-player")[0];
+    var thumb = el(card, "yungame-video-thumb");
+    // 卡片还在播 → 播放器搬回缩略图；已收起的情况由 closeCard 负责清掉它。
+    if (holder && thumb && card.classList.contains("is-open")) thumb.appendChild(holder);
+    ov.classList.remove("is-on");
+    ov.__card = null;
+    document.documentElement.classList.remove("yungame-lock-scroll");
+    document.body.classList.remove("yungame-lock-scroll");
+  }
+  // 网页全屏用的覆盖层：懒建一次，挂在 body 末尾（祖先只有 body → 不受模板页的
+  // transform / overflow 影响，这就是它比"给缩略图加 fixed"稳的原因）。
+  function overlayEl() {
+    var ov = document.getElementById(OVERLAY_ID);
+    if (!ov) {
+      ov = document.createElement("div");
+      ov.id = OVERLAY_ID;
+      ov.className = "yungame-player-overlay";
+      document.body.appendChild(ov);
+    }
+    return ov;
+  }
+  function overlayCard() {
+    var ov = document.getElementById(OVERLAY_ID);
+    return ov && ov.__card ? ov.__card : null;
+  }
+
+  function closeCard(card) {
+    exitWebFull(card); // 万一还在网页全屏态：先让它退出状态、搬回来 + 解锁，免得页面滚不动
+    var holder = el(card, "yungame-video-player");
+    var dp = card.__dp;
+    var fb = card.__fbVideo; // 兜底路径的原生 <video>（没有 DPlayer 时）
+    card.__dp = null;
+    card.__fbVideo = null;
+    // 先显式暂停再销毁：直接摘掉播放器不一定触发 pause，
+    // 那样父页面收不到停止通知、背景音乐就一直停着（用户会以为音乐坏了）。
+    if (dp) {
+      try { if (!dp.video.paused) dp.pause(); } catch (e) {}
+      try { dp.destroy(); } catch (e) {}
+    }
+    if (fb) {
+      try { if (!fb.paused) fb.pause(); } catch (e) {}
+    }
+    // ⚠️ DPlayer 的 destroy() 只保证"停止播放 + 解绑事件"，**不保证摘掉它自己的 DOM** ——
+    // 真引擎探针实测：收起后 .dplayer 和容器都还留在页面上。所以整块容器一起摘掉。
+    if (holder && holder.parentNode) holder.parentNode.removeChild(holder);
+    // DPlayer 会给 body 加这个类（网页全屏）。留着会让整页变成 position: fixed。
+    document.body.classList.remove("dplayer-web-fullscreen-fix");
     card.classList.remove("is-open");
   }
   function openCard(card) {
-    var v = document.createElement("video");
-    v.controls = true;
-    v.autoplay = true;
-    v.preload = "metadata";
-    v.setAttribute("playsinline", "");
-    v.src = card.getAttribute("data-src");
-    v.addEventListener("play", function () { pauseOthers(v); post("playday-video-play"); });
-    v.addEventListener("pause", function () { post("playday-video-stop"); });
-    v.addEventListener("ended", function () { post("playday-video-stop"); });
-    el(card, "yungame-video-thumb").appendChild(v);
+    var thumb = el(card, "yungame-video-thumb");
+    var holder = document.createElement("div");
+    holder.className = "yungame-video-player";
+    thumb.appendChild(holder);
+    // 兜底：DPlayer 没加载成功时退回原生 <video controls>。
+    // 什么时候会这样：/vendor/ 路由挂了、或者详情页模板自己的 CSP 挡了外部脚本。
+    // 宁可少两个按钮，也不能"点了卡片什么都不出来"。
+    if (typeof DPlayer !== "function") {
+      var v = document.createElement("video");
+      v.controls = true;
+      v.setAttribute("controlsList", "nodownload");
+      v.autoplay = true;
+      v.preload = "metadata";
+      v.setAttribute("playsinline", "");
+      v.src = card.getAttribute("data-src");
+      v.addEventListener("play", function () { pauseOthers(v); post("playday-video-play"); });
+      v.addEventListener("pause", function () { post("playday-video-stop"); });
+      v.addEventListener("ended", function () { post("playday-video-stop"); });
+      card.__fbVideo = v;
+      holder.appendChild(v);
+      card.classList.add("is-open");
+      return;
+    }
+    // 内置播放器：DPlayer（随包发布，见 vendor/README.md）。
+    // 为什么不用原生控件：它是 shadow DOM —— 做不出"页面全屏 + 全屏"并排的按钮，
+    // 菜单里的"下载"项也删不掉（只能 controlsList=nodownload 整个关掉）。
+    var dp = new DPlayer({
+      container: holder,
+      video: { url: card.getAttribute("data-src") },
+      autoplay: true,
+      theme: "#247ba0",
+      lang: L.playerLang,
+      hotkey: true,      // 空格 / ←→ / ↑↓ / M / F 由它接管（补上原生控件的键盘能力）
+      danmaku: false,    // 本地视频没有弹幕源
+      screenshot: false, // 用不到，少一个按钮
+      mutex: true,
+      preload: "metadata",
+      volume: 1,         // 与原生控件时的默认一致（0.7 会让人以为音量没开满）
+    });
+    card.__dp = dp;
+    dp.on("play", function () { pauseOthers(dp.video); post("playday-video-play"); });
+    dp.on("pause", function () { post("playday-video-stop"); });
+    dp.on("ended", function () { post("playday-video-stop"); });
+    // 网页全屏：定位由我们接管（见 toOverlay 的注释）。
+    dp.on("webfullscreen", function () { toOverlay(card); });
+    dp.on("webfullscreen_cancel", function () { leaveOverlay(card); });
     card.classList.add("is-open");
   }
 
-  root.addEventListener("click", function (e) {
+  // ⚠️ 监听挂在 document 上（不是 root）：网页全屏时按钮组被搬进 body 上的覆盖层，
+  // 已经不在 root 内部了。下面的逻辑都靠 cardOf() 定位，点到页面别处会自然返回。
+  document.addEventListener("click", function (e) {
     var t = e.target;
+    // 播放器内部的点击交给 DPlayer（它用点击切播放/暂停，控件条也在里面），
+    // 不能被下面当成"点卡片"把播放器关掉 —— 收起只走「收起」按钮。
+    if (t && t.closest && t.closest(".yungame-video-player")) return;
     if (t && t.closest && t.closest(".yungame-video-collapse")) {
       var c = cardOf(t);
       if (c) closeCard(c);
@@ -244,6 +410,13 @@ function sectionScript(labels: VideoSectionLabels): string {
       return;
     }
     openCard(card);
+  });
+
+  // Esc 退出网页全屏（DPlayer 自己不管 Esc，见 exitWebFull 的注释）。
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape" && e.key !== "Esc") return;
+    var ov = document.getElementById(OVERLAY_ID);
+    if (ov && ov.classList.contains("is-on") && ov.__card) exitWebFull(ov.__card);
   });
 
   // —— 预览封面：没有同名图片的，就地抓视频的一帧 ——
@@ -303,14 +476,6 @@ function sectionScript(labels: VideoSectionLabels): string {
     }
     step();
   })();
-
-  // 主界面顶栏的「视频」按钮 → 滚到这里（父页面滚不了 iframe 里的内容，只能请它自己滚）
-  window.addEventListener("message", function (e) {
-    var d = e.data;
-    if (d && d.type === "playday-scroll-to-videos") {
-      try { root.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (err) { root.scrollIntoView(); }
-    }
-  });
 })();
 </script>`;
 }
@@ -342,6 +507,11 @@ export function buildVideoSection(opts: {
     `<h2>${esc(labels.title)}</h2>`,
     groups,
     `</section>`,
+    // 内置播放器 DPlayer：由本地 HTTP 服务器按 /vendor/DPlayer.min.js 发出（见 vendorAssets.ts）。
+    // 必须是**同源绝对路径** —— 页面地址是 /games/<目录名>/index.html，写成 `videos/...`
+    // 那种相对路径会解析到游戏目录里去。经典脚本按文档顺序执行，所以下面那段内联脚本里
+    // 可以直接用 DPlayer（拿不到时那段脚本自己有原生 <video> 兜底）。
+    `<script src="/vendor/DPlayer.min.js"></script>`,
     sectionScript(labels),
   ].join("");
 }

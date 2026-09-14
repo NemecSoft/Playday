@@ -40,6 +40,9 @@ export default function GridView({ groups }: Props) {
   const selected = useGamesStore((s) => s.selectedGameIds);
   const selectGame = useGamesStore((s) => s.selectGame);
   const launchGame = useGamesStore((s) => s.launchGame);
+  // 侧栏展开时多占的宽度（由 Sidebar 实测上报）：列数按"把它加回来"的参照宽度算，
+  // 这样侧栏开合/拖动只让卡片缩放，不会把一行 5 个变成 4 个。
+  const sidebarOccupiedWidth = useGamesStore((s) => s.sidebarOccupiedWidth);
   const cardWidth = useSettingsStore((s) => s.settings.cardWidth);
   const cardGap = useSettingsStore((s) => s.settings.cardGap);
   // 网格卡片行与行之间的垂直间距（独立于水平间距 cardGap，可在"设置-外观"里调）。
@@ -123,7 +126,7 @@ export default function GridView({ groups }: Props) {
     titleLineHeight + // .title 行高（随游戏名字号动态计算）
     origNameHeight + // 副标题（英文原名）行高
     (showCardDescription ? 4 + descFontSize * 1.5 * 3 : 0); // 简介：margin-top + 3 行截断(line-height 1.5)
-  const { scrollRef, cols, totalSize, items, virtualizer, rowStartIndex, measureRow } =
+  const { scrollRef, cols, totalSize, items, virtualizer, rowStartIndex, measureRow, referenceWidth } =
     useVirtualGrid({
       groups,
       cardWidth,
@@ -131,16 +134,21 @@ export default function GridView({ groups }: Props) {
       cardRowGap,
       titleHeight: titlePlusDesc,
       collapsedGroups: collapsedSet,
+      sidebarOccupiedWidth,
     });
 
   // 滚轮约定（与浏览器一致）：
   //   Ctrl+滚轮 → 整页缩放（全局处理在 ZoomIndicator，这里不再管）；
-  //   Alt+滚轮  → 调整封面大小（下限 120px，**上限 = 当前窗口"正好一行一个"的宽度**，
-  //                所以窗口越宽上限越大；即时生效，停手 300ms 后落盘）。
+  //   Alt+滚轮  → 调整封面大小（下限 120px，**上限 = 当前宽度下"正好一行一个"的宽度**，
+  //                所以宽度越大上限越大；即时生效，停手 300ms 后落盘）。
   // 必须用原生 wheel 监听 + passive:false 才能拦掉默认行为（Alt+滚轮默认会滚列表）。
   const applySettings = useSettingsStore((s) => s.apply);
   const saveSettings = useSettingsStore((s) => s.save);
   const cardWidthSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 参照宽度放进 ref：下面的 wheel 处理器只在挂载时注册（deps 里没有宽度），
+  // 闭包里的值会过期，而它必须在滚的那一刻读最新值。
+  const refWidthRef = useRef(0);
+  refWidthRef.current = referenceWidth;
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -152,7 +160,11 @@ export default function GridView({ groups }: Props) {
       const cur = st.cardWidth;
       // 上限 = "一行一个"的临界宽度（公式见 utils/gridLayout）。用临界值而不是窗口宽度，
       // 是为了滚到头正好停在 1 列，不会出现"继续滚但画面不变"的死区。
-      const maxWidth = singleColumnCardWidth(contentWidthOf(el), clampCardGap(st.cardGap));
+      // 用**参照宽度**（侧栏占的已加回）而不是当前实测宽：列数是按参照宽度算的，
+      // 两把尺子不一致时会出现"滚到头却不是一行一个"——正是这个文件头注释警告过的坑。
+      // 还没量到宽度时（=0）退回实测宽，否则上限会被算成最小值 120，一滚就把卡片缩到底。
+      const refW = refWidthRef.current > 0 ? refWidthRef.current : contentWidthOf(el);
+      const maxWidth = singleColumnCardWidth(refW, clampCardGap(st.cardGap));
       // 步长随封面变大而变大：小尺寸仍是 10px 的精细档，大了按 6% 加速 ——
       // 否则从 400px 滚到 900px+ 要滚上百下，根本没法用。
       const step = Math.max(10, Math.round(cur * 0.06));
@@ -259,7 +271,7 @@ export default function GridView({ groups }: Props) {
             game={game}
             index={startIndex + i}
             selected={selected.includes(game.id)}
-            onSelect={(multi) => selectGame(game.id, multi)}
+            onSelect={() => selectGame(game.id)}
             onLaunch={() => launchGame(game.id)}
             onDetails={() => openDetails(game)}
             onContextMenu={(x, y) => setMenu({ game, x, y })}
@@ -397,7 +409,7 @@ function GridCard({
   game: Game;
   index: number;
   selected: boolean;
-  onSelect: (multi: boolean) => void;
+  onSelect: () => void;
   onLaunch: () => void;
   onDetails: () => void;
   onContextMenu: (x: number, y: number) => void;
@@ -405,9 +417,10 @@ function GridCard({
 }) {
   const { t } = useI18n();
   const { ref: coverRef } = useLazyImage(game.coverImage);
-  // 锁定态：当前用户等级不够这个游戏（黄金版看钻石版游戏）。能看详情、能看封面，
-  // 但不能启动、不能备份存档 —— 规则见 docs/design/user-level-detection.md。
-  // 这里只负责"视觉上让人一眼知道玩不到"，真正的拦截在启动与存档两条 IPC 上。
+  // 锁定态（半锁定）：当前用户等级不够这个游戏（黄金版看钻石版游戏）—— **只能看详情**：
+  // 卡片上不给「开始游戏」按钮，右键菜单里也不给「开始游戏 / 备份游戏存档」（2026-09-14 策略）。
+  // 这里只负责"视觉上让人一眼知道玩不到"（封面降饱和 + 锁定角标）与"不给入口"；
+  // 真正的拦截仍在启动那条 IPC 上（改前端绕不过去）。规则见 docs/design/user-level-detection.md。
   const locked = useAuthStore((s) => !s.canPlay(game.gameLevel));
   // 简介展开/收起：默认收成几行，点击可展开完整。受工具栏"简介"开关控制。
   // 注意：这里显示的是 Playday 用户维护的"简介"（intro），不是 Playnite 的"描述"（description）。
@@ -423,7 +436,10 @@ function GridCard({
   return (
     <div
       className={`grid-card ${selected ? "selected" : ""} ${locked ? "locked" : ""}`}
-      onClick={(e) => onSelect(e.ctrlKey || e.metaKey)}
+      // 点击 = 选中这一张（只保留单选的视觉高亮）。
+      // 2026-09-14 需求：去掉 Ctrl/⌘ + 点多选 —— 选中集合没有任何消费方
+      // （没有批量启动/批量隐藏之类的操作），纯多余，还多一个要记的手势。
+      onClick={() => onSelect()}
       onContextMenu={(e) => {
         e.preventDefault();
         onContextMenu(e.clientX, e.clientY);
@@ -465,19 +481,23 @@ function GridCard({
           </span>
         )}
         <div className="cover-actions">
-          <button
-            className={`cover-btn play ${locked ? "locked" : ""}`}
-            title={locked ? t("need_diamond_cafe") : t("grid_play")}
-            onClick={(e) => {
-              e.stopPropagation();
-              // 锁定时**仍然允许点击**：点了由 gamesStore 弹明确提示（"需要钻石版…"），
-              // 而不是给一个点不动的死按钮 —— 需求要的就是"强烈的反馈"。
-              onLaunch();
-            }}
-          >
-            {locked ? <Lock size={16} /> : <Play size={16} fill="currentColor" />}
-            <span>{locked ? t("grid_diamond_only") : t("grid_play")}</span>
-          </button>
+          {/* 开始游戏：**半锁定**（黄金版看钻石版游戏）时整块不渲染（2026-09-14 策略变更：
+              这类游戏"只能看详情"，开始游戏与存档入口**默认都没有**）。
+              不给入口、也不给死按钮 —— "为什么玩不到"的说明在封面左上角的锁定角标上
+              （悬停显示「需要升级为钻石版网吧才能玩」），一眼可见。 */}
+          {!locked && (
+            <button
+              className="cover-btn play"
+              title={t("grid_play")}
+              onClick={(e) => {
+                e.stopPropagation();
+                onLaunch();
+              }}
+            >
+              <Play size={16} fill="currentColor" />
+              <span>{t("grid_play")}</span>
+            </button>
+          )}
           <button
             className="cover-btn details"
             title={t("grid_details")}

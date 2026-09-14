@@ -11,7 +11,7 @@ import * as path from "path";
 import { getUserByAccount, getUserByIp } from "./db";
 import type { AppUser, SessionUser } from "./models";
 import { appRoot, configuredPath, sourceDatabasePath } from "./paths";
-import { readSettings } from "./settings";
+
 import { evaluateLibraryAge, type LibraryAgeInfo } from "../../shared/libraryAge";
 import {
   parseServerStatusRaw,
@@ -221,8 +221,9 @@ export async function resolveCurrentUserLevel(
   // 公网 IP 排最前（用户表里存的就是公网 IP），本机内网 IPv4 作为兜底
   const ips = [publicIp, ...localIps].filter(Boolean);
 
-  const override = Number(readSettings().userLevelOverride) || 0;
-  const resolved = resolveUserLevel(records, ips, { override, personalLevel: opts.personalLevel });
+  // 不再有"等级覆盖开关"（2026-09-14 用户要求彻底去掉后门）：本机要自测就把本机当前的 IP
+  // 写进用户表（公网 IP 优先、内网 IPv4 兜底），做法见 docs/design/user-level-detection.md §1.4。
+  const resolved = resolveUserLevel(records, ips, { personalLevel: opts.personalLevel });
 
   return {
     ...resolved,

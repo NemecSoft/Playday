@@ -53,6 +53,10 @@ extraResources:
       - "**/*.ttf"
       - "**/*.otf"
       - "**/*.ttc"
+  # 随包第三方前端资源：整目录带到 resources/vendor，打包版由本地服务器按
+  # /vendor/<文件名> 发给详情页（内置播放器 DPlayer，见 vendor/README.md）。
+  - from: vendor
+    to: vendor
   # 注：运行库安装包（VC++ x64/x86、VP9 解码扩展）**不在这里** —— 它由 package.bat
   # 复制成 <包>\runtime\（与 yungamestart\ 同一套"exe 同级目录"布局），正好就是
   # config.json 的 settings.runtimeDir 指的是那个路径。放这里是另一份 45 MB 的重复

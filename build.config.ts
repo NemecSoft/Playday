@@ -11,6 +11,11 @@ export const APP_NAME = "YunGame";
 
 // 客户端可执行文件名（不含 .exe 后缀）。
 // 现名 PlayniteUI：与 YunGameStart（开机自启、建桌面快捷方式）里的 LauncherFile 一致。
-// ⚠️ 改这里必须同步三处：electron-builder.yml 的 win.executableName、
-//    package.bat / build-*.bat 的提示文案（bat 读不到 TS，只能各自写死）。
+// ⚠️ 改这里必须同步这几处（bat / C++ 读不到 TS，只能各自写死）：
+//    · electron-builder.yml 的 win.executableName
+//    · package.bat / build-*.bat 的提示文案
+//    · sync-game-content.bat 的进程名判断（`tasklist /fi "imagename eq …"`）
+//      —— 2026-09-14 发现漏的正是这一处：它还写着旧名 Playday.exe，
+//      "检测到程序在运行"的提醒永远不会触发（静默失效）。
+//    · tools/yungamestart 里的 LauncherFile（C++ 侧）
 export const CLIENT_EXE_NAME = "PlayniteUI";

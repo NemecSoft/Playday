@@ -8,7 +8,7 @@
 //   抽屉外一个固定锚点按钮控制开合，按钮和抽屉解耦，天然不被抽屉内容滚动影响，
 //   也没有"两个按钮样式不一致"或"鼠标移开误关闭"的问题。
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { useGamesStore } from "../stores/gamesStore";
 import { useSettingsStore } from "../stores/settingsStore";
@@ -47,6 +47,7 @@ export default function Sidebar() {
   const setFacetMode = useGamesStore((s) => s.setFacetMode);
   const sidebarVisible = useGamesStore((s) => s.sidebarVisible);
   const toggleSidebar = useGamesStore((s) => s.toggleSidebar);
+  const setSidebarOccupiedWidth = useGamesStore((s) => s.setSidebarOccupiedWidth);
   const sidebarWidth = useSettingsStore((s) => s.settings.sidebarWidth);
   const saveSettings = useSettingsStore((s) => s.save);
   const { t } = useI18n();
@@ -103,6 +104,45 @@ export default function Sidebar() {
     };
   }, [liveWidth, saveSettings]);
 
+  // ---- 上报"侧栏多占的宽度" ----
+  // 网格把这部分加回来算列数，于是侧栏开合/拖动只让卡片等比缩放，不会"一行 5 个变 4 个"。
+  // 上报的是**多占的宽度**（不是侧栏总宽）：那个常驻的 toggle 按钮在收起态也占位置。
+  const rootRef = useRef<HTMLDivElement>(null);
+  const toggleBtnRef = useRef<HTMLButtonElement>(null);
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    const btn = toggleBtnRef.current;
+    if (!root || !btn) return;
+    const publish = () => {
+      if (!sidebarVisible) {
+        // 收起态就是 0，不靠测量：抽屉没挂载，别让"按钮文字换了个长度"变成"占了宽度"。
+        setSidebarOccupiedWidth(0);
+        return;
+      }
+      const style = getComputedStyle(btn);
+      const buttonOuter =
+        btn.offsetWidth + parseFloat(style.marginLeft || "0") + parseFloat(style.marginRight || "0");
+      // 收起态的 root 宽 == 这个按钮的外宽（抽屉没挂载），所以
+      //     多占的宽度 = root 宽 − 按钮外宽
+      // 含按钮与抽屉之间的间距，且**不需要缓存"上一次收起时多宽"** —— 切到别的标签再切回来
+      // 时组件是重新挂载的，那份缓存根本不存在，用它会把整个 root 当成占用宽度（多算按钮宽）。
+      setSidebarOccupiedWidth(Math.max(0, Math.round(root.offsetWidth - buttonOuter)));
+    };
+    publish();
+    // 用 ResizeObserver 而不是盯 sidebarWidth：拖动调宽时宽度是连续变的，而且"实际渲染
+    // 多宽"只有测量才知道（含边距/内边距）。依赖里带 sidebarVisible：开合后立刻在布局阶段
+    // 重测（早于绘制），网格那边量的宽度也在同一帧绘制前落到 state —— 不会出现
+    // "新占用配旧容器宽"被画出来的情况。
+    const ro = new ResizeObserver(publish);
+    ro.observe(root);
+    return () => ro.disconnect();
+  }, [sidebarVisible, setSidebarOccupiedWidth]);
+
+  // 卸载（切到非 home 标签）时归零：侧栏不在了，它占的宽度自然也没了。
+  // 单独一个 effect —— 放进上面那个的 cleanup 会在每次开合时先归零再上报，
+  // 中间那一帧会让网格按窄宽度算一次列数，反而闪一下。
+  useEffect(() => () => setSidebarOccupiedWidth(0), [setSidebarOccupiedWidth]);
+
   // 按当前维度聚合（含计数）。标签维度跳过 "Tag: " 开头的旧自动标签残留。
   const facetStats = useMemo(() => {
     const map = new Map<string, number>();
@@ -136,10 +176,11 @@ export default function Sidebar() {
 
   // 一个固定 toggle 按钮 + 一个抽屉（抽屉展开时才渲染）。
   return (
-    <div className="sidebar-root">
+    <div className="sidebar-root" ref={rootRef}>
       {/* 固定 toggle 按钮：常驻左边缘、垂直居中，点击开合抽屉。
           它是"推出抽屉/收回抽屉"的同一把钥匙，文案随状态变化。 */}
       <button
+        ref={toggleBtnRef}
         className={`sidebar-toggle-btn ${sidebarVisible ? "open" : ""}`}
         onClick={toggleSidebar}
         title={sidebarVisible ? t("sidebar_close") : t("sidebar_handle_hint")}

@@ -10,6 +10,7 @@ import { spawn, type ChildProcess } from "child_process";
 import * as path from "path";
 import { defaultGameRootPath } from "./paths";
 import {
+  batConsoleArgs,
   resolveActionPath,
   resolvePath as resolvePathPure,
   toCmdPath,
@@ -127,7 +128,8 @@ function stopTracking(gameId: string): number {
 // ---- 启动动作解析 ----
 
 // 找游戏的启动动作：优先指定的 actionId，否则用 playTask，最后用默认 play action。
-function resolveAction(game: Game, actionId?: string): GameAction | undefined {
+// 导出给 --check 自检复用（electron/core/checkMode.ts）——"动作怎么选"必须与真实启动完全一致。
+export function resolveAction(game: Game, actionId?: string): GameAction | undefined {
   if (actionId) {
     const byId = game.actions.find((a) => a.id === actionId);
     if (byId) return byId;
@@ -284,16 +286,14 @@ function doSpawn(game: Game, exe: string, args: string[], cwd: string, track: bo
 
     let child;
     if (isScript && isWin && wantConsole) {
-      // 要显示窗口：用 `start` 启动脚本 —— 它会为目标进程请求 CREATE_NEW_CONSOLE
-      // （独立的新控制台窗口）。实测：直接把 bat 交给 `cmd /c` 跑，在 Electron
-      // 这种 GUI 进程里不会弹出窗口（窗口创建与否受父进程控制台状态影响），
-      // 而 `start` 显式新建控制台，稳定可见。
-      // /wait：让外层 cmd 等脚本结束，保持"脚本退出 = 计时结束"的原有语义；
+      // 要显示窗口：参数由纯函数 batConsoleArgs 拼（规则与实测记录在
+      // shared/launchPaths.ts / docs/design/launch-and-paths.md §5）。
+      // 关键一条：**`start` 里还要再套一层 `cmd /c`** —— `start` 对 .bat 是用
+      // `cmd /K` 跑的，脚本结束后那个 shell 不退，控制台窗口会卡住、外层 `/wait`
+      // 也永远不返回（2026-09-14 用户报"退出游戏后窗口不关"就是这个）。
       // 外层 cmd 自己隐藏（windowsHide: true），免得再多出一个空白控制台窗口。
       const comspec = process.env.ComSpec || "cmd.exe";
-      // toCmdPath：我们内部统一用 `/` 分隔，但 cmd 会把以 `/` 开头的 token 当开关
-      // （`//NAS/share/x.bat` 直接传会被判成非法开关），拼命令行前换回 `\`。
-      child = spawn(comspec, ["/d", "/s", "/c", "start", "", "/wait", toCmdPath(exe), ...args], {
+      child = spawn(comspec, batConsoleArgs(comspec, exe, args), {
         cwd,
         stdio: "ignore",
         windowsHide: true,

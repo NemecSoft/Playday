@@ -9,6 +9,8 @@ import { stopGameServer } from "./core/gameServer";
 import { createTray, destroyTray } from "./core/tray";
 import { registerErrorCollector } from "./core/errorCollector";
 import { ensureRuntimeDeps } from "./core/runtimeSetup";
+import { reportGpuStatus } from "./core/gpuReport";
+import { isCheckMode, runCheckMode } from "./core/checkMode";
 import {
   createClientWindow,
   createAnnouncementWindow,
@@ -23,7 +25,23 @@ import {
 let clientWin: BrowserWindow | null = null;
 let announcementWin: BrowserWindow | null = null;
 
+// `exe --check`：启动项 / 存档路径自检，**不创建任何窗口**（服务器、无人值守环境用，
+// 那里可能根本跑不了图形界面）。放在 whenReady 之前发起：自检只需要 Node 侧的东西
+// （sql.js 读库 + fs 判文件），不需要 Chromium 的窗口栈；结果写 <数据根>\logs\check-*.log，
+// 跑完立刻 app.exit(退出码)（0 无问题 / 1 有问题 / 2 自检失败）。见 docs/design/launch-and-paths.md。
+if (isCheckMode()) {
+  void runCheckMode().then((code) => {
+    closeDb();
+    app.exit(code);
+  });
+}
+
 app.whenReady().then(async () => {
+  // 自检模式：不建窗口、不注册 IPC、不装运行库 —— 直接交回（进程会在自检结束后退出）。
+  // 这个判断与上面那段是配套的：whenReady 可能先于自检完成而触发，不拦就会弹出公告窗口，
+  // 那正是"不许起 GUI"要避免的事。
+  if (isCheckMode()) return;
+
   // 去掉 Electron 自带的顶部应用菜单（File/Edit/View/Window/Help）。
   // 窗口已用 frame:false 去掉了原生标题栏和外框，这里再用 setApplicationMenu
   // 把剩下的菜单条彻底清掉，让 UI 完全由前端 TopBar 自定义。
@@ -62,6 +80,11 @@ app.whenReady().then(async () => {
   // 缺哪个装哪个，装不上只写 <数据根>\logs\runtime-setup.log，不弹任何窗口。
   // 放在"公告窗口已创建"之后，是为了把启动路径上的活干完再谈后台任务。
   ensureRuntimeDeps();
+
+  // 记一行 GPU 加速状态到 <数据根>\logs\gpu.log（等 GPU 信息就绪再读，绝不阻塞启动）。
+  // 为什么留这条日志：网吧现场"界面发涩、滚动掉帧"时，第一件要确认的事就是"这台机器到底有没有
+  // 在用硬件加速" —— 有日志就不用再去现场写探针。见 docs/design/gpu-acceleration.md。
+  void reportGpuStatus();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {

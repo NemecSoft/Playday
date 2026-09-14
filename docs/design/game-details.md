@@ -151,6 +151,57 @@ registerCommand(ipc, "get_game_server_url", async () => {
   "可能需外部播放器"、也不去抓帧，点击请主界面用系统默认播放器打开（`shell.openPath`），
   不甩给用户一个必然黑屏的播放器。能用内置播放器的只有 `.mp4` / `.m4v` / `.webm` / `.ogv`
   （判定：`isWebPlayable()`）。
+- **内置播放器：DPlayer**（2026-09-14 换掉原生 `<video controls>`；随包发布，见 `vendor/README.md`）
+  - **为什么换**：原生控件是 shadow DOM —— 做不出"页面全屏 + 全屏"**并排**的按钮，菜单里的
+    "下载"也只能用 `controlsList=nodownload` 整个关掉。用户要的就是那种（B 站式的）手感。
+    注：B 站自己的网页播放器是**闭源混淆**的（社区那些"B 站播放器"都是反混淆产物），
+    他们开源的是 flv.js / mpegts.js 那套流媒体库 —— 本地 mp4 一个都用不上。
+  - **随包与路由**：`vendor/DPlayer.min.js`（1.27.1，MIT，304,629 字节，SHA256 见 `vendor/README.md`）
+    由本地服务器按 `/vendor/<文件名>` 发出（`electron/core/vendorAssets.ts`：只放行裸文件名 +
+    `.js`/`.css` 白名单，防穿越）；打包由 `electron-builder.yml` 的 extraResources 带到
+    `resources/vendor`。注入的 `<script src="/vendor/DPlayer.min.js">` 必须是**同源绝对路径**
+    （页面在 `/games/<目录名>/index.html`，相对路径会解析到游戏目录里去）。经典脚本按文档顺序
+    执行，所以紧随其后的内联脚本里可以直接用 `DPlayer`。
+  - **藏掉本地视频用不到的控件**（没有弹幕源、也不用无线投屏）：`.dplayer-send-icon` /
+    `.dplayer-comment-icon` / `.dplayer-comment-setting-icon` / `.dplayer-airplay-icon`。
+    留下的就是：播放/暂停、进度、时间、音量、倍速设置、**页面全屏、全屏**（DPlayer 原生的
+    两个按钮并按，就是我们最初想要的位置）。
+  - **「页面全屏」键默认是藏起来的**（它自带的 `display:none` + 悬停全屏键才浮出、且飘在它上方
+    30px）。我们只改**它自己**的 `display`/`position` 让它常显并排 —— ⚠️ **别去改父容器
+    `.dplayer-full` 的 display**：改成 flex 会让旁边的「设置」齿轮错位 6px（实测：齿轮
+    y=743/底 781，两个全屏键 y=737/底 775，用户报的"三个按钮高度不一致"就是这个；改回行内流后
+    三个图标统一 y=737、40x38、底 775）。
+  - **网页全屏的定位由我们接管**：DPlayer 自己会给 body 加 `.dplayer-web-fullscreen-fix`
+    （`position: fixed`），可模板里一旦有祖先带 `transform`，`fixed` 的包含块就不再是视口 ——
+    真引擎实测播放器只有 **550x482**（窗口 1200x800）。所以借它的 `webfullscreen` /
+    `webfullscreen_cancel` 事件，把播放器容器搬进挂在 body 上的 `.yungame-player-overlay`。
+    实测：进全屏后播放器 = **1200x800 @(0,0)**、锁页面滚动；退出后回到卡片 **866x496**。
+  - **退出时必须自己清这两个类**：`.dplayer-fulled`（在播放器上）与
+    `dplayer-web-fullscreen-fix`（在 body 上）。聚焦探针实测：调它的 `fullScreen.cancel()`
+    **不会**清它们（调用前后 DOM 状态一点没变），留着会让缩略图塌成 0 高、播放器变成
+    302x375；手动清掉后立刻恢复 866x496。成因是我们中途搬走过容器，它自己的簿记对不上。
+    另外 **DPlayer 的键盘热键里没有 Esc**（只有空格 / ←→ / ↑↓ / M / F），Esc 退出是我们加的。
+  - **收起卡片**：`dp.destroy()` **不摘自己的 DOM**（实测收起后 `.dplayer` 与容器都还在），
+    所以 closeCard 把整块容器一起移除；同时显式 `pause()` 一次，好让父页面收到停止通知、
+    背景音乐恢复（跨源 iframe 收不到 `<video>` 事件，全靠 `postMessage`）。
+  - **兜底**：`typeof DPlayer !== "function"` 时（`/vendor/` 路由挂了 / 模板自己的 CSP 挡了外部
+    脚本）退回原生 `<video controls>` —— 少两个按钮，但不能"点了卡片什么都不出来"。
+  - **取舍：没有画中画按钮**（1.27.1 没做），原生的画中画按钮因此没了；右键视频理论上还能用
+    Chromium 自带菜单里的画中画。想要按钮就得自己补一个（或换控件可完全自定义的库，如 ArtPlayer）。
+  - **验证方式（动播放器必跑）**：真 Electron 引擎 + 带 `transform` 的假详情页跑**完整链路**
+    （真实注入产物 + 真实 `/vendor/` 路由 + 真实 mp4）—— ① 控制条有"页面全屏/全屏"且无下载项
+    ② 能播、能拖（Range）③ 页面全屏真的铺满窗口并锁滚动 ④ 再点/ Esc /「收起」都干净退出、
+    无残留、无控制台报错。单测（`electron/core/gameDetailInject.test.ts`）钉住产物里的这批约定，
+    防止谁顺手改回去。
+  - **为什么是"搬 DOM"而不是"给缩略图加 `position: fixed`"（2026-09-14 实测）**：
+    旧写法（`.is-pagefull .yungame-video-thumb { position: fixed; inset: 0 }`）在真实模板页里失效 ——
+    现象是缩略图缩成**一条细长黑条、视频被挡在后面**。成因未逐一坐实（最可能是祖先的 `transform`
+    让 `fixed` 的包含块不再是视口，`inset` 也就失去了意义），但**换法本身不依赖模板布局**：
+    覆盖层的祖先只有 `body`。验证方式：真 Electron 引擎 + 一个"容器带 `transform`"的假详情页，
+    `getBoundingClientRect()` 与 `elementFromPoint()` 实测 —— 覆盖层/视频 = 整窗、
+    中心命中的是 `VIDEO`、**覆盖层里的退出键也点得到**、Esc 后视频搬回卡片。
+    按钮会搬出卡片，所以点击监听从 `root` 挪到了 `document`，控件样式也不再挂在
+    `.yungame-videos` 下面（搬出去后那层选择器就失效了）。
 
 ### 怎么"进"到页面里：服务端注入（关键设计）
 
@@ -171,9 +222,11 @@ registerCommand(ipc, "get_game_server_url", async () => {
 
 | 需求 | 做法 |
 |------|------|
-| 顶栏显示视频数量、点一下跳过去 | `get_game_videos` 拿数量；点击向 iframe `postMessage({type:"playday-scroll-to-videos"})` —— 跨源 iframe 的内容，父页面滚不了，只能请它自己滚 |
+| 顶栏**不再有**视频入口（2026-09-14 需求） | 视频区块由注入脚本放进详情页 HTML，**页面自己就显示**，app 侧再来一个"滚过去"的按钮是重复的，已删除（连同注入脚本里那个 `playday-scroll-to-videos` 监听）。`get_game_videos` 仍要调用：它是下面两条逻辑的数据来源 |
+| 修改器 / 应用存档入口**按内容显隐**（2026-09-14 需求） | `修改器/`、`游戏存档/` 目录里没有 `.exe`（目录不存在、为空、或扫描失败都算）→ **不显示**对应按钮 —— 空入口只会让人白点。判据就是 IPC 返回的列表长度（`trainer.ts` / `saves.ts` 在目录缺失时都返回 `[]`） |
 | 播视频时暂停背景音乐 | 注入脚本在 `play` / `pause` / `ended` 时 `parent.postMessage` 通知主界面（`playday-video-play` / `playday-video-stop`），主界面据此让音乐让位/恢复（见 [背景音乐](./background-music.md) 第七节） |
 | mkv/flv 这类要系统播放器 | 注入脚本发 `playday-video-external` + `rel`，主界面用 `get_game_videos` 里的 `absPath` 调 `open_video_external`（iframe 里拉不起系统播放器） |
+| 顶栏**正中**加「开始游戏」（2026-09-15 需求） | 按钮**绝对居中**（`absolute left-1/2 -translate-x-1/2`）：左边「返回 / 修改器 / 应用存档」有几个都不影响它落在正中间（用 flex 顺序会被挤偏）。点击走 `launchGame()`，与卡片 / 右键菜单同一条链路；**游戏运行中也照旧可点**（用户要求"不要太严格"，点了就是再启动一次）。显示条件 = `authStore.loaded && canPlay(userLevel, game.gameLevel)` —— 黄金版看钻石版游戏不渲染，规则见 [用户等级检测](./user-level-detection.md) |
 
 > 与顶部"视频"tab 的区别：那个 tab 读**数据库** `games.videos` 字段（外链 / YouTube 嵌入）；
 > 这里读**磁盘上**的 `videos/` 目录。两者互不影响、互不依赖。
@@ -185,7 +238,7 @@ registerCommand(ipc, "get_game_server_url", async () => {
 | `get_game_html_page` | 返回某游戏详情页本地路径（不存在返回 null） | `gameHtmlPagePath()` |
 | `get_game_server_url` | 返回 HTTP 服务器 base URL；未启动则**惰性启动** | `getGameServerBaseUrl()` / `startGameServer()` |
 | `list_game_html_dirs` | 列出详情页根目录下有哪些游戏的详情页（管理端诊断） | `readdirSync` + 检查 `index.html` |
-| `get_game_videos` | 列出某游戏 `videos/` 里的本地视频（数量徽章 + 外部播放要用的绝对路径） | `resolveGameSubpath()` + `scanVideos()` |
+| `get_game_videos` | 列出某游戏 `videos/` 里的本地视频（外部播放要用的绝对路径；也是"播视频时音乐让位 / 顶栏已不再显示数量徽章"的数据来源） | `resolveGameSubpath()` + `scanVideos()` |
 | `open_video_external` | 用系统默认播放器打开某个视频（内置放不了的封装走这条） | `shell.openPath` |
 
 ## 双端差异
@@ -214,6 +267,6 @@ registerCommand(ipc, "get_game_server_url", async () => {
 | `electron/ipc/gameHtml.ts` | 详情页相关 IPC（含惰性启动 `get_game_server_url`） |
 | `electron/ipc/trainer.ts` | 复用详情页目录发现修改器 |
 | `electron/ipc/gameVideos.ts` | 视频列表 IPC + 用系统播放器打开 |
-| `src/pages/GameDetailPage.tsx` | 前端打开详情页、拼 URL、懒加载服务器；视频按钮 + 播放浮层 |
+| `src/pages/GameDetailPage.tsx` | 前端打开详情页、拼 URL、懒加载服务器；修改器 / 应用存档入口（**按目录内容决定是否显示**）；视频不再有 app 侧入口 |
 | `src/components/settings/GeneralSection.tsx` | `gameDetailsDir` 配置 UI |
 | `server/server.mjs` | 网站端 `/Game_Details/*` 静态路由 |

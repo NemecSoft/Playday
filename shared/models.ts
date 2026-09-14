@@ -144,10 +144,6 @@ export const DEFAULT_SETTINGS = {
   // Status=0 表示该等级正在维护（公告窗口会提示并禁止进入系统）。
   // 相对路径同样以「应用 exe 所在目录」为基准。
   yunGameServerStatusPath: "YunGame_ServerStatus.json",
-  // 0 = 关闭（默认，按用户表 IP 判定）；非 0 时强制使用该等级：
-  // 1 黄金 / 2 钻石 / 3 全解锁。**仅用于本机调试与排障**（没有它，没进名单的开发机
-  // 会被判成黄金版，连自测都跑不起来）。
-  userLevelOverride: 0,
   currentUserKind: "",
   currentUserName: "",
   currentUserLevel: 3,
@@ -592,12 +588,7 @@ export interface AppSettings {
    * 未配置时默认 `<应用目录>/YunGame_ServerStatus.json`。
    */
   yunGameServerStatusPath?: string;
-  /**
-   * 用户等级覆盖开关：0 = 关闭（按用户表 IP 判定）；非 0 时强制该等级
-   * （1 黄金 / 2 钻石 / 3 全解锁）。**仅用于本机调试与排障**：没有它，没进名单的
-   * 开发机会被判成黄金版，连自测都跑不起来。
-   */
-  userLevelOverride?: number;
+
   /** 当前会话用户类型："enterprise" | "personal" | ""。 */
   currentUserKind: string;
   /** 当前会话用户显示名。 */

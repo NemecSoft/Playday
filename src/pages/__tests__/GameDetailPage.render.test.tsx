@@ -7,6 +7,15 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderToString } from "react-dom/server";
 import type { Game } from "../../types/models";
 import { makeGame } from "../../test/factories";
+// ⚠️ 等级必须用 vi.mock 摆，**不能**用 useAuthStore.setState：zustand v5 的 useStore 在
+// renderToString 下取的是**初始快照**（getInitialState），setState 设的值 SSR 读不到 ——
+// 实测 SSR 里永远是 {loaded:false, userLevel:3}。用 setState 的话"应有按钮"的用例永远红、
+// "不应有按钮"的用例永远空过（假绿），两边都没在测东西。
+// 判定函数 canPlay 仍是真实实现（页面直接从 shared/userLevel.ts 引入，这里不 mock 它）。
+const auth = vi.hoisted(() => ({ state: { loaded: true, userLevel: 2 } }));
+vi.mock("../../stores/authStore", () => ({
+  useAuthStore: (sel: (s: { loaded: boolean; userLevel: number }) => unknown) => sel(auth.state),
+}));
 
 // ---- mock 依赖 ----
 const mockNavigate = vi.fn();
@@ -19,7 +28,7 @@ vi.mock("react-router-dom", () => ({
 }));
 
 vi.mock("../../stores/gamesStore", () => ({
-  useGamesStore: (sel: any) => sel({ games: mockGames }),
+  useGamesStore: (sel: any) => sel({ games: mockGames, launchGame: vi.fn() }),
 }));
 
 vi.mock("../../i18n", () => ({
@@ -55,5 +64,38 @@ describe("GameDetailPage", () => {
     // backButton 存在（mock 的 t 返回 [details_back]）
     expect(html).toContain("details_back");
     expect(html).toContain("details_loading");
+  });
+});
+
+// 顶栏正中「开始游戏」按钮的门禁（2026-09-15 需求）。
+// 断言看图标类名（lucide-play），与 GameContextMenu 的渲染测试同一套办法：语种无关。
+// 初始 loading 分支里不会有别的 lucide-play（运行徽标此刻是 unknown，不渲染图标）。
+describe("GameDetailPage 顶栏「开始游戏」按钮", () => {
+  const setGameLevel = (gameLevel: number) => {
+    mockGames[0] = makeGame({ id: "test-id", name: "朽木难雕", gameLevel });
+  };
+  const render = (loaded: boolean, userLevel: number) => {
+    auth.state = { loaded, userLevel }; // 1 = 黄金版，2 = 钻石版
+    return renderToString(<GameDetailPage />);
+  };
+
+  it("钻石版用户看钻石版游戏：有按钮", () => {
+    setGameLevel(2);
+    expect(render(true, 2)).toContain("lucide-play");
+  });
+
+  it("黄金版用户看钻石版游戏：不显示这个按钮", () => {
+    setGameLevel(2);
+    expect(render(true, 1)).not.toContain("lucide-play");
+  });
+
+  it("黄金版用户看黄金版游戏：有按钮", () => {
+    setGameLevel(1);
+    expect(render(true, 1)).toContain("lucide-play");
+  });
+
+  it("等级还没算完（loaded=false）：也不显示 —— 否则黄金版会先闪一下再消失", () => {
+    setGameLevel(2);
+    expect(render(false, 3)).not.toContain("lucide-play");
   });
 });

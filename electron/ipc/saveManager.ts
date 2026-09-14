@@ -9,12 +9,17 @@
 //   never —— 不提示也不备份
 // 判定放在**主进程**：前端只管"问不问用户"那一段，模式一旦是自动/永不，
 // 不许因为前端没跑起来就漏掉（与"不能只靠前端拦"同一条原则）。
+//
+// ⚠️ 存档备份**不看用户等级**（2026-09-14 需求变更）：黄金版也能备份任何游戏的存档，
+//    包括自己玩不了的钻石版游戏 —— 存档是玩家自己的东西，不该因为版本不同就拿不出来。
+//    本文件原先有两处 canPlay 门禁（手动备份 + 退出后提示），都已删除。
+//    "能不能玩"的门禁仍只在启动那一条路上（electron/core/process.ts），见
+//    docs/design/user-level-detection.md。
 import { ipcMain, BrowserWindow } from "electron";
 import { getGame } from "../core/db";
 import { getLibraries, readSettings } from "../core/settings";
 import { launchSaveBackup } from "../core/gameSaveHelper";
 import { resolvePath, subscribeGameExit } from "../core/process";
-import { canPlay } from "../core/auth";
 import { registerCommand } from "./registry";
 import type { SaveBackupMode } from "../../shared/models";
 
@@ -36,14 +41,8 @@ function backupGameSaveNow(
   const game = gameId ? getGame(gameId) : undefined;
   if (!game) return { ok: false, error: "游戏不存在" };
 
-  // 权限门禁：与"能不能启动"同一条规则（唯一的 canPlay）。黄金版不得备份存档 ——
-  // 否则"能看不能玩"会被绕过（用备份包把别人的存档恢复进来）。
-  const settings = readSettings();
-  if (!canPlay(settings.currentUserLevel, game.gameLevel)) {
-    // 用户可见文案不带等级数字（见 docs/design/user-level-detection.md 的反馈规范）
-    return { ok: false, error: "需要升级为钻石版网吧（网咖）才能存档" };
-  }
-
+  // 这里**没有等级门禁**（2026-09-14 需求）：黄金版也能备份任何游戏的存档，
+  // 包括自己玩不了的钻石版游戏。原先那句"需要升级为钻石版网吧才能存档"已作废。
   const savePaths = game.savePaths ?? [];
   if (savePaths.length === 0) {
     return { ok: false, error: "该游戏未配置存档路径" };
@@ -66,10 +65,8 @@ export function registerSaveManagerIpc(ipc: typeof ipcMain) {
   subscribeGameExit((payload) => {
     // 只有该游戏配置了存档路径时才需要管（没配存档路径的备份无意义）。
     if (!payload.hasSavePaths) return;
-    // 等级不够的人不该被问"要不要备份"（他连启动都不允许，见 docs/design/user-level-detection.md）。
-    // 这里再判一次是防御性的：将来若有"免启动试玩"之类的路径，也不会给不该备份的人弹窗。
-    const g = payload.gameId ? getGame(payload.gameId) : undefined;
-    if (g && !canPlay(readSettings().currentUserLevel, g.gameLevel)) return;
+    // 这里**不再按等级过滤**（2026-09-14 需求）：存档备份不看用户等级，黄金版玩过的游戏
+    // 退出后照常问"要不要备份"。原先那句是按"能玩才能备份"的旧规则写的，已作废。
 
     const mode: SaveBackupMode = readSettings().saveBackupMode ?? "ask";
     if (mode === "never") return;

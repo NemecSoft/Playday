@@ -2,7 +2,7 @@
 // 验证 filterGames / sortGames / groupGames 的行为。
 
 import { describe, it, expect } from "vitest";
-import { filterGames, sortGames, groupGames, type ViewOptions } from "../selectors";
+import { defaultGroupByFor, filterGames, sortGames, groupGames, type ViewOptions } from "../selectors";
 import type { Game } from "../../types/models";
 import { makeGame as makeBaseGame } from "../../test/factories";
 
@@ -186,5 +186,60 @@ describe("groupGames", () => {
     const groups = groupGames(games, "platform");
     const unk = groups.find((g) => g.key === "Unknown")!;
     expect(unk.games.map((g) => g.name)).toEqual(["No Platform"]);
+  });
+
+  it("按游戏级别分组：黄金版（1）在上、钻石版（2）在下", () => {
+    const games = [
+      makeGame({ name: "D1", gameLevel: 2 }),
+      makeGame({ name: "G1", gameLevel: 1 }),
+      makeGame({ name: "D2", gameLevel: 2 }),
+      makeGame({ name: "G2", gameLevel: 1 }),
+    ];
+    const groups = groupGames(games, "gameLevel");
+    // 默认 label（en）按 order 排：1 在前、2 在后 —— 不是按字母序（那样 Diamond 会在前）
+    expect(groups.map((g) => g.key)).toEqual(["Gold", "Diamond"]);
+    expect(groups[0].games.map((g) => g.name)).toEqual(["G1", "G2"]); // 组内顺序 = 传入顺序
+    expect(groups[1].games.map((g) => g.name)).toEqual(["D1", "D2"]);
+  });
+
+  it("游戏级别的组名用注入的 labels（界面上是 黄金版 / 钻石版）", () => {
+    const groups = groupGames([makeGame({ name: "G", gameLevel: 1 })], "gameLevel", {
+      tierGold: "黄金版",
+      tierDiamond: "钻石版",
+    });
+    expect(groups[0].key).toBe("黄金版");
+    expect(groups[0].label).toBe("黄金版");
+  });
+
+  it("级别取值不是 1/2 时兜底归 Unknown，并排到最后", () => {
+    const games = [
+      makeGame({ name: "Weird", gameLevel: 9 }),
+      makeGame({ name: "D", gameLevel: 2 }),
+      makeGame({ name: "G", gameLevel: 1 }),
+    ];
+    const groups = groupGames(games, "gameLevel");
+    expect(groups.map((g) => g.key)).toEqual(["Gold", "Diamond", "Unknown"]);
+  });
+
+  it("其它维度不受影响：仍按 label 排序，且不写 order", () => {
+    const games = [
+      makeGame({ name: "A", platform: ["PS5"] }),
+      makeGame({ name: "B", platform: ["PC"] }),
+    ];
+    const groups = groupGames(games, "platform");
+    expect(groups.map((g) => g.key)).toEqual(["PC", "PS5"]); // 字母序 —— 与改动前完全一致
+    expect(groups.every((g) => g.order === undefined)).toBe(true);
+  });
+});
+
+describe("defaultGroupByFor：黄金版用户的默认分组", () => {
+  it("黄金版（1）→ 按游戏级别分组（先看到自己能玩的）", () => {
+    expect(defaultGroupByFor(1)).toBe("gameLevel");
+  });
+
+  it("钻石版（2）/ 等级还没算出来（3）/ 0 都返回 null（不改默认的不分组）", () => {
+    expect(defaultGroupByFor(2)).toBeNull();
+    expect(defaultGroupByFor(3)).toBeNull();
+    expect(defaultGroupByFor(0)).toBeNull();
   });
 });
