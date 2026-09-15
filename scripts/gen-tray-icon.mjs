@@ -2,7 +2,13 @@
 // 背景用主题强调色（蓝），中间画一个白色播放三角——在 Windows 托盘(16x16)
 // 上清晰可见，替代原来 256x256 的细线暗色 logo（那个缩到托盘根本看不见）。
 //
-// 用法：node scripts/gen-tray-icon.mjs   （输出到 public/icons/tray.png）
+// ⚠️ **已废弃（2026-09-16）**：托盘图标现在与系统图标**同源** —— 由 `public/icons/icon.svg`
+// 渲成 `tray.png` + 多尺寸 `tray.ico`（见 `public/icons/render-icon.cjs` 与
+// docs/design/app-icons.md），不再是这个蓝色方块。这里保留代码只是留个"手写 PNG 编码"的样例。
+// 因此加了 `--force` 闸门：**不加参数直接跑会拒绝执行**，免得有人顺手跑它、把 tray.png
+// 悄悄覆盖回旧图标（那种事只有下次看托盘才会发现）。
+//
+// 用法：node scripts/gen-tray-icon.mjs --force   （输出到 public/icons/tray.png）
 import fs from "fs";
 import path from "path";
 import zlib from "zlib";
@@ -95,6 +101,12 @@ function crc32(buf) {
   let crc = -1;
   for (let i = 0; i < buf.length; i++) crc = (crc >>> 8) ^ table[(crc ^ buf[i]) & 0xff];
   return crc ^ -1;
+}
+
+if (!process.argv.includes("--force")) {
+  console.error("已废弃：托盘图标改由 public/icons/render-icon.cjs 生成（图标同源于 icon.svg，见 docs/design/app-icons.md）。");
+  console.error("确实要重新生成旧的蓝色方块，就加 --force。");
+  process.exit(1);
 }
 
 const raw = makePng();

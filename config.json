@@ -12,7 +12,7 @@
     "fontsDir": "fonts",
     "musicDir": "D:/KwDownload/song",
     "musicEnabled": true,
-    "musicVolume": 70,
+    "musicVolume": 35,
     "musicMode": "shuffle",
     "gridViewImage": "Cover",
     "detailsViewImage": "Background",
@@ -40,7 +40,7 @@
     "fontFamily": "HarmonyOS_Sans_SC_Medium",
     "cardFontSize": 15,
     "cardDescFontSize": 0,
-    "coverStyle": "none",
+    "coverStyle": "vivid",
     "cardFontBold": false,
     "cardText": {
       "color": "#fff8e7",
@@ -60,7 +60,7 @@
       "bgOpacity": 0.5,
       "colorMode": "theme"
     },
-    "themeId": "p-playnite",
+    "themeId": "p-emixednite",
     "gameDetailsDir": "D:/Addons",
     "coverImagesDir": "D:/YunGame/PlayNite/CoverImages",
     "announcementsDir": "dev-data/announcements",

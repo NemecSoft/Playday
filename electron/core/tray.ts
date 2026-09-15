@@ -7,25 +7,35 @@ import { Tray, Menu, nativeImage, app, BrowserWindow } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { APP_NAME } from "../config";
+// 应用图标按等级取（黄金 1.ico / 钻石 2.ico，2026-09-16 需求）—— 见 core/appIcon.ts
+import { currentLevelIconPath, registerTrayIconUpdater } from "./appIcon";
 
 let tray: Tray | null = null;
 
 // 找一个可用的托盘图标。
-// 关键：原本的 public/icons/icon.png 是 256x256 的细线暗色 logo（96.5% 透明、
-// 主体是暗色），缩到 Windows 托盘(16x16) 后几乎看不见，所以显示空白。
-// 因此专门生成一个 16x16 的高对比托盘图标 public/icons/tray.png
-// （主题蓝色实心圆角方块 + 白色播放三角），托盘上清晰可见，优先用它。
+// **首选当前等级的应用图标**（黄金 1.ico / 钻石 2.ico）—— 2026-09-16 需求变更："图标按等级分"，
+// 托盘与窗口/任务栏用**同一份文件**（都在 tools/yungamestart/assets/ 下，随包发到 resources/）。
+// 为什么以前专门有 tray.png/tray.ico：那时托盘显示空白，因为当时代用的 icon.png 是 256x256
+// 的细线暗色 logo（96.5% 透明），缩到 16x16 基本看不见。现在 1.ico/2.ico 自带 16/24/32/48 帧
+// （由 make-icons.mjs 生成），"尺寸不够"这件事已经解决；tray.* 保留为**兜底**
+// （等级图标万一没随包发出来，托盘至少还有个图标，不会空）。
 // 找不到再退回其他候选，最后兜底空图（不崩）。
 function loadTrayIcon(): Electron.NativeImage {
+  const tierIcon = currentLevelIconPath();
   const candidates = [
+    ...(tierIcon ? [tierIcon] : []),
     // dev 模式：主进程在 dist-electron/electron/core/，__dirname 是 core 目录。
     // 上三级才到工程根（core→electron→dist-electron→工程根），再进 public/icons。
     // 之前用了上两级（到 dist-electron/），导致 dev 一直找不到图标、fallback 空图。
+    path.join(__dirname, "..", "..", "..", "public", "icons", "tray.ico"),
     path.join(__dirname, "..", "..", "..", "public", "icons", "tray.png"),
+    path.join(__dirname, "..", "..", "..", "public", "icons", "icon.ico"),
     path.join(__dirname, "..", "..", "..", "public", "icons", "icon.png"),
     path.join(__dirname, "..", "..", "..", "public", "icon.png"),
     // 打包模式：electron-builder 会把 resources 目录带进 app
+    path.join(process.resourcesPath || "", "tray.ico"),
     path.join(process.resourcesPath || "", "tray.png"),
+    path.join(process.resourcesPath || "", "icon.ico"),
     path.join(process.resourcesPath || "", "icon.png"),
   ];
   for (const p of candidates) {
@@ -33,7 +43,12 @@ function loadTrayIcon(): Electron.NativeImage {
       if (fs.existsSync(p)) {
         const img = nativeImage.createFromPath(p);
         if (!img.isEmpty()) {
-          // 已经是 16x16 就不用 resize；若是大图则压到托盘标准大小
+          // ⚠️ .ico **不要 resize**（2026-09-16 实测）：Electron 的 nativeImage 读 .ico 时
+          // **只取最大那一帧**（四个 ico 都量到 256x256，多尺寸被压平），所以递给 shell 的
+          // 就是一张 256 —— 由 Windows 按当前 DPI 自己缩到 16/20/24/32。
+          // 我们主动 resize 到 16 反而更差：125%/150% 缩放下系统要把 16 放大，一定糊。
+          if (p.toLowerCase().endsWith(".ico")) return img;
+          // PNG：已经是 16x16 就不用 resize；若是大图则压到托盘标准大小
           const s = img.getSize();
           if (s.width > 16 || s.height > 16) return img.resize({ width: 16, height: 16 });
           return img;
@@ -51,6 +66,15 @@ function loadTrayIcon(): Electron.NativeImage {
 export function createTray(): void {
   if (tray) return; // 已建过，避免重复
   tray = new Tray(loadTrayIcon());
+  // 把"往托盘上画图标"的入口注册给 appIcon.ts：等级是开机后异步判出来的，
+  // 判出来之后它那边会调 refreshAppIcons() → 这里换图（见 core/appIcon.ts 的说明）。
+  registerTrayIconUpdater((img) => {
+    try {
+      tray?.setImage(img);
+    } catch {
+      /* ignore */
+    }
+  });
   tray.setToolTip(APP_NAME);
   const menu = Menu.buildFromTemplate([
     {

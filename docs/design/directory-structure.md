@@ -70,7 +70,7 @@ Playday/
 | `core/tags.ts` | 自动标签 |
 | `core/process.ts` | 游戏进程启动、时长追踪 |
 | `core/scriptRunner.ts` | 脚本启动（pre/post launch/exit） |
-| `core/tray.ts` | 托盘图标（tray.png）+ 右键菜单 |
+| `core/tray.ts` | 托盘图标（`public/icons/tray.ico` 优先，见 [应用图标](./app-icons.md)）+ 右键菜单 |
 | `core/gameServer.ts` | 静态详情页容器（本地 HTTP 服务器） |
 | `core/runtimeDeps.ts` / `core/runtimeSetup.ts` | 运行库（VC++ / VP9）检测与静默安装：判据/参数（纯函数 + 单测）+ 启动时的执行层（见 [运行库依赖](./runtime-deps.md)） |
 | `core/gpuStatus.ts` / `core/gpuReport.ts` | GPU 加速状态判读（纯函数 + 单测）+ 启动时往 `<数据根>\logs\gpu.log` 记一行（见 [GPU 加速](./gpu-acceleration.md)） |
@@ -111,7 +111,7 @@ Playday/
 
 | 类别 | 脚本 | 说明 |
 | --- | --- | --- |
-| 生成 | `gen-tray-icon.mjs` | 生成 16x16 高对比托盘图标 `public/icons/tray.png` |
+| 生成 | ~~`gen-tray-icon.mjs`~~ | **已废弃**：旧的蓝色方块托盘图标。托盘图标现在与系统图标同源（`public/icons/render-icon.cjs` 出图，见 [应用图标](./app-icons.md)）；这个脚本加了 `--force` 闸门，防误跑覆盖 |
 | 迁移 | `migrate-cover-paths.mjs` | 迁移数据库封面路径 |
 | 迁移 | `migrate-cover-to-release.mjs` | 封面迁移到 dev-data |
 | 迁移 | `migrate-from-release.mjs` | 从 release 迁移数据 |

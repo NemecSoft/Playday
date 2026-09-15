@@ -9,6 +9,7 @@ import {
   resolveUserLevel,
   xorBase64,
   canPlay,
+  iconNameForLevel,
   YUNGAME_USERLIST_KEY,
   type YunGameUser,
 } from "./userLevel";
@@ -154,5 +155,21 @@ describe("canPlay：唯一判定函数", () => {
   it("脏值一律按 0 处理（宁可锁住，也不误放行）", () => {
     expect(canPlay(Number.NaN, 1)).toBe(false);
     expect(canPlay(1, Number.NaN)).toBe(true); // gameLevel 缺失 = 0 = 人人可玩
+  });
+});
+
+// 2026-09-16 需求：应用图标（窗口 / 任务栏 / 托盘）按等级分，黄金 1.ico、钻石 2.ico。
+describe("iconNameForLevel：等级 → 应用图标", () => {
+  it("黄金(1) 用 1.ico；钻石(2) 与全解锁(3) 都用 2.ico", () => {
+    expect(iconNameForLevel(1)).toBe("1.ico");
+    expect(iconNameForLevel(2)).toBe("2.ico");
+    expect(iconNameForLevel(3)).toBe("2.ico");
+  });
+
+  it("脏值 / 缺值 / 小数一律按黄金（与 canPlay 同口径：不是 ≥2 就不算钻石）", () => {
+    expect(iconNameForLevel(0)).toBe("1.ico");
+    expect(iconNameForLevel(Number.NaN)).toBe("1.ico");
+    expect(iconNameForLevel(undefined as unknown as number)).toBe("1.ico");
+    expect(iconNameForLevel(1.9)).toBe("1.ico");
   });
 });

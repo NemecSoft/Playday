@@ -100,7 +100,54 @@
 退出码：`0` 成功 / `1` 致命错误（拿不到目录、写 .lnk 失败）/ `2` 外网 IP 取不到（跳过，未动桌面）/
 `3` 用户表读不出或解不开（跳过，未动桌面）。
 
-## 六、编译与出包
+## 六、图标（1.ico / 2.ico）
+
+桌面快捷方式的图标：**黄金版用 `1.ico`、钻石版用 `2.ico`**（`main.cpp` 按等级选，文件缺了就退回启动器自身图标）。
+两个图标是**同一个手柄剪影 + 两套渐变**：1 = 红→橙→金（黄金版）、2 = 洋红→紫→青（钻石版）。
+形状完全一致、只有颜色不同 —— 用户一眼分得出自己是什么版本，又不觉得是两个不相干的东西。
+
+### 6.1 怎么重新生成（2026-09-16 加深过一版）
+
+```bat
+cd tools\yungamestart\assets
+node make-icons.mjs                :: 重生成两个 ico（原文件自动备份成 *.bak-<日期>）
+node make-icons.mjs --dry          :: 只算不写：看色标变成什么、文件会多大
+node make-icons.mjs --list         :: 列出当前 ico 里有哪些帧（查看用）
+node make-icons.mjs --saturate 1.7 --darken 0.8   :: 想更艳 / 更深就调这两个旋钮
+```
+
+默认参数（= 2026-09-16 那版"加深"用的）：**提饱和 ×1.5、压亮度 ×0.86**。
+
+> ⚠️ **但当前仓库里这两张图是原版**（= `release\yungamestart\1.ico` / `2.ico`，303785 / 303480 字节，
+> ≤192 全 DIB + 256 PNG）。2026-09-16 先做过一版"加深"，随后用户拍板**先用原版、先不动**，资产已回退。
+> 所以：**上面那条命令（默认参数）会生成"加深版"并覆盖原图**。要复原就从 `release\yungamestart\`
+> 或同目录的 `*.bak-20260916` 拷回来（三处内容一致，可直接用哈希核对）。
+
+### 6.2 做法与理由
+
+| 决定 | 为什么 |
+| --- | --- |
+| **保留剪影与白色按键**，只换渐变 | 剪影取自原图的 alpha（一个像素都没动）；用户认的就是这个形状，重画风险大、收益零 |
+| 逐像素**重画渐变**，而不是"整图过一遍滤镜" | 滤镜（saturate / contrast）只能把浅黄变成**鲜**黄，变不成**深**金 —— "深度"要的是压亮度。两版都做出来比对过，滤镜版右端仍是亮黄 |
+| 色标从原图**采样**（对角线 6 个点）再在 HSL 上改 | 不动色相顺序，只加深加艳；每次跑都把"原色 → 新色"打出来，可核对 |
+| 用 Electron 当画布（`make-icons-canvas.cjs`） | 解码 ico 内嵌 PNG、高质量缩放、`getImageData` —— node 没有现成能力，而项目零原生依赖（不为一个图标引 sharp）。**只用于开发，不进包** |
+| 9 帧：**≤48 封 DIB、≥64 封 PNG** | 小尺寸那几帧走最老的 shell 代码路径，DIB 最保险；大尺寸用 PNG 省体积（原文件 ≤192 全 DIB + 256 PNG = 303KB，新文件 52KB） |
+
+**验证方式**（图形文件不像代码，看一眼不能算数）：`--list` 看帧结构，再用 **Windows 自己的图标加载器**渲染出来看：
+
+```powershell
+Add-Type -AssemblyName System.Drawing
+$i = New-Object System.Drawing.Icon("assets\1.ico", 48, 48)
+$i.ToBitmap().Save("out.png", [System.Drawing.Imaging.ImageFormat]::Png)
+```
+
+2026-09-16 实测：16 / 32 / 48 三帧（都走 **DIB**）被 Windows 正确解出（形状、朝向、透明均正确），
+小尺寸帧的字节数（1128 / 2440 / 4264 / 9640）与原文件**完全一致** —— 说明封装方式与当年生成它的工具一致。
+
+> ⚠️ 一个已知现象：`System.Drawing.Icon` 请求 256 时给出的是 **192**（这个老 API 不认目录里
+> "宽高写 0 = 256"的帧）。那是 .NET 的毛病，不是文件的问题 —— Explorer 与 `--list` 都正常看到 256 那帧。
+
+## 七、编译与出包
 
 ```bash
 tools\yungamestart\build.bat        # 用 MinGW g++ 编译 → dist\yungamestart.exe（+ 1.ico / 2.ico）
@@ -116,7 +163,7 @@ build-prerelease.bat / build-release.bat
 `-static -static-libgcc -static-libstdc++`（目标机不需要 MinGW 运行时）、
 `-finput-charset=UTF-8 -fexec-charset=UTF-8`（源码含中文）。
 
-## 七、实测记录（2026-09-14）
+## 八、实测记录（2026-09-14）
 
 | 用例 | 结果 |
 | --- | --- |
@@ -124,7 +171,7 @@ build-prerelease.bat / build-release.bat
 | `--ip 125.72.52.124`（钻石门店「竞界超级电竞馆」） | 命中 → 等级 2 → 建 `YunGame  钻石版.lnk`，图标 `2.ico,0`，工作目录 `<游戏根>` ✓ |
 | 紧接着 `--ip 125.72.52.123`（黄金门店「雷神电竞」） | 建 `YunGame  黄金版.lnk` 并**删掉**上一条钻石版 ✓ |
 
-## 八、相关文件
+## 九、相关文件
 
 | 文件 | 职责 |
 | --- | --- |
@@ -134,7 +181,9 @@ build-prerelease.bat / build-release.bat
 | `tools/yungamestart/src/http.h` | WinHTTP GET（跟随重定向、超时、UA） |
 | `tools/yungamestart/src/shortcut.h` | IShellLink 建快捷方式 + 删"另一个等级"的快捷方式 |
 | `tools/yungamestart/build.bat` | 编译并暂存到 `dist\` |
-| `tools/yungamestart/assets/1.ico`、`2.ico` | 两个图标（从原版项目拷来，随包分发） |
+| `tools/yungamestart/assets/1.ico`、`2.ico` | 两个快捷方式图标（黄金 / 钻石），随包分发。**当前是原版那份图**（用户 2026-09-16 拍板先用原版、先不动）；同目录的 `make-icons.mjs` 默认参数会产出"加深版"，跑之前先看 §六.1 的警告 |
+| `tools/yungamestart/assets/make-icons.mjs` | 图标的**生成工具**：拆 ico 取源图 → 调画布 → 封 9 帧（≤48 DIB / ≥64 PNG）→ 备份原文件（见 §六） |
+| `tools/yungamestart/assets/make-icons-canvas.cjs` + `.html` | 上面那个工具的**画布半边**（Electron 里做像素活：换渐变、缩放、导出），开发用，不进包 |
 | `shared/userLevel.ts` | **等级判定的权威实现**（客户端侧），C++ 里按同一规则重写 |
 | `scripts/encrypt-userlist.mjs` | 用户表加密（同一个密钥/算法） |
 

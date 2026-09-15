@@ -216,3 +216,18 @@ export function resolveUserLevel(
 export function canPlay(userLevel: number, gameLevel: number): boolean {
   return (Number(userLevel) || 0) >= (Number(gameLevel) || 0);
 }
+
+/**
+ * 当前等级该用哪个**应用图标**（窗口 / 任务栏 / 托盘）——
+ * 黄金版 `1.ico`、钻石版 `2.ico`（2026-09-16 需求）。
+ *
+ * 与 canPlay 同一条口径：**只有 ≥ 2 才算钻石**（3 = 全解锁也归这一档），脏值/缺值都算黄金。
+ * 为什么放在 shared/ 而不是主进程：它也是"等级规则"的一部分，而这里能单测
+ *（主进程那份要 import electron —— 见 vitest.config.mts 的硬约束，测不了）。
+ *
+ * 图标文件在 `tools/yungamestart/assets/`（与桌面快捷方式用的是**同一份**），
+ * 打包时作为资源随包发出；按等级切换的时机见 docs/design/app-icons.md §2.2。
+ */
+export function iconNameForLevel(userLevel: number): "1.ico" | "2.ico" {
+  return (Math.trunc(Number(userLevel)) || 0) >= 2 ? "2.ico" : "1.ico";
+}

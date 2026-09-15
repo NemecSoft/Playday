@@ -120,3 +120,8 @@ dev-data/library/*
 # ============================================================
 _probe-detail-theme/site/
 _probe-detail-theme/result.txt
+
+# 图标改色试验台（2026-09-16 重生成快捷方式图标时用的）：
+# 拆帧脚本 + 两版候选图 + Windows 加载器渲染出来的验证图。
+# 正式工具已经落在 tools/yungamestart/assets/make-icons.mjs，这里是过程证据，可随时删。
+_probe-icons/

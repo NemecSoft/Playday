@@ -7,6 +7,7 @@ import { openDb, closeDb } from "./core/db";
 import { readSettings } from "./core/settings";
 import { stopGameServer } from "./core/gameServer";
 import { createTray, destroyTray } from "./core/tray";
+import { refreshAppIcons } from "./core/appIcon";
 import { registerErrorCollector } from "./core/errorCollector";
 import { ensureRuntimeDeps } from "./core/runtimeSetup";
 import { reportGpuStatus } from "./core/gpuReport";
@@ -74,6 +75,12 @@ app.whenReady().then(async () => {
   // 先弹公告窗口（独立引导窗口）。数据库打开是重活（整库复制 + 读入内存），
   // 推迟到点"进入系统"时再执行（见 enterSystem），让公告窗口第一时间出现，启动更快。
   announcementWin = createAnnouncementWindow();
+
+  // 应用图标按等级定（黄金 1.ico / 钻石 2.ico，见 core/appIcon.ts）：
+  // 这里先用**上次落库的等级**把窗口与托盘刷一遍 —— 窗口构造时已按同一份等级初设过，
+  // 这一步补的是托盘（它的图标在 createTray 里取，也在"判出等级之前"）。
+  // 本机等级真正判出来之后，ipc/auth.ts 那几条命令会再刷一次（这是常态路径）。
+  refreshAppIcons();
 
   // 运行库静默检测安装（VC++ 运行库 x64/x86、VP9 解码扩展）：
   // 完全后台 —— 本调用同步立刻返回，且内部还刻意延后几秒才开始，不阻塞也不抢启动期的资源；

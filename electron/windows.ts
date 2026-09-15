@@ -2,10 +2,11 @@
 // 两个窗口共用同一份 preload 和渲染代码（通过 ?window=admin 区分渲染的是哪个界面）。
 
 import { BrowserWindow, nativeImage } from "electron";
-import * as fs from "fs";
 import * as path from "path";
 import { APP_NAME } from "./config";
 import { readSettings } from "./core/settings";
+// 应用图标按等级取（黄金 1.ico / 钻石 2.ico）—— 路径解析与刷新都在这里
+import { currentLevelIconPath } from "./core/appIcon";
 
 // 给窗口动态设置应用图标。
 // Windows 上只靠 BrowserWindow 的 icon 选项有时不生效（任务栏图标会显示 Electron
@@ -82,24 +83,14 @@ function applyDebug(win: BrowserWindow, windowName: string): void {
   });
 }
 
-// 找一个可用的应用图标（窗口/任务栏用）。
-// 跟托盘图标同一个来源：dev 用 public/icons/icon.png，打包用 resources/icon.png。
+// 窗口/任务栏的默认图标：**按当前用户等级**取 —— 黄金版 1.ico、钻石版 2.ico
+// （2026-09-16 需求变更）。路径解析（dev / 打包两种形态）与"等级变了怎么刷新"全在
+// core/appIcon.ts，那里有完整说明。
+// 这里只给窗口**构造**时的初值（读的是上次落库的等级，所以重启后首帧就是对的）；
+// 真正判出本机等级之后，由 auth 那几条命令调 refreshAppIcons() 重新 setIcon。
 // 找不到就返回 undefined，让 Electron 用默认图标（不崩）。
 function appIconPath(): string | undefined {
-  const candidates = [
-    // dev 模式：主进程在 dist-electron/electron/core/，上三级到工程根再进 public。
-    path.join(__dirname, "..", "..", "..", "public", "icons", "icon.png"),
-    path.join(__dirname, "..", "..", "..", "public", "icon.png"),
-    path.join(process.resourcesPath || "", "icon.png"),
-  ];
-  for (const p of candidates) {
-    try {
-      if (fs.existsSync(p)) return p;
-    } catch {
-      /* ignore */
-    }
-  }
-  return undefined;
+  return currentLevelIconPath() ?? undefined;
 }
 
 // 创建客户端窗口（主界面）。

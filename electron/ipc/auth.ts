@@ -5,11 +5,16 @@ import { readSettings, writeSettings } from "../core/settings";
 import { getUserByAccount } from "../core/db";
 import { verifyPersonalLogin, canPlay, resolveCurrentUserLevel } from "../core/auth";
 import type { SessionUser } from "../core/models";
+import { refreshAppIcons } from "../core/appIcon";
 import { registerCommand } from "./registry";
 
 // 本文件的等级解析统一走 electron/core/auth.ts 的 resolveCurrentUserLevel()（单一入口），
 // 规则与优先级见 docs/design/user-level-detection.md：
 //   config 覆盖开关 > 用户表按 IP 命中（L2=钻石，其余黄金）> 个人会话等级 > 黄金(1)
+//
+// ⚠️ 每条"把 currentUserLevel 写进 settings"的命令之后都要调 `refreshAppIcons()`：
+// 应用图标（窗口 / 任务栏 / 托盘）按等级分（黄金 1.ico / 钻石 2.ico），而等级是这里判出来的。
+// 漏掉一条不会报错 —— 表现只是"这台机器图标不对"，很难联想到是这里漏了。
 //
 // 历史：这里曾经还会读 settings.enterpriseConfigPath（一个 D:/1.json 的企业配置文件）
 // 并把"它存不存在"一起返回给前端。该配置早已废弃（门店名与等级现在同源于用户表
@@ -73,6 +78,7 @@ export function registerAuthIpc(ipc: typeof ipcMain) {
       currentUserName: cu.name,
       currentUserLevel: cu.level,
     });
+    refreshAppIcons(); // 等级定了 → 窗口/任务栏/托盘换成对应版本的图标
     return toPayload(cu, info.matched);
   });
 
@@ -88,6 +94,7 @@ export function registerAuthIpc(ipc: typeof ipcMain) {
       level: info.level,
     };
     writeSettings({ currentUserKind: "enterprise", currentUserName: cu.name, currentUserLevel: cu.level });
+    refreshAppIcons(); // 同上：图标跟着等级
     return toPayload(cu, true);
   });
 
@@ -108,6 +115,7 @@ export function registerAuthIpc(ipc: typeof ipcMain) {
           currentUserName: user.name,
           currentUserLevel: user.level,
         });
+        refreshAppIcons(); // 个人会话可能带更高的等级（3 = 全解锁）→ 图标跟着换
         return toPayload(user, false);
       }
       return null;
@@ -124,6 +132,7 @@ export function registerAuthIpc(ipc: typeof ipcMain) {
       currentUserName: "",
       currentUserLevel: 1,
     });
+    refreshAppIcons(); // 退登回落到黄金版 → 图标也要落回去（不能留着"提权"过的图标）
     return true;
   });
 

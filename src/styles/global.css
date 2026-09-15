@@ -3007,22 +3007,39 @@ textarea {
   overflow: visible;
 }
 
-/* Cover-overlay text (debug index badge, etc.) — needs to read on top of
-   arbitrary cover art, so it gets its own dark backdrop. */
+/* 卡片序号（`#12`）—— 2026-09-16 两处改动：
+     ① 从左下角**挪到左上角**：左下角被 hover 才浮出来的「开始游戏 / 详情」按钮带
+        （.cover-actions，inset:0 + 从底部 40% 的下沉暗角）占着，现场反馈"挡着重要信息"
+        （封面左下角常常是标题 / 工作室 logo）。左上角平时是空的，只有锁定态被锁标占用
+        —— 那一种见下面 .grid-card.locked 那条。
+     ② **去掉黑底**（需求："完全透明就行，不要设置背景"）：原来是 rgba(0,0,0,.72) 的小黑块，
+        现在只留数字本身，不再挡住它底下的封面。
+   没了背景就得靠别的手段保证"落在任意封面上都看得见"——用**描边式文字阴影**：
+   它不是背景、不占一块矩形，只是在字形周围压一圈暗边（白字掉在亮封面上也不会消失）。
+   封面四角的归属见 docs/design/themes-styles.md §5.2（加新角标前先看那张表）。 */
 .grid-card .cover .debug-badge {
   position: absolute;
   left: 4px;
-  bottom: 4px;
+  top: 4px;
   padding: 1px 6px;
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.72);
   color: #fff;
+  /* 双层投影：近处一层压紧轮廓（亮封面上也读得出），远处一层轻轻托一下。
+     刻意不用 background + backdrop-filter —— 那又会变成"盖住封面一小块"。 */
+  text-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.9),
+    0 0 2px rgba(0, 0, 0, 0.75);
   font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
   font-size: 10px;
   line-height: 1.4;
   letter-spacing: 0.3px;
   pointer-events: none;
   z-index: 3;
+}
+/* 锁定卡：序号让到「钻石版专享」锁标**下面**（锁标 top:6px + 高约 17px，所以从 30px 起）。
+   宁可序号往下挪一点，也不能让它压到锁标上 —— 改成"半锁定"之后，那个锁标是
+   "为什么玩不到"的唯一说明（见 docs/design/user-level-detection.md）。 */
+.grid-card.locked .cover .debug-badge {
+  top: 30px;
 }
 
 /* Cover-image preloading: prominent modal popup with spinner + progress bar */

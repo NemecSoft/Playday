@@ -14,7 +14,10 @@ productName: Playday
 win:
   executableName: PlayniteUI
   # exe 文件自身的图标（替换 Electron 默认图标）
-  icon: public/icons/icon.png
+  # ⚠️ 用 .ico 而不是 .png：exe 里要嵌的是**多尺寸**图标（16 任务栏 / 32 桌面 / 256 大图标），
+  #    给 PNG 的话 builder 得自己转，尺寸档由它决定；直接给 .ico 则用的是我们出好的那套。
+  #    出图：public/icons/render-icon.cjs（矢量源 icon.svg），见 docs/design/app-icons.md
+  icon: public/icons/icon.ico
 
 # 只打免安装目录，不打安装包（用户要"拷走就能跑"，用 --dir 时该 target 生效）
 # 产物先落在 <output>/win-unpacked/，再由 package.bat 分发到真正的发布目录：
@@ -40,8 +43,22 @@ files:
 # 不打包进 asar 的额外资源：把图标放一份到 resources/ 下，
 # 打包后从 process.resourcesPath 读（路径稳定，比读 asar 内的更保险）。
 extraResources:
+  # 窗口/任务栏/托盘的应用图标**按等级在运行期切换**：黄金版 1.ico、钻石版 2.ico
+  #（2026-09-16 需求）。它们同时也是 YunGameStart 建桌面快捷方式用的那两个图标 ——
+  # 源文件只有一处（tools/yungamestart/assets/，由 make-icons.mjs 生成），
+  # 随包发到 resources/ 下供客户端读取，另一份在 yungamestart/ 下供快捷方式工具用。
+  # 见 docs/design/app-icons.md。
+  - from: tools/yungamestart/assets/1.ico
+    to: 1.ico
+  - from: tools/yungamestart/assets/2.ico
+    to: 2.ico
+  # 通用系统图标 / 托盘图标：exe 自身图标（win.icon 是 icon.ico）与兜底用
+  - from: public/icons/tray.ico
+    to: tray.ico
   - from: public/icons/tray.png
     to: tray.png
+  - from: public/icons/icon.ico
+    to: icon.ico
   - from: public/icons/icon.png
     to: icon.png
   # 应用自带字体：整目录带到 resources/fonts，打包版不依赖用户机器上装了什么字体。
