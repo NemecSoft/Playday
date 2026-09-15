@@ -45,7 +45,10 @@ CREATE TABLE games (
   game_level INTEGER,
   pre_launch_script TEXT, pre_launch_enabled INTEGER,
   post_launch_script TEXT, post_launch_enabled INTEGER,
-  post_exit_script TEXT, post_exit_enabled INTEGER
+  post_exit_script TEXT, post_exit_enabled INTEGER,
+  -- 启动细项（逐游戏）
+  save_paths TEXT, monitor_exe TEXT,
+  show_bat_console INTEGER  -- 显示 bat 控制台的**三态**覆盖：NULL=跟随全局设置 / 0=强制隐藏 / 1=强制显示
 )
 ```
 
@@ -56,6 +59,7 @@ CREATE TABLE games (
 | 标识 | `id`, `name`, `sort_name`, `game_id`, `plugin_id` | TEXT |
 | 多名称 | `localized_names`, `alternate_names` | **JSON 数组**（TEXT） |
 | 安装/启动 | `installed`(0/1), `install_directory`, `play_task`, `other_tasks` | 布尔 / TEXT / JSON |
+| 启动细项 | `save_paths`, `monitor_exe`, `show_bat_console` | TEXT / TEXT / **可空 INTEGER（三态：NULL=跟随全局设置、0=隐藏、1=显示）** |
 | 统计 | `play_count`, `playtime`, `last_session_seconds`, `last_session_ended_at` | INTEGER / TEXT |
 | 时间 | `added`, `modified`, `last_played`, `last_activity` | TEXT (ISO 8601) |
 | 元数据 | `category, genre, developer, publisher, tags, series, age_rating, region, source, features, platform` | **JSON 数组**（TEXT） |

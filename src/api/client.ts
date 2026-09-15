@@ -190,6 +190,11 @@ export const api = {
       (path) => ({ found: !!path, name: gameName || gameId, path: path || "" })
     ),
   getGameServerUrl: () => call<string>("get_game_server_url"),
+  // 把"当前生效的主题配色"交给主进程，供详情页 HTML 注入（见 electron/core/detailTheme.ts）。
+  // fire-and-forget：详情页注入失败最多是"页面保持它自己的颜色"，不该影响主界面，
+  // 所以调用方不 await、也不提示。网站端（server.mjs）没有这条命令 → 调用方要吞掉异常。
+  setDetailTheme: (vars: Record<string, string>, dark: boolean) =>
+    call<boolean>("set_detail_theme", { vars, dark }),
 
   // —— 修改器 ——
   // 列出某游戏的修改器 exe（含图标 dataURL）；无修改器返回空数组。

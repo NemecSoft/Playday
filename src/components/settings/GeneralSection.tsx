@@ -17,6 +17,16 @@ import { Switch } from "../ui/switch";
 import { Slider } from "../ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import type { SaveBackupMode } from "../../../shared/models";
+import { clampCoverStyle } from "../../utils/coverStyle";
+
+// 封面渲染风格：值 → 文案键（滤镜值本身在 src/utils/coverStyle.ts）。
+const COVER_STYLE_OPTIONS = [
+  { value: "none", labelKey: "coverStyle_none" },
+  { value: "vivid", labelKey: "coverStyle_vivid" },
+  { value: "soft", labelKey: "coverStyle_soft" },
+  { value: "sepia", labelKey: "coverStyle_sepia" },
+  { value: "contrast", labelKey: "coverStyle_contrast" },
+] as const;
 
 export default function GeneralSection() {
   const settings = useSettingsStore((s) => s.settings);
@@ -298,14 +308,6 @@ export default function GeneralSection() {
             </Select>
           </span>
         </div>
-        {/* 字体文件夹：可配置（settings.fontsDir）。留空 = <程序目录>/fonts。 */}
-        <PathRow
-          id="fontsDir"
-          label={t("settings_fontsDir")}
-          value={settings.fontsDir ?? ""}
-          placeholder={t("settings_fontsDirPlaceholder")}
-          onSave={(v) => void save({ fontsDir: v })}
-        />
         {/* 字体大小：**只放大文字**，弹窗/按钮/封面/间距一律不动（需求明确要求）。
             实现：构建期 postcss-font-scale.cjs 把每处 font-size 包成
             calc(Npx * var(--ui-font-scale))，这里只改那个变量（见 src/utils/uiFont.ts）。 */}
@@ -342,13 +344,9 @@ export default function GeneralSection() {
           checked={settings.musicEnabled !== false}
           onChange={(v) => save({ musicEnabled: v })}
         />
-        <PathRow
-          id="musicDir"
-          label={t("settings_musicDir")}
-          value={settings.musicDir ?? ""}
-          placeholder={t("settings_musicDirPlaceholder")}
-          onSave={(v) => void save({ musicDir: v })}
-        />
+        {/* 音乐目录**不在设置里暴露**（2026-09-15 需求）：这是平台级资源，
+            由管理员在 path-modes.json 配、随模式同步进 config.json。
+            这里只剩"开关 / 音量 / 循环模式"这些客户端偏好。 */}
         <div className="set-stack">
           <label className="set-label">
             {t("settings_musicVolume")}
@@ -375,6 +373,29 @@ export default function GeneralSection() {
         <p className="set-note">
           提示：在主界面按住 Alt + 鼠标滚轮，可以更快地调整封面大小。
         </p>
+        {/* 封面渲染风格（2026-09-15 需求）：原图 / 鲜艳 / 柔和 / 怀旧 / 高对比。
+            ⚠️ 这个下拉必须在**本文件**里：设置弹窗只渲染 GeneralSection，
+            AppearanceSection / DesignerSection 是保留备查的死文件（加了也看不见）。
+            滤镜值见 src/utils/coverStyle.ts（纯函数 + 单测）。 */}
+        <div className="set-stack">
+          <label className="set-label">{t("settings_coverStyle")}</label>
+          <Select
+            value={clampCoverStyle(settings.coverStyle)}
+            onValueChange={(v) => save({ coverStyle: v })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {COVER_STYLE_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {t(o.labelKey)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="set-note">{t("settings_coverStyleHint")}</div>
+        </div>
         <div className="set-stack">
           <label className="set-label">
             封面（卡片）宽度

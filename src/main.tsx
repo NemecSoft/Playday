@@ -10,6 +10,7 @@ import {
   getStoredThemeId,
   storeThemeId,
   storeStyleId,
+  syncDetailTheme,
 } from "./utils/themeApply";
 import { themeLibrary } from "./utils/themeLibrary";
 import { styleLibrary } from "./utils/styleLibrary";
@@ -152,6 +153,14 @@ try {
         /* ignore */
       }
     }
+
+    // 把"当前生效的主题"同步给主进程（游戏静态详情页的 HTML 注入用）。
+    // ⚠️ 这一步不能省，也不能只依赖 applyPaletteTheme 里那次同步：
+    //   上面两条恢复路径都要求"存过主题"（localStorage 或 config.json）；
+    //   全新机器上两者都空 → 界面用的是 tokens.css 的默认配色，谁都不会来同步 → 
+    //   详情页就还是它自带的浅色，跟外面脱节。放在这里 = 启动完成后无条件送一次。
+    // 不 await：拿不到就静默跳过（网站端没有这条命令），绝不能挡住渲染。
+    void syncDetailTheme();
 
     // 根据窗口类型决定渲染哪个界面：
     //  - ?window=announcement → 公告窗口（独立引导窗口）

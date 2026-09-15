@@ -142,13 +142,19 @@ function videoGroup(
   ].join("");
 }
 
-/** 区块的样式（只补视频相关的部分；外壳与卡片沿用页面自己的 .section 样式）。 */
+/** 区块的样式（只补视频相关的部分；外壳与卡片沿用页面自己的 .section 样式）。
+ *
+ * ⚠️ 颜色全部写成 `var(--主题变量, 原浅色值)` 的形式：
+ *   详情页会被注入主界面当前的主题（见 core/detailTheme.ts），注入后页面就是深色的 ——
+ *   这里的卡片要是还硬编码 `#fff`，就会变成"深色页面里的几块白砖"。
+ *   后面的浅色值是**兜底**：没配主题（或注入被跳过）时页面还是它自己的浅色样子，能看。
+ */
 const SECTION_CSS = `<style>
 .yungame-videos .yungame-video-group { margin-top: 18px; }
 .yungame-videos .yungame-video-group:first-of-type { margin-top: 0; }
-.yungame-videos .yungame-video-group-title { font-size: 15px; font-weight: 600; color: #555; margin: 0 0 10px; padding-left: 8px; border-left: 3px solid #c7d2fe; }
+.yungame-videos .yungame-video-group-title { font-size: 15px; font-weight: 600; color: var(--text-secondary, #555); margin: 0 0 10px; padding-left: 8px; border-left: 3px solid var(--accent, #c7d2fe); }
 .yungame-videos .yungame-video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
-.yungame-videos .yungame-video-card { background: #fff; border: 1px solid #e6e8ee; border-radius: 10px; overflow: hidden; cursor: pointer; transition: box-shadow .15s, transform .15s; }
+.yungame-videos .yungame-video-card { background: var(--bg-panel, #fff); border: 1px solid var(--border, #e6e8ee); border-radius: 10px; overflow: hidden; cursor: pointer; transition: box-shadow .15s, transform .15s; }
 .yungame-videos .yungame-video-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.12); transform: translateY(-2px); }
 .yungame-videos .yungame-video-thumb { position: relative; width: 100%; aspect-ratio: 16/9; background: linear-gradient(135deg, #1f2937, #4b5563); overflow: hidden; }
 .yungame-videos .yungame-video-poster { display: none; width: 100%; height: 100%; object-fit: cover; }
@@ -159,8 +165,8 @@ const SECTION_CSS = `<style>
 .yungame-videos .yungame-video-dur:empty { display: none; }
 .yungame-videos .yungame-video-badge { position: absolute; left: 6px; top: 6px; padding: 1px 6px; border-radius: 4px; background: rgba(254,243,199,.95); color: #92400e; font-size: 12px; }
 .yungame-videos .yungame-video-meta { display: flex; align-items: flex-start; gap: 6px; padding: 9px 10px 11px; }
-.yungame-videos .yungame-video-title { flex: 1; min-width: 0; font-size: 13px; line-height: 1.5; color: #222; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-all; }
-.yungame-videos .yungame-video-collapse { display: none; flex: 0 0 auto; padding: 0; border: 0; background: none; color: #2b6cb0; font-size: 12px; cursor: pointer; }
+.yungame-videos .yungame-video-title { flex: 1; min-width: 0; font-size: 13px; line-height: 1.5; color: var(--text-primary, #222); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-all; }
+.yungame-videos .yungame-video-collapse { display: none; flex: 0 0 auto; padding: 0; border: 0; background: none; color: var(--accent, #2b6cb0); font-size: 12px; cursor: pointer; }
 .yungame-videos .yungame-video-card.is-open { grid-column: 1 / -1; }
 .yungame-videos .yungame-video-card.is-open .yungame-video-collapse { display: inline; }
 .yungame-videos .yungame-video-card.is-open .yungame-video-thumb { aspect-ratio: auto; background: #000; }
@@ -211,10 +217,13 @@ html.yungame-lock-scroll, body.yungame-lock-scroll { overflow: hidden !important
  *   ③ 把播放状态 postMessage 给主界面（跨源 iframe 父页面收不到 <video> 事件），
  *      并在它的网页全屏事件里接管定位（见 toOverlay / exitWebFull 的注释）。
  */
-function sectionScript(labels: VideoSectionLabels): string {
+function sectionScript(labels: VideoSectionLabels, accent?: string | null): string {
   const L = JSON.stringify({
     collapse: labels.collapse,
     playerLang: labels.playerLang,
+    // 内置播放器的主题色（进度条、高亮）—— 跟随主界面当前主题的强调色，
+    // 免得深色主题里那根进度条还是页面自带的青蓝色。取不到就用它原来的颜色。
+    accent: accent || "#247ba0",
   });
   return `<script>
 (function () {
@@ -370,7 +379,7 @@ function sectionScript(labels: VideoSectionLabels): string {
       container: holder,
       video: { url: card.getAttribute("data-src") },
       autoplay: true,
-      theme: "#247ba0",
+      theme: L.accent,
       lang: L.playerLang,
       hotkey: true,      // 空格 / ←→ / ↑↓ / M / F 由它接管（补上原生控件的键盘能力）
       danmaku: false,    // 本地视频没有弹幕源
@@ -486,11 +495,13 @@ function sectionScript(labels: VideoSectionLabels): string {
  *
  * @param posterFor 找"与某条视频同名的封面图"，返回**相对 videos 目录**的路径或 null。
  *                  由调用方注入（它才有磁盘访问；本模块保持纯字符串处理便于单测）。
+ * @param accent 内置播放器的主题色（= 主界面当前主题的强调色）；不传用原色。
  */
 export function buildVideoSection(opts: {
   scan: VideoScan;
   lang?: string | null;
   posterFor?: (rel: string) => string | null;
+  accent?: string | null;
 }): string {
   const { scan } = opts;
   if (!scan || (scan.root.length === 0 && scan.dirs.length === 0)) return "";
@@ -512,7 +523,7 @@ export function buildVideoSection(opts: {
     // 那种相对路径会解析到游戏目录里去。经典脚本按文档顺序执行，所以下面那段内联脚本里
     // 可以直接用 DPlayer（拿不到时那段脚本自己有原生 <video> 兜底）。
     `<script src="/vendor/DPlayer.min.js"></script>`,
-    sectionScript(labels),
+    sectionScript(labels, opts.accent),
   ].join("");
 }
 

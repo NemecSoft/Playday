@@ -12,7 +12,7 @@
     "fontsDir": "fonts",
     "musicDir": "D:/KwDownload/song",
     "musicEnabled": true,
-    "musicVolume": 25,
+    "musicVolume": 70,
     "musicMode": "shuffle",
     "gridViewImage": "Cover",
     "detailsViewImage": "Background",
@@ -28,7 +28,7 @@
     "loginType": "wechat",
     "loggedIn": false,
     "trackPlaytime": true,
-    "cardWidth": 343,
+    "cardWidth": 360,
     "cardGap": 0,
     "cardRowGap": 0,
     "sidebarWidth": 296,
@@ -40,6 +40,7 @@
     "fontFamily": "HarmonyOS_Sans_SC_Medium",
     "cardFontSize": 15,
     "cardDescFontSize": 0,
+    "coverStyle": "none",
     "cardFontBold": false,
     "cardText": {
       "color": "#fff8e7",
@@ -59,7 +60,7 @@
       "bgOpacity": 0.5,
       "colorMode": "theme"
     },
-    "themeId": "p-dh-night",
+    "themeId": "p-playnite",
     "gameDetailsDir": "D:/Addons",
     "coverImagesDir": "D:/YunGame/PlayNite/CoverImages",
     "announcementsDir": "dev-data/announcements",
@@ -67,7 +68,7 @@
     "sourceLibraryDir": "dev-data/Admin",
     "gameSaveHelperPath": "D:/AI/Code/Playnite/Playday/tools/GameSaveHelper/GameSaveHelper.exe",
     "defaultGameRootPath": "D:/YunGame/Playnite",
-    "showCardDescription": true,
+    "showCardDescription": false,
     "communityEnabled": false,
     "communitySource": "mock",
     "errorReport": {

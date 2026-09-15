@@ -200,6 +200,8 @@ export default function AppearanceSection() {
     { value: "Icon", label: t("settings_imageIcon") },
   ];
 
+
+
   const imageSelect = (label: string, key: "gridViewImage") => (
     <div className="mb-3.5">
       <label className="mb-1.5 block text-xs text-secondary-text">{label}</label>
@@ -231,6 +233,8 @@ export default function AppearanceSection() {
           <div className="flex-1">{imageSelect(t("settings_gridView"), "gridViewImage")}</div>
         </div>
       </div>
+
+      {/* 注：封面渲染风格的下拉在 GeneralSection（设置弹窗只渲染那一个 section）。 */}
 
       <div className="mb-3.5">
         <label className="mb-1.5 block text-xs text-secondary-text">

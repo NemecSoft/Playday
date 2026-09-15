@@ -19,6 +19,9 @@ export default function GamesView() {
   const games = useGamesStore((s) => s.games);
   const searchQuery = useGamesStore((s) => s.searchQuery);
   const showInstalledOnly = useGamesStore((s) => s.showInstalledOnly);
+  // showHidden：默认 false（平台隐藏的游戏不显示）。运维连按 5 次 Ctrl+H 才会打开
+  // （见 hooks/useGlobalShortcuts.ts 的"平台小秘密"），这里只读 store，不另设开关。
+  const showHidden = useGamesStore((s) => s.showHidden);
   const sortOrder = useGamesStore((s) => s.sortOrder);
   const sortDirection = useGamesStore((s) => s.sortDirection);
   const groupBy = useGamesStore((s) => s.groupBy);
@@ -48,7 +51,7 @@ export default function GamesView() {
     const f = filterGames(games, {
       searchQuery,
       showInstalledOnly,
-      showHidden: false,
+      showHidden,
       showFavorites: false,
       platformFilter: activePlatformFilter,
       categoryFilter: activeCategoryFilter,

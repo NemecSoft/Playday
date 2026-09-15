@@ -75,7 +75,17 @@
 | 能否直接 spawn | **不能**。Windows 的 CreateProcess 不认脚本文件，Node 会抛 `EINVAL`。必须经 `cmd.exe` 执行。 |
 | 隐藏执行（`showBatConsole=false`） | `spawn('"<bat>"', args, { shell: true, windowsHide: true })` |
 | 显示窗口（`showBatConsole=true`） | `cmd /d /s /c start "" /wait "<comspec>" /c "<bat>"` —— `start` 会为目标进程新建控制台窗口（`CREATE_NEW_CONSOLE`），不受父进程控制台状态影响；**`start` 里必须再套一层 `cmd /c`**（理由见下一条）
-| 设置入口 | 设置 → 通用 → 「运行 .bat/.cmd 指令时显示控制台窗口」（`showBatConsole`） |
+| 设置入口（全局默认） | 设置 → 通用 → 「运行 .bat/.cmd 指令时显示控制台窗口」（config.json 的 `showBatConsole`） |
+| **逐游戏覆盖**（2026-09-15 加） | 库列 `games.show_bat_console` / 内容表字段 `batconsole`（**无界面**，按需配例外的那几个）。**三态**：`NULL` = 跟随全局设置、`0` = 强制隐藏、`1` = 强制显示。归并只在一处（`launchGame` 入口），规则在 `shared/launchPaths.ts` 的 `resolveShowBatConsole` |
+
+**逐游戏覆盖的两个坑（都是静默失效 —— 改之前先看 `shared/launchPaths.ts` 那段注释）**：
+
+1. **归并必须用 `??` 不能用 `||`**：写成 `game || global` 时，逐游戏的 `false`（强制隐藏）会被
+   当成"没配"回落到全局值 —— 这个配置**永远不生效**；
+2. **库里的 NULL 必须映射成"未配置"**，不能写成 `!!行值`：`!!null` 得 `false`，等于给所有游戏
+   强写"总是隐藏"，全局开关就此变成**死设置**。
+
+两条都有反向断言钉住（`shared/launchPaths.test.ts` 的「逐游戏显示控制台的归并」）。
 
 > 顺带一条踩坑记录：显式调 `cmd.exe /c "<bat>"`（自己拼引号）在**路径含空格**时会被
 > cmd 拆断，实测只有 `shell: true`（Node 负责引号）+ `start` 两种组合是稳的。

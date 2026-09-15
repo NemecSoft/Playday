@@ -18,14 +18,10 @@ vi.mock("../../stores/authStore", () => ({
 }));
 
 // ---- mock 依赖 ----
-const mockNavigate = vi.fn();
-// id 必须与下面 useParams 返回的 "test-id" 对齐（借用共享工厂补全 30+ 必填字段）。
-const mockGames: Game[] = [makeGame({ id: "test-id", name: "朽木难雕" })];
-
-vi.mock("react-router-dom", () => ({
-  useParams: () => ({ id: "test-id" }),
-  useNavigate: () => mockNavigate,
-}));
+// 详情页 2026-09-15 起**不再是路由**：游戏 id 由选项卡当 prop 传进来（不再是 useParams），
+// 所以这里不需要再 mock react-router-dom，改成渲染时传 gameId。
+const TEST_GAME_ID = "test-id";
+const mockGames: Game[] = [makeGame({ id: TEST_GAME_ID, name: "朽木难雕" })];
 
 vi.mock("../../stores/gamesStore", () => ({
   useGamesStore: (sel: any) => sel({ games: mockGames, launchGame: vi.fn() }),
@@ -56,7 +52,7 @@ describe("GameDetailPage", () => {
     let html = "";
     let renderErr: unknown = null;
     try {
-      html = renderToString(<GameDetailPage />);
+      html = renderToString(<GameDetailPage gameId={TEST_GAME_ID} />);
     } catch (e) {
       renderErr = e;
     }
@@ -76,7 +72,7 @@ describe("GameDetailPage 顶栏「开始游戏」按钮", () => {
   };
   const render = (loaded: boolean, userLevel: number) => {
     auth.state = { loaded, userLevel }; // 1 = 黄金版，2 = 钻石版
-    return renderToString(<GameDetailPage />);
+    return renderToString(<GameDetailPage gameId={TEST_GAME_ID} />);
   };
 
   it("钻石版用户看钻石版游戏：有按钮", () => {

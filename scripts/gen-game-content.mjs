@@ -20,6 +20,10 @@
 //   score      ← 权威库的 community_score（社区评分，**人工填**的字段，库里默认几乎全空）。
 //                 卡片右上角"人气火爆"小火苗就是按它判的（> HOT_SCORE_MIN=100，见
 //                 src/utils/hotBadge.ts）。没填过就不写出这个键，别往 1283 条里塞满 0。
+//   batconsole ← 权威库的 show_bat_console（逐游戏"显示 bat 控制台"的**三态**覆盖，
+//                 2026-09-15 加）：true/false = 覆盖、null = 跟随全局设置。
+//                 ⚠️ 本脚本是**按固定键重建**内容表的 —— 下面 entry 组装里没带上它，
+//                 下次生成就会把手写的值**悄悄抹掉**（不报错）。所以它必须一直留着。
 //
 // 文件里的书写格式（为手写方便，由本脚本统一写出）：
 //   tags   = "#休闲#生存#卡通#烧脑"（# 分隔；空 = ""）
@@ -29,6 +33,7 @@
 //   · intro / region / tags：文件里非空 → **原样保留**；空或缺失 → 用上面的来源补。
 //   · gamelevel：默认也**保留**文件里的值；想按游戏列表重算，加 --refresh-level。
 //   · savepaths：同上（手写优先）；想按 LiteDB 里的 action 重取一遍，加 --refresh-savepaths。
+//   · batconsole：同上（手写优先，含显式写的 null）；文件里没有这个键时才从权威库取。
 //   · 文件里有、但 games.db 里已不存在的条目：**保留**（那是你的编辑），并在报告里列出；
 //     确认要清理时加 --drop-orphans。
 //
@@ -179,10 +184,25 @@ if (fs.existsSync(ADMIN_DB)) {
     locateFile: (f) => path.join(root, "node_modules", "sql.js", "dist", f),
   });
   const db = new SQL.Database(new Uint8Array(fs.readFileSync(ADMIN_DB)));
-  for (const [gameId, name, region, tags, score] of db.exec(
-    "SELECT game_id, name, region, tags, community_score FROM games",
+  // 老库可能还没有 show_bat_console 这列（客户端只迁移运行时副本，Admin 由脚本维护）。
+  // 缺了就用 NULL 顶上：等于"这些游戏还没配逐游戏覆盖"，而不是让整次生成崩掉。
+  const hasBatCol =
+    db
+      .exec("PRAGMA table_info(games)")[0]
+      ?.values.some((r) => r[1] === "show_bat_console") ?? false;
+  for (const [gameId, name, region, tags, score, batConsole] of db.exec(
+    hasBatCol
+      ? "SELECT game_id, name, region, tags, community_score, show_bat_console FROM games"
+      : "SELECT game_id, name, region, tags, community_score, NULL FROM games",
   )[0].values) {
-    const rec = { region: parseArrText(region), tags: parseArrText(tags), score: Number(score) || 0 };
+    const rec = {
+      region: parseArrText(region),
+      tags: parseArrText(tags),
+      score: Number(score) || 0,
+      // 三态：库里 NULL = 没配（跟随全局）→ 这里用 null 表示；下面按"有值才写键"处理。
+      batConsole:
+        batConsole === null || batConsole === undefined ? null : Number(batConsole) ? true : false,
+    };
     regionTagsByName.set(normName(name), rec);
     if (gameId) regionTagsById.set(normId(gameId), rec);
   }
@@ -264,6 +284,14 @@ for (const g of games) {
   if (spPrev.length > 0 && !REFRESH_SAVEPATHS) keptSavePaths++;
   else if (savepaths.length > 0) filledSavePaths++;
 
+  // 逐游戏"显示 bat 控制台"（三态）：文件里写过就保留（**含显式 null** = 回到跟随全局），
+  // 没写过时才从权威库取；两边都没有 → 不写这个键（绝大多数游戏走这条，免得 1369 条塞满 null）。
+  // ⚠️ 这个键必须一直留在这里 —— 本脚本是按固定键重建内容表的，删掉它就等于每次生成
+  // 都把人工配好的逐游戏值抹掉（且不报错）。见文件头说明。
+  const bcPrev =
+    prev && Object.prototype.hasOwnProperty.call(prev, "batconsole") ? prev.batconsole : undefined;
+  const batconsole = bcPrev !== undefined ? bcPrev : (rt?.batConsole ?? undefined);
+
   const entry = {
     gameid: gameId || String(prev?.gameid ?? ""),
     name,
@@ -277,6 +305,8 @@ for (const g of games) {
   if (score > 0) entry.score = score;
   // 存档路径同理：没有路径的游戏不写这个键（免得 1200 多条里塞一堆空数组）
   if (savepaths.length > 0) entry.savepaths = savepaths;
+  // 三态覆盖：null 也要写出来（那是"回到跟随全局"的显式标记，见文件头说明）
+  if (batconsole !== undefined) entry.batconsole = batconsole;
   out.push(entry);
   seen.add(normId(gameId));
   seen.add(normName(name));
@@ -315,6 +345,9 @@ console.log(
 );
 console.log(
   `  score : 保留 ${keptScore} 条 / 从库里补 ${filledScore} 条 / 未设置 ${out.filter((x) => !x.score).length} 条（未设置 = 卡片不亮火爆角标）`,
+);
+console.log(
+  `  batcon: 逐游戏覆盖 ${out.filter((x) => x && "batconsole" in x).length} 条 / 其余跟随全局设置（设置界面的开关）`,
 );
 if (orphans.length) {
   console.log(

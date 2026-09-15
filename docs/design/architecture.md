@@ -70,7 +70,7 @@
 | `api/ipc.ts` | 传输层：桌面走 `window.ipc`，网站走 `fetch /api/*` |
 | `api/client.ts` | 类型化命令封装 |
 | `components/` | UI 组件（顶栏、侧边栏、工具栏、视图、设置、公告窗口等） |
-| `pages/` | 路由页面（如 `GameDetailPage`） |
+| `pages/` | 页面组件（如 `GameDetailPage` —— 2026-09-15 起它是**选项卡内容**、不再是路由页面，见 [顶层选项卡](./main-tabs.md)） |
 | `stores/` | Zustand 状态（games/settings/library/ui/auth 等） |
 | `utils/` | 纯逻辑（搜索、主题、封面、planet 分区等） |
 | `i18n/` | 国际化配置 + `locales/` 三语字典 |

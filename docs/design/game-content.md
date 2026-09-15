@@ -23,6 +23,7 @@
 | `gamelevel` | number | **玩这个游戏需要的权限等级**：`1` = 黄金版、`2` = 钻石版（黄金用户只能玩 1，钻石用户 1/2 都能玩）。来源 `YunGame_Gamelist.json`，取不到 = 2 | `games.game_level`（**默认就写** —— 它是黄金/钻石门禁的判据，不写门禁就形同虚设） |
 | `score` | number | **社区评分**（人工填）：大于阈值时卡片右上角亮「人气火爆」小火苗（阈值 = `src/utils/hotBadge.ts` 的 `HOT_SCORE_MIN`，默认 100）。**没填过就不写这个键** —— 写 0 / 空等于没设，同步时不会去动库里原值 | `games.community_score` |
 | `savepaths` | string[] | **存档路径**（游戏退出后"是否备份存档"用的就是它）：元素可含通配符（`*.*`）与 `{游戏库名}` 占位符，分隔符统一 `/`。来源 = LiteDB 里那条指向 `GameSaveHelper` 的 action（见下节）。**没有存档的游戏不写这个键** | `games.save_paths`（库里是 JSON 数组文本，如 `["X:/YunGame/V/XX/Save/*.*"]`） |
+| `batconsole` | boolean \| null | **逐游戏覆盖「运行 .bat/.cmd 时是否显示控制台窗口」**（2026-09-15 加，**三态**）：`true` = 强制显示、`false` = 强制隐藏、`null` = **回到跟随全局设置**（就是设置界面那个开关）。**没配的游戏不写这个键**；⚠️ 键缺失 = 不动库里原值，所以"取消覆盖"要**显式写 `null`**，把键删掉不算。归并规则见 [启动与路径规则](./launch-and-paths.md) §5 | `games.show_bat_console`（**可空** INTEGER：NULL=跟随全局 / 0=强制隐藏 / 1=强制显示） |
 
 ### `savepaths` 从哪来（不是手写的）
 

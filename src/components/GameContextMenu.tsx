@@ -1,13 +1,15 @@
 // Right-click context menu for a game, mirroring Playnite's game menu.
 
-import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import type { Game } from "../types/models";
 import { Play, Info, DatabaseBackup } from "lucide-react";
 import { useGamesStore } from "../stores/gamesStore";
 import { useAuthStore } from "../stores/authStore";
+import { useUIStore } from "../stores/uiStore";
 import { api } from "../api/client";
 import { useI18n } from "../i18n";
+// 菜单外壳（定位 / 点外面关掉 / Esc / 项样式）抽到了 ui/context-menu ——
+// 2026-09-15 顶栏标签也要右键菜单，两处各手写一份迟早会漂。
+import { ContextMenu, ContextMenuItem } from "./ui/context-menu";
 
 interface Props {
   game: Game;
@@ -23,34 +25,21 @@ export default function GameContextMenu({ game, x, y, onClose }: Props) {
   // 判据与卡片锁定态同一个 canPlay（见 docs/design/user-level-detection.md §2/§3）——
   // 注意这里只是**不给入口**；"能不能玩"的真正拦截仍在启动那条 IPC 上（改前端绕不过去）。
   const locked = useAuthStore((s) => !s.canPlay(game.gameLevel));
-  const navigate = useNavigate();
+  // 「详情」开的是**选项卡**（2026-09-15 改版），与 GridView 的 openDetails 同一条链路。
+  const openGameTab = useUIStore((s) => s.openGameTab);
   const { t } = useI18n();
-  const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handler = () => onClose();
-    window.addEventListener("click", handler);
-    return () => window.removeEventListener("click", handler);
-  }, [onClose]);
+  // 每一项都是"先执行、再关菜单"（外壳不替它关，见 ui/context-menu.tsx 的说明）。
+  const act = (action: () => void) => () => {
+    action();
+    onClose();
+  };
 
-  const item = (label: string, icon: React.ReactNode, onClick: () => void, danger = false) => (
-    <button
-      className={`flex w-full cursor-pointer items-center gap-2 rounded px-3 py-[7px] text-left text-[13px] text-primary-text hover:bg-item-hover ${danger ? "text-danger" : ""}`}
-      onClick={() => {
-        onClick();
-        onClose();
-      }}
-    >
-      {icon}
-      {label}
-    </button>
-  );
-
-  // 跳转到详情页：与 GridView 等其它视图的 openDetails 逻辑保持一致，
-  // 用 encodeURIComponent 避免 game.id 含特殊字符时路由匹配不上。
+  // 打开详情选项卡：与 GridView 的 openDetails 同一条链路
+  // （2026-09-15 起详情是选项卡、不是路由；标签 id 形如 `game:<id>`，id 里有什么字符都行）。
   const openDetails = () => {
     if (!game.id) return;
-    navigate(`/game/${encodeURIComponent(game.id)}`);
+    openGameTab(game.id);
   };
 
   // 手动备份存档：启动 GameSaveHelper.exe，由它生成自解压恢复包。
@@ -71,16 +60,28 @@ export default function GameContextMenu({ game, x, y, onClose }: Props) {
   };
 
   return (
-    <div
-      ref={ref}
-      className="fixed z-[1500] min-w-[180px] rounded-md border border-border-strong bg-panel p-[5px] shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
-      style={{ left: x, top: y }}
-    >
-      {!locked && item(t("menu_play"), <Play size={14} />, () => launchGame(game.id))}
+    <ContextMenu x={x} y={y} onClose={onClose}>
+      {!locked && (
+        <ContextMenuItem
+          icon={<Play size={14} />}
+          label={t("menu_play")}
+          onClick={act(() => launchGame(game.id))}
+        />
+      )}
       {/* 详情：等价于点击游戏卡片进入详情页（替换原来的"复制路径"）。锁定态**保留** —— 看详情是允许的。 */}
-      {item(t("menu_viewDetails"), <Info size={14} />, openDetails)}
+      <ContextMenuItem
+        icon={<Info size={14} />}
+        label={t("menu_viewDetails")}
+        onClick={act(openDetails)}
+      />
       {/* 备份游戏存档：手动生成自解压 exe 到桌面。锁定态不显示（同"只能看详情"）。 */}
-      {!locked && item(t("menu_backupSave"), <DatabaseBackup size={14} />, () => void backupSave())}
-    </div>
+      {!locked && (
+        <ContextMenuItem
+          icon={<DatabaseBackup size={14} />}
+          label={t("menu_backupSave")}
+          onClick={act(() => void backupSave())}
+        />
+      )}
+    </ContextMenu>
   );
 }

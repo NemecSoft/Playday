@@ -7,8 +7,8 @@
 // the IPC bridge nor layout is flooded at startup.
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useGamesStore } from "../../stores/gamesStore";
+import { useUIStore } from "../../stores/uiStore";
 import { useScrollStore } from "../../stores/scrollStore";
 import { useSettingsStore } from "../../stores/settingsStore";
 import type { Group } from "../../utils/selectors";
@@ -21,7 +21,7 @@ import GameContextMenu from "../GameContextMenu";
 import { useLazyImage } from "../../hooks/useLazyImage";
 import { useVirtualGrid, type VirtualGridRow } from "../../hooks/useVirtualGrid";
 import { isDarkBackground, paletteForRow } from "../../utils/titlePalette";
-import { clampCardFontSize, effectiveCardDescFontSize } from "../../utils/cardText";
+import { CARD_DESC_LINES, clampCardFontSize, effectiveCardDescFontSize } from "../../utils/cardText";
 import { isHotGame } from "../../utils/hotBadge";
 import { useAuthStore } from "../../stores/authStore";
 import {
@@ -36,7 +36,9 @@ interface Props {
 }
 
 export default function GridView({ groups }: Props) {
-  const navigate = useNavigate();
+  // 「详情」开的是**选项卡**（2026-09-15 改版），不再是路由跳转 ——
+  // 这样主页只是"切走"、不会被顶掉。见 docs/design/main-tabs.md。
+  const openGameTab = useUIStore((s) => s.openGameTab);
   const selected = useGamesStore((s) => s.selectedGameIds);
   const selectGame = useGamesStore((s) => s.selectGame);
   const launchGame = useGamesStore((s) => s.launchGame);
@@ -74,22 +76,18 @@ export default function GridView({ groups }: Props) {
   const saveGridScroll = useScrollStore((s) => s.saveGridScroll);
   const takeGridScroll = useScrollStore((s) => s.takeGridScroll);
 
-  // 进详情页之前，先把当前的滚动位置记下来；等用户从详情页返回时再恢复，
-  // 这样就不会一回来就跳到最顶上。
+  // 打开「详情」：现在是**开/切一个选项卡**（不是路由跳转）。
+  // 滚动位置照旧记一笔 —— 标签常驻后主页不会卸载，这一笔通常用不上了，
+  // 但 GamesView 因别的原因重建（如切换筛选）时它仍然有用。
   const openDetails = (game: Game) => {
-    // 诊断：如果 id 为空或含特殊字符，路由 `/game/:id` 可能匹配不上，被兜底
-    // 路由 `Navigate to "/"` 拉回主页，表现就是"点详情闪一下没变化"。
-    if (!game.id || /[\/\\?#]/.test(game.id)) {
-      console.warn(
-        "[openDetails] 游戏 id 异常，无法跳转详情：id=",
-        JSON.stringify(game.id),
-        "name=",
-        game.name,
-      );
+    // id 为空就没法开标签（标签 id 是 `game:<id>`）：明确记一条，别静默什么都不做。
+    if (!game.id) {
+      console.warn("[openDetails] 游戏 id 为空，无法打开详情标签：name=", game.name);
+      return;
     }
     const top = scrollRef.current?.scrollTop ?? 0;
     saveGridScroll(top);
-    navigate(`/game/${encodeURIComponent(game.id)}`);
+    openGameTab(game.id);
   };
 
   // 行内非封面区高度（标题 + 简介）。精确公式，避免估算过大导致 cardRowGap=0
@@ -100,7 +98,7 @@ export default function GridView({ groups }: Props) {
   //   .title-wrap margin-top       = 7px
   //   .title 行盒(15px字+padding2)  ≈ 22px
   //   .grid-desc margin-top (有)   = 4px
-  //   .grid-desc 3行截断(字号*1.5*3)   // 字号随 cardDescFontSize 变化
+  //   .grid-desc N行截断(字号*1.5*N)   // 行数=CARD_DESC_LINES，字号随 cardDescFontSize 变化
   //   .grid-card padding-bottom    = cardRowGap（动态传入）
   //
   // 把这些加起来让 rowHeight = coverHeight + titleHeight + cardRowGap 精确等于真实渲染高度。
@@ -125,7 +123,7 @@ export default function GridView({ groups }: Props) {
     7 +        // .title-wrap margin-top
     titleLineHeight + // .title 行高（随游戏名字号动态计算）
     origNameHeight + // 副标题（英文原名）行高
-    (showCardDescription ? 4 + descFontSize * 1.5 * 3 : 0); // 简介：margin-top + 3 行截断(line-height 1.5)
+    (showCardDescription ? 4 + descFontSize * 1.5 * CARD_DESC_LINES : 0); // 简介：margin-top + N 行截断(line-height 1.5)
   const { scrollRef, cols, totalSize, items, virtualizer, rowStartIndex, measureRow, referenceWidth } =
     useVirtualGrid({
       groups,
@@ -521,7 +519,8 @@ function GridCard({
         )}
       </div>
       {/* 简介：受工具栏"简介"开关控制。有 description 且开关开启才显示。
-           默认 2-3 行省略，点击可展开/收起完整文字。stopPropagation 避免误触卡片选中。 */}
+           默认收成 **4 行**（行数在 global.css 的 .grid-card .grid-desc 里），
+           点击可展开/收起完整文字。stopPropagation 避免误触卡片选中。 */}
       {showDescription && hasDesc && (
         <div
           className={`grid-desc ${descExpanded ? "expanded" : ""}`}

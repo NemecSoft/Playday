@@ -6,11 +6,21 @@
 // overriding the CSS variables so every component — migrated (shadcn tokens)
 // or not (legacy --bg-base/--text-primary) — follows the chosen palette.
 
+import { api } from "../api/client";
 import type { ThemePaletteTokens } from "./themeLibrary";
 import type { StyleVars } from "./styleLibrary";
+import { isDarkBackground } from "./titlePalette";
 
 const STORAGE_KEY = "app-theme";
 const STYLE_KEY = "app-style";
+
+/**
+ * "详情页主题需要重载"的通知事件。
+ * 详情页的颜色是**服务器发 HTML 时**注入的（见 electron/core/detailTheme.ts），
+ * 已经在看的那个 iframe 不会自己变色 —— 要重载才会去服务器拿新的。谁在看详情页谁监听
+ * （目前只有 `src/pages/GameDetailPage.tsx`）。
+ */
+export const DETAIL_THEME_EVENT = "yungame:detail-theme-changed";
 
 /**
  * Shadow presets (enum from styleLibrary) → concrete box-shadow.
@@ -90,6 +100,39 @@ export function applyPaletteTheme(palette: ThemePaletteTokens): void {
     if (!value) return;
     root.style.setProperty(KEY_TO_VAR[k], value);
   });
+  // 顺手把新配色同步给主进程（详情页 HTML 注入用，见 syncDetailTheme）。
+  // 刻意**不 await**：切主题本身要立刻生效，不能被一次 IPC 拖住。
+  void syncDetailTheme();
+}
+
+/**
+ * 把**当前生效的**配色变量同步给主进程（详情页注入用）。
+ *
+ * 为什么读 `:root` 的计算值，而不是直接用传进来的 palette 对象：
+ *   设置主题的入口不止一个（顶栏下拉 / 设置里的配色与风格 / 设计器 / 启动恢复），
+ *   让每个入口各自记得来调一次"同步"，迟早会漏一个 —— 而且漏了不报错，只是详情页颜色不对。
+ *   读计算值 = "界面现在实际是什么颜色，就注入什么颜色"，与谁来设置无关。
+ *
+ * 成功之后派发 DETAIL_THEME_EVENT：详情页的颜色是服务器发 HTML 时注入的，
+ * 正在看的那个 iframe 必须重载才会变（由 GameDetailPage 监听）。
+ *
+ * 失败一律静默：网站端（server.mjs）没有这条命令，详情页保持它自己的颜色即可 ——
+ * 这是锦上添花的能力，不该在主界面上弹任何东西。
+ */
+export async function syncDetailTheme(): Promise<void> {
+  try {
+    const cs = getComputedStyle(document.documentElement);
+    const vars: Record<string, string> = {};
+    for (const name of Object.values(KEY_TO_VAR)) {
+      const v = cs.getPropertyValue(name).trim();
+      if (v) vars[name] = v;
+    }
+    if (Object.keys(vars).length === 0) return;
+    await api.setDetailTheme(vars, isDarkBackground());
+    window.dispatchEvent(new Event(DETAIL_THEME_EVENT));
+  } catch {
+    /* 静默：见函数说明 */
+  }
 }
 
 /** Clear any runtime-injected palette (fall back to static data-theme). */

@@ -197,3 +197,33 @@ export function resolveActionPath(opts: {
       : "gameRoot";
   return { path: resolvePath(expanded, opts.libraries, opts.gameRoot), basis };
 }
+
+/**
+ * "逐游戏显示 .bat 控制台"的三态归并（规则见 docs/design/launch-and-paths.md §5）。
+ *
+ * 三态从哪来：`games.show_bat_console` 是**可空**列 ——
+ *   `NULL`    = 这个游戏没配 → 用全局设置（设置界面的 `showBatConsole`）
+ *   `0` / `1` = 明确的逐游戏覆盖（强制隐藏 / 强制显示）
+ *
+ * ⚠️ 两个坑都会**静默失效**（不报错、界面上看不出来），所以抽成纯函数、单测钉住：
+ *   1) 必须用 `??` 而不是 `||`。写成 `game || global` 时，逐游戏的 `false`（强制隐藏）
+ *      会被当成"没配"悄悄回落到全局值 —— "总不显示"这个配置**永远不生效**。
+ *   2) 数据库的 NULL 必须映射成 `undefined`，**不能 `!!行值`**：`!!null` 得 `false`，
+ *      等于给所有游戏强行写了"总是隐藏"，全局开关就此变成**死设置**。
+ */
+export function resolveShowBatConsole(
+  gameValue: boolean | undefined,
+  globalValue: boolean,
+): boolean {
+  return gameValue ?? globalValue;
+}
+
+/** 数据库那列（可空 INTEGER / 布尔 / 字符串）→ 三态布尔。NULL / 空 / 认不出来 = 未配置。 */
+export function parseStoredBatConsole(v: unknown): boolean | undefined {
+  if (v === null || v === undefined) return undefined;
+  if (typeof v === "boolean") return v;
+  if (typeof v === "string" && v.trim() === "") return undefined;
+  const n = Number(v);
+  if (Number.isNaN(n)) return undefined;
+  return n !== 0;
+}

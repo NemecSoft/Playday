@@ -8,9 +8,11 @@ import {
   isAbsolutePath,
   joinPaths,
   normalizePath,
+  parseStoredBatConsole,
   resolveActionPath,
   resolveLibraryPlaceholder,
   resolvePath,
+  resolveShowBatConsole,
   startsWithPlaceholder,
   toCmdPath,
 } from "./launchPaths";
@@ -273,5 +275,40 @@ describe("resolveActionPath：游玩指令 path 的三种基准", () => {
       expand: (s) => s,
     });
     expect(r.error).toBe("启动指令路径为空");
+  });
+});
+
+// §5 逐游戏"显示控制台"的三态归并（2026-09-15）。两条错法都是**静默失效**：
+// 写成 `||` → "强制隐藏"永不生效；写成 `!!行值` → NULL 变 false，全局开关变死设置。
+// 所以每条都配一个反向断言，谁改回去就红。
+describe("逐游戏显示控制台的归并（resolveShowBatConsole / parseStoredBatConsole）", () => {
+  it("逐游戏没配（undefined）→ 用全局值", () => {
+    expect(resolveShowBatConsole(undefined, true)).toBe(true);
+    expect(resolveShowBatConsole(undefined, false)).toBe(false);
+  });
+
+  it("逐游戏配了就一定赢，false 也一样 —— 用 || 会让「强制隐藏」悄悄失效", () => {
+    expect(resolveShowBatConsole(false, true)).toBe(false); // ← 关键：用 || 这里会得 true
+    expect(resolveShowBatConsole(true, false)).toBe(true);
+  });
+
+  it("库里 NULL = 没配，不能变成 false —— !!行值 会让全局开关变成死设置", () => {
+    expect(parseStoredBatConsole(null)).toBeUndefined();
+    expect(parseStoredBatConsole(undefined)).toBeUndefined();
+    expect(parseStoredBatConsole("")).toBeUndefined();
+    expect(parseStoredBatConsole("   ")).toBeUndefined();
+  });
+
+  it("库里 0 / 1（含字符串形式）→ 明确的覆盖值", () => {
+    expect(parseStoredBatConsole(0)).toBe(false);
+    expect(parseStoredBatConsole(1)).toBe(true);
+    expect(parseStoredBatConsole("0")).toBe(false);
+    expect(parseStoredBatConsole("1")).toBe(true);
+    expect(parseStoredBatConsole(true)).toBe(true);
+    expect(parseStoredBatConsole(false)).toBe(false);
+  });
+
+  it("认不出来的值当「没配」，不能当成强制隐藏", () => {
+    expect(parseStoredBatConsole("yes")).toBeUndefined();
   });
 });

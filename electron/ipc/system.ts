@@ -83,6 +83,17 @@ export function registerSystemIpc(ipc: typeof ipcMain) {
     return currentAppInfo();
   });
 
+  // 产品名（build.config.ts 的 APP_NAME）—— 给 preload 用的**同步**取值通道。
+  // 为什么必须存在这一条：preload 跑在 Electron 沙箱里，**不能 require 相对路径模块**
+  // （实测 2026-09-15：`module not found: ./sibling.js`），所以它没法 import
+  // build.config。改之前 preload 里内联了一份常量，于是 build.config.ts 那句
+  // "改这一处，UI 文案会全部同步更新"是句空话 —— 那边漏改就静默不一致
+  // （窗口标题变了、徽标没变，谁也发现不了）。sendSync 实测可用，故走这条。
+  // 写法必须是 ipc.on + event.returnValue（sendSync 的配套写法）；handle 是异步的，配不上。
+  ipc.on("get_app_name", (e) => {
+    e.returnValue = APP_NAME;
+  });
+
   // 文件/目录选择对话框（管理端"浏览"按钮用）。
   // 入参：{ mode: "file"|"directory", title?, defaultPath?, filters? }。
   // 返回选中的路径字符串；用户取消返回 null。

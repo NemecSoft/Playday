@@ -17,6 +17,16 @@ export const CARD_DESC_SIZE_MIN = 9;
 export const CARD_DESC_SIZE_MAX = 28;
 
 /**
+ * 卡片简介默认显示几行（超出省略，点击可展开）。
+ *
+ * ⚠️ 这是**唯一来源**：CSS 里 `.grid-desc` 的 `-webkit-line-clamp` 读
+ * `var(--card-desc-lines)`（settingsStore 注入），GridView 的精确行高公式也读这个常量。
+ * 以前两处各写一份（CSS 3 行 / 行高公式 3 行），改一处就会出现"间距忽大忽小"
+ * （2026-09-15 改成 4 行时踩到过：只改 CSS，行高公式仍按 3 行算）。
+ */
+export const CARD_DESC_LINES = 4;
+
+/**
  * 卡片简介字号：**0 表示跟随游戏名字号**（默认值，用户要求"简介和游戏名一样大"）。
  * 其余值 clamp 到 9~28。返回 0 只是"跟随"这个标记，真实字号用 effectiveCardDescFontSize 取。
  *

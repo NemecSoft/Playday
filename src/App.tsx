@@ -22,7 +22,6 @@ import LaunchingBanner from "./components/LaunchingBanner";
 import ImageProgressBar from "./components/ImageProgressBar";
 import GameExitBackupPrompt from "./components/GameExitBackupPrompt";
 import ZoomIndicator from "./components/ZoomIndicator";
-import GameDetailPage from "./pages/GameDetailPage";
 import { useSettingsStore } from "./stores/settingsStore";
 import { useGamesStore } from "./stores/gamesStore";
 import { useLibraryStore } from "./stores/libraryStore";
@@ -104,7 +103,8 @@ function AppShell() {
   const navigate = useNavigate();
   // 通用快捷键（滚动到顶/底、翻页、Alt+←/→ 后退前进）：
   // 全局一处注册，网格/列表/侧栏/详情页/设置弹窗都生效（滚谁由"焦点 → 指针"决定）。
-  useGlobalShortcuts(navigate);
+  // Alt+←/→ 现在按**选项卡访问历史**回退/前进（见 hooks/useGlobalShortcuts.ts）。
+  useGlobalShortcuts();
 
   // —— 背景音乐 ——
   // 三件事分开接线（都在设置里可控）：
@@ -139,27 +139,35 @@ function AppShell() {
   const clearLastLaunched = useGamesStore((s) => s.clearLastLaunched);
   const settingsOpen = useUIStore((s) => s.settingsOpen);
   const closeSettings = useUIStore((s) => s.closeSettings);
+  // 刚启动的游戏 → 打开它的详情选项卡（见下面 lastLaunchedId 那段）。
+  const openGameTab = useUIStore((s) => s.openGameTab);
   const games = useGamesStore((s) => s.games);
   const communityEnabled = useSettingsStore((s) => s.settings.communityEnabled);
 
-  // When a game has just been launched, jump to its detail page so the user
-  // can read the guide / instructions while playing (Steam / Playnite-style).
+  // 刚启动的游戏 → 打开它的**详情选项卡**（玩的同时能看攻略，Steam / Playnite 那样）。
+  // 2026-09-15 改版：详情从"路由"换成"选项卡"，所以这里开标签而不是 navigate。
   useEffect(() => {
     if (lastLaunchedId) {
-      navigate(`/game/${lastLaunchedId}`);
+      openGameTab(lastLaunchedId);
       clearLastLaunched();
     }
-  }, [lastLaunchedId, navigate, clearLastLaunched]);
+  }, [lastLaunchedId, openGameTab, clearLastLaunched]);
 
-  // 详情页 iframe 里的标签云点击 → 主页筛选：
-  // 详情页 HTML 通过 parent.postMessage 广播 { type: "playday-filter-by-tag", tag }，
-  // 这里收到后把主页筛选条件设为该标签（单一标签），并导航回主页。
+  // 详情页 / 游戏资料页 iframe 里的标签云点击 → 主页筛选：
+  // 那些静态页通过 parent.postMessage 广播 { type: "playday-filter-by-tag", tag }，
+  // 这里收到后把主页筛选条件设为该标签（单一标签），并切回主页。
+  // 两个来源：① 游戏详情页（路由 /game/:id）；② 「游戏资料」选项卡里的总目录页跳进去的游戏页
+  // （同一批 HTML、同一段脚本）—— 所以这个监听是**全局**的。
   useEffect(() => {
     const onTagFilter = (e: MessageEvent) => {
       const d = e.data;
       if (d && d.type === "playday-filter-by-tag" && typeof d.tag === "string") {
         // 设为主页标签筛选（维度=标签、单一标签值，清空搜索），并跳回主页
         useGamesStore.setState({ facet: "tag", facetValues: [d.tag], searchQuery: "" });
+        // ⚠️ 还必须**切回「主页」选项卡**（2026-09-15 加）：选项卡由 uiStore 的
+        // tabState.activeId 决定、不跟着路由走，只 navigate("/") 的话在「游戏资料」里
+        // 点标签会"整屏没反应"。从详情页点标签时本来就在主页，这一句是无害的幂等操作。
+        useUIStore.getState().activateTab("home");
         navigate("/");
       }
     };
@@ -189,7 +197,9 @@ function AppShell() {
         <RoutesErrorBoundary>
           <Routes>
             <Route path="/" element={<AppBody />} />
-            <Route path="/game/:id" element={<GameDetailPage />} />
+            {/* 「游戏详情」**不再是路由**（2026-09-15）：改成"每个游戏一个选项卡"，
+                见 docs/design/main-tabs.md。老的 #/game/xxx 深链接由下面的
+                path="*" 兜底回主页，不会白屏。 */}
             {/* 兜底：任何未匹配路径回到主页，避免空白。
                 注意：v7 里把 <Navigate> 直接作为 path="*" element 报"pure is not invalid"，
                 v6 没有这个问题。 */}

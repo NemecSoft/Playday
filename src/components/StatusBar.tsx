@@ -8,6 +8,7 @@ import { api } from "../api/client";
 import { useI18n } from "../i18n";
 import TipsBar from "./TipsBar";
 import MusicPlayer from "./MusicPlayer";
+import TierBadge from "./TierBadge";
 
 interface StatusBarData {
   localIp: string;
@@ -64,6 +65,11 @@ export default function StatusBar() {
       {/* 最右：背景音乐控件（上一首/播放暂停/下一首 + 曲名）。
           没有配置音乐目录、或目录里没有音频时它自己返回 null，不占地方。 */}
       <MusicPlayer />
+      {/* 最右（背景音乐右边）：版本徽标（品牌 + 黄金版/钻石版）。
+          2026-09-15 从顶栏中央挪到这里 —— 它在顶栏是"不占位置"的绝对定位，会被动态标签栏
+          从底下穿过去（结构性遮挡）。状态栏这一行全是固定长度的信息，没有这个冲突。
+          （没音乐时 MusicPlayer 返回 null，徽标就落在状态栏最右端。） */}
+      <TierBadge />
     </div>
   );
 }

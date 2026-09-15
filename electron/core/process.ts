@@ -13,6 +13,7 @@ import {
   batConsoleArgs,
   resolveActionPath,
   resolvePath as resolvePathPure,
+  resolveShowBatConsole,
   toCmdPath,
 } from "../../shared/launchPaths";
 import { getGame, upsertGame } from "./db";
@@ -158,7 +159,8 @@ export function launchGame(
     userLevel: number;
     track: boolean;
     gameLibraries: GameLibrary[];
-    // 是否显示 .bat/.cmd 脚本的控制台窗口。默认 false=隐藏。
+    // .bat/.cmd 控制台窗口的**全局默认值**（设置界面「运行 .bat/.cmd 指令时显示控制台窗口」）。
+    // 默认 false=隐藏。⚠️ 它只是默认值 —— 逐游戏配了就以逐游戏为准（见下面的归并）。
     showBatConsole?: boolean;
     // 手动指定的"计时监控 exe"：`进程名|窗口标题关键字`。设置后脚本不再以 cmd
     // 退出为计时终点，改为轮询该目标进程（见 doSpawn 说明）。
@@ -170,6 +172,11 @@ export function launchGame(
     // 用户可见文案不带等级数字（前端有一模一样的提示，这里只是后端口径的兜底）
     return { launched: false, error: "需要升级为钻石版网吧（网咖）才能玩" };
   }
+
+  // 是否显示 .bat/.cmd 控制台：逐游戏三态覆盖全局默认（库里没配 → 用全局设置）。
+  // 刻意在**这一处**归并，而不是让两个调用点各自算一遍 —— 将来多一个调用点也不会漏。
+  // 规则与两个会静默失效的写法见 shared/launchPaths.ts 的 resolveShowBatConsole。
+  const showBatConsole = resolveShowBatConsole(game.showBatConsole, options.showBatConsole ?? false);
 
   const libs = options.gameLibraries;
   // 有启动动作就按动作启动；没有则尝试在安装目录自动找 exe。
@@ -229,7 +236,7 @@ export function launchGame(
       // 工作目录：永远 = exe 所在目录（自动切过去）。不再使用 action.workingDir 字段
       // （用户决定不用这个数据，cwd 统一跟随 exe）。脚本需要安装目录时由脚本系统
       // 用 install_directory 单独指定，与 exe 的 cwd 无关。
-      const spawned = doSpawn(game, exeResolved, args, exeDir, options.track, options.showBatConsole, options.monitorExe, installAbs);
+      const spawned = doSpawn(game, exeResolved, args, exeDir, options.track, showBatConsole, options.monitorExe, installAbs);
       if (!spawned.ok) {
         // 把 spawn 的真实原因带出去，别再让前端只显示"未知错误"。
         return { launched: false, error: `启动进程失败：${spawned.error ?? "未知原因"}（${exeResolved}）` };
@@ -249,7 +256,7 @@ export function launchGame(
     const installDir = resolvePath(expandVariables(game.installDirectory, game), libs);
     const found = findGameExecutable(installDir);
     if (found) {
-      const spawned = doSpawn(game, found.exe, [], found.wd, options.track, options.showBatConsole, options.monitorExe, installDir);
+      const spawned = doSpawn(game, found.exe, [], found.wd, options.track, showBatConsole, options.monitorExe, installDir);
       if (!spawned.ok) {
         return { launched: false, error: `启动进程失败：${spawned.error ?? "未知原因"}（${found.exe}）` };
       }

@@ -22,6 +22,9 @@ export const PATH_FIELDS = [
   "coverImagesDir",
   "gameDetailsDir",
   "musicDir",
+  // 应用自带字体目录（2026-09-15 加入）：字体/音乐都是**平台级资源**，
+  // 由管理员在本表里配、随模式同步进 config.json，**不在设置界面暴露**。
+  "fontsDir",
   "libraryDir",
   "sourceLibraryDir",
   "announcementsDir",

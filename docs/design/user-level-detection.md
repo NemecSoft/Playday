@@ -190,7 +190,7 @@ cipher = base64( UTF8(明文) XOR key[i % key.length] )      // XOR 对称，解
 | 详情按钮 | 正常可用（能看不能玩，看详情是允许的） |
 | **右键菜单** | **只有「详情」**：不显示「开始游戏」、也不显示「备份游戏存档」（2026-09-14 需求："只能看游戏详情"）；等级够的用户三项齐全 |
 | 游戏退出后 | 照常弹"是否备份存档"（黄金版也能备份，见 §2） |
-| 顶栏中央 | 显示当前版本（黄金版 / 钻石版）。**不再显示命中门店名**（2026-09 需求：门店名不出现在界面上，连 hover 提示也去掉；原右上角那个 `YunGame——门店名` 胶囊已整块移除） |
+| 右下角状态栏 | 显示**品牌 + 版本**（如 `YunGame黄金版` / `YunGame钻石版`），位置在**背景音乐控件的右边**（2026-09-15 起）。品牌串**不是写死的** —— 来自 `build.config.ts` 的 `APP_NAME`，以后要改成 PlayDay 只改那一处（传递链路见 §4）。<br>**为什么不在顶栏**：徽标原先绝对居中、**不占位置**，而顶栏的标签栏是动态长度（每个游戏一个标签）—— 标签一多就从徽标底下穿过去、两行字叠在一起（现场反馈"会产生遮挡，乱"）。那是结构性的，调间距解决不了，所以整块挪到了右下角。**不再显示命中门店名**（2026-09 需求：门店名不出现在界面上，连 hover 提示也去掉；原右上角那个 `YunGame——门店名` 胶囊已整块移除） |
 
 **底部状态栏的门店名（2026-09-14 补充）**：底栏第三个字段显示**命中的门店名**（取自用户表
 `UserName`，与等级判定同源）；**未命中时显示「未知网吧」**，不再显示历史上的「未连接 C-afe」——
@@ -234,7 +234,11 @@ cipher = base64( UTF8(明文) XOR key[i % key.length] )      // XOR 对称，解
 | `electron/core/process.ts` | `launchGame` 启动前校验（**已存在**，保持单一入口） |
 | `electron/ipc/saveManager.ts` | 存档备份（**不看等级**，2026-09-14 起）+ 退出后按 `saveBackupMode` 提示 / 静默备份 / 不备份 |
 | `src/stores/authStore.ts` | 前端缓存 `userLevel` + `canPlay()` |
-| `src/components/TopBar.tsx` | **顶部中央**的版本标识（图标 + 黄金版/钻石版） |
+| `src/components/TierBadge.tsx` | 版本标识（图标 + 品牌 + 档位）。品牌读 `window.electronConfig.appName`（在 render 期读：网站端没有这个桥，空串时退化成只显示档位）；文案用 `tier_badge_gold` / `tier_badge_diamond`（`{{brand}}` 插值，中英的空格差异放在语言文件里）。**与 `tier_gold` / `tier_diamond` 刻意分开** —— 那两个还用在「游戏级别分组」组名与公告窗口的维护提示里，不该带品牌。<br>⚠️ 2026-09-15 从 `TopBar.tsx` 搬出来：顶栏那条流里放不下"不占位置又必须居中"的东西（见上面 UX 表那行的原因）。`TopBar` 里**故意留了一条测试**钉住"徽标不在顶栏"，别哪天被顺手加回去 |
+| `src/components/StatusBar.tsx` | 徽标的**渲染位置**：底栏最右、背景音乐控件右边（`MusicPlayer` 没音乐时返回 null，徽标自然落到最右端） |
+| `src/styles/global.css` | 徽标样式与动效：`.tier-badge`（含 `.gold` / `.diamond`）、`.tier-sheen`、`tier-glow` / `tier-icon-pop`。⚠️ 它现在是 `position: relative` —— 里面的扫光裁切层 `.tier-sheen` 是 `absolute inset:0`，靠徽标当"已定位祖先"才裁得对（原来那个角色由 `absolute` 承担，挪位置时改成了 `relative`，删掉它扫光会糊满整条状态栏） |
+| `electron/ipc/system.ts` + `electron/preload.ts` | 品牌串的**传递通道**：主进程 `ipc.on("get_app_name")` 同步回 `APP_NAME`，preload 用 `sendSync` 取。为什么绕这一圈 —— 沙箱 preload **不能 require 相对路径模块**（2026-09-15 真机探针：`sandboxed=true`、`require("./sibling.js")` 报 module not found、`sendSync` 可用），所以它没法直接 import `build.config` |
+| `src/components/__tests__/TierBadge.render.test.tsx` | 钉住"品牌来自配置而非写死"：断言用 `tier_badge_*` 键、品牌作为变量传入、换品牌徽标跟着变、无 preload 桥时不抛错、档位类名跟着等级走（原在 `TopBar.render.test.tsx`，跟着组件一起搬来） |
 | `src/components/views/GridView.tsx` | 卡片锁定态（封面降饱和 + 锁标 + 游玩按钮改造） |
 | `src/pages/GameDetailPage.tsx` | 详情页顶栏**正中**的「开始游戏」按钮（2026-09-15）：条件 `loaded && canPlay`，黄金版看钻石版不渲染；点击走 `launchGame()`（与卡片/右键同一条链路），**运行中也照旧可点** |
 | `src/components/AnnouncementWindow.tsx` | 两道门禁的提示条（维护 / 库过旧，样式 `.ann-gate`）+ 被拦时把「进入系统」换成「退出」 |

@@ -4,13 +4,15 @@
 // gameplay videos. Fully localized via i18n.
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { useGamesStore } from "../stores/gamesStore";
+import { useUIStore } from "../stores/uiStore";
 import { useI18n } from "../i18n";
 import { api, type GameVideoItem } from "../api/client";
 import { useMusicStore } from "../stores/musicStore";
 import { useSettingsStore } from "../stores/settingsStore";
 import { formatClock } from "../utils/clock";
+// 主题变了要重载 iframe（详情页颜色是服务器发 HTML 时注入的，见 electron/core/detailTheme.ts）
+import { DETAIL_THEME_EVENT } from "../utils/themeApply";
 import { ArrowLeft, Play, PlayCircle, Wrench, Archive } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { useAuthStore } from "../stores/authStore";
@@ -90,9 +92,18 @@ function useRunState(gameId: string) {
   return { state, elapsedSec, lastSessionSec };
 }
 
-export default function GameDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
+/**
+ * 游戏详情页。
+ *
+ * 2026-09-15 起它**不再是路由**（原来 `/game/:id` 会把主页整块替换掉 —— 用户反馈
+ * "点详情就把主页挡住了"）—— 现在它是「每个游戏一个选项卡」里的内容，游戏 id 由标签
+ * 传进来，关掉标签即回收。见 docs/design/main-tabs.md。
+ */
+export default function GameDetailPage({ gameId }: { gameId: string }) {
+  // 组件内部沿用 `id` 这个名字：来源从"路由参数"变成"标签 props"，
+  // 下面几十处 `id` 引用不用动。
+  const id = gameId;
+  const activateTab = useUIStore((s) => s.activateTab);
   const { t } = useI18n();
   const games = useGamesStore((s) => s.games);
   const launchGame = useGamesStore((s) => s.launchGame);
@@ -299,8 +310,22 @@ export default function GameDetailPage() {
   // （原按钮唯一的作用就是"滚到那个区块"）。
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
 
+  // 主题换过几次 —— 只用来当 iframe 的 key，用来**重载**详情页。
+  // 为什么必须重载：页面颜色是服务器发 HTML 那一步注入的（见 electron/core/detailTheme.ts），
+  // 已经在看的这个 iframe 不会自己变色。代价说清楚：重载会丢掉页面里的滚动位置、
+  // 正在播的视频也会停 —— 但切主题是用户主动做的事，本来就期待"整屏跟着变"，
+  // 不重载反而是"我换了主题它没反应"，那样更像 bug。
+  const [themeRev, setThemeRev] = useState(0);
+  useEffect(() => {
+    const onTheme = () => setThemeRev((n) => n + 1);
+    window.addEventListener(DETAIL_THEME_EVENT, onTheme);
+    return () => window.removeEventListener(DETAIL_THEME_EVENT, onTheme);
+  }, []);
+
+  // 「返回」= **切回主页选项卡**（不是关掉本标签）：需求明确"详情内容留着，
+  // 再点回来时页面还在"（标签常驻，iframe 不重载）。要关掉就点标签上那个 ×。
   const backButton = (
-    <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+    <Button variant="ghost" size="sm" onClick={() => activateTab("home")}>
       <ArrowLeft size={15} /> {t("details_back")}
     </Button>
   );
@@ -485,7 +510,11 @@ export default function GameDetailPage() {
         {detailTopbar}
         <iframe
           ref={iframeRef}
-          className="block min-h-0 w-full flex-1 border-0 bg-white"
+          // key = 主题版本：换主题时重建它 → 重新请求页面（拿到注入后的新配色）。
+          key={themeRev}
+          // 底色用 --bg-base 而不是 bg-white：深色主题下，页面自身绘制出来之前
+          // 那一下白底很扎眼（详情页现在会被注入成深色的）。
+          className="block min-h-0 w-full flex-1 border-0 bg-base"
           title={`${game.name} page`}
           src={gamePageUrl}
           // Allow the embedded static page's own player (DPlayer / <video> /

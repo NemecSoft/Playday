@@ -16,6 +16,7 @@ import {
   runtimeDatabasePath,
 } from "./paths";
 import { shouldSyncDatabase, type FileStamp } from "../../shared/librarySync";
+import { parseStoredBatConsole } from "../../shared/launchPaths";
 import type { AppUser, SessionUser, Game, GameLibrary, LibraryStats } from "./models";
 
 // 全局的 sql.js 静态对象（init 一次复用）。
@@ -88,7 +89,13 @@ CREATE TABLE IF NOT EXISTS games (
     post_exit_script TEXT,
     post_exit_enabled INTEGER,
     save_paths TEXT,
-    monitor_exe TEXT
+    monitor_exe TEXT,
+    -- 逐游戏"运行 .bat/.cmd 时显示控制台"的**三态**覆盖：
+    --   NULL = 该游戏没配 → 跟随全局设置（config.json 的 showBatConsole）
+    --   0 / 1 = 强制隐藏 / 强制显示
+    -- 刻意**不给默认值**：NULL 必须与 0 区分开，否则"跟随全局"这个态就没了。
+    -- 归并规则与两个会静默失效的写法见 shared/launchPaths.ts。
+    show_bat_console INTEGER
 );
 
 -- 业务上游戏名唯一：与 Playnite 对齐（一个名字只能对应一个游戏），防止重名。
@@ -295,8 +302,13 @@ function migrateAddColumns(): void {
       db.run("ALTER TABLE games ADD COLUMN monitor_exe TEXT");
       persist();
     }
+    if (!cols.includes("show_bat_console")) {
+      // 可空且**不加默认值** —— NULL 与 0 是两种不同含义（见 SCHEMA 里那段说明）。
+      db.run("ALTER TABLE games ADD COLUMN show_bat_console INTEGER");
+      persist();
+    }
   } catch (e) {
-    console.error("[db] 迁移 save_paths/monitor_exe 列失败:", e);
+    console.error("[db] 迁移 save_paths/monitor_exe/show_bat_console 列失败:", e);
   }
 }
 
@@ -462,6 +474,9 @@ export function upsertGame(game: Game): void {
     $post_exit_enabled: game.postExitEnabled ? 1 : 0,
     $save_paths: JSON.stringify(game.savePaths ?? []),
     $monitor_exe: game.monitorExe ?? null,
+    // 三态：undefined（该游戏没配）必须落成 NULL，**不能落成 0** —— 落 0 会被读成
+    // "强制隐藏"，这些游戏就再也不跟随全局开关了（见 shared/launchPaths.ts 的说明）。
+    $show_bat_console: game.showBatConsole === undefined ? null : game.showBatConsole ? 1 : 0,
   };
   db.run(
     `INSERT INTO games (
@@ -474,7 +489,7 @@ export function upsertGame(game: Game): void {
       emulator, completion_status, user_score_set, manual_game, plugin_id, links,
       actions, features_enabled, guide, screenshots, videos, game_library, game_level,
       pre_launch_script, pre_launch_enabled, post_launch_script, post_launch_enabled,
-      post_exit_script, post_exit_enabled, save_paths, monitor_exe
+      post_exit_script, post_exit_enabled, save_paths, monitor_exe, show_bat_console
     ) VALUES (
       $id, $name, $origin_name, $localized_names, $alternate_names, $game_id, $installed,
       $install_directory, $play_task, $other_tasks, $last_played, $play_count, $last_activity,
@@ -485,7 +500,7 @@ export function upsertGame(game: Game): void {
       $emulator, $completion_status, $user_score_set, $manual_game, $plugin_id, $links,
       $actions, $features_enabled, $guide, $screenshots, $videos, $game_library, $game_level,
       $pre_launch_script, $pre_launch_enabled, $post_launch_script, $post_launch_enabled,
-      $post_exit_script, $post_exit_enabled, $save_paths, $monitor_exe
+      $post_exit_script, $post_exit_enabled, $save_paths, $monitor_exe, $show_bat_console
     )
     ON CONFLICT(id) DO UPDATE SET
       name=$name, origin_name=$origin_name, localized_names=$localized_names,
@@ -507,7 +522,8 @@ export function upsertGame(game: Game): void {
       pre_launch_script=$pre_launch_script, pre_launch_enabled=$pre_launch_enabled,
       post_launch_script=$post_launch_script, post_launch_enabled=$post_launch_enabled,
       post_exit_script=$post_exit_script, post_exit_enabled=$post_exit_enabled,
-      save_paths=$save_paths, monitor_exe=$monitor_exe`,
+      save_paths=$save_paths, monitor_exe=$monitor_exe,
+      show_bat_console=$show_bat_console`,
     values as never
   );
   persist();
@@ -874,6 +890,10 @@ function rowToGame(r: Record<string, unknown>): Game {
       }
     })(),
     monitorExe: r.monitor_exe ? str(r.monitor_exe) : undefined,
+    // 三态：可空列的 NULL 必须映射成 undefined（= 跟随全局）。
+    // ⚠️ 不能写成 !!r.show_bat_console —— NULL 会变成 false（强制隐藏），
+    // 等于给所有游戏强写了"总是隐藏"，全局开关就此变成死设置。
+    showBatConsole: parseStoredBatConsole(r.show_bat_console),
   };
 }
 

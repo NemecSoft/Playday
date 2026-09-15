@@ -332,6 +332,17 @@ if (!fs.existsSync(contentFull)) {
         `${CONTENT_FILE}: ${badSavePaths.length} 条 savepaths 不是「非空字符串数组」（例如 "${badSavePaths[0]?.name ?? '?'}"）—— 留空就别写这个键`,
       )
     }
+    // batconsole 同样是**可选**字段，三态：true / false / null（null = 回到跟随全局设置）。
+    // 坏值（"yes" / 1 / "true" 之类）在 apply 脚本里会被归一成 null，于是"想强制隐藏"
+    // 悄悄变成"跟随全局" —— 不报错、界面上也看不出来，属于同一类静默故障，故一并上守卫。
+    const badBatConsole = items.filter(
+      (it) => it && 'batconsole' in it && !(it.batconsole === null || typeof it.batconsole === 'boolean'),
+    )
+    if (badBatConsole.length) {
+      violations.push(
+        `${CONTENT_FILE}: ${badBatConsole.length} 条 batconsole 不是 true / false / null（例如 "${badBatConsole[0]?.name ?? '?'}"）—— 只写这三种值，别写 1 或字符串`,
+      )
+    }
   }
 }
 

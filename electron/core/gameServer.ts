@@ -14,6 +14,11 @@ import { resolveMusicRequest } from "./music";
 import { resolveVendorRequest } from "./vendorAssets";
 import { findVideoPoster, scanVideos } from "./videoLibrary";
 import { buildVideoSection, injectVideoSection } from "./gameDetailInject";
+import {
+  buildDetailThemeStyle,
+  getDetailTheme,
+  injectDetailTheme,
+} from "./detailTheme";
 
 // 根据扩展名猜 MIME 类型。
 function mimeFromExt(file: string): string {
@@ -208,14 +213,22 @@ function serveGameDetailIndex(filePath: string, req: http.IncomingMessage, res: 
   const lang = new URL(req.url || "/", "http://127.0.0.1").searchParams.get("lang");
   const videosDir = path.join(path.dirname(filePath), "videos");
   const scan = scanVideos(videosDir);
-  const out = injectVideoSection(
-    html,
-    buildVideoSection({
-      scan,
-      lang,
-      // 与视频同名的图片（1.mp4 + 1.jpg）直接当预览封面；没有则由页面脚本抓帧。
-      posterFor: (rel) => findVideoPoster(videosDir, rel),
-    })
+  // 主题：渲染层通过 IPC set_detail_theme 送来的"当前生效配色"（见 core/detailTheme.ts）。
+  // 没送过（或送的是空）时这里拿到 null → 两处注入都退化成"什么都不做"，页面保持原样。
+  const theme = getDetailTheme();
+  const out = injectDetailTheme(
+    injectVideoSection(
+      html,
+      buildVideoSection({
+        scan,
+        lang,
+        // 与视频同名的图片（1.mp4 + 1.jpg）直接当预览封面；没有则由页面脚本抓帧。
+        posterFor: (rel) => findVideoPoster(videosDir, rel),
+        // 内置播放器的进度条/高亮跟随当前主题的强调色。
+        accent: theme?.vars["--accent"] ?? null,
+      })
+    ),
+    buildDetailThemeStyle(theme)
   );
   const buf = Buffer.from(out, "utf-8");
   res.writeHead(200, {

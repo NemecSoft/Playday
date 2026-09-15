@@ -151,6 +151,9 @@ export const DEFAULT_SETTINGS = {
   cardFontSize: 15,
   // 0 = 跟随 cardFontSize（用户要求"简介和游戏名一样大"）；>0 才是显式字号。
   cardDescFontSize: 0,
+  /** 封面渲染风格：none(原图) / vivid(鲜艳) / soft(柔和) / sepia(怀旧) / contrast(高对比)。
+   *  具体滤镜与非法值回退见 src/utils/coverStyle.ts（纯函数 + 单测）。 */
+  coverStyle: "none",
   cardFontBold: false,
   cardText: DEFAULT_CARD_TEXT,
   themeId: undefined,
@@ -451,6 +454,18 @@ export interface Game {
    * （启动器进程 或 安装目录内进程任一存活即视为运行中）。
    */
   monitorExe?: string;
+  /**
+   * 逐游戏覆盖「运行 .bat/.cmd 时是否显示控制台窗口」（**三态**）：
+   *   `undefined` / 库里 NULL = 这个游戏没配 → 用全局设置（config.json 的 `showBatConsole`，
+   *                              也就是设置界面「运行 .bat/.cmd 指令时显示控制台窗口」那个开关）
+   *   `true` / `false`         = 强制显示 / 强制隐藏（覆盖全局）
+   *
+   * 为什么是三态而不是布尔：做成布尔就"配过一次再也回不到跟随全局"。
+   * 库里对应**可空**列 `show_bat_console`；归并规则在 shared/launchPaths.ts 的
+   * resolveShowBatConsole（那里记了两个会静默失效的写法，改之前先看）。
+   * 内容源里怎么配：docs/design/game-content.md 的 `batconsole` 字段。
+   */
+  showBatConsole?: boolean;
 }
 
 /** 统一用户记录：企业用户（按公网 IP 匹配）和个人用户（账号登录）都存这张表。 */
@@ -601,6 +616,8 @@ export interface AppSettings {
   cardFontSize: number;
   /** 卡片简介字号（px）。默认 11。 */
   cardDescFontSize: number;
+  /** 封面渲染风格（none/vivid/soft/sepia/contrast）。默认 none = 原图。 */
+  coverStyle: string;
   /** 卡片标题/别名是否加粗（true=700，false=500）。 */
   cardFontBold: boolean;
   /** 卡片文字自定义样式。CSS 读它注入 --card-text-* 等变量。 */

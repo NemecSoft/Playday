@@ -231,6 +231,91 @@ registerCommand(ipc, "get_game_server_url", async () => {
 > 与顶部"视频"tab 的区别：那个 tab 读**数据库** `games.videos` 字段（外链 / YouTube 嵌入）；
 > 这里读**磁盘上**的 `videos/` 目录。两者互不影响、互不依赖。
 
+## 详情页跟随主界面主题（2026-09-15）
+
+详情页模板自带一套**浅色**样式（`body` 是 `#f6f7f9`、卡片 `#fff`、正文 `#222`，见 `D:/Addons/<游戏>/css/style.css`）。
+它嵌在深色界面里就是一块白纸（现场反馈"跟外面完全脱节"）。现在**服务器在发页面时把当前主题注入进去**。
+
+| 维度 | 做法 | 为什么 |
+| --- | --- | --- |
+| 注入时机 | **服务端**发 `index.html` 那一刻（`serveGameDetailIndex`），和视频区块同一处 | 颜色必须在**首帧之前**就是对的。若改成"父页面 postMessage 再改 iframe"，每次打开详情页都会先闪一下它的浅色主题 |
+| 主题从哪来 | 渲染层读 `:root` 的**计算值**（`--bg-base` / `--text-primary` / …）→ IPC `set_detail_theme` → 主进程存一份 | 只有渲染层知道当前主题（`themeLibrary` 是 60KB 的 TS 数据，只打进前端 bundle）。读计算值还顺带覆盖了"设主题的每一个入口"（顶栏下拉 / 设置里的配色与风格 / 设计器），不必让每个入口各自记得同步一次 |
+| 为什么不塞进 URL（`?lang=` 那条路） | —— | iframe 里的页面会**自己内部跳转**（点标签、"返回全部游戏"），查询串一跳就丢；放主进程状态里则每一页都带上 |
+| 注入位置 | `</head>` **之前**（也就是页面自己的 `<link rel="stylesheet">` 之后） | 我们的规则和页面同名同优先级（`.section` / `.tag`…），靠**顺序**赢，不用 `!important` |
+| 覆盖什么 | 只覆盖**颜色**：页面底色/正文、卡片（`.hero`/`.section` 底 + 描边）、`h2` 左侧色条、标签、表格分隔线、链接、滚动条 | 版式、间距、字号、字体一律不动 —— 那是页面自己的排版资产，且我们看不到全部 1000+ 页面的实际结构，改版式就是赌 |
+| 卡片描边从哪来 | 原样式是白底 + `rgba(0,0,0,.06)` 极浅投影，深色下投影等于看不见 → 去投影、补一圈 `--border` 描边 | 否则卡片边界消失、整页糊成一片 |
+| 系统绘制部分 | `:root` 上加 `color-scheme: dark/light` | 滚动条、表单控件、原生 `<video>` 控件是**系统画的**，我们的 CSS 管不到；不加就是深色页面配一条白滚动条 |
+| 视频区块 | 它自己的 CSS 颜色改成 `var(--主题变量, 原浅色值)`；DPlayer 的进度条色也取当前 `--accent` | 不跟着改就会变成"深色页面里的几块白砖"。带原值兜底：没配主题时页面还是它原来的浅色样子 |
+| 换主题后 | 渲染层派发 `yungame:detail-theme-changed`，`GameDetailPage` 重载那个 iframe | 颜色是**发 HTML 时**注入的，已经在看的页面不会自己变。重载会丢滚动位置/正在播的视频 —— 但切主题是用户主动做的，不重载更像是没生效 |
+| 启动兜底 | `main.tsx` 启动完成后无条件 `syncDetailTheme()` 一次 | 两条恢复路径都要求"存过主题"；全新机器两处都空 → 界面用 `tokens.css` 默认配色，谁都不会来同步 → 详情页还是浅色 |
+| 失败时 | 静默：拿不到桥（网站端 `server.mjs` 没这条命令）、载荷为空 → **什么都不注入**，页面保持原样 | 这是锦上添花的能力，不该在主界面弹任何东西 |
+
+**作用范围**：只有**游戏详情页**（相对详情根正好是 `<一级目录>/index.html`，即 `isGameDetailIndex`）会被注入。
+「游戏资料」那个**总目录页**（`/games/index.html`）走的是另一条分支（`serveFileAt`），**没有**注入 ——
+它要单独做（选择器完全不同：卡片墙 + 搜索框 + 1280 张封面），目前保持原样。
+
+### 安全：服务端不信任送进来的东西
+
+`set_detail_theme` 的载荷最终会被拼进 `<style>`，所以 `core/detailTheme.ts` 会**先清洗再用**：
+
+- 变量名必须匹配 `--[a-z0-9-]{1,48}`；
+- 值里不允许出现 `<` `>` `{` `}` `;` `\` 和 CSS 注释（合法色值里都不会有；出现即意味着想跳出声明块或 `</style>` 标签），另外限长 240 字符；
+- 变量条数上限 96；清洗后一个都不剩 → 返回 `null`，调用方**不注入**（而不是注入一个半残的样式把页面搞花）。
+
+### 怎么验的（真引擎探针）
+
+`_probe-detail-theme/`（仓库根，探针产物目录，可随时删）：
+
+```bat
+:: 默认拿 30XX 那一页；换一页再验就把游戏名当最后一个参数
+npx vite-node -c vitest.config.mts _probe-detail-theme/run.mts
+npx vite-node -c vitest.config.mts _probe-detail-theme/run.mts -- "暗黑破坏神2：重制版"
+```
+
+它拿**真实**详情页（+ 页面自己的 `css/style.css` + 图片）用真实注入函数生成页面，在真 Electron 里量计算样式。
+2026-09-15 实测（`30XX` 与 `暗黑破坏神2：重制版` 两页都过，说明这套模板是共用的）：
+
+- 15 项计算样式全部等于注入的调色板（`body` #0e0e16 / 卡片 #15161f + 描边 / `h2` 色条 = accent / …），
+  「视频卡片底色」也确实是主题色；
+- **对照组**（同一页面不注入）仍是原生浅色（`body` rgb(246,247,249)、卡片 rgb(255,255,255)）——
+  证明"变色的是我们注入的那部分"，不是源页面本来就深色；
+- 对比度：正文 7.67:1、标题 14.60:1、标签 6.79:1、dim 级 4.44:1（阈值口径见下）。
+
+> 探针踩过的两个坑（都是**测量方式**的坑，不是实现的）：`td` 只设了 `border-bottom`，
+> 量 `border-top` 会得到 `currentColor`（= 文字色）这种假结论；表格第一列是被我们刻意压到 dim 的
+> 字段名，混在"表格单元"里按正文 4.5 判会误判。阈值口径与 `src/utils/__tests__/themeContrast.test.ts`
+> 一致：正文 4.5、次要 3.0、弱化(dim) 2.6。
+
+## 主界面：「游戏资料」选项卡（总目录页）
+
+详情根目录下还有一个 **`index.html`** —— 它不是某个游戏的，而是整个静态站点的**总目录页**
+（卡片墙 + 搜索框，卡片指向各游戏的 `<游戏名>/index.html`）。顶栏的「游戏资料」选项卡把这一页
+整页嵌进界面，与「主页」同级（**2026-09-15 需求**）。
+
+| 维度 | 做法 | 为什么 |
+| --- | --- | --- |
+| 渲染 | iframe → `<服务器 base>/games/index.html` | 那份页面是现成的内容资产（1280 个游戏、自带搜索与封面），重写一个列表既没必要，也会变成两处各说一遍 |
+| 服务器 | **一行都不用改** | 服务器本来就按 `/games/<相对路径>` 托管详情根，而总目录页里的卡片是**相对链接**（`007…/index.html`、`images/cover.jpg`），在 `/games/` 这个基准下正好落到已支持的路由上。实测 2026-09-15：`/games/index.html` → 200 / 376 KB / title「游戏库 · 全部游戏介绍」，封面图也是 200 |
+| 点卡片 | **在 iframe 里原地跳转**（用静态站自己的链接） | 跨源 iframe 父页面拦不到点击；这个选项卡的定位是"翻资料"，不需要 app 侧的「开始游戏 / 修改器」—— 那些在游戏详情页（主页卡片点「详情」进去） |
+| 挂载 | **首次进入才挂载、之后常驻**（切走只 `display:none` 隐藏） | 常驻是为了保留搜索词与滚动位置（**卸载会让 iframe 重新加载**）；首次才挂是因为这页 376 KB + 1280 张懒加载封面，不该拖慢启动 |
+| 地址 | `src/utils/gameDataUrl.ts` 的 `gameDataPageUrl()` | ⚠️ 必须是 `<base>/games/index.html` —— **裸 `/games/` 会被防穿越规则判成"空目录"直接 403**（实测）：页面上只看到一片空白，很难联想到原因。单测钉住（含反向断言） |
+| 失败态 | 服务器没起来（base 为空）→ 显「游戏资料页不可用」 | 不静默给一张白页 |
+
+落点：选项卡在 `src/components/TopBar.tsx`，内容在 `src/components/views/GameDataView.tsx`，
+"首次进入才挂载 / 切走只隐藏"在 `src/components/MainContent.tsx`。
+
+**标签点击**：游戏页里的标签云会 `parent.postMessage({ type: "playday-filter-by-tag", tag })`。
+这条监听挂在 `src/App.tsx`（全局）—— **两个来源都会发**（详情页，以及资料页里点进去的游戏页），
+所以那里除了设筛选，还必须**切回「主页」选项卡**：选项卡由 `uiStore.activeTab` 决定、不跟着路由走，
+只 `navigate("/")` 的话在「游戏资料」里点标签会"整屏没反应"。
+
+**与详情页相比的两处已知差异**（都只在「游戏资料」里出现，属于刻意接受的取舍，不是 bug）：
+
+| 差异 | 原因 |
+| --- | --- |
+| 播放视频时**背景音乐不会让位** | 「放视频时音乐暂停」的监听挂在 `src/pages/GameDetailPage.tsx`（只在详情路由下挂载），资料页里播视频它收不到 |
+| `mkv/flv/avi` 这类**要系统播放器的视频点不开** | 页面发的是 `playday-video-external`（只带 `rel`），需要挂载中的详情页拿自己的 `videos` 列表解析绝对路径；资料页里没有那份上下文。要看这类视频就从主页卡片进详情页 |
+
 ## IPC 命令
 
 | 命令 | 作用 | 实现 |
@@ -263,10 +348,18 @@ registerCommand(ipc, "get_game_server_url", async () => {
 | `electron/core/gameServer.ts` | 本地 HTTP 服务器（静态托管 + Range + videos API） |
 | `electron/core/gameDirs.ts` | "优先游戏 id、其次游戏名"的目录解析（详情页 / 修改器 / 存档 / 视频共用） |
 | `electron/core/videoLibrary.ts` | 视频扫描 / 分组 / 自然排序 + "能否内置播放"的判定（HTTP 与 IPC 共用） |
-| `electron/core/gameDetailInject.ts` | 把「游戏视频」区块注入到详情页 HTML（注入点、样式、脚本、文案） |
+| `electron/core/gameDetailInject.ts` | 把「游戏视频」区块注入到详情页 HTML（注入点、样式、脚本、文案）。颜色用 `var(--主题变量, 原浅色值)`，跟随注入的主题 |
+| `electron/core/detailTheme.ts` | 详情页**主题注入**：清洗渲染层送来的配色 → 生成覆盖样式 → 插到 `</head>` 前（见上一节） |
+| `electron/core/detailTheme.test.ts` | 单测：清洗（挡 `</style>`/跳出声明块）、`:root` 与覆盖规则、注入位置与幂等 |
+| `src/utils/themeApply.ts` | `applyPaletteTheme` 末尾 + 启动时 `syncDetailTheme()`：读 `:root` 计算值送主进程，成功后再派发 `yungame:detail-theme-changed` |
+| `src/pages/GameDetailPage.tsx` | 监听上面那个事件 → 重载详情页 iframe（颜色要重载才变）；iframe 底色从 `bg-white` 改成 `bg-base` |
+| `_probe-detail-theme/` | 真引擎探针（真实页面 + 真实注入 + 计算式量测），结论见上一节 |
 | `electron/ipc/gameHtml.ts` | 详情页相关 IPC（含惰性启动 `get_game_server_url`） |
 | `electron/ipc/trainer.ts` | 复用详情页目录发现修改器 |
 | `electron/ipc/gameVideos.ts` | 视频列表 IPC + 用系统播放器打开 |
 | `src/pages/GameDetailPage.tsx` | 前端打开详情页、拼 URL、懒加载服务器；修改器 / 应用存档入口（**按目录内容决定是否显示**）；视频不再有 app 侧入口 |
+| `src/components/views/GameDataView.tsx` | 「游戏资料」选项卡：iframe 嵌总目录页（惰性取服务器地址 + 两种失败态） |
+| `src/utils/gameDataUrl.ts` | 总目录页地址拼装（`/games/index.html`；裸 `/games/` 会 403） |
+| `src/components/MainContent.tsx` | 选项卡容器：资料页**首次进入才挂载、之后常驻**（隐藏而非卸载，保留搜索词与滚动位置） |
 | `src/components/settings/GeneralSection.tsx` | `gameDetailsDir` 配置 UI |
 | `server/server.mjs` | 网站端 `/Game_Details/*` 静态路由 |

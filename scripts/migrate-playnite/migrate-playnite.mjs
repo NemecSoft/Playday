@@ -49,6 +49,8 @@ function parseArgs(argv) {
     dbPath: get('--db', null),
     outDir: get('--out', path.join(os.tmpdir(), 'playnite-dump')),
     skipDump: argv.includes('--skip-dump'),
+    // --out-json <文件>：把映射后的 Playday 行写成 JSON 就结束（**不打开、不改动任何数据库**）。
+    outJson: get('--out-json', null),
     // --clear：清空目标库后全量导入（保留 Playday 维护的简介与特有字段）。
     clear: argv.includes('--clear'),
     // --reset：只清空目标库 games 表（备份后），不导入。
@@ -122,8 +124,14 @@ const emptyGuid = (g) => !g || g === EMPTY_GUID
 
 /** Playnite GameAction → Playday GameAction（id 由工具生成，供 play_task 引用）。 */
 function mapActions(acts) {
-  if (!Array.isArray(acts) || acts.length === 0) return []
-  return acts.map((a, i) => ({
+  // ⚠️ 源里的 GameActions 可能是**单个对象**而不是数组：PowerShell 导出 JSON 时，
+  // 只有一个元素的数组会被塌成对象（实测 1283 个游戏里有 29 个如此）。
+  // 以前这里 `!Array.isArray` 直接 return []，等于这些游戏的启动动作被**静默丢弃**
+  // （库里 actions 为空，只能靠"无动作 → 自动找 exe"兜底）。这里统一包成数组。
+  if (acts == null) return []
+  const list = Array.isArray(acts) ? acts : [acts]
+  if (list.length === 0) return []
+  return list.map((a, i) => ({
     id: `pn-${i}`,
     name: a.Name ?? '',
     type: a.Type === 'URL' ? 'URL' : 'File',
@@ -180,8 +188,12 @@ function mapGame(pn, maps) {
     community_score: numOrNull(pn.CommunityScore),
     critic_score: numOrNull(pn.CriticScore),
     user_score: numOrNull(pn.UserScore),
-    // 隐藏状态不迁移：Playnite 的隐藏是个人偏好，不应导致 Playday 游戏不显示。
-    hidden: 0,
+    // hidden **必须同步**（2026-09-15 需求）：平台侧把某些游戏标成隐藏 = 这台机器 /
+    // 这个渠道**不提供**该游戏，不是个人偏好 —— Playday 里也必须跟着隐藏。
+    // 影响（改这里前必须知道）：hidden=1 的游戏会被客户端列表过滤掉（
+    // src/utils/selectors.ts 的 `g.hidden && !opts.showHidden`），而 GamesView 目前
+    // 固定传 showHidden:false —— 也就是隐藏的游戏在客户端看不到，这正是平台要的效果。
+    hidden: pn.Hidden ? 1 : 0,
     favorite: pn.Favorite ? 1 : 0,
     // 封面/背景/图标：不迁移（Playday 用 CoverImages 同名图片自动匹配）。
     background_image: null,
@@ -450,6 +462,17 @@ async function main() {
   const games = await loadJson(opts.outDir, 'games.json')
   const maps = await buildMaps(opts.outDir)
   console.log(`  游戏 ${games.length} 个；类型 ${Object.keys(maps.genres).length}、平台 ${Object.keys(maps.platforms).length}、厂商 ${Object.keys(maps.companies).length}`)
+
+  // --out-json：只导出映射结果（增量同步按 id 增/改时用），不碰数据库。
+  // 为什么需要它：增量同步要用**真实映射**得到完整行（含 Playday 特有字段的默认值，
+  // 如 game_level / actions 结构），手写一份既容易漏字段、也会和既有行形态不一致。
+  // 导出的 JSON 正好可以直接喂给 playday-db.mjs import（它按 id 更新/插入）。
+  if (opts.outJson) {
+    const mapped = games.map((g) => mapGame(g, maps))
+    await fs.writeFile(opts.outJson, JSON.stringify(mapped, null, 2), 'utf8')
+    console.log(`[仅导出] ${mapped.length} 行 → ${opts.outJson}（未打开、未改动任何数据库）`)
+    return
+  }
 
   const dbPath = pickTargetDb(opts)
   console.log(`[3/4] 打开目标库 ${dbPath}`)

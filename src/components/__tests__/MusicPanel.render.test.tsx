@@ -64,4 +64,17 @@ describe("MusicPanel", () => {
     expect(html).toContain("music_mode_single");
     expect(html).toContain("music-btn-on"); // 当前模式（sequential）高亮
   });
+
+  // 2026-09-15 需求：曲目名字前加序号。序号 = 1 起的列表位置（= 队列顺序）。
+  it("曲目列表每项名字前有序号（1 起，且排在名字前面）", () => {
+    const html = render();
+    const idx1 = html.indexOf('music-panel-item-index">1<');
+    const idx2 = html.indexOf('music-panel-item-index">2<');
+    const name1 = html.indexOf('music-panel-item-name">千千阙歌<');
+    expect(idx1).toBeGreaterThanOrEqual(0);
+    expect(idx2).toBeGreaterThanOrEqual(0);
+    expect(name1).toBeGreaterThanOrEqual(0);
+    expect(idx1).toBeLessThan(name1); // 序号在名字之前
+    expect(idx1).toBeLessThan(idx2); // 按列表顺序递增
+  });
 });

@@ -7,6 +7,13 @@
 
 // 产品展示名（显示在窗口标题、托盘 tooltip、UI 文案里）。
 // 用户可能要求改成 HaHaGame、heiheigame 等，直接改这里即可。
+//
+// 它怎么传到渲染层（改名前值得知道，2026-09-15）：
+//   主进程 import 本文件 → ipc.on("get_app_name") 同步回值 →
+//   electron/preload.ts 用 sendSync 取到 → window.electronConfig.appName → 前端读。
+//   为什么绕这一圈：沙箱 preload **不能 require 相对路径模块**（实测），否则它直接
+//   import 本文件就完事了。右下角状态栏里那个版本徽标的品牌前缀（`YunGame黄金版`）就走这条链路，
+//   所以"改这一处"是真的只改这一处。
 export const APP_NAME = "YunGame";
 
 // 客户端可执行文件名（不含 .exe 后缀）。

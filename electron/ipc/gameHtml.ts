@@ -8,6 +8,7 @@ import * as path from "path";
 import { gamesHtmlDir } from "../core/paths";
 import { resolveGameSubpath } from "../core/gameDirs";
 import { startGameServer, getGameServerBaseUrl } from "../core/gameServer";
+import { setDetailTheme } from "../core/detailTheme";
 import { registerCommand } from "./registry";
 
 // 返回某游戏的详情页 HTML 文件路径。规则：
@@ -49,6 +50,19 @@ export function registerGameHtmlIpc(ipc: typeof ipcMain) {
       return "";
     }
   });
+
+  // 渲染层把"当前生效的主题配色"送过来，供详情页注入（见 core/detailTheme.ts）。
+  //
+  // 为什么走 IPC 而不是塞进详情页 iframe 的 URL（`?lang=` 那条路子）：
+  //   URL 上的查询串在**页面自己内部跳转**时会丢 —— 详情页里点标签、点"返回全部游戏"
+  //   都会重新请求 index.html，新 URL 上没有 theme 参数了。放进主进程状态里，每一页都带上。
+  // 返回值只是"采纳与否"，前端 fire-and-forget 不关心。
+  registerCommand(
+    ipc,
+    "set_detail_theme",
+    (payload: unknown) => setDetailTheme(payload),
+    { unwrap: "object" }
+  );
 
   // 列出 Game_Details/ 目录下有哪些游戏的详情页（管理端诊断用）。
   registerCommand(ipc, "list_game_html_dirs", async () => {

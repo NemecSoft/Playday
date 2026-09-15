@@ -948,74 +948,154 @@ textarea {
   background: var(--bg-item-hover);
 }
 
-/* Middle: top-level tabs (Home / Videos / Tools) */
+/* Middle: top-level tabs（主页 / 游戏资料 / 工具 + **每个游戏一个可关闭的标签**）。
+   2026-09-15 改版（起因：用户报"开多了后面的就显示不出来"）：
+     · 标签栏拆成**两个容器** —— 固定组不滚、游戏组自己滚（原因见 .topbar-fixed-tabs）；
+     · 游戏标签**先压窄、压到下限才滚** —— 原来是只滚不压，顶栏明明很宽却一次只看得到
+       三四个标签；现在开满 10 个也能全看见（不够宽时每个自动缩，文字出省略号、hover 看全名）；
+     · 一个选项卡 = 外层胶囊 `.topbar-tabwrap`（管背景/圆角/激活态）+ 里面的
+       "标签按钮" + "关闭按钮" —— 关闭必须是**另一个真 button**（按钮里嵌按钮是非法 HTML）。 */
 .topbar-tabs {
   display: flex;
   align-items: stretch;
   gap: 2px;
+  -webkit-app-region: no-drag;
+}
+/* 固定三个（主页 / 游戏资料 / 工具）：**不压缩、不滚动**。
+   为什么必须单独一个容器：它们和游戏标签共用一个滚动容器时，标签一多就会把固定三个
+   一起滚出视野 —— 而它们是**入口**，滚没了就没地方点回主页了（"固定标签不可关"是同一个理由）。 */
+.topbar-fixed-tabs {
+  flex: none;
+}
+/* 游戏标签：顶栏里**唯一可压缩**的一块。
+   宽度不够时的顺序是"先缩每个标签 → 缩到下限才开始横向滚动"，所以是 flex:0 1 auto + 下限宽度。 */
+.topbar-game-tabs {
   flex: 0 1 auto;
   min-width: 0;
-  -webkit-app-region: no-drag;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.topbar-game-tabs::-webkit-scrollbar {
+  height: 0;
+}
+/* 固定组与游戏组之间的分隔线（没有游戏标签时根本不渲染这个元素）。 */
+.topbar-tabs-sep {
+  flex: none;
+  align-self: center;
+  width: 1px;
+  height: 16px;
+  margin: 0 4px;
+  background: var(--border);
+}
+.topbar-tabwrap {
+  display: inline-flex;
+  align-items: stretch;
+  flex: none;
+  /* 游戏名可能很长：给个上限，超出由里面的 .topbar-tab-label 省略号收尾 */
+  max-width: 190px;
+  border-radius: 999px;
+  transition:
+    color var(--dur-fast),
+    background var(--dur-fast);
+}
+/* 游戏标签可压缩：下限 78px 是"图标 + 关闭按钮"还放得下的宽度 —— 再窄就只能剩图标了，
+   那样点了都不知道是哪个游戏（所以到 78px 就停住，改成横向滚动）。
+   固定标签走上面的 .topbar-fixed-tabs（flex:none），不受这条影响。 */
+.topbar-game-tabs .topbar-tabwrap {
+  flex: 0 1 auto;
+  min-width: 78px;
+}
+.topbar-tabwrap:hover {
+  background: var(--bg-item-hover);
+}
+/* 选中 = accent 淡底 + accent 文字，不做下划线、不加阴影（与改版前一致）。 */
+.topbar-tabwrap.active {
+  background: var(--accent-soft);
 }
 .topbar-tab {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
   padding: 4px 12px;
-  margin: 0 2px;
   font-size: 13px;
   font-weight: 500;
   /* tab 文字默认用 text-primary（最亮），保证所有配色下都清晰可读。 */
   color: var(--text-primary);
   background: transparent;
   border: none;
-  /* 胶囊式（原来是"下划线 tab"）：和顶栏右侧的主题下拉、缩放气泡同为圆角胶囊，
-     顶栏里三种控件形状统一，视觉噪音更低。 */
+  /* 胶囊式：和顶栏右侧的主题下拉、缩放气泡同为圆角胶囊，顶栏里控件形状统一。 */
   border-radius: 999px;
   cursor: pointer;
-  transition:
-    color var(--dur-fast),
-    background var(--dur-fast);
 }
-.topbar-tab:hover {
-  color: var(--text-primary);
-  background: var(--bg-item-hover);
-}
-.topbar-tab.active {
-  /* 选中 = accent 淡底 + accent 文字，不做下划线、不加阴影。 */
+.topbar-tabwrap.active .topbar-tab {
   color: var(--accent-hover, var(--accent));
-  background: var(--accent-soft);
 }
-
-/* 顶部中央：当前版本标识（黄金版 / 钻石版）。原系统就在这个位置用「图标 + 文字」显示，
-   我们也照做。绝对居中，不参与左右两组控件的流式排布。
-   ⚠️ 必须 no-drag：顶栏整体是拖拽区，不排除的话鼠标停上去会变成拖窗口、tooltip 也出不来。 */
-.topbar-tier {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+/* 标签文字：游戏名超长时省略号，别把顶栏撑变形。 */
+.topbar-tab-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 关闭按钮：只有游戏标签有（固定三个是入口，不给关闭入口）。 */
+.topbar-tab-close {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 12px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-  pointer-events: auto;
+  flex: none;
+  margin: 3px 4px 3px 0;
+  padding: 2px;
+  border: none;
+  border-radius: 50%;
+  color: var(--text-dim);
+  background: transparent;
+  cursor: pointer;
+}
+.topbar-tab-close:hover {
+  color: var(--text-primary);
+  background: var(--bg-item-active);
+}
+
+/* 右键菜单外壳（src/components/ui/context-menu.tsx）。
+   ⚠️ 这一条只为一件事：no-drag。顶栏整体是窗口拖拽区，而**拖拽区会连带它的所有后代** ——
+   标签的右键菜单正好渲染在顶栏里面，不排除的话菜单看着在、点菜单项却变成拖窗口。 */
+.context-menu {
   -webkit-app-region: no-drag;
+}
+
+/* 版本徽标（品牌 + 黄金版 / 钻石版）。
+   2026-09-15 **从顶栏正中央挪到右下角状态栏**（背景音乐右边，见 TierBadge.tsx）：
+   它原来在顶栏是绝对居中、不占位置的 —— 动态标签栏一多就从它底下穿过去，两行字叠在一起。
+   那是结构性的（只要它还在顶栏那条流里且不占位就一定会再撞），所以换了个没有动态内容的地方。
+
+   尺寸跟着状态栏走：那一行是 11px 文字、26px 高，徽标比原来小一号、内边距也收窄，
+   免得把状态栏撑高或显得像块广告。
+   `position: relative` 不是装饰：里面的 .tier-sheen（扫光的裁切层）是 absolute inset:0，
+   靠徽标自己是"已定位祖先"才裁得对 —— 原来靠的是徽标的 absolute，现在换成 relative 顶替。 */
+.tier-badge {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
   color: var(--tier-color);
   background: color-mix(in srgb, var(--tier-color) 14%, transparent);
   border: 1px solid color-mix(in srgb, var(--tier-color) 55%, transparent);
-  text-shadow: 0 0 10px color-mix(in srgb, var(--tier-color) 55%, transparent);
-  box-shadow: 0 0 14px color-mix(in srgb, var(--tier-color) 30%, transparent);
+  /* 光晕比顶栏那版收一档（14px → 10px）：状态栏只有 26px 高、两边紧挨着网速/音乐文字，
+     原来那个尺寸的光晕会糊到邻居身上。动效本身（10s 一次的扫光）一点没动。 */
+  text-shadow: 0 0 8px color-mix(in srgb, var(--tier-color) 55%, transparent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tier-color) 30%, transparent);
 }
 /* 黄金 = 琥珀（跟主题的 --warning 走）；钻石 = 青蓝（固定色，可用 --tier-diamond-color 覆盖） */
-.topbar-tier.gold {
+.tier-badge.gold {
   --tier-color: var(--warning, #ffc83d);
 }
-.topbar-tier.diamond {
+.tier-badge.diamond {
   --tier-color: var(--tier-diamond-color, #6ee7ff);
 }
 
@@ -1038,10 +1118,10 @@ textarea {
      overflow:hidden，但那会把徽章文字自己的 text-shadow 光晕一起裁掉
      （垂直方向 padding 只有 3px，光晕必然被切）；所以改用一层绝对定位的
      子元素来裁 —— 它只裁自己里面的扫光，不动徽章的其它任何效果。
-   （写成独立的一条 .topbar-tier 规则是故意的：这一整段动效将来不想要时，
+   （写成独立的一条 .tier-badge 规则是故意的：这一整段动效将来不想要时，
      直接从"版本徽章的稀有度高光动效"这个注释块删到 prefers-reduced-motion 即可。）
    ============================================================================ */
-.topbar-tier {
+.tier-badge {
   /* 唯一旋钮：动效周期。改这里就同时改掉扫光/光晕/图标三者的节奏，
      不用去三个 animation 里各改一遍（也就不会三处不同步）。 */
   --tier-anim-cycle: 10s;
@@ -1108,7 +1188,7 @@ textarea {
   }
 }
 /* 图标弹一下（缩放 + 轻微转角），与扫光同一拍 */
-.topbar-tier > svg {
+.tier-badge > svg {
   transform-origin: center;
   animation: tier-icon-pop var(--tier-anim-cycle) ease-in-out infinite;
 }
@@ -1127,9 +1207,9 @@ textarea {
 }
 /* 系统减弱动效偏好：整体关掉（这纯属装饰，关掉不影响任何信息） */
 @media (prefers-reduced-motion: reduce) {
-  .topbar-tier,
+  .tier-badge,
   .tier-sheen::after,
-  .topbar-tier > svg {
+  .tier-badge > svg {
     animation: none;
   }
 }
@@ -1366,6 +1446,17 @@ textarea {
   flex: none;
   width: 12px;
   justify-content: center;
+}
+/* 曲目序号（2026-09-15 需求：名字前加序号）。
+   右对齐 + tabular-nums：位数不同（1 / 10 / 100）时数字右沿也对齐，名字的起始
+   位置因此不会随位数跳动。刻意不单独给 font-size —— 继承 .music-panel 已经显式
+   指定的那个字号即可，少一个要跟着缩放的档位。 */
+.music-panel-item-index {
+  flex: none;
+  min-width: 18px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--text-dim);
 }
 .music-panel-item-name {
   flex: 1;
@@ -2582,6 +2673,9 @@ textarea {
      只做 scale，不做位移，避免和卡片的 translateY 叠加出"抖动"。 */
   transition: transform var(--dur-slow) var(--ease-soft);
   will-change: transform;
+  /* 封面渲染风格（设置 → 外观）：由 settingsStore 注入 --cover-style-filter。
+     只改颜色、不改尺寸 → 不影响虚拟列表的行高公式。hover 时不恢复原图（需求）。 */
+  filter: var(--cover-style-filter, none);
 }
 .grid-card:hover .cover img {
   transform: scale(1.04);
@@ -2741,7 +2835,9 @@ textarea {
    不同形状**：锁定时不显示火苗（可用性信息优先于营销信息，见 GridView 里的条件渲染）。
    规则与门禁见 docs/design/user-level-detection.md */
 .grid-card.locked .cover img {
-  filter: grayscale(0.6) brightness(0.62);
+  /* ⚠️ 必须与"封面风格"合并成一条 filter：两者都用 filter，分开写会互相覆盖，
+     锁定信号会被风格冲掉。顺序 = 风格在前、锁定在后（锁定永远看得见）。 */
+  filter: var(--cover-style-filter, none) grayscale(0.6) brightness(0.62);
 }
 /* 标题/简介也压一档：只压封面会造成"文字很亮、画面很暗"的割裂感 */
 .grid-card.locked .title,
@@ -2872,7 +2968,7 @@ textarea {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* 网格卡片简介：默认 3 行省略，点击展开完整。受工具栏"简介"开关控制。
+/* 网格卡片简介：默认 4 行省略，点击展开完整。受工具栏"简介"开关控制。
    排版策略：与标题之间用一道极淡分隔线+更大行距分隔（结构化分隔），
    不再用 accent 渐变底 + 白色内高光（那层"按钮感"让整卡像仪表盘）。 */
 .grid-card .grid-desc {
@@ -2886,9 +2982,10 @@ textarea {
   /* 简介文字可被鼠标选中复制（即使展开后也能选中）。 */
   user-select: text;
   -webkit-user-select: text;
-  /* 默认收成 3 行，超出行显示省略号 */
+  /* 默认收成几行由 --card-desc-lines 决定（唯一来源：utils/cardText.ts 的
+     CARD_DESC_LINES，settingsStore 注入）。2026-09-15：简介数据变长，3 行 → 4 行。 */
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: var(--card-desc-lines, 4);
   -webkit-box-orient: vertical;
   overflow: hidden;
   cursor: pointer;
@@ -4521,6 +4618,8 @@ textarea {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* 与卡片封面同一个风格变量（需求：风格先都作用）。 */
+  filter: var(--cover-style-filter, none);
 }
 .news-cover .placeholder {
   width: 100%;
@@ -4618,6 +4717,8 @@ textarea {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* 与卡片封面同一个风格变量（需求：风格先都作用）。 */
+  filter: var(--cover-style-filter, none);
 }
 .detail-cover .placeholder {
   width: 100%;

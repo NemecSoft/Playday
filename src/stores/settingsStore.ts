@@ -4,7 +4,8 @@ import { create } from "zustand";
 import { api } from "../api/client";
 import type { AppSettings, DeepPartial, Platform, CardTextStyle } from "../types/models";
 import { DEFAULT_CARD_TEXT } from "../types/models";
-import { effectiveCardDescFontSize } from "../utils/cardText";
+import { CARD_DESC_LINES, effectiveCardDescFontSize } from "../utils/cardText";
+import { coverStyleFilter } from "../utils/coverStyle";
 import { DEFAULT_SETTINGS } from "../../shared/models";
 // 主题改由顶栏 ThemeTopPicker 预设切换（themeApply.ts 注入 :root），
 // 不再走设计器（applyDesigner 会用旧 designer.paletteId 覆盖刚选的配色，
@@ -67,6 +68,12 @@ export function applyCardTextStyles(s: Partial<AppSettings>) {
   // clamp 与"跟随"规则统一在 utils/cardText.ts（避免两处重复）。
   const descSize = effectiveCardDescFontSize(s.cardDescFontSize, size);
   root.setProperty("--card-desc-font-size", `${descSize}px`);
+  // 简介默认显示行数：同时供 CSS（-webkit-line-clamp）与 GridView 的行高公式使用 ——
+  // 唯一来源是 utils/cardText.ts 的 CARD_DESC_LINES（别在两处各写一份数字）。
+  root.setProperty("--card-desc-lines", String(CARD_DESC_LINES));
+  // 封面渲染风格 → CSS 变量。三处封面（卡片 / 详情大图 / 资讯）都读它；
+  // 非法值由 coverStyleFilter 回退成 none（老配置没有这个字段）。
+  root.setProperty("--cover-style-filter", coverStyleFilter(s.coverStyle));
   // 用户自定义颜色/描边/发光/阴影/背景。CSS 用 var(--card-...) 读取。
   root.setProperty("--card-text-color", ct.color || "#fff8e7");
   root.setProperty("--card-stroke-color", ct.strokeColor || "#000000");

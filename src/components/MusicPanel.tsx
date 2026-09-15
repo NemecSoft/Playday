@@ -115,7 +115,7 @@ export default function MusicPanel({
         </span>
       </div>
 
-      {/* 曲目列表：只显示文件名（需求：文件名就行），当前这首高亮 */}
+      {/* 曲目列表：序号 + 文件名（需求："文件名就行" → 2026-09-15 追加"名字前加序号"），当前这首高亮 */}
       <div className="music-panel-list">
         {tracks.map((tr, i) => (
           <button
@@ -130,6 +130,8 @@ export default function MusicPanel({
             ) : (
               <span className="music-panel-item-icon" />
             )}
+            {/* 序号 = 1 起的列表位置（= 队列顺序；随机模式下就是洗牌后的顺序）。 */}
+            <span className="music-panel-item-index">{i + 1}</span>
             <span className="music-panel-item-name">{tr.name}</span>
             {tr.group ? <span className="music-panel-item-group">{tr.group}</span> : null}
             {i === trackIndex && playing ? <span className="music-panel-item-dot" /> : null}

@@ -18,6 +18,15 @@
 //                **默认就写**。曾经把它做成 --with-level 可选（理由是"gamelist 才是权威"），
 //                结果库里 1276 条 game_level 全是迁移时写死的 1，直接造成线上 bug：
 //                黄金版用户能启动钻石版游戏。等级数据必须跟着内容表进库，否则门禁形同虚设。
+//   show_bat_console ← item.batconsole（**三态**，2026-09-15 加）：逐游戏覆盖"运行
+//                .bat/.cmd 时是否显示控制台窗口"，全局开关在 config.json 的 showBatConsole。
+//                  true  → 1（强制显示）
+//                  false → 0（强制隐藏）
+//                  null / "" → NULL（**回到跟随全局设置** —— 这是"取消覆盖"的写法）
+//                ⚠️ 键**缺失** = 不动库里原值（与其它字段同规则）。所以"取消覆盖"要显式
+//                写 `"batconsole": null`，把键删掉只是不碰它、库里仍是原来的值。
+//                为什么是三态：做成布尔就"配过一次再也回不到跟随全局"。归并规则与两个
+//                会静默失效的写法见 shared/launchPaths.ts 的 resolveShowBatConsole。
 //
 // 字段写入规则（避免误清空）：
 //   · 键**存在**就写（哪怕写的是空值 —— 你手动清空标签就是要清空）；
@@ -98,6 +107,21 @@ const toPathArr = (v) => {
   const s = typeof v === "string" ? v.trim() : "";
   return s ? s.split(/\r?\n/).map((x) => x.trim()).filter(Boolean) : [];
 };
+/**
+ * 三态布尔（逐游戏"显示 bat 控制台"）：true→1、false→0、null / "" / 认不出来→null。
+ * null 落库就是 SQL NULL，含义是"跟随全局设置" —— 所以**绝不能折成 0**：
+ * 折成 0 等于给这些游戏强制隐藏，全局开关对它们就永久失效了。
+ */
+const triBool = (v) => {
+  if (v === null || v === undefined) return null;
+  if (typeof v === "boolean") return v ? 1 : 0;
+  const s = String(v).trim().toLowerCase();
+  if (s === "") return null;
+  if (s === "true" || s === "1") return 1;
+  if (s === "false" || s === "0") return 0;
+  return null; // 认不出来的值一律当"没配"，别让坏值把库写脏
+};
+
 /** 库里的 JSON 数组文本 → 数组（解析不了当空数组，绝不让坏值把整次同步打断）。 */
 const parseJsonArr = (s) => {
   try {
@@ -151,20 +175,40 @@ const FIELDS = [
   { key: "gamelevel", col: "game_level", kind: "num" },
   // 存档路径（备份/恢复用）：数组 → 库里 JSON 数组文本；按解析后的数组比较（见文件头说明）
   { key: "savepaths", col: "save_paths", kind: "jsonArray" },
+  // 逐游戏"显示 bat 控制台"：**三态**（true=1 / false=0 / null 或 ""=NULL 跟随全局）。
+  // 两边比较都过 triBool —— 库里的 NULL 与内容表里的 null 必须归到同一个值，
+  // 否则每次都会被判成"变了"，白刷一遍库。
+  { key: "batconsole", col: "show_bat_console", kind: "triBool" },
 ];
+
+/**
+ * 确保逐游戏"显示 bat 控制台"那列存在（老库没有）。
+ *
+ * 为什么由脚本自己补、而不是只靠客户端迁移：客户端只迁移**运行时副本**，
+ * 而 Admin 是权威库（只由脚本/手工维护，见 docs/design/database-schema.md 的双库机制）——
+ * 这里不补的话，第一次同步就会在下面的 SELECT 上甩 "no such column" 直接崩。
+ * 只补**可空**列：NULL 是有效语义（= 跟随全局设置），给默认值会把这个态弄没。
+ */
+function ensureBatConsoleColumn(db) {
+  const cols = db.exec("PRAGMA table_info(games)")[0]?.values.map((r) => r[1]) ?? [];
+  if (cols.includes("show_bat_console")) return false;
+  db.run("ALTER TABLE games ADD COLUMN show_bat_console INTEGER");
+  return true;
+}
 
 function syncDb(dbPath, { dryRun }) {
   const db = new SQL.Database(new Uint8Array(fs.readFileSync(dbPath)));
+  const addedCol = ensureBatConsoleColumn(db);
   // 取列必须覆盖 FIELDS 里要用到的每一列 —— 少取一列不会报错，只会把那一列当成
   // undefined（→ 0 / ""）从而"每次都判定要改"，白写一遍库（踩过：score 漏了 community_score）。
   const rows = db.exec(
-    "SELECT id, game_id, name, intro, region, tags, game_level, community_score, save_paths FROM games",
+    "SELECT id, game_id, name, intro, region, tags, game_level, community_score, save_paths, show_bat_console FROM games",
   )[0].values;
   const stats = { byId: 0, byName: 0, changed: {}, unchanged: 0, unmatched: [], skippedLongIntro: 0 };
   for (const f of FIELDS) stats.changed[f.key] = 0;
 
   const updates = [];
-  for (const [id, gameId, name, intro, region, tags, level, communityScore, savePaths] of rows) {
+  for (const [id, gameId, name, intro, region, tags, level, communityScore, savePaths, batConsole] of rows) {
     const hit = byId.get(normId(gameId)) ?? byName.get(normName(name));
     if (!hit) {
       stats.unmatched.push(String(name));
@@ -180,6 +224,7 @@ function syncDb(dbPath, { dryRun }) {
       gamelevel: level,
       score: communityScore,
       savepaths: savePaths,
+      batconsole: batConsole,
     };
     const next = {};
     let touched = false;
@@ -196,21 +241,25 @@ function syncDb(dbPath, { dryRun }) {
       // jsonArray（存档路径）两边都先规范化成 JSON 文本再比：库里的老值分隔符是 `\`、
       // 内容表里是 `/`，纯文本比会每次都被判成"变了"，白写一遍库。
       const want =
-        f.kind === "jsonArray"
-          ? JSON.stringify(toPathArr(hit[f.key]))
-          : f.kind === "array"
-            ? arrText(hit[f.key])
-            : f.kind === "num"
-              ? Number(hit[f.key]) || 0
-              : String(hit[f.key] ?? "").replace(/\s+/g, " ").trim();
+        f.kind === "triBool"
+          ? triBool(hit[f.key])
+          : f.kind === "jsonArray"
+            ? JSON.stringify(toPathArr(hit[f.key]))
+            : f.kind === "array"
+              ? arrText(hit[f.key])
+              : f.kind === "num"
+                ? Number(hit[f.key]) || 0
+                : String(hit[f.key] ?? "").replace(/\s+/g, " ").trim();
       const now =
-        f.kind === "jsonArray"
-          ? JSON.stringify(parseJsonArr(cur[f.key]))
-          : f.kind === "array"
-            ? String(cur[f.key] ?? "[]")
-            : f.kind === "num"
-              ? Number(cur[f.key]) || 0
-              : String(cur[f.key] ?? "");
+        f.kind === "triBool"
+          ? triBool(cur[f.key])
+          : f.kind === "jsonArray"
+            ? JSON.stringify(parseJsonArr(cur[f.key]))
+            : f.kind === "array"
+              ? String(cur[f.key] ?? "[]")
+              : f.kind === "num"
+                ? Number(cur[f.key]) || 0
+                : String(cur[f.key] ?? "");
       if (want === now) continue;
       next[f.col] = want;
       stats.changed[f.key]++;
@@ -223,10 +272,12 @@ function syncDb(dbPath, { dryRun }) {
     updates.push([next, id]);
   }
 
-  if (!dryRun && updates.length) {
+  // 补过列也要写回文件（否则列只存在于内存里，白补）。
+  if (!dryRun && (updates.length > 0 || addedCol)) {
     const bk = `${dbPath}.bak-${new Date().toISOString().replace(/[:.]/g, "-")}`;
     fs.copyFileSync(dbPath, bk);
     console.log(`  [备份] ${path.relative(root, bk)}`);
+    if (addedCol) console.log("  [补列] games.show_bat_console（老库缺这一列，已加上）");
     for (const [next, id] of updates) {
       const cols = Object.keys(next);
       const stmt = db.prepare(
