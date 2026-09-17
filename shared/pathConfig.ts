@@ -46,8 +46,6 @@ export interface LibraryPathOptions {
   baseDir?: string;
   /** 库根（settings.libraryDir）：运行时库的位置，也是权威库的默认父目录。空 = 数据根。 */
   libraryDir?: unknown;
-  /** 权威库目录（settings.sourceLibraryDir）：只读数据来源。空 = <库根>/Admin。 */
-  sourceLibraryDir?: unknown;
 }
 
 /** 库路径：库根 + 权威库 + 运行时副本。 */
@@ -95,8 +93,8 @@ export function resolveConfiguredDir(
 
 /**
  * 解析库路径。
- *   libraryDir（库根）       → 运行时副本位置；也是权威库的默认父目录。空 = 数据根。
- *   sourceLibraryDir（权威库目录）→ 只读数据来源。空 = <库根>/Admin。
+ *   libraryDir（库根）→ 运行时副本位置；也是权威库的父目录。空 = 数据根。
+ * 权威库固定在 <库根>/Admin（**推导，不可配置** —— 2026-09-17 收口）。
  * 两者都是"目录"，文件名固定 library.db —— 复制关系因此永远唯一。
  * 相对路径一律以 appRoot（exe 所在目录）为基准，不以数据根为基准。
  */
@@ -105,7 +103,7 @@ export function resolveLibraryPaths(opts: LibraryPathOptions): LibraryPaths {
   const baseDir = opts.baseDir ?? dataRoot;
   // 留空时库根 = 数据根，保持旧布局（<数据根>/Admin/library.db、<数据根>/library/library.db）。
   const root = resolveConfiguredPath(opts.libraryDir, baseDir) ?? dataRoot;
-  const sourceDir = resolveConfiguredPath(opts.sourceLibraryDir, baseDir) ?? joinPaths(root, "Admin");
+  const sourceDir = joinPaths(root, "Admin");
   return {
     root,
     sourceDir,
@@ -115,13 +113,17 @@ export function resolveLibraryPaths(opts: LibraryPathOptions): LibraryPaths {
 }
 
 /**
- * 公告文件：<公告目录>/announcement.html（公告目录可配置，默认 <数据根>/announcements）。
- * @param baseDir 相对路径的基准 = 应用 exe 所在目录；缺省 = dataRoot（旧行为）。
+ * 公告目录：`<库根>/announcements`。
+ *
+ * 2026-09-17 起公告目录**不再单独配置**：它跟着库根走 —— 与"权威库固定 `<库根>/Admin`"同一个
+ * 道理（复制关系只有一种可能，配置里少一个能写歪的地方）。
+ * ⚠️ 目录名写在这里而不是调用方：`scripts/check-architecture.mjs` 会拦"在别处拼这些数据目录名"。
  */
-export function resolveAnnouncementFile(
-  raw: unknown,
-  dataRoot: string,
-  baseDir: string = dataRoot,
-): string {
-  return joinPaths(resolveConfiguredDir(raw, dataRoot, "announcements", baseDir), "announcement.html");
+export function resolveAnnouncementsDir(libraryRoot: string): string {
+  return joinPaths(libraryRoot, "announcements");
+}
+
+/** 公告文件：`<库根>/announcements/announcement.html`。 */
+export function resolveAnnouncementFile(libraryRoot: string): string {
+  return joinPaths(libraryRoot, "announcements/announcement.html");
 }

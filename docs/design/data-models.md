@@ -5,8 +5,9 @@
 `Game` 是核心实体，对应原版 Playnite 的 `Playnite.SDK.Models.Game`。
 本项目对原版做了关键改进，最核心的是**多名称支持**。前端类型定义在 `src/types/models.ts`，与主进程 `electron/core/models.ts` 返回的结构保持一致。
 
-其中**简介 / 地区 / 标签**是人工维护的内容，单独有一份源表 `data/game-content.json`
-（丢失不可恢复，故放在仓库根并纳入版本管理）——字段与工作流见 [game-content.md](./game-content.md)。
+其中**简介 / 地区 / 标签 / 权限等级 / 存档路径**是人工维护的内容，它们的**可编辑镜像**是整库 JSON
+（`dev-data/library-json/*.json`；丢失不可恢复 —— 它跟着数据根走、**不在版本管理里**，所以改之前先 `npm run db:backup`）——字段与工作流见
+[library-json.md](./library-json.md)。
 
 ## `Game` 结构（TypeScript）
 
@@ -72,40 +73,36 @@ export interface Game {
 }
 ```
 
-## 游戏路径与库占位符规范
+## 游戏路径规范
 
-游戏相关的路径（`installDirectory`、`actions[].path`、`actions[].workingDir`）在存库时**必须使用统一格式**，避免"两套写法不一致"导致启动失败。
-
-### 格式约定
+游戏相关的路径（`installDirectory`、`actions[].path`、`actions[].workingDir`）存库时有**两种合法形态**，
+解析规则见 [launch-and-paths.md](./launch-and-paths.md)：
 
 | 写法 | 示例 | 说明 |
 | --- | --- | --- |
-| ✅ 正确 | `{Gamelibrary1}\game1\game.exe` | **库占位符 + 反斜杠 + 相对路径**（唯一合法格式）|
-| ❌ 旧格式 | `.\Gamelibrary\game1\game.exe` | 早期"相对路径 + 字面目录名"写法，**已废弃**，会被规范化为占位符格式 |
-| ❌ 错误 | `{Gamelibrary1}game1/game.exe` | 占位符后少斜杠 / 混用正反斜杠 / 重复斜杠 |
+| 绝对路径 | `X:\YunGame\Z\SomeGame\game.exe` | 直接可用；解析时只统一分隔符（`\` → `/`） |
+| 安装目录占位符 | `{InstallDir}\game.exe` | 启动时展开成该游戏的 `installDirectory` |
+| 相对路径 | `TPC.exe`、`bin\Inversion.exe` | 以**安装目录**为基准（Playnite 语义）；`install_directory` 本身则以**游戏根**（`defaultGameRootPath`）为基准 |
 
-### 占位符语义
+### 库占位符（`{Gamelibrary1}`）已废弃
 
-- `{Gamelibrary1}` 是**游戏库占位符**，运行时由 `resolveLibraryPlaceholder()` 从 `game_libraries` 表解析为真实路径（例如 `{Gamelibrary1}` → `D:\Games2`）。
-- 只有**以 `{...}` 开头**的字符串才会被当作占位符解析；普通绝对路径（`D:\Games\...`）原样使用。
-- `game_libraries` 表是游戏库的权威定义（从 config.json 迁移而来），字段 `id / name / path`。
-
-### 自动规范化
-
-在 `electron/core/db.ts` 的 `upsertGame()`（所有游戏入库的权威保存点）调用 `normalizeLibPath()`，对**每个保存的游戏**自动规范化 `installDirectory` 和每个 action 的 `path` / `workingDir`：
-
-1. 只处理以 `{...}` 占位符开头的路径；
-2. 去掉占位符后多余的 `./`、`.\`、`/`、`\`；
-3. 内部统一成反斜杠并去掉重复分隔符；
-4. 结果统一为 `{占位符}\相对路径`。
-
-**入口无关**：管理端、客户端、脚本任何入口保存游戏都会自动规范化，保证库里只有一种合法写法。
+> ⚠️ **2026-09-16**：游戏库（`game_libraries` 表 + `{库名}` 占位符）整套设计废弃并已从代码里移除。
+> 实测本机库里 `install_directory` / `actions` 里含 `{库名}` 的**是 0 条**（只有 1 行 `game_library`
+> 列写着 `{GameLibrary1}`，那是历史标签），所以移除没有影响启动。
+>
+> 现在若还遇到 `{库名}` 开头的路径，启动链路会**明确报错**
+> 「路径里的库占位符已废弃（game_libraries 不再使用）」—— 刻意不静默当相对路径拼到游戏根上，
+> 那会拼出一个不存在的怪路径、最后报"文件不存在"，把排查方向带偏。
+>
+> 同时移除的还有：`resolveLibraryPlaceholder()` / `getLibraries()` / 三条 `*_game_library` IPC /
+> 脚本占位符 `{LibraryName}` / `upsertGame()` 里的 `normalizeLibPath()` 自动规范化
+> （路径现在**按原样入库**）。
 
 ### 双库机制（务必分清）
 
 - `paths.ts` 的 `sourceDatabasePath()` = `<库根>/Admin/library.db`：**源库**（数据来源，由手工/脚本维护）。
 - `paths.ts` 的 `runtimeDatabasePath()` = `<库根>/library/library.db`：**运行时副本**（客户端每次启动 `openDb()` 把 Admin 库 `copyFileSync` 复制过来再用）。
-- `库根` 默认是数据根，可用 `config.json` 的 `settings.libraryDir` 改；权威库目录默认 `<库根>/Admin`，可用 `settings.sourceLibraryDir` 单独改（如指到 `//NAS/YunGame/Admin`）。两者都支持相对路径（以**应用 exe 所在目录**为基准，见 [目录结构](./directory-structure.md) 的「路径配置」）。
+- `库根` 默认是数据根，可用 `config.json` 的 `settings.libraryDir` 改；权威库目录固定在 `<库根>/Admin`（**推导，没有单独字段** —— 少一个能配歪的旋钮）。两者都支持相对路径（以**应用 exe 所在目录**为基准，见 [目录结构](./directory-structure.md) 的「路径配置」）。
 - **为什么要有这两级（核心原因）**：玩家可能**正在游戏**，而存档操作要读库里的存档路径；此时一旦发生"更新"，`library/library.db` 可能被破坏 → 玩家就做不了存档。所以让它成为**可丢弃的副本**：所有读写只在副本上，每次启动从只读的权威库重建，破坏最多影响一个临时文件。这也是"复制关系必须固定"的原因：只开放**目录**，文件名恒为 `library.db`。
 - **写库/同步一律针对 `Admin/library.db`**；改运行时副本是白费（下次启动被 Admin 覆盖）。
 
@@ -163,7 +160,26 @@ export interface GameName {
 ## 其他实体
 
 - **`coverImage`（运行期字段，注意）**：封面路径由**运行期匹配**得出（扫封面目录 + 按游戏名匹配同名文件，规则见 `shared/coverMatch.ts`），只存在于内存。数据库 `games.cover_image` 列**已废弃**（保留不删、不再写入），`rowToGame` 仍读一次旧值兼容旧库。
-- **启动复制带跳过优化**：权威库与运行时副本的**大小 + 修改时间一致时跳过复制**（判定见 `shared/librarySync.ts`；复制时用 `preserveTimestamps` 带上权威库的 mtime，否则判定失效）。实测本机 1.8MB 一次复制 7.7ms、跳过 0.27ms；权威库在 `//NAS` 上时省掉的是一次网络读。**要强制重建**：删掉 `<库根>/library/library.db` 即可。
+- **启动复制判定（用户指定的规则，代码照此实现，别改）**：**应用启动时**（`main.ts` 的
+  `whenReady` → `syncRuntimeDatabase()`；点"进入系统"的 `openDb()` 还会幂等调一次）比权威库与
+  运行时副本的**大小 + 修改时间** —— **任一不同就复制**，两者都相同才跳过（判定在
+  `shared/librarySync.ts`，严格相等、不做容差：**宁可多复制一次，也不要漏掉一次真更新**）。
+  复制时用 `cpSync` 的 `preserveTimestamps` 把权威库的 mtime 带过去 —— 否则副本会被打上"现在"
+  的时间戳，判定永远为"不同"（也就永远跳不过）。
+  实测本机 1.8MB 一次复制 7.7ms、跳过 0.27ms；权威库在 `//NAS` 上时省掉的是一次网络读。
+  **要强制重建**：删掉 `<库根>/library/library.db` 即可。
+  两条配套改动（2026-09-16 按用户要求，**都是为了让"一致"真的成立、可观察**）：
+  1. **比较时机提到应用启动**（原来等到点"进入系统"才做）：这步很轻（一次 stat），
+     真正重的是"sql.js 初始化 + 读进内存"，那个仍留在"进入系统"。
+  2. **退出不再写库**：`closeDb()` 只关连接、不 `persist()`（每个写操作改完都已即时落盘，
+     退出时那次整体重写是多余的，还会把副本 mtime 改成"退出时刻"）。
+  另外 `persist()` 里加了**硬断言**：写目标解析成权威库路径就直接抛错（判据是纯函数
+  `sameFilePath`，有单测）—— 客户端**只许写副本、永不回写权威库**。
+  于是现在的实际表现：**没改动的启动/退出，两库"大小 + 时间"一直保持一致**（复制带上了权威库的
+  mtime，之后没人再写副本）→ 下次启动**跳过复制**；只有运行期真写了数据（游玩时长 / 收藏 / 隐藏…）
+  或权威库被 `npm run db:import` 回写过，副本才会变旧、下次启动才复制。
+  ⚠️ 核对"两库内容是否一致"仍要看**内容**（运行期写入会让副本比权威库新，那是设计使然）；
+  现场数据与实测过程见 [整库 JSON](./library-json.md) §7。
 - **`GameAction`**：启动动作。类型仅 `"File"` / `"URL"`（原版还有 `"Emulator"`，本项目已移除模拟器）。字段含 `path`、`arguments`、`isPlayAction`、`trackGame` 等。
 - **`GameLink`**：游戏相关链接（如商店 / Wiki）。
 - **`GameVideo`**：游戏视频，`type` 为 `"youtube"` / `"file"` / `"url"`。
@@ -174,4 +190,4 @@ export interface GameName {
 
 `Game` 以 JSON 形式存入 SQLite 单表 `games`（字段用 TEXT/JSON 序列化）。数组字段（genre/developer 等）用 `JSON.stringify` 存入，读取时 `JSON.parse`；字段变更通过默认值保持兼容，**无需数据库迁移**（新增字段自动以默认值读入）。
 
-完整的 SQLite 表结构（games/users/game_libraries/platforms 等全部字段、类型、序列化约定、表间关系、双库与备份策略）见 **[database-schema.md](./database-schema.md)**。
+完整的 SQLite 表结构（games/users/platforms 等全部字段、类型、序列化约定、表间关系、双库与备份策略）见 **[database-schema.md](./database-schema.md)**。

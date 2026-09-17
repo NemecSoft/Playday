@@ -30,19 +30,24 @@ node scripts/migrate-playnite/migrate-playnite.mjs --skip-dump --out-json mapped
 
 ### 增量同步（源里改了几条 / 新增了几条 → 按 id 增、改）
 
-整库迁移是**按游戏名**匹配、且同名不覆盖；而"库已经建好了，源里只动了几条"要走
-**按 id 的 UPSERT**（`playday-db.mjs import`）。两个必须知道的坑（2026-09-15 实测踩到）：
+整库迁移是**按游戏名**匹配、且同名不覆盖；"库已经建好了，源里只动了几条"要走**按 id** 的增改。
+写库这一步 2026-09-16 起改走**整库 JSON**（见 [library-json.md](../../docs/design/library-json.md)）：
 
-1. **源里为空 ≠ 要改成空**：源里 1268 个游戏的 `InstallDirectory` 是 null（该字段现在实际
-   由 Playday 维护）。照它覆盖会把 1268 个游戏的安装目录**全部抹掉** —— 比对时只有
-   "源有值且不同"才算改动。
-2. **`playday-db.mjs import` 的 UPDATE 是整行覆盖**（`SET 所有列`）。改动行必须写成
-   "**现存整行 + 只覆盖变化字段**"，只喂变化字段会把同行的 `intro` / `gameLevel` /
-   存档路径等写成 null。
+```
+--out-json 导出源映射结果 → 与库现状按 id 比对 → 把变化**合进 dev-data/library-json/games.json** 对应行
+→ npm run db:import -- --apply（写库前自动备份）
+```
 
-推荐流程：`--out-json` 导出源映射结果 → 与库现状按 id 比对 → 生成"新增整行 + 改动整行"
-的 JSON → `playday-db.mjs import`（写库前自动备份 `.json-bak`）。路径统一写 `/`
-（交给 cmd 时才由 `toCmdPath()` 换回 `\`）。
+> `scripts/migrate-playnite/playday-db.mjs`（含 `import`/`export`）与 `import-games.bat` 已于
+> 2026-09-16 **删除** —— 它们是同一件事的第二条链，且带一张手写的字段映射表（"加一个字段要改一处"）。
+> 下面两个坑是当时实测踩到的，换成整库 JSON 后**仍然成立**：
+> 1. **源里为空 ≠ 要改成空**：源里 1268 个游戏的 `InstallDirectory` 是 null（该字段现在实际
+>    由 Playday 维护）。照它覆盖会把 1268 个游戏的安装目录**全部抹掉** —— 比对时只有
+>    "源有值且不同"才算改动。
+> 2. **回写是整表替换**（JSON 就是那一刻的全量快照）。所以改动要**改在现有行上**、其余列原样留着 ——
+>    别只手写"变化的那几列"成一行，那会把同行的 `intro` / `game_level` / 存档路径等写成 null。
+
+路径统一写 `/`（交给 cmd 时才由 `toCmdPath()` 换回 `\`）。
 
 ## 二、流程
 
@@ -99,17 +104,22 @@ node scripts/migrate-playnite/migrate-playnite.mjs --skip-dump --out-json mapped
 
 ## 三.5、JSON 直接管理数据（不用 GUI）
 
-不想用 GUI 管理数据时，用 **`playday-db.mjs`** 直接在 JSON 里编辑游戏字段（简介 `intro`、描述、类型、启动指令等），再写回数据库。
+不想用 GUI 管理数据时，用 **`scripts/library-json.mjs`**：
 
 ```bat
-:: 导出（完整字段：文本 null、数组 []、布尔 true/false，含 intro）
-node scripts\migrate-playnite\playday-db.mjs export --out games.json
-
-:: 编辑 games.json 后写回（按 id 更新；自动备份 .json-bak；重名/改名冲突会拦截）
-node scripts\migrate-playnite\playday-db.mjs import --in games.json
+npm run db:export              :: 导出整张 games 表 → dev-data/library-json/games.json（只读，不动库）
+:: 改 dev-data/library-json/games.json 里对应的列（简介 intro、标签 tags、权限等级 game_level…）
+npm run db:import              :: 预览会改多少行
+npm run db:import -- --apply   :: 真写（自动备份 + 原子替换）；重启客户端生效
 ```
 
-常用：批量给游戏补简介 `intro`，直接改 JSON 里 `"intro": "xxx"`，再 import 即可。
+要点（字段名 = 库里的列名、数组列必须写真数组、怎么退回去…）见
+[library-json.md](../../docs/design/library-json.md)。
+
+> 这里**曾经**推荐 `playday-db.mjs export|import` + 仓库根 `games.json`；那套已于 2026-09-16 退役
+> （带手写字段映射表 → 加字段要改一处），文件与 `import-games.bat` 都已删除。
+> ⚠️ 仓库根那个 `games.json` **还在**，但它已经不是数据管理链了 —— 它是 `tools/GameSaveHelper`
+> （随包发的存档备份工具）的数据源，由 `_export-games-json.mjs` / `export-games.bat` 生成，别动。
 
 ## 四、前置条件
 

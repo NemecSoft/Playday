@@ -45,12 +45,12 @@ files:
 extraResources:
   # 窗口/任务栏/托盘的应用图标**按等级在运行期切换**：黄金版 1.ico、钻石版 2.ico
   #（2026-09-16 需求）。它们同时也是 YunGameStart 建桌面快捷方式用的那两个图标 ——
-  # 源文件只有一处（tools/yungamestart/assets/，由 make-icons.mjs 生成），
+  # 源文件只有一处（dev-tools/YunGameStart/assets/，由 make-icons.mjs 生成），
   # 随包发到 resources/ 下供客户端读取，另一份在 yungamestart/ 下供快捷方式工具用。
   # 见 docs/design/app-icons.md。
-  - from: tools/yungamestart/assets/1.ico
+  - from: dev-tools/YunGameStart/assets/1.ico
     to: 1.ico
-  - from: tools/yungamestart/assets/2.ico
+  - from: dev-tools/YunGameStart/assets/2.ico
     to: 2.ico
   # 通用系统图标 / 托盘图标：exe 自身图标（win.icon 是 icon.ico）与兜底用
   - from: public/icons/tray.ico
@@ -64,7 +64,9 @@ extraResources:
   # 应用自带字体：整目录带到 resources/fonts，打包版不依赖用户机器上装了什么字体。
   # 查找顺序见 electron/core/fonts.ts：优先 <exe 同级>/fonts（运维可直接替换），
   # 找不到才用这份 resources/fonts。
-  - from: fonts
+  # ⚠️ 源目录 2026-09-17 改名：仓库里那份叫 `dev-fonts`（dev- 前缀 = "仓库里的源，要往目的地搬"，
+  #    见 path-modes.json）。这里不改的话打包出来就没有字体（只会在运行期表现为"字体不对"）。
+  - from: dev-fonts
     to: fonts
     filter:
       - "**/*.ttf"

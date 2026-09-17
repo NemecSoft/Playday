@@ -1,2 +1,0 @@
-patches: 1283 from 13 files
-written: D:\AI\Code\Playnite\Playday\data\new\game-content-new.json | games: 1283 | patched: 1283

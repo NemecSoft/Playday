@@ -9,6 +9,8 @@ import * as path from "path";
 import {
   compareNatural,
   findVideoPoster,
+  VIDEO_DIR_NAMES,
+  findVideoDir,
   flattenVideos,
   isVideoFile,
   isWebPlayable,
@@ -32,6 +34,39 @@ beforeAll(() => {
 
 afterAll(() => {
   fs.rmSync(tmp, { recursive: true, force: true });
+});
+
+// 2026-09-17 需求：视频目录的候选名（`视频攻略&游戏实况` 优先、`videos` 兜底）。
+// 探测错 = 视频整片不显示，而且**不报错**（扫描不到就是"没有视频"），所以把优先级钉住。
+describe("findVideoDir：视频目录候选（新名优先、旧名兜底）", () => {
+  /** 造一个"游戏目录"：dirs 为空时只建目录本身。 */
+  const mk = (name: string, ...dirs: string[]) => {
+    const game = path.join(tmp, name);
+    fs.mkdirSync(game, { recursive: true });
+    for (const d of dirs) fs.mkdirSync(path.join(game, d), { recursive: true });
+    return game;
+  };
+
+  it("只有新名 → 命中新名（并给出要用来拼 URL 的目录名）", () => {
+    const game = mk("g-new", VIDEO_DIR_NAMES[0]);
+    expect(findVideoDir(game)).toEqual({
+      path: path.join(game, VIDEO_DIR_NAMES[0]),
+      name: VIDEO_DIR_NAMES[0],
+    });
+  });
+
+  it("只有旧名 videos → 命中旧名（老数据还没搬的机器照样能看）", () => {
+    expect(findVideoDir(mk("g-old", "videos"))?.name).toBe("videos");
+  });
+
+  it("两个都在 → 新名优先（需求：默认检测新名，有就用它）", () => {
+    expect(findVideoDir(mk("g-both", "videos", VIDEO_DIR_NAMES[0]))?.name).toBe(VIDEO_DIR_NAMES[0]);
+  });
+
+  it("都没有 / 游戏目录都不存在 → null（没有视频是正常状态，不是错误）", () => {
+    expect(findVideoDir(mk("g-none"))).toBeNull();
+    expect(findVideoDir(path.join(tmp, "根本没有这个游戏"))).toBeNull();
+  });
 });
 
 describe("哪些文件算视频", () => {

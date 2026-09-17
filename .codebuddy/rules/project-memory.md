@@ -14,6 +14,15 @@
 - 会话级、跨领域的上下文（约定、坑、用户偏好、交接）→ 追加到 `docs/PROJECT-MEMORY.md`，**带日期**。
 - **不要**只把结论留在对话里或 `.codebuddy/` 下（`rules/` 除外）——那些不进版本库。
 
+## 写执行脚本（bat / ps1）
+
+- **逻辑写 `.ps1`（或沿用已有的 node 脚本）；`.bat` 只当"双击壳"**：`cd /d "%~dp0"` → 摆好环境
+  （如 proto Node 的 PATH）→ `powershell -NoProfile -ExecutionPolicy Bypass -File xxx.ps1 %*` → `pause`。
+- **不要把业务逻辑塞进 bat**：cmd 的重定向/括号块/`^` 转义/`chcp 65001` 坑一个接一个，
+  踩中的代价是"**静默产生垃圾文件 + 英文的误导性报错**"（`The system cannot find the path specified.`
+  就是这么冒出来的）。详见 `docs/PROJECT-MEMORY.md` 硬约定 §三.13 / §三.14。
+- bat 壳里**不许出现裸 `<` `>`**：占位符用全角 `＜数据根＞`、箭头用 `→`，非要字面量就 `^<` `^>`。
+
 ## 提交前
 
 - 跑 `npm run check`（两端类型检查 + 全量单测 + 架构/i18n/文档/字号守卫），必须全绿。

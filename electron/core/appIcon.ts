@@ -12,7 +12,7 @@
 //   · electron/ipc/auth.ts —— 每条"把等级写进 settings"的命令之后（get_current_user /
 //     resolve_enterprise / login_personal / logout）刷一次。
 //
-// 图标文件在哪：与**桌面快捷方式**用的是同一份 —— `tools/yungamestart/assets/1.ico`、`2.ico`
+// 图标文件在哪：与**桌面快捷方式**用的是同一份 —— `dev-tools/yungamestart/assets/1.ico`、`2.ico`
 // （由 make-icons.mjs 生成）。开发态直接读仓库里那份；打包时由 electron-builder 的
 // extraResources 带到 `resources/` 下（所以两种形态各有一个候选路径）。
 // 详见 docs/design/app-icons.md。
@@ -21,13 +21,43 @@ import { BrowserWindow, nativeImage, type NativeImage } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { iconNameForLevel } from "../../shared/userLevel";
+import { readModeTable, runtimeValue } from "../../shared/pathModes";
 import { readSettings } from "./settings";
 
-/** 候选路径：dev 在仓库里，打包在 resources/ 下。找不到返回 null。 */
+/**
+ * 开发态图标目录：**从 path-modes.json 的 dev 段取**（`yungamestartDir`），这里不写目录名。
+ *
+ * 为什么这么写（2026-09-17 踩过）：原先这里是 `path.join(__dirname, "../../../tools/yungamestart/assets")`
+ * —— 目录改名成 `dev-tools` 之后它静默失效，表现成"等级判对了、图标还是应用默认的那个"，不报错。
+ * 改成"向上找仓库根的标记文件 path-modes.json"：从源码跑、从 dist-electron 跑都能找到根，与目录深度无关。
+ */
+function devIconDir(): string | null {
+  let dir = __dirname;
+  for (let i = 0; i < 6; i++) {
+    const marker = path.join(dir, "path-modes.json");
+    if (fs.existsSync(marker)) {
+      try {
+        const table = readModeTable(JSON.parse(fs.readFileSync(marker, "utf-8")));
+        return path.resolve(dir, runtimeValue(table.dev.yungamestartDir));
+      } catch {
+        return null;
+      }
+    }
+    const up = path.dirname(dir);
+    if (up === dir) break;
+    dir = up;
+  }
+  return null;
+}
+
+/**
+ * 候选路径：dev 在仓库里（表说的那个目录，外加它的 `assets` 兄弟目录 —— 那是图标源文件所在，
+ * `build.bat` 会把它们复制进 dist），打包态在 `resources/` 下。都找不到返回 null。
+ */
 function findIcon(file: string): string | null {
+  const dev = devIconDir();
   const candidates = [
-    // dev：主进程在 dist-electron/electron/core/ → 上三级到工程根
-    path.join(__dirname, "..", "..", "..", "tools", "yungamestart", "assets", file),
+    ...(dev ? [path.join(dev, file), path.join(dev, "..", "assets", file)] : []),
     path.join(process.resourcesPath || "", file),
   ];
   for (const p of candidates) {

@@ -84,7 +84,10 @@ export function invoke<T>(cmd: string, args?): Promise<T> {
 
 ## 四、数据来源：单一数据源 `dev-data/`
 
-- `library/library.db` — 游戏库（SQLite，sql.js 读取）
+- `Admin/library.db` — **权威库**（数据的唯一来源，只读；客户端启动时复制成下面的运行时副本）。
+  维护方式：**整库 JSON** —— `npm run db:export` 导出、手改、`npm run db:import` 回写
+  （见 `docs/design/library-json.md`）。
+- `library/library.db` — 游戏库（SQLite，sql.js 读取；运行时副本，每次启动从权威库重建）
 - `config.json` — 用户设置（主题/风格/语言等）
 - `CoverImages/` — 游戏封面图
 - `Game_Details/` — 游戏详情 HTML 页

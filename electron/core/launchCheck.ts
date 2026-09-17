@@ -14,7 +14,7 @@
 // 副作用（判存在、列目录）同样走注入，于是本文件能被单测完全覆盖（launchCheck.test.ts）。
 
 import { resolveActionPath, resolvePath, normalizePath } from "../../shared/launchPaths";
-import type { Game, GameAction, GameLibrary } from "./models";
+import type { Game, GameAction } from "./models";
 
 export type FindingKind =
   | "no-play-action" // 没有任何可用启动项
@@ -50,7 +50,6 @@ export interface CheckSummary {
 
 /** 注入的生产函数（checkMode.ts 传真实的那些，单测传假的）。 */
 export interface CheckDeps {
-  libraries: GameLibrary[];
   /** config.json 的 defaultGameRootPath（相对路径的基准） */
   gameRoot: string;
   /** 占位符展开（{InstallDir}/{GameName}/…）——生产传 scriptRunner.expandVariables */
@@ -86,7 +85,7 @@ export function emptyCounts(): Record<FindingKind, number> {
  *
  * ⚠️ `*.*` 特例不能省：Windows 的 FindFirstFile 里 `*.*` 匹配**所有**文件，
  * 包括没有扩展名的（如 `save1`、`profile`）—— 按正则字面翻译会漏掉它们，
- * 把"其实有存档"报成"没匹配到"。本仓库的存档路径绝大多数就是 `*.*`（见 games.json）。
+ * 把"其实有存档"报成"没匹配到"。本仓库的存档路径绝大多数就是 `*.*`（见 dev-data/library-json/games.json 的 save_paths）。
  */
 export function matchWildcard(name: string, pattern: string): boolean {
   const raw = (pattern ?? "").trim();
@@ -103,7 +102,6 @@ export function checkGame(game: Game, deps: CheckDeps): Finding[] {
   const push = (kind: FindingKind, detail: string) =>
     out.push({ gameId: game.id, gameName: game.name, kind, detail });
   const expand = (s: string) => deps.expandVariables(s, game);
-  const libs = deps.libraries;
   const installRaw = (game.installDirectory ?? "").trim();
 
   // ---- 1) 启动项 ----
@@ -113,7 +111,7 @@ export function checkGame(game: Game, deps: CheckDeps): Finding[] {
     if (!installRaw) {
       push("no-play-action", "游戏未配置启动指令且没有安装目录");
     } else {
-      const installAbs = resolvePath(expand(installRaw), libs, deps.gameRoot);
+      const installAbs = resolvePath(expand(installRaw), deps.gameRoot);
       if (!deps.findExecutable(installAbs)) {
         push("no-play-action", `未配置启动指令，且在安装目录 ${installAbs} 中也找不到可执行文件`);
       }
@@ -123,11 +121,10 @@ export function checkGame(game: Game, deps: CheckDeps): Finding[] {
   } else if (action.type !== "File") {
     push("action-unknown-type", `启动项类型 ${String(action.type)} 不认识（只支持 File / URL）`);
   } else {
-    const installAbs = installRaw ? resolvePath(expand(installRaw), libs, deps.gameRoot) : "";
+    const installAbs = installRaw ? resolvePath(expand(installRaw), deps.gameRoot) : "";
     const resolvedAction = resolveActionPath({
       actionPath: action.path || "",
       installDir: installAbs,
-      libraries: libs,
       gameRoot: deps.gameRoot,
       expand,
     });
@@ -158,10 +155,10 @@ export function checkGame(game: Game, deps: CheckDeps): Finding[] {
   for (const sp of game.savePaths ?? []) {
     const raw = (sp ?? "").trim();
     if (!raw) continue;
-    // ⚠️ 与真实备份链路完全一致：只用 resolvePath（展开 {库名}），**不做** {InstallDir} 展开
+    // ⚠️ 与真实备份链路完全一致：只用 resolvePath，**不做** {InstallDir} 展开
     // —— 自检要回答的是"用户点备份时会不会成功"，不是"理想情况下应该是什么路径"。
     // 见 electron/ipc/saveManager.ts 的 backupGameSaveNow。
-    const abs = normalizePath(resolvePath(raw, libs, deps.gameRoot));
+    const abs = normalizePath(resolvePath(raw, deps.gameRoot));
     const cut = abs.lastIndexOf("/");
     const dir = cut > 0 ? abs.slice(0, cut) : abs;
     const leaf = cut > 0 ? abs.slice(cut + 1) : "";

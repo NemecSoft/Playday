@@ -3,7 +3,7 @@
 import { app, BrowserWindow, Menu } from "electron";
 import * as path from "path";
 import { registerIpc } from "./ipc/register";
-import { openDb, closeDb } from "./core/db";
+import { openDb, closeDb, syncRuntimeDatabase } from "./core/db";
 import { readSettings } from "./core/settings";
 import { stopGameServer } from "./core/gameServer";
 import { createTray, destroyTray } from "./core/tray";
@@ -12,6 +12,7 @@ import { registerErrorCollector } from "./core/errorCollector";
 import { ensureRuntimeDeps } from "./core/runtimeSetup";
 import { reportGpuStatus } from "./core/gpuReport";
 import { isCheckMode, runCheckMode } from "./core/checkMode";
+import { isPathLogEnabled, writePathReport } from "./core/pathLogMode";
 import {
   createClientWindow,
   createAnnouncementWindow,
@@ -19,7 +20,8 @@ import {
   setCrashReport,
 } from "./windows";
 
-// 说明：管理端应用已移除（数据由手工维护的 games.json + 脚本写入源库）。
+// 说明：管理端应用已移除（数据由手工维护的整库 JSON 写进源库 —— npm run db:export / db:import，
+// 见 docs/design/library-json.md）。
 // 现在只有客户端一种运行形态，不再有 --admin / Playday.Admin.exe 分支。
 
 // 全局保存窗口引用，避免被垃圾回收。
@@ -35,6 +37,15 @@ if (isCheckMode()) {
     closeDb();
     app.exit(code);
   });
+}
+
+// `exe -log`（也认 --log）：**只多写一份路径日志，照常进界面**。
+// 与 --check 的分工见 pathReport.ts 顶部：--check 是独立模式（跑完就退），而 -log 要回答的是
+// "真的跑起来时各目录落在哪" —— 那只有在真的启动一次时才有答案。
+// 放在 whenReady 之前写：此刻不依赖窗口/渲染进程，而且越早越不容易被后面的失败掩盖
+//（路径配错往往正是启动失败的原因）。结果写 <数据根>\logs\paths-<时间戳>.log + paths-latest.log。
+if (isPathLogEnabled()) {
+  writePathReport();
 }
 
 app.whenReady().then(async () => {
@@ -72,8 +83,13 @@ app.whenReady().then(async () => {
     }
   }
 
-  // 先弹公告窗口（独立引导窗口）。数据库打开是重活（整库复制 + 读入内存），
-  // 推迟到点"进入系统"时再执行（见 enterSystem），让公告窗口第一时间出现，启动更快。
+  // 启动就先比一次"权威库 vs 运行时副本"（大小 + 修改时间），**不一致就复制**（用户指定）。
+  // 这步很轻（一次 stat；不一致时本机实测复制 7.7ms），放在窗口之前做掉也感觉不到。
+  // 真正重的是"sql.js 初始化 + 把库读进内存"，那个仍然推迟到点"进入系统"时（见 enterSystem）——
+  // 所以公告窗口一样能第一时间弹出来。
+  syncRuntimeDatabase();
+
+  // 先弹公告窗口（独立引导窗口）。
   announcementWin = createAnnouncementWindow();
 
   // 应用图标按等级定（黄金 1.ico / 钻石 2.ico，见 core/appIcon.ts）：
@@ -102,8 +118,9 @@ app.whenReady().then(async () => {
 
 // "进入系统"：公告窗口点按钮后回调到主进程，关闭公告窗口、创建主窗口。
 // 供 system.ts 的 IPC 调用，避免循环依赖。
-// 这里是打开数据库的时机：把整库复制 + 读入内存这类重活从"应用启动"推迟到
-// "用户点击进入系统"时，让公告窗口能第一时间弹出来。
+// 这里打开数据库 —— 但"整库复制"不在这儿：**那一步已经在应用启动时做过了**
+// （见 whenReady 里的 syncRuntimeDatabase），这里只剩"sql.js 初始化 + 把库读进内存"
+// （openDb 内部会再调一次同步做幂等兜底，一致时只是一次 stat），所以公告窗口仍是第一时间弹出。
 export async function enterSystem(): Promise<void> {
   // 先打开数据库（sql.js 是异步初始化，幂等：已打开则直接复用）。
   // 只有 db 就绪后才创建主窗口，避免主窗口里访问数据时库还没就绪。
@@ -127,7 +144,8 @@ app.on("window-all-closed", () => {
   }
 });
 
-// 退出前清理：数据库落盘、关闭详情页服务器、销毁托盘，避免数据丢失或端口/资源占用。
+// 退出前清理：**只关连接、不写库**（用户指定"退出应用，不能写库"；每个写操作都已在改完后
+// 自己落盘，见 core/db.ts 的 closeDb 说明）、关闭详情页服务器、销毁托盘，避免端口/资源占用。
 app.on("before-quit", () => {
   closeDb();
   stopGameServer();

@@ -12,7 +12,7 @@ import * as path from "path";
 import { resolveFontRequest } from "./fonts";
 import { resolveMusicRequest } from "./music";
 import { resolveVendorRequest } from "./vendorAssets";
-import { findVideoPoster, scanVideos } from "./videoLibrary";
+import { findVideoDir, findVideoPoster, scanVideos } from "./videoLibrary";
 import { buildVideoSection, injectVideoSection } from "./gameDetailInject";
 import {
   buildDetailThemeStyle,
@@ -211,7 +211,11 @@ function serveGameDetailIndex(filePath: string, req: http.IncomingMessage, res: 
     return;
   }
   const lang = new URL(req.url || "/", "http://127.0.0.1").searchParams.get("lang");
-  const videosDir = path.join(path.dirname(filePath), "videos");
+  // 视频目录按候选探测：`视频攻略&游戏实况`（2026-09-17 起的新名）优先、`videos`（旧名）兜底，
+  // 见 core/videoLibrary.ts 的 VIDEO_DIR_NAMES。**注进 HTML 的 URL 前缀必须用实际命中的名字**
+  // （页面地址是 /games/<游戏目录>/index.html，相对链接就落在它下面），所以下面要带 videoDirName。
+  const videoHit = findVideoDir(path.dirname(filePath));
+  const videosDir = videoHit?.path ?? "";
   const scan = scanVideos(videosDir);
   // 主题：渲染层通过 IPC set_detail_theme 送来的"当前生效配色"（见 core/detailTheme.ts）。
   // 没送过（或送的是空）时这里拿到 null → 两处注入都退化成"什么都不做"，页面保持原样。
@@ -221,6 +225,8 @@ function serveGameDetailIndex(filePath: string, req: http.IncomingMessage, res: 
       html,
       buildVideoSection({
         scan,
+        // 没有视频目录时 scan 必为空、buildVideoSection 会直接返回空串，这个名字用不到。
+        videoDirName: videoHit?.name ?? "",
         lang,
         // 与视频同名的图片（1.mp4 + 1.jpg）直接当预览封面；没有则由页面脚本抓帧。
         posterFor: (rel) => findVideoPoster(videosDir, rel),
@@ -315,7 +321,9 @@ function handleVideosApi(root: string, dir: string, res: http.ServerResponse): v
     return;
   }
   res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify(scanVideos(path.join(root, rel, "videos"))));
+  // 同样按候选探测（`视频攻略&游戏实况` 优先、`videos` 兜底）；都没有 → 空结果。
+  const hit = findVideoDir(path.join(root, rel));
+  res.end(JSON.stringify(scanVideos(hit?.path ?? "")));
 }
 
 // 返回服务器 base URL（未启动返回空）。

@@ -12,13 +12,10 @@ export declare function resolveLibraryPaths(opts: {
   dataRoot: string;
   baseDir?: string;
   libraryDir?: unknown;
-  sourceLibraryDir?: unknown;
 }): { root: string; sourceDir: string; source: string; runtime: string };
-export declare function resolveAnnouncementFile(
-  raw: unknown,
-  dataRoot: string,
-  baseDir?: string,
-): string;
+export declare function resolveAnnouncementsDir(libraryRoot: string): string;
+// 2026-09-17 起只接**库根**：公告目录不再单独配置，固定 <库根>/announcements
+export declare function resolveAnnouncementFile(libraryRoot: string): string;
 export declare function readSettingsFile(opts: { dataRoot: string; appRoot: string }): {
   file: string;
   settings: Record<string, unknown>;

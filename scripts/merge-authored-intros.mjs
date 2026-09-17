@@ -1,12 +1,15 @@
-// 把"手写的极简简介"合并进**游戏内容总表** data/game-content.json，并自动校验风格。
+// 把"手写的极简简介"合并进**整库 JSON** 的 games.json（dev-data/library-json/games.json），并自动校验风格。
 //
-// 正式数据文件是 data/game-content.json（人工维护、纳入 git）；本脚本只是"批量写"的工具：
-//   data/batches/*.json（一批一个小文件的 {"游戏名": "简介"}）→ 合并进总表的 intro 字段。
-// 为什么按批写：总表上千条，每批都整体重写一遍既费时又容易出错；批次小文件更适合逐批产出。
+// 正式数据文件是 dev-data/library-json/games.json（整库 JSON，由 npm run db:export 导出、纳入 git）；
+// 本脚本只是"批量写"的工具：
+//   dev-data/batches/*.json（一批一个小文件的 {"游戏名": "简介"}）→ 合并进 games.json 的 intro 列。
+// 为什么按批写：上千条，每批都整体重写一遍既费时又容易出错；批次小文件更适合逐批产出。
 //
-// ⚠️ 优先级：总表是唯一事实源。本脚本会把批次里的值**写进** intro（这就是它的用途），
+// ⚠️ 优先级：games.json 是唯一事实源。本脚本会把批次里的值**写进** intro（这就是它的用途），
 //    所以**不要**把手工改过的条目同时留在批次文件里 —— 那会在下次合并时被批次值覆盖。
-//    手工修改请直接改 data/game-content.json。
+//    手工修改请直接改 dev-data/library-json/games.json。
+//
+// 写完后还要回写库才有用：npm run db:import（或双击 libraryjson-importto-librarydb.bat）。
 //
 // 风格校验（不通过就退出码 1，不写文件）：
 //   1) 简介里不得出现游戏名（全名，或名字里 "：" / "-" 之前的主干）；
@@ -15,9 +18,10 @@
 //
 // 用法：
 //   node scripts/merge-authored-intros.mjs
-//   node scripts/merge-authored-intros.mjs --table data/game-content.json
+//   node scripts/merge-authored-intros.mjs --table dev-data/library-json/games.json
 import fs from "fs";
 import path from "path";
+import { LIBRARY_JSON_DIR } from "./lib/libraryJson.mjs";
 
 const argv = process.argv.slice(2);
 const argOf = (name, dflt) => {
@@ -25,8 +29,12 @@ const argOf = (name, dflt) => {
   return i >= 0 && argv[i + 1] ? argv[i + 1] : dflt;
 };
 const root = process.cwd();
-const TABLE = argOf("--table", path.join(root, "data/game-content.json"));
-const BATCH_DIR = argOf("--batches", path.join(root, "data/batches"));
+const TABLE = argOf("--table", path.join(root, LIBRARY_JSON_DIR, "games.json"));
+import { devDataDir } from "./lib/devData.mjs";
+
+// 批次目录跟着数据根走（2026-09-17：原来的 `dev-data/batches` 已随仓库根 data/ 退场，
+// 现在默认 <数据根>/batches；要放别处用 --batches 覆盖）。
+const BATCH_DIR = argOf("--batches", path.join(devDataDir(), "batches"));
 
 const normName = (s) =>
   String(s ?? "")

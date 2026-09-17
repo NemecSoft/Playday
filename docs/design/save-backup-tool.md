@@ -39,7 +39,7 @@ NSIS 发行包、恢复包模板与图标、界面进度与结果详情、逐条
 ```json
 {
   "settings": {
-    "gameSaveHelperPath": "D:/AI/nsis/GameSaveHelper.exe"
+    "gameSaveHelperDir": "dev-tools/GameSaveHelper/release"
   }
 }
 ```
@@ -169,10 +169,14 @@ spawn(exePath, [gameName, ...resolvedPaths], {
 
 ## 七、非目标（明确不做）
 
-1. **sqlite → JSON 迁移**：外部工具要数据的需求已由 `_export-games-json.mjs` 导出 +
-   `import-games.bat` 导入满足；且本次采用方式一，工具根本不读 Playday 的数据。
+1. **sqlite → JSON 迁移**：外部工具要数据的需求已由**仓库根 `games.json`**（`_export-games-json.mjs`
+   生成，`export-games.bat` 双击）满足；且本次采用方式一，工具根本不读 Playday 的数据库。
    换主存储要付出「丢 `name` 唯一约束、丢原子写、重写 `db.ts` 全部 SQL 调用点、启动全量解析」
    的代价，属独立重构，单独开 spec。
+   > 2026-09-16 起：`import-games.bat`（把 `games.json` 写回库的那一半）已删除 —— 数据管理统一走
+   > 整库 JSON（[library-json.md](./library-json.md)）。**导出的一半保留**：`games.json` 是
+   > GameSaveHelper 的数据源（`tools/GameSaveHelper/发布*环境.bat` 读它），且它的 C++ 是按
+   > **精确文本锚点**解析的（`\n\t\t"name": "`）—— 字段名与 **tab 缩进**都不能改。
 2. **恢复流程**：仍由工具生成的恢复包 exe 双击执行，Playday 不介入。
 3. **`cover_image` 列本身**：不删（旧库兼容），只是不再写。
 4. **`coverImage` 字段在 Game 模型与前端的所有引用**：保留。

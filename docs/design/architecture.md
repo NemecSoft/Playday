@@ -117,7 +117,8 @@ sql.js (library/library.db) / config.json / 文件系统 / 进程启动
 2. **双端一套代码**：传输层抽象，前端零分叉。
 3. **无边框窗口**：`frame:false` + 前端 TopBar 自定义标题栏/窗口控制。
 4. **托盘**：`enableTray` / `minimizeToTray` / `closeToTray` 设置，最小化/关闭到托盘。
-5. **单一数据源**：游戏库权威存数据库 `game_libraries` 表，不是 config.json。
+5. **单一数据源**：游戏数据只存数据库（`Admin/library.db` 权威库），不散落在 config.json。
+   （原「游戏库 `game_libraries` 表」已于 2026-09-16 废弃移除；启动路径只有"绝对路径 / `{InstallDir}\…`"两种形态。）
 6. **React 18 + react-router v6**：避开 v7 与 React 19 的内部兼容问题。
 7. **详情页惰性加载**：游戏详情页本地 HTTP 服务器不在启动时预启动，改为第一次打开详情页时经 `get_game_server_url` 惰性启动（见 [游戏静态详情页](./game-details.md)）。
 8. **主题与配色解耦**：主题（视觉风格）只保留苹果 / 浮雕 / 机械感 3 个，且**只做形状与质感、不含颜色**；配色（调色板）全部保留、独立于主题。主题与配色互不冲突（见 [主题与配色规范](./themes-styles.md)）。

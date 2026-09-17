@@ -1,17 +1,12 @@
 // 自检规则层的单测（被测实现：electron/core/launchCheck.ts）。
 //
 // 为什么值得锁：这是"上线前体检"，它误报/漏报的代价是**现场才发现游戏启动不了** ——
-// 而它要预测的正是那条真实启动链路（{库名} / {InstallDir} / 安装目录相对路径 / 自动找 exe /
+// 而它要预测的正是那条真实启动链路（绝对路径 / {InstallDir} / 安装目录相对路径 / 自动找 exe /
 // 存档通配符）。所以断言尽量走**真实**纯函数（shared/launchPaths 的 resolvePath 与
 // resolveActionPath），只把副作用（判存在、列目录）和主进程侧的 fs 函数换成假的。
 import { describe, expect, it } from "vitest";
 import { checkGame, checkGames, matchWildcard, type CheckDeps } from "./launchCheck";
-import type { Game, GameAction, GameLibrary } from "./models";
-
-const LIBS = [
-  { name: "V", path: "X:/YunGame/V" },
-  { name: "W", path: "X:/YunGame/W" },
-] as unknown as GameLibrary[];
+import type { Game, GameAction } from "./models";
 
 const GAME_ROOT = "D:/YunGame/PlayNite";
 
@@ -25,7 +20,6 @@ function world(opts: { files?: string[]; dirs?: string[]; names?: Record<string,
 
 function makeDeps(w: ReturnType<typeof world>, over: Partial<CheckDeps> = {}): CheckDeps {
   const base: CheckDeps = {
-    libraries: LIBS,
     gameRoot: GAME_ROOT,
     // 与真实 expandVariables 同义：{InstallDir} 换成 install_directory 的**原始值**，
     // 之后交给 launchPaths 再解析 —— 这个先后顺序就是当初出事故的地方。
@@ -66,18 +60,25 @@ const urlAction = [{ id: "play", type: "URL", path: "https://example.invalid", i
 const kinds = (findings: ReturnType<typeof checkGame>) => findings.map((f) => f.kind);
 
 describe("启动项检查", () => {
-  it("库占位符 + 文件存在 → 没问题（走真实 resolveActionPath）", () => {
+  it("绝对路径 + 文件存在 → 没问题（走真实 resolveActionPath）", () => {
     const w = world({ files: ["X:/YunGame/V/SomeGame/game.exe"] });
-    const g = game({ installDirectory: "{V}/SomeGame", actions: fileAction("{V}/SomeGame/game.exe") });
+    const g = game({ installDirectory: "X:/YunGame/V/SomeGame", actions: fileAction("X:/YunGame/V/SomeGame/game.exe") });
     expect(checkGame(g, makeDeps(w))).toEqual([]);
   });
 
   it("目标文件不存在 → action-missing，并带上解析后的绝对路径（便于直接去核）", () => {
     const w = world({ dirs: ["X:/YunGame/V/SomeGame"] });
-    const g = game({ installDirectory: "{V}/SomeGame", actions: fileAction("{V}/SomeGame/gone.exe") });
+    const g = game({ installDirectory: "X:/YunGame/V/SomeGame", actions: fileAction("X:/YunGame/V/SomeGame/gone.exe") });
     const f = checkGame(g, makeDeps(w));
     expect(kinds(f)).toEqual(["action-missing"]);
     expect(f[0].detail).toContain("X:/YunGame/V/SomeGame/gone.exe");
+  });
+
+  it("库占位符（已废弃）→ action-resolve-error（明确说「已废弃」，不是含糊的「文件不存在」）", () => {
+    const g = game({ installDirectory: "{V}/SomeGame", actions: fileAction("{V}/SomeGame/game.exe") });
+    const f = checkGame(g, makeDeps(world()));
+    expect(kinds(f)).toEqual(["action-resolve-error"]);
+    expect(f[0].detail).toContain("库占位符已废弃");
   });
 
   it("用了 {InstallDir} 但没配安装目录 → action-resolve-error（755 个游戏踩过的那个坑）", () => {
@@ -89,18 +90,18 @@ describe("启动项检查", () => {
 
   it("配了安装目录时 {InstallDir} 正常展开 → 没问题", () => {
     const w = world({ files: ["X:/YunGame/V/SomeGame/game.exe"] });
-    const g = game({ installDirectory: "{V}/SomeGame", actions: fileAction("{InstallDir}\\game.exe") });
+    const g = game({ installDirectory: "X:/YunGame/V/SomeGame", actions: fileAction("{InstallDir}\\game.exe") });
     expect(checkGame(g, makeDeps(w))).toEqual([]);
   });
 
   it("相对路径（TPC.exe）以安装目录为基准 → 没问题", () => {
     const w = world({ files: ["X:/YunGame/V/SomeGame/TPC.exe"] });
-    expect(checkGame(game({ installDirectory: "{V}/SomeGame" }), makeDeps(w))).toEqual([]);
+    expect(checkGame(game({ installDirectory: "X:/YunGame/V/SomeGame" }), makeDeps(w))).toEqual([]);
   });
 
   it("path 配成目录 → 在里面找 exe；找不到则报 action-missing", () => {
     const dirs = ["X:/YunGame/V/SomeGame"];
-    const g = game({ actions: fileAction("{V}/SomeGame") });
+    const g = game({ actions: fileAction("X:/YunGame/V/SomeGame") });
     expect(
       kinds(checkGame(g, makeDeps(world({ dirs, files: ["X:/YunGame/V/SomeGame/game.exe"] })))),
     ).toEqual([]);
@@ -200,7 +201,7 @@ describe("matchWildcard（Windows 语义）", () => {
 describe("汇总", () => {
   it("counts 按类型统计，checked 是游戏数（不是问题数）", () => {
     const games = [
-      game({ id: "a", actions: fileAction("{V}/x.exe") }),
+      game({ id: "a", actions: fileAction("X:/missing/x.exe") }),
       game({ id: "b", actions: [] }),
       game({ id: "c", actions: fileAction("X:/ok.exe") }),
     ];

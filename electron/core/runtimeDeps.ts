@@ -248,7 +248,7 @@ export function windowsPowerShellPath(systemRoot: string | null | undefined): st
  * 运行库目录的候选（按优先级，第一个存在的生效）。
  *
  *   1) 配置里的 `runtimeDir`（path-modes.json → config.json；默认 `<应用 exe 同级>/runtime`）
- *      —— 正式机 `X:/YunGame/Playnite/runtime`、测试机 `D:/YunGame/Playnite/runtime`。
+ *      —— 部署态写相对路径 `runtime`（正式机 X 盘、测试机 D 盘是同一套结构，只有盘符不同）。
  *      "配置优先"的意义：运维把运行库换到别处（比如共享盘）只需改配置，不必重新出包。
  *   2) `<resources>/runtime` —— 打包时 `extraResources` 带进去的那份，**兜底**。
  *

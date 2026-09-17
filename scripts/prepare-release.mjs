@@ -46,8 +46,8 @@ if (has("--variant")) {
 }
 
 const mode = argValue("--mode");
-if (!["dev", "prerelease", "release"].includes(mode || "")) {
-  console.error("用法: node scripts/prepare-release.mjs --mode dev|prerelease|release [--out <目录>] [--dry-run|--check] [--no-data]");
+if (!["dev", "release"].includes(mode || "")) {
+  console.error("用法: node scripts/prepare-release.mjs --mode dev|release [--out <目录>] [--dry-run|--check] [--no-data]");
   process.exit(1);
 }
 const dryRun = has("--dry-run");
@@ -116,7 +116,7 @@ const DRIVE_LABEL = { dev: "D 盘（测试环境）+ 仓库内数据", prereleas
 console.log("==============================================");
 console.log(` Playday 路径模式   mode = ${mode}    ${DRIVE_LABEL[mode]}`);
 console.log("==============================================");
-for (const key of ["coverImagesDir", "gameDetailsDir", "musicDir", "libraryDir", "sourceLibraryDir", "announcementsDir", "defaultGameRootPath", "runtimeDir", "yungamestartDir"]) {
+for (const key of ["coverImagesDir", "gameDetailsDir", "musicDir", "fontsDir", "libraryDir", "defaultGameRootPath", "runtimeDir", "yungamestartDir", "YunGameConfigDir", "gameSaveHelperDir"]) {
   console.log(`  ${key.padEnd(20)} ${settings[key]}`);
 }
 
@@ -124,10 +124,10 @@ for (const key of ["coverImagesDir", "gameDetailsDir", "musicDir", "libraryDir",
 // release 的 X 盘在开发机上不存在，只提示"到正式机上确认"。
 // 注意 runtimeDir / yungamestartDir **故意不在这个存在性清单里**：它们"暂时不存在"是合法状态 ——
 // 运行库目录没放文件时客户端会退回包内的 resources\runtime（见 electron/core/runtimeSetup.ts），
-// 自启工具目录也要先编译 tools\yungamestart 才有内容。把它们算成缺失只会天天报警。
+// 自启工具目录也要先编译 dev-tools\yungamestart 才有内容。把它们算成缺失只会天天报警。
 if (mode !== "release") {
   const missing = [];
-  for (const key of ["coverImagesDir", "gameDetailsDir", "libraryDir", "sourceLibraryDir", "announcementsDir"]) {
+  for (const key of ["coverImagesDir", "gameDetailsDir", "libraryDir", "runtimeDir", "yungamestartDir", "YunGameConfigDir", "gameSaveHelperDir"]) {
     const v = String(settings[key]);
     const abs = /^[a-zA-Z]:[\\/]/.test(v) || v.startsWith("//") ? v : path.join(ROOT, v);
     if (!fs.existsSync(abs)) missing.push(`${key} = ${v}`);

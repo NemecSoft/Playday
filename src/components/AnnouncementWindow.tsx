@@ -4,6 +4,8 @@
 //   - 暂时去掉 Live2D 看板娘立绘
 //   - 改为普通矩形面板（直接占满 BrowserWindow 内容区，圆角 + 深色背景）
 //   - 保留荧光特效：announcement-aurora 极光动画、ann-enter-btn 发光按钮、announcement.html 里的 NEW 徽章/星星由用户文案控制
+// 2026-09-17：命中门禁（维护中 / 库过旧）时**整屏只说这一件事**，不再显示通用公告内容
+//   —— 需求原话："这个提示不够明显，要直接在中间大大的显示服务器维护。而不要再显示通用内容了"。
 // 点"进入系统" → 调主进程 enter_system → 主进程关本窗口、建主窗口。
 import { useEffect, useState } from "react";
 import { AlertTriangle } from "lucide-react";
@@ -86,8 +88,24 @@ export default function AnnouncementWindow() {
     }
   };
 
-  // 任一门禁命中 → 不允许进入系统，底部只给"退出"。
-  const blocked = maintenance || outdated;
+  // 品牌（`YunGame黄金版` 里那个 `YunGame`）：与右下角徽标**同源** —— build.config.ts 的 APP_NAME，
+  // 经 preload 的 sendSync 传到这里（见 TierBadge.tsx）。在 render 期读：网站端没有这个桥，
+  // 读成空串时文案退化成"黄金版"，不会出现半截品牌名。
+  const brand = window.electronConfig?.appName ?? "";
+  // 档位文案取 tier_badge_*（**带品牌**的那两个键；tier_gold / tier_diamond 是无品牌版，
+  // 留给「游戏级别分组」组名用，别混）。等级取不到（0）按黄金版 —— 与全局兜底一致：
+  // 用户表缺失 / 未命中一律按黄金版处理。
+  const tier = level >= 2 ? t("tier_badge_diamond", { brand }) : t("tier_badge_gold", { brand });
+
+  // 门禁文案（最多一条：都命中时先报维护 —— 那是服务器状态；过旧是本机版本问题，
+  // 两者处理方式不同：等待 / 找管理员要新版）。为 null = 正常营业。
+  // 维护正文 = `（YunGame黄金版）正在维护`（2026-09-17 需求：不要"该版本正在定期维护…"那套说法，
+  // 直接点名是哪个版本在维护）。句子结构放在语言文件里，品牌与档位作为变量传进去。
+  const gate = maintenance
+    ? { title: t("maintenance_title"), body: t("maintenance_body", { tier }) }
+    : outdated
+      ? { title: t("outdated_title"), body: t("outdated_body", { days: ageDays ?? 0 }) }
+      : null;
 
   return (
     <div className="announcement-window">
@@ -95,37 +113,29 @@ export default function AnnouncementWindow() {
         {/* 顶部：极光背景动画（保留荧光特效）。z-index 最低，铺在卡片下层。 */}
         <div className="announcement-aurora" aria-hidden="true" />
 
-        {/* 拦截提示条：压在公告之上，必须一眼看到（需求：不能进入系统时要说清楚原因）。
-            两种命中情况共用同一套样式，最多显示一条（都命中时先报维护——那是服务器状态，
-            过旧是本机版本问题，两者处理方式不同：等待 / 找管理员要新版）。 */}
-        {maintenance ? (
-          <GateBanner
-            title={t("maintenance_title")}
-            body={`${t("maintenance_body")}${
-              level > 0 ? `（${level >= 2 ? t("tier_diamond") : t("tier_gold")}）` : ""
-            }`}
-          />
-        ) : outdated ? (
-          <GateBanner
-            title={t("outdated_title")}
-            body={t("outdated_body", { days: ageDays ?? 0 })}
-          />
-        ) : null}
-
-        {/* 内容区：公告 HTML（用户在 announcements/announcement.html 里写的 NEW 徽章/星星都会保留） */}
-        <div className="announcement-body">
-          <div className="announcement-scroll">
-            <div
-              className="ann-html"
-              dangerouslySetInnerHTML={{ __html: html }}
-            />
+        {/* 命中门禁 → **整屏只说这一件事**（2026-09-17）：
+            原来是"公告内容顶上压一条小横幅"，注意力全被下面的欢迎文案抢走，一眼看不出"进不去"。
+            现在连通用公告内容（含"自定义公告：编辑本文件…"那行提示）都不渲染。 */}
+        {gate ? (
+          <div className="ann-block" role="alert">
+            <AlertTriangle className="ann-block-icon" size={68} strokeWidth={1.4} aria-hidden="true" />
+            <h1 className="ann-block-title">{gate.title}</h1>
+            <p className="ann-block-body">{gate.body}</p>
           </div>
-        </div>
+        ) : (
+          <div className="announcement-body">
+            <div className="announcement-scroll">
+              <div
+                className="ann-html"
+                dangerouslySetInnerHTML={{ __html: html }}
+              />
+            </div>
+          </div>
+        )}
 
-        {/* 底部"进入系统"按钮（荧光发光样式保留） */}
+        {/* 底部按钮：正常时「进入系统」；被门禁拦住时只给「退出」（需求：不能进入系统就退出） */}
         <div className="announcement-footer">
-          {blocked ? (
-            // 被门禁拦住（维护中 / 库过旧）：只给"退出"（需求：不能进入系统，直接退出）
+          {gate ? (
             <button type="button" className="ann-enter-btn ann-exit-btn" onClick={() => void api.quit()}>
               {t("maintenance_exit")}
             </button>
@@ -135,22 +145,6 @@ export default function AnnouncementWindow() {
             </button>
           )}
         </div>
-      </div>
-    </div>
-  );
-}
-
-/**
- * 公告窗口顶部的"拦截条"：维护中 / 库过旧共用。
- * 样式在 global.css 的 .ann-gate（红警示色 + 压在公告内容之上）。
- */
-function GateBanner({ title, body }: { title: string; body: string }) {
-  return (
-    <div className="ann-gate" role="alert">
-      <AlertTriangle size={16} />
-      <div>
-        <div className="ann-gate-title">{title}</div>
-        <div className="ann-gate-body">{body}</div>
       </div>
     </div>
   );

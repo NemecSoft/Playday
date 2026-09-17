@@ -132,9 +132,20 @@ cipher = base64( UTF8(明文) XOR key[i % key.length] )      // XOR 对称，解
 
 **行为（需求：公告自动提示服务器在维护，不能进入系统，直接退出）**：
 
+> 2026-09-17 加强（需求原话：*"这个提示不够明显，要直接在中间大大的显示服务器维护。
+> 而不要再显示通用内容了"*）：命中门禁时**整屏只说这一件事** —— 居中大字「服务器维护中」，
+> 正文 = **`（YunGame黄金版）正在维护`**（同一天的第二条需求原话：*"不要本版本正在维护，
+> 直接 （YunGame黄金版）正在维护"* —— 不再用"该版本正在定期维护，暂时无法进入…"那套说法，
+> 直接点名是哪个版本在维护）；通用公告内容（含"自定义公告：编辑本文件 …"那行提示）**不再渲染**。
+> 样式 `.ann-block`。
+> 品牌与档位走 `tier_badge_gold` / `tier_badge_diamond`（**带品牌**的那两个键，与右下角徽标**同源**：
+> 品牌串来自 `build.config.ts` 的 APP_NAME，经 preload 的 sendSync 到渲染层）；`tier_gold` /
+> `tier_diamond` 是**无品牌版**，留给「游戏级别分组」组名，别混进这条文案。等级取不到（0）时按黄金版
+> —— 与全局兜底一致（用户表缺失 / 未命中一律按黄金版）。
+
 | 位置 | 行为 |
 | --- | --- |
-| 公告窗口 | 启动即查一次；维护中 → 顶部压一条红警示条「服务器维护中」（按等级说明），**公告内容照常显示** |
+| 公告窗口 | 启动即查一次；维护中 → **整屏居中大字**「服务器维护中」（按等级注明是哪个版本），**不再显示公告内容** |
 | 底部按钮 | 「进入系统」**换成「退出」**，点击直接退出程序 |
 | 进系统 | 主进程 `enter_system` **再判一次**并拒绝（`{ok:false, reason:"maintenance"}`）—— 不能只靠前端拦（改前端就能绕过） |
 | 前端兜底 | 若点击时刚被置为维护，前端据 `{ok:false}` 切到维护态，避免"点了没反应" |
@@ -162,7 +173,7 @@ cipher = base64( UTF8(明文) XOR key[i % key.length] )      // XOR 对称，解
 
 | 位置 | 行为 |
 | --- | --- |
-| 公告窗口 | 启动即查一次；过旧 → 顶部压一条红警示条「系统过旧」（文案带"已 N 天未更新"），公告内容照常显示 |
+| 公告窗口 | 启动即查一次；过旧 → **整屏居中大字**「系统过旧」（文案带"已 N 天未更新"）；公告内容同样不再显示（2026-09-17 与维护态统一：命中门禁就整屏只说这一件事） |
 | 底部按钮 | 「进入系统」**换成「退出」**，点击直接退出程序 |
 | 进系统 | 主进程 `enter_system` **再判一次**并拒绝（`{ok:false, reason:"outdated", ageDays}`） |
 | 前端兜底 | 若点击时刚好被判过旧，前端据 `{ok:false}` 切到过旧态，避免"点了没反应" |
@@ -242,20 +253,19 @@ cipher = base64( UTF8(明文) XOR key[i % key.length] )      // XOR 对称，解
 | `src/components/__tests__/TierBadge.render.test.tsx` | 钉住"品牌来自配置而非写死"：断言用 `tier_badge_*` 键、品牌作为变量传入、换品牌徽标跟着变、无 preload 桥时不抛错、档位类名跟着等级走（原在 `TopBar.render.test.tsx`，跟着组件一起搬来） |
 | `src/components/views/GridView.tsx` | 卡片锁定态（封面降饱和 + 锁标 + 游玩按钮改造） |
 | `src/pages/GameDetailPage.tsx` | 详情页顶栏**正中**的「开始游戏」按钮（2026-09-15）：条件 `loaded && canPlay`，黄金版看钻石版不渲染；点击走 `launchGame()`（与卡片/右键同一条链路），**运行中也照旧可点** |
-| `src/components/AnnouncementWindow.tsx` | 两道门禁的提示条（维护 / 库过旧，样式 `.ann-gate`）+ 被拦时把「进入系统」换成「退出」 |
+| `src/components/AnnouncementWindow.tsx` | 两道门禁的**整屏拦截页**（维护 / 库过旧，样式 `.ann-block`；2026-09-17 起命中就不再渲染通用公告内容）+ 被拦时把「进入系统」换成「退出」 |
 | `src/api/client.ts` | `getServerStatus()` / `getLibraryAge()` / `enterSystem()`（被拒时带 `reason`） |
-| `config.json` → `yunGameUserListPath` / `yunGameServerStatusPath` | 用户表与维护表路径（相对路径以应用 exe 所在目录为基准，同其它路径字段） |
+| `config.json` → `YunGameConfigDir` | 网吧配置**目录**（用户表 `YunGame_UserList.json` 与维护表 `YunGame_ServerStatus.json` 的文件名固定；相对路径以应用 exe 所在目录为基准，同其它路径字段） |
 
 ## 5. 配置项
 
 ```jsonc
 {
   "settings": {
-    // 用户表位置（明文或原版 JsonCrypt 加密版都行）。
+    // 网吧配置目录（明文或原版 JsonCrypt 加密版都行）。里面固定两个文件名：
+    //   YunGame_UserList.json（用户表）/ YunGame_ServerStatus.json（维护状态表）
     // 相对路径以「应用 exe 所在目录」为基准（与其它路径字段一致）；本机指向 YunGame 配置目录。
-    "yunGameUserListPath": "D:/YunGame/PlayNite/YunGameConfig/YunGame_UserList.json",
-    // 维护状态表位置，同上。
-    "yunGameServerStatusPath": "D:/YunGame/PlayNite/YunGameConfig/YunGame_ServerStatus.json"
+    "YunGameConfigDir": "D:/YunGame/PlayNite/YunGameConfig"
   }
 }
 ```
@@ -263,8 +273,8 @@ cipher = base64( UTF8(明文) XOR key[i % key.length] )      // XOR 对称，解
 > 部署说明：这两个文件是**共享配置**（同一台 YunGame 服务器上的多家网吧共用一份），
 > 正常由 YunGame 的服务端程序维护、客户端只读。生产机上可以把它们放到客户端目录并用相对路径，
 > 也可以像本机这样直接指向 `D:\YunGame\PlayNite\YunGameConfig\`。
-> 注意 `YunGameConfig` 下的 `YunGame_Gamelist.json` 同时也是 `gen-game-content.mjs` 的
-> gamelevel 来源（见 [game-content.md](./game-content.md)）。
+> 注意 `YunGameConfig` 下的 `YunGame_Gamelist.json` 同时也是 `gen-game-content.mjs` 给
+> `games.json` 补 `game_level` 的来源（见 [library-json.md](./library-json.md)）。
 
 ## 6. 待定 / 风险
 

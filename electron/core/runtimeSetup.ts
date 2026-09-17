@@ -50,8 +50,9 @@ const MAX_OUTPUT_BYTES = 8192;
 
 /**
  * 运行库目录候选（顺序与理由见 runtimeDeps.runtimeDirCandidates）：
- *   1) 配置里的 `runtimeDir`（`path-modes.json` → `config.json`；正式机
- *      `X:/YunGame/Playnite/runtime`、测试机 D 盘同路径、开发态 `tools/runtime`）
+ *   1) 配置里的 `runtimeDir`（`path-modes.json` → `config.json`）：部署态（测试/正式）写**相对路径**
+ *      `runtime` —— 就是 <应用 exe 同级>/runtime（正式机 X 盘、测试机 D 盘同一套结构，只有盘符不同）；
+ *      开发态指仓库里的 `dev-tools/runtime`（编译与打包的源头）。
  *   2) `<应用 exe 同级>/runtime` —— 配置指到别处时的保险（出包时 package.bat 就放在这）
  *   3) `<resources>/runtime` —— 包内兜底
  */

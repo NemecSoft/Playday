@@ -1,10 +1,12 @@
 @echo off
 chcp 65001 >nul
 REM ============================================================
-REM  Playday one-click package script
+REM  Playday one-click package script (build artifacts only, no deployment)
 REM  Usage: package.bat [outputDir]        (default: release)
-REM    prerelease -> build-prerelease.bat passes release_test
-REM    production -> build-release.bat    passes release
+REM    Normally you do NOT call this by hand: deploy.bat builds AND deploys to the
+REM    destination in one go (the "test version" flow), and promote.bat upgrades the
+REM    tested folder to the production machine. This script stays for "just give me
+REM    a portable artifact folder".
 REM  Steps: 1) npm run build (main + renderer)
 REM         2) electron-builder --dir into .pack-tmp\win-unpacked (staging)
 REM         3) wipe <outputDir>, then robocopy the exe/resources into it
@@ -35,12 +37,12 @@ REM  the drive letters inside config.json (D: vs X:). Keeping both in one folder
 REM  makes "which one is safe to ship" unanswerable - that is incident-grade.
 set "OUTDIR=%~1"
 if not defined OUTDIR set "OUTDIR=release"
-REM  Safety: step 4 wipes this folder, so accept only the known variants instead
-REM  of trusting the argument. A typo (or an absolute path) then cannot delete
-REM  anything else, and adding a variant forces a conscious review here.
-REM  Keep in sync with build-release.bat / build-prerelease.bat.
-if /i not "%OUTDIR%"=="release" if /i not "%OUTDIR%"=="release_test" (
-    echo [ERROR] invalid output dir "%OUTDIR%" - expected release or release_test.
+REM  Safety: step 4 wipes this folder, so accept only the known name instead of
+REM  trusting the argument. A typo (or an absolute path) then cannot delete anything
+REM  else. There is only one variant: which drive the deployed copy uses is decided
+REM  by path-modes.json, not by an output folder name (see deploy.bat / promote.bat).
+if /i not "%OUTDIR%"=="release" (
+    echo [ERROR] invalid output dir "%OUTDIR%" - expected release.
     exit /b 1
 )
 REM  The staging dir is variant-independent: electron-builder's output is set in
@@ -122,21 +124,21 @@ if errorlevel 8 (
     exit /b 1
 )
 
-REM ---- 4.5 copy the native YunGameStart (built by tools\yungamestart\build.bat) ----
+REM ---- 4.5 copy the native YunGameStart (built by dev-tools\YunGameStart\build.bat) ----
 REM  Must happen AFTER the wipe above: the output dir is cleared on every build,
 REM  so anything placed there before is gone. It ships as <package>\yungamestart\
 REM  (yungamestart.exe + 1.ico + 2.ico), which is exactly the layout the tool
 REM  expects at runtime (it reads 1.ico / 2.ico from its own directory).
 REM  Not built yet = not an error: the package is still valid, just without it.
-if exist "tools\yungamestart\dist\yungamestart.exe" (
-    robocopy "tools\yungamestart\dist" "%OUTDIR%\yungamestart" /E /NJH /NJS /NDL /NP /R:1 /W:1 /MT:16 >nul
+if exist "dev-tools\YunGameStart\dist\yungamestart.exe" (
+    robocopy "dev-tools\YunGameStart\dist" "%OUTDIR%\YunGameStart" /E /NJH /NJS /NDL /NP /R:1 /W:1 /MT:16 >nul
     if errorlevel 8 (
         echo [ERROR] robocopy yungamestart failed - return code %errorlevel%.
         exit /b 1
     )
-    echo [extra] yungamestart -^> %OUTDIR%\yungamestart
+    echo [extra] yungamestart -^> %OUTDIR%\YunGameStart
 ) else (
-    echo [extra] SKIP yungamestart (not built - run tools\yungamestart\build.bat first)
+    echo [extra] SKIP yungamestart (not built - run dev-tools\YunGameStart\build.bat first)
 )
 
 REM ---- 4.6 copy the runtime installers (VC++ redist x64/x86, VP9 extension) ----
@@ -146,11 +148,11 @@ REM  release X:/YunGame/Playnite/runtime, prerelease D:/YunGame/Playnite/runtime
 REM  Why here and NOT electron-builder extraResources: the configured dir then really
 REM  exists on the target machine, and there is exactly ONE 45 MB copy - not one next
 REM  to the exe plus one inside resources\. Same reasoning as the yungamestart copy.
-if not exist "tools\runtime" (
-    echo [ERROR] tools\runtime not found - cannot ship the runtime installers.
+if not exist "dev-tools\runtime" (
+    echo [ERROR] dev-tools\runtime not found - cannot ship the runtime installers.
     exit /b 1
 )
-robocopy "tools\runtime" "%OUTDIR%\runtime" /E /NJH /NJS /NDL /NP /R:1 /W:1 /MT:16 >nul
+robocopy "dev-tools\runtime" "%OUTDIR%\runtime" /E /NJH /NJS /NDL /NP /R:1 /W:1 /MT:16 >nul
 if errorlevel 8 (
     echo [ERROR] robocopy runtime failed - return code %errorlevel%.
     exit /b 1

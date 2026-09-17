@@ -1,6 +1,6 @@
 // Bottom status bar: shows the local IP, the public (external) IP, and the
 // cafe name matched from the public IP via the YunGame user list
-// (settings.yunGameUserListPath —— 与等级判定同源，见 electron/ipc/auth.ts)。
+// (settings.YunGameConfigDir 下的 YunGame_UserList.json —— 与等级判定同源，见 electron/ipc/auth.ts)。
 
 import { useEffect, useState } from "react";
 import { Network, Globe, MapPin } from "lucide-react";

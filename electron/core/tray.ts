@@ -14,7 +14,7 @@ let tray: Tray | null = null;
 
 // 找一个可用的托盘图标。
 // **首选当前等级的应用图标**（黄金 1.ico / 钻石 2.ico）—— 2026-09-16 需求变更："图标按等级分"，
-// 托盘与窗口/任务栏用**同一份文件**（都在 tools/yungamestart/assets/ 下，随包发到 resources/）。
+// 托盘与窗口/任务栏用**同一份文件**（都在 dev-tools/yungamestart/assets/ 下，随包发到 resources/）。
 // 为什么以前专门有 tray.png/tray.ico：那时托盘显示空白，因为当时代用的 icon.png 是 256x256
 // 的细线暗色 logo（96.5% 透明），缩到 16x16 基本看不见。现在 1.ico/2.ico 自带 16/24/32/48 帧
 // （由 make-icons.mjs 生成），"尺寸不够"这件事已经解决；tray.* 保留为**兜底**

@@ -10,18 +10,12 @@ import {
   normalizePath,
   parseStoredBatConsole,
   resolveActionPath,
-  resolveLibraryPlaceholder,
   resolvePath,
   resolveShowBatConsole,
   startsWithPlaceholder,
   toCmdPath,
 } from "./launchPaths";
 
-const LIBS = [
-  { name: "Gamelibrary1", path: "D:/Games" },
-  { name: "Gamelibrary2", path: "D:/games2" },
-  { name: "库3", path: "D:/Code" },
-];
 const GAME_ROOT = "D:/YunGame/Playnite";
 
 /** 复刻主进程的 expandVariables：只关心 {InstallDir} 等占位符的替换。 */
@@ -117,42 +111,38 @@ describe("路径形状判定", () => {
   });
 });
 
-describe("库占位符 {库名}/rest", () => {
-  it("命中库名（大小写不敏感）→ 库根 + 剩余段", () => {
-    expect(resolveLibraryPlaceholder("{Gamelibrary1}\\game1\\g.exe", LIBS)).toEqual({
-      rest: "game1\\g.exe", // rest 是原文切片（不在这里规范化，交给 joinPaths）
-      root: "D:/Games",
+describe("库占位符已废弃（2026-09-16：game_libraries 整条链移除）", () => {
+  // 库里实测 **0 条**路径用库占位符，但这里刻意不静默处理：遇到就明确报错，
+  // 而不是当相对路径拼到游戏根上 —— 那会拼出一个不存在的路径、最后报"文件不存在"，
+  // 让人以为是游戏装错了位置（排查方向被带偏）。
+  it("resolveActionPath：{库名} 开头 → 明确报错", () => {
+    const r = resolveActionPath({
+      actionPath: "{Gamelibrary1}\\game1\\g.exe",
+      installDir: "",
+      gameRoot: GAME_ROOT,
+      expand: (s) => s,
     });
-    expect(resolveLibraryPlaceholder("{gamelibrary1}/game1/g.exe", LIBS)?.root).toBe("D:/Games");
-  });
-
-  it("非库名的占位符必须落空（{InstallDir} 不是库）", () => {
-    expect(resolveLibraryPlaceholder("{InstallDir}\\a.exe", LIBS)).toBeNull();
-    expect(resolveLibraryPlaceholder("{未知库}\\a.exe", LIBS)).toBeNull();
+    expect(r.path).toBe("");
+    expect(r.error).toContain("库占位符已废弃");
+    expect(r.error).toContain("{Gamelibrary1}\\game1\\g.exe");
   });
 });
 
-describe("resolvePath：库占位符 / 绝对 / 相对（游戏根）", () => {
-  it("{库名} → 库根（输出统一 /）", () => {
-    expect(resolvePath("{Gamelibrary1}\\game1\\g.exe", LIBS, GAME_ROOT)).toBe(
-      "D:/Games/game1/g.exe",
-    );
-  });
-
+describe("resolvePath：绝对 / 相对（游戏根）", () => {
   it("绝对路径原样返回，但分隔符统一为 /", () => {
-    expect(resolvePath("X:\\YunGame\\Z\\a.exe", LIBS, GAME_ROOT)).toBe("X:/YunGame/Z/a.exe");
-    expect(resolvePath("//NAS/share/a.exe", LIBS, GAME_ROOT)).toBe("//NAS/share/a.exe");
+    expect(resolvePath("X:\\YunGame\\Z\\a.exe", GAME_ROOT)).toBe("X:/YunGame/Z/a.exe");
+    expect(resolvePath("//NAS/share/a.exe", GAME_ROOT)).toBe("//NAS/share/a.exe");
   });
 
   it("相对路径以游戏根为基准（install_directory 的存储形式）", () => {
-    expect(resolvePath("..\\Z\\Supermarket Simulator", LIBS, "X:\\YunGame\\Playnite")).toBe(
+    expect(resolvePath("..\\Z\\Supermarket Simulator", "X:\\YunGame\\Playnite")).toBe(
       "X:/YunGame/Z/Supermarket Simulator",
     );
-    expect(resolvePath("..\\X\\Sephiria", LIBS, GAME_ROOT)).toBe("D:/YunGame/X/Sephiria");
+    expect(resolvePath("..\\X\\Sephiria", GAME_ROOT)).toBe("D:/YunGame/X/Sephiria");
   });
 });
 
-describe("resolveActionPath：游玩指令 path 的三种基准", () => {
+describe("resolveActionPath：游玩指令 path 的各基准", () => {
   const installAbs = "D:/YunGame/X/Sephiria";
 
   it("规则1：原始数据就是相对路径 → 以安装目录为基准", () => {
@@ -161,7 +151,6 @@ describe("resolveActionPath：游玩指令 path 的三种基准", () => {
       resolveActionPath({
         actionPath: "TPC.exe",
         installDir: "D:/YunGame/III/TwoPointCampusYuZU",
-        libraries: LIBS,
         gameRoot: GAME_ROOT,
         expand: makeExpand("D:/YunGame/III/TwoPointCampusYuZU"),
       }),
@@ -171,7 +160,6 @@ describe("resolveActionPath：游玩指令 path 的三种基准", () => {
       resolveActionPath({
         actionPath: "bin\\Inversion.exe",
         installDir: "D:/YunGame/Inversion",
-        libraries: LIBS,
         gameRoot: GAME_ROOT,
         expand: makeExpand("D:/YunGame/Inversion"),
       }).path,
@@ -187,32 +175,18 @@ describe("resolveActionPath：游玩指令 path 的三种基准", () => {
       resolveActionPath({
         actionPath: "..\\Tools\\GameSaveHelper\\GameSaveHelper",
         installDir: "X:/YunGame/X/Sephiria",
-        libraries: LIBS,
         gameRoot: "X:/YunGame/Playnite",
         expand: makeExpand("X:/YunGame/X/Sephiria"),
       }).path,
     ).toBe("X:/YunGame/X/Tools/GameSaveHelper/GameSaveHelper");
   });
 
-  it("规则2：{库名} 开头 → 库根", () => {
-    expect(
-      resolveActionPath({
-        actionPath: "{Gamelibrary1}\\game1\\g.exe",
-        installDir: "",
-        libraries: LIBS,
-        gameRoot: GAME_ROOT,
-        expand: makeExpand(""),
-      }),
-    ).toMatchObject({ path: "D:/Games/game1/g.exe", basis: "library" });
-  });
-
-  it("规则3：{InstallDir} 展开后是相对游戏根的路径 → 以游戏根为基准", () => {
+  it("规则2：{InstallDir} 展开后是相对游戏根的路径 → 以游戏根为基准", () => {
     // 真实案例：赛菲莉娅 {InstallDir}\golan.bat（installDir=..\X\Sephiria）
     expect(
       resolveActionPath({
         actionPath: "{InstallDir}\\golan.bat",
         installDir: installAbs,
-        libraries: LIBS,
         gameRoot: GAME_ROOT,
         expand: makeExpand("..\\X\\Sephiria"),
       }),
@@ -224,29 +198,17 @@ describe("resolveActionPath：游玩指令 path 的三种基准", () => {
       resolveActionPath({
         actionPath: "X:\\YunGame\\Z\\a.exe",
         installDir: installAbs,
-        libraries: LIBS,
         gameRoot: GAME_ROOT,
         expand: makeExpand(installAbs),
       }),
     ).toMatchObject({ path: "X:/YunGame/Z/a.exe", basis: "absolute" });
   });
 
-  it("网络路径（//NAS/...）也能解析：{库名} 与绝对两种形式", () => {
-    const nasLibs = [{ name: "NAS", path: "//NAS/Games" }];
-    expect(
-      resolveActionPath({
-        actionPath: "{NAS}\\Z\\a.exe",
-        installDir: "",
-        libraries: nasLibs,
-        gameRoot: GAME_ROOT,
-        expand: makeExpand(""),
-      }).path,
-    ).toBe("//NAS/Games/Z/a.exe");
+  it("网络路径（//NAS/...）解析后保持 UNC 形态", () => {
     expect(
       resolveActionPath({
         actionPath: "//NAS/Games/Z/a.exe",
         installDir: "",
-        libraries: nasLibs,
         gameRoot: GAME_ROOT,
         expand: makeExpand(""),
       }).path,
@@ -257,7 +219,6 @@ describe("resolveActionPath：游玩指令 path 的三种基准", () => {
     const r = resolveActionPath({
       actionPath: "{InstallDir}\\golan.bat",
       installDir: "",
-      libraries: LIBS,
       gameRoot: GAME_ROOT,
       expand: makeExpand(""),
     });
@@ -270,7 +231,6 @@ describe("resolveActionPath：游玩指令 path 的三种基准", () => {
     const r = resolveActionPath({
       actionPath: "   ",
       installDir: installAbs,
-      libraries: LIBS,
       gameRoot: GAME_ROOT,
       expand: (s) => s,
     });

@@ -88,8 +88,8 @@ return null; // 前端显示"未找到详情页"
 
 - 把 `<详情页根>/<游戏名>/` 下的静态文件以 `/games/<游戏名>/<相对路径>` 的 URL 暴露出来。
 - 支持 **Range 请求**（视频拖动播放关键），读文件流式返回。
-- 提供 `/api/videos` 动态接口，列出某游戏 `videos/` 文件夹下的视频（含子目录分组）。
-  扫描/分组/排序逻辑在 `electron/core/videoLibrary.ts`，与详情页前端用的 `get_game_videos` 是同一份。
+- 提供 `/api/videos` 动态接口，列出某游戏**视频目录**（`视频攻略&游戏实况/`，旧名 `videos/` 兜底）下的视频（含子目录分组）。
+  扫描/分组/排序逻辑在 `electron/core/videoLibrary.ts`（含目录名候选探测），与详情页前端用的 `get_game_videos` 是同一份。
 - 防路径穿越：不允许 `..` 或绝对路径段，保证不越出详情页根目录。
 
 ### 启动时机：惰性启动（重要）
@@ -121,16 +121,27 @@ registerCommand(ipc, "get_game_server_url", async () => {
 
 > 前端拿到 base URL 后，拼出页面地址：`${serverUrl}/games/${encodeURIComponent(game.name)}/index.html`。
 
-## 本地视频（游戏目录下的 `videos/`）
+## 本地视频（游戏目录下的 `视频攻略&游戏实况/`）
 
-详情页还会把该游戏的**本地视频罗列在页面里**（排在页面原有内容的下面）。约定是放在游戏目录下的 `videos/`：
+详情页还会把该游戏的**本地视频罗列在页面里**（排在页面原有内容的下面）。目录名有**两个候选**，
+**按顺序探测、谁存在用谁**（`electron/core/videoLibrary.ts` 的 `VIDEO_DIR_NAMES` / `findVideoDir()`）：
 
 ```
-<详情页根>/<游戏名>/videos/             ← 直接放这里的排在最前面
-<详情页根>/<游戏名>/videos/实况/         ← 子文件夹就是一组（组标题 = 目录名）
+<详情页根>/<游戏名>/视频攻略&游戏实况/            ← 2026-09-17 起的新名（优先）
+<详情页根>/<游戏名>/视频攻略&游戏实况/实况/        ← 子文件夹就是一组（组标题 = 目录名）
+<详情页根>/<游戏名>/videos/                      ← 旧名，保留为兜底（老数据没搬完的机器照样能看）
 ```
 
-- **即插即用**：视频丢进 `videos/` 就出现在页面里。不改数据库、不改详情页 HTML、不用重启
+- **为什么改名**（2026-09-17 需求）：视频攻略 / 游戏实况的数据量太大，用中文目录名把这一类素材
+  跟别的（截图 / 攻略 html / 修改器）分开。需求原话：*"原来叫 videos，但现在数据太大……
+  默认用检测是不是有 视频攻略&游戏实况，有就把这个文件夹下的视频罗列出来"* —— 所以是**探测**，
+  不加配置项、不加开关。
+- ⚠️ **URL 前缀必须跟着"实际命中的那个目录名"走**：页面里的链接是相对路径
+  （`<命中目录名>/<编码后的文件名>`），漏了这条就是"界面里什么都没有、控制台一片 404"。
+  两个出口都要传：服务端注入（`buildVideoSection({ videoDirName })`）与 IPC
+  （`get_game_videos` 的 `urlPath`）。目录名里带 `&`，**必须编码成 `%26`** —— 否则浏览器把它
+  当查询串分隔符，路径被截断。
+- **即插即用**：视频丢进那个目录就出现在页面里。不改数据库、不改详情页 HTML、不用重启
   （每次打开详情页重新扫一次，响应带 `Cache-Control: no-store`）。
 - **排版**：bilibili 式的**卡片网格**（响应式 `auto-fill minmax(230px, 1fr)`）——
   上面预览封面 + 右下角时长，下面两行标题；点卡片**就地展开播放器**（占满整行，同一时刻只放一个），
@@ -213,7 +224,7 @@ registerCommand(ipc, "get_game_server_url", async () => {
 |------|------|--------|
 | 注入点 | 优先插进页面自己 `.container` 的**内部末尾**（排在所有 `.section` 之后） | 直接放 `</body>` 前会跑到居中容器之外：宽度、留白全对不上，与上面的卡片错位 |
 | 退路 | 没有 `.container` → `</body>` 前自己补一层；连 `</body>` 都没有 → 追加末尾 | 模板千奇百怪，宁可难看也不能丢内容 |
-| 链接 | **相对路径** `videos/<编码后的文件名>` | 页面地址是 `/games/<目录名>/index.html`，相对路径自动解析正确 —— 不用在这里再判断"目录名是 id 还是游戏名" |
+| 链接 | **相对路径** `<命中目录名>/<编码后的文件名>`（目录名由调用方传进来的 `videoDirName` 决定；`&` → `%26`） | 页面地址是 `/games/<目录名>/index.html`，相对路径自动解析正确 —— 不用在这里再判断"目录名是 id 还是游戏名"；但**必须**用真实命中的那个视频目录名，否则整片 404 |
 | 样式 | 外壳复用页面自己的 `.section`，只补视频相关的 scoped 类（`yungame-*`） | 跟着页面原有观感走；换模板也不会花 |
 | 文案 | 服务端一份小表，语言由 iframe URL 的 `?lang=` 带过来 | 注入的是静态页，主进程读不到打包后的 `locales/*.json`（那些被编进前端 bundle） |
 | 只注入首页 | 只有 `<游戏名>/index.html` 会注入，更深层的 `index.html` 不动 | 游戏页面自己的子目录不该被改 |
@@ -229,7 +240,7 @@ registerCommand(ipc, "get_game_server_url", async () => {
 | 顶栏**正中**加「开始游戏」（2026-09-15 需求） | 按钮**绝对居中**（`absolute left-1/2 -translate-x-1/2`）：左边「返回 / 修改器 / 应用存档」有几个都不影响它落在正中间（用 flex 顺序会被挤偏）。点击走 `launchGame()`，与卡片 / 右键菜单同一条链路；**游戏运行中也照旧可点**（用户要求"不要太严格"，点了就是再启动一次）。显示条件 = `authStore.loaded && canPlay(userLevel, game.gameLevel)` —— 黄金版看钻石版游戏不渲染，规则见 [用户等级检测](./user-level-detection.md) |
 
 > 与顶部"视频"tab 的区别：那个 tab 读**数据库** `games.videos` 字段（外链 / YouTube 嵌入）；
-> 这里读**磁盘上**的 `videos/` 目录。两者互不影响、互不依赖。
+> 这里读**磁盘上**的视频目录（`视频攻略&游戏实况/`，旧名 `videos/` 兜底）。两者互不影响、互不依赖。
 
 ## 详情页跟随主界面主题（2026-09-15）
 
@@ -323,7 +334,7 @@ npx vite-node -c vitest.config.mts _probe-detail-theme/run.mts -- "暗黑破坏�
 | `get_game_html_page` | 返回某游戏详情页本地路径（不存在返回 null） | `gameHtmlPagePath()` |
 | `get_game_server_url` | 返回 HTTP 服务器 base URL；未启动则**惰性启动** | `getGameServerBaseUrl()` / `startGameServer()` |
 | `list_game_html_dirs` | 列出详情页根目录下有哪些游戏的详情页（管理端诊断） | `readdirSync` + 检查 `index.html` |
-| `get_game_videos` | 列出某游戏 `videos/` 里的本地视频（外部播放要用的绝对路径；也是"播视频时音乐让位 / 顶栏已不再显示数量徽章"的数据来源） | `resolveGameSubpath()` + `scanVideos()` |
+| `get_game_videos` | 列出某游戏视频目录里的本地视频（外部播放要用的绝对路径；也是"播视频时音乐让位 / 顶栏已不再显示数量徽章"的数据来源）。`urlPath` 的前缀是**实际命中的目录名**，不写死 `videos` | `resolveGameVideoDir()` + `scanVideos()` |
 | `open_video_external` | 用系统默认播放器打开某个视频（内置放不了的封装走这条） | `shell.openPath` |
 
 ## 双端差异

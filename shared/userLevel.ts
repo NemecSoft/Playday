@@ -225,7 +225,7 @@ export function canPlay(userLevel: number, gameLevel: number): boolean {
  * 为什么放在 shared/ 而不是主进程：它也是"等级规则"的一部分，而这里能单测
  *（主进程那份要 import electron —— 见 vitest.config.mts 的硬约束，测不了）。
  *
- * 图标文件在 `tools/yungamestart/assets/`（与桌面快捷方式用的是**同一份**），
+ * 图标文件在 `dev-tools/yungamestart/assets/`（与桌面快捷方式用的是**同一份**），
  * 打包时作为资源随包发出；按等级切换的时机见 docs/design/app-icons.md §2.2。
  */
 export function iconNameForLevel(userLevel: number): "1.ico" | "2.ico" {

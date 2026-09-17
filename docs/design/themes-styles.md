@@ -307,7 +307,7 @@
 | 判定 | 同上 `isHotGame()` | 没填过评分（undefined/NaN）一律不算 |
 | 渲染 | `src/components/views/GridView.tsx` | 只有真的超阈值的卡才多这一个节点（列表是虚拟化渲染，其余卡零开销） |
 | 颜色 | `--hot-color`（默认取 `--warning`，跟主题走） | 想换橙/红只改这一个变量 |
-| 数据怎么填 | `data/game-content.json` 的 `score` 字段 | 填完用 `sync-game-content.bat` 同步进库，见 [game-content.md](./game-content.md) |
+| 数据怎么填 | 整库 JSON 里 `games.json` 的 `community_score` 列（人工填） | 填完用 `npm run db:import -- --apply`（或双击 `libraryjson-importto-librarydb.bat`）回写进库，见 [library-json.md](./library-json.md) |
 
 **为什么不是 GIF**：GIF 是固定像素，卡片尺寸随用户设置变（会糊），也没法跟主题变色（23 套配色下
 一张 GIF 必然在某个配色里突兀），而且常显意味着几十张卡同时解码。所以用矢量火苗

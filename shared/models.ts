@@ -136,14 +136,6 @@ export const DEFAULT_SETTINGS = {
   cardGap: 8,
   cardRowGap: 8,
   sidebarWidth: 210,
-  // 用户表（YunGame_UserList.json，明文或原版 JsonCrypt 加密版都能吃）：按本机 IP 判定
-  // 黄金版/钻石版。相对路径以「应用 exe 所在目录」为基准（与其它路径字段一致）。
-  // 见 docs/design/user-level-detection.md
-  yunGameUserListPath: "YunGame_UserList.json",
-  // 服务器维护状态表（YunGame_ServerStatus.json）：按用户等级分别控状态，
-  // Status=0 表示该等级正在维护（公告窗口会提示并禁止进入系统）。
-  // 相对路径同样以「应用 exe 所在目录」为基准。
-  yunGameServerStatusPath: "YunGame_ServerStatus.json",
   currentUserKind: "",
   currentUserName: "",
   currentUserLevel: 3,
@@ -163,18 +155,10 @@ export const DEFAULT_SETTINGS = {
   gameDetailsDir: "",
   // 封面图目录（空 = 默认 <数据根>/CoverImages；绝对/相对路径均可，相对以应用 exe 所在目录为基准）
   coverImagesDir: "",
-  // 公告目录（空 = 默认 <数据根>/announcements；绝对/相对路径均可，相对以应用 exe 所在目录为基准）
-  announcementsDir: "",
   // 数据库"库根"（空 = 默认数据根；绝对/相对路径均可，相对以应用 exe 所在目录为基准）。
-  // 只配置根：源库 <库根>/Admin/library.db、运行时库 <库根>/library/library.db 两级
-  // 结构固定挂在它下面（保证"配置的库"与"被复制的库"永远是同一对文件）。
+  // 只配置根：源库 <库根>/Admin/library.db、运行时库 <库根>/library/library.db、
+  // 公告 <库根>/announcements/ 三处结构固定挂在它下面（复制关系固定，不单独配置）。
   libraryDir: "",
-  // 权威库（源库）目录（空 = 默认 <库根>/Admin；绝对/相对路径均可，相对以应用 exe 所在目录为基准）。
-  // 无盘网吧环境常把权威库放独立/网络位置：运行时副本每次启动从它复制，权威库只读。
-  sourceLibraryDir: "",
-  // 存档备份工具 GameSaveHelper.exe 的路径（空 = 未配置，备份不可用）。
-  // 绝对路径原样使用；相对路径以应用 exe 所在目录为基准解析。
-  gameSaveHelperPath: "",
   // 游戏根目录：游戏按「相对路径」存放时的基准（生产 X:\YunGame\Playnite，
   // 测试 D:\YunGame\Playnite —— 靠这项配置解耦，代码里不写死）。
   // 空 = 回退到数据根（保持旧行为）。绝对路径原样；相对路径以应用 exe 所在目录为基准。
@@ -332,12 +316,9 @@ export interface GameAction {
   trackGame: boolean;
 }
 
-/** 一组游戏（按根目录组织），name 是占位符，用在启动路径的 {name} 里。 */
-export interface GameLibrary {
-  id: string;
-  name: string;
-  path: string;
-}
+// 2026-09-16：`GameLibrary`（游戏库：id/name/path，name 用作启动路径的 `{库名}` 占位符）
+// 已删除 —— 整套设计废弃，库表、IPC、路径解析、`{LibraryName}` 变量一并移除。
+// 详见 docs/design/launch-and-paths.md 与 PROJECT-MEMORY.md 的 2026-09-16 交接条目。
 
 /** 游戏的某个语言的名字（如中文名、日文名）。 */
 export interface GameName {
@@ -433,7 +414,11 @@ export interface Game {
   guide?: string;
   screenshots: string[];
   videos: GameVideo[];
-  /** 这个游戏属于哪个游戏库（按名字匹配 GameLibrary）。 */
+  /**
+   * 遗留字段：历史上指向 `game_libraries` 里的某个库（库名）。
+   * 2026-09-16 起游戏库整套废弃 —— 这个值**不再被任何逻辑使用**，库里的列也保留不写
+   * （只为旧库兼容，同 `cover_image` 的处理）。新数据不该再填它。
+   */
   gameLibrary?: string;
   /** 玩这个游戏需要的权限等级：1 / 2 / 3（用户等级 >= 该值才可玩）。 */
   gameLevel: number;
@@ -591,19 +576,6 @@ export interface AppSettings {
   cardRowGap: number;
   /** 左侧边栏宽度（像素，160~600）。 */
   sidebarWidth: number;
-  /**
-   * 用户表位置（YunGame_UserList.json）：明文或原版 JsonCrypt 加密版都能解析。
-   * 相对路径以**应用 exe 所在目录**为基准；未配置时默认 `<应用目录>/YunGame_UserList.json`。
-   * 见 docs/design/user-level-detection.md
-   */
-  yunGameUserListPath?: string;
-  /**
-   * 服务器维护状态表位置（YunGame_ServerStatus.json）：按用户等级分别控状态，
-   * `Status = 0` = 该等级维护中（公告窗口提示并禁止进入系统）。明文或加密版都能解析。
-   * 未配置时默认 `<应用目录>/YunGame_ServerStatus.json`。
-   */
-  yunGameServerStatusPath?: string;
-
   /** 当前会话用户类型："enterprise" | "personal" | ""。 */
   currentUserKind: string;
   /** 当前会话用户显示名。 */
@@ -630,21 +602,11 @@ export interface AppSettings {
   gameDetailsDir?: string;
   /** 封面图目录（空 = 默认 <数据根>/CoverImages）。读图白名单跟随该目录。 */
   coverImagesDir?: string;
-  /** 公告目录（空 = 默认 <数据根>/announcements）。 */
-  announcementsDir?: string;
   /**
    * 数据库"库根"（空 = 默认数据根）：运行时副本所在目录，也是权威库的默认父目录。
    * 解析规则见 shared/pathConfig.ts（桌面端 + 网站端同语义）。
    */
   libraryDir?: string;
-  /**
-   * 权威库（源库）**目录**（空 = 默认 `<库根>/Admin`）。文件名固定 `library.db`：
-   * 运行时副本永远由它复制而来，所以只开放目录、不开放具体文件路径。
-   * 无盘网吧环境常把权威库放在独立/网络位置（如 `//NAS/YunGame/Admin`）。
-   */
-  sourceLibraryDir?: string;
-  /** 存档备份工具 GameSaveHelper.exe 的路径（空 = 未配置）。 */
-  gameSaveHelperPath?: string;
   /**
    * 游戏根目录：游戏按「相对路径」存放时的基准
    * （生产 X:\YunGame\Playnite、测试 D:\YunGame\Playnite，靠配置解耦）。
@@ -662,6 +624,17 @@ export interface AppSettings {
    * 空 = `<应用 exe 同级>/yungamestart`。见 docs/design/yungamestart.md。
    */
   yungamestartDir?: string;
+  /**
+   * 网吧配置**目录**（用户表 `YunGame_UserList.json` / 维护状态表 `YunGame_ServerStatus.json`）。
+   * 只配目录，两个文件名由程序内部固定（2026-09-17 起）；空 = `<应用 exe 所在目录>/YunGameConfig`。
+   * 见 docs/design/user-level-detection.md。
+   */
+  YunGameConfigDir?: string;
+  /**
+   * 存档备份工具 GameSaveHelper 的**目录**（exe 名固定 `GameSaveHelper.exe`，只配目录）。
+   * 空 = 备份不可用。见 docs/design/save-backup-tool.md。
+   */
+  gameSaveHelperDir?: string;
   /** 网格卡片上是否显示简介（intro）。 */
   showCardDescription: boolean;
   /** 综合主题/配色/字体设计器配置。 */

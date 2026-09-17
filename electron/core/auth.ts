@@ -10,7 +10,7 @@ import * as os from "os";
 import * as path from "path";
 import { getUserByAccount, getUserByIp } from "./db";
 import type { AppUser, SessionUser } from "./models";
-import { appRoot, configuredPath, sourceDatabasePath } from "./paths";
+import { sourceDatabasePath, yunGameServerStatusFile, yunGameUserListFile } from "./paths";
 
 import { evaluateLibraryAge, type LibraryAgeInfo } from "../../shared/libraryAge";
 import {
@@ -193,8 +193,9 @@ export interface CurrentUserLevelInfo {
  * 优先级（实现在 shared/userLevel.ts 的 resolveUserLevel）：
  *   config 覆盖开关 > 用户表按 IP 命中（L2=钻石，其余黄金）> 个人会话等级 > 黄金(1)
  *
- * 用户表位置：config.json → settings.yunGameUserListPath（相对路径以应用 exe 所在目录为基准，
- * 与其它路径字段一致）；未配置时默认 <应用目录>/YunGame_UserList.json。
+ * 用户表位置：`<config.json → settings.YunGameConfigDir>/YunGame_UserList.json`
+ *（2026-09-17 起只配目录，文件名由程序内部固定，见 electron/core/paths.ts）；
+ * 未配置时默认 <应用目录>/YunGameConfig/YunGame_UserList.json。dev-tools/yungamestart 读同一份。
  *
  * 文件不存在 / 解析失败**不抛错**：按"未命中"处理落到黄金版，但把原因放进返回值，
  * 供状态栏与日志说明 —— 静默失败最难受（用户只会看到"游戏都不能玩"却不知为什么）。
@@ -202,7 +203,7 @@ export interface CurrentUserLevelInfo {
 export async function resolveCurrentUserLevel(
   opts: { personalLevel?: number } = {},
 ): Promise<ResolveUserLevelResult & CurrentUserLevelInfo> {
-  const filePath = configuredPath("yunGameUserListPath") ?? path.join(appRoot(), "YunGame_UserList.json");
+  const filePath = yunGameUserListFile();
 
   let records: YunGameUser[] = [];
   let parseError: string | undefined;
@@ -255,8 +256,7 @@ export interface MaintenanceInfo extends MaintenanceState {
  */
 export async function resolveMaintenanceState(): Promise<MaintenanceInfo> {
   const user = await resolveCurrentUserLevel();
-  const filePath =
-    configuredPath("yunGameServerStatusPath") ?? path.join(appRoot(), "YunGame_ServerStatus.json");
+  const filePath = yunGameServerStatusFile();
 
   let records: ServerStatusRecord[] = [];
   let parseError: string | undefined;

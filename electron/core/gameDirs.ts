@@ -11,6 +11,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { gamesHtmlDir } from "./paths";
+import { findVideoDir } from "./videoLibrary";
 
 /** 候选子目录名：优先游戏 id，其次游戏名（空值跳过）。 */
 export function gameDirCandidates(gameId: string, gameName: string): string[] {
@@ -45,6 +46,33 @@ export function resolveGameSubpath(
     } catch {
       // 这个候选不存在，试下一个（id 没命中就试游戏名）
     }
+  }
+  return null;
+}
+
+/** 命中的视频目录：比 `GameSubpathHit` 多一个"视频目录叫什么"。 */
+export interface GameVideoDirHit {
+  /** 视频目录绝对路径。 */
+  path: string;
+  /** 命中的视频目录名（`视频攻略&游戏实况` / `videos`）—— 拼给浏览器的相对 URL 前缀要用它。 */
+  videoDirName: string;
+  /** 命中的游戏目录名（id 或游戏名）。 */
+  gameDirName: string;
+}
+
+/**
+ * 某游戏的**视频目录**：游戏目录（id 优先、其次游戏名）× 视频目录名
+ * （`视频攻略&游戏实况` 优先、`videos` 兜底 —— 候选名单与探测都在 core/videoLibrary.ts）。
+ *
+ * 为什么单独一个函数、而不是让调用方自己写 `resolveGameSubpath(gameId, gameName, "…")`：
+ * 目录名现在有**两个候选**，写在调用方就会变成"详情页注入用一套、IPC 用另一套" ——
+ * 正是本文件顶部那条教训（同一条规则被抄成四份，改一处就出现"修改器找得到、视频找不到"）。
+ */
+export function resolveGameVideoDir(gameId: string, gameName: string): GameVideoDirHit | null {
+  const root = gamesHtmlDir();
+  for (const c of gameDirCandidates(gameId, gameName)) {
+    const hit = findVideoDir(path.join(root, c));
+    if (hit) return { path: hit.path, videoDirName: hit.name, gameDirName: c };
   }
   return null;
 }

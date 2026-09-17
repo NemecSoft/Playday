@@ -11,23 +11,27 @@ Playday/
 ├── server/              # 网站端后端（Node http，复用同一份数据）
 ├── shared/              # 前后端共享的纯逻辑
 ├── scripts/             # 数据迁移/校验脚本
-├── tools/               # 工具目录（各自带 README / 说明）
+├── dev-tools/           # 工具目录（各自带 README / 说明）。dev- 前缀 = 「仓库里的源，部署时要搬」；
+│                        #   搬到目的地后名字会变，见每行末尾的 → 目的地
 │                        #   yungamestart/     C++ 开机自启：判定黄金/钻石版 + 建桌面快捷方式（见 yungamestart.md）
+│                        #                     → <根>\yungamestart\（搬的是它的 dist\）
 │                        #   GameSaveHelper/   存档备份/还原工具（C++ + 自带整套便携 NSIS，origin: NemecSoft/GameSaveHelper）
+│                        #                     → <根>\tools\GameSaveHelper\（搬的是它的 release\）
+│                        #   runtime/          运行库安装包（VC++ 运行库 x64/x86、VP9 解码扩展）
+│                        #                     → <根>\tools\runtime\，启动时静默检测安装（见 runtime-deps.md）
 │                        #   nircmd/           第三方命令行工具 NirCmd（游戏启动 bat 用它做窗口居中/音量等）；
 │                        #                     生产环境对应 <YunGame>\Tools\nircmd\，游戏 bat 里硬编码的就是那个路径
-│                        #   runtime/          运行库安装包（VC++ 运行库 x64/x86、VP9 解码扩展）；
-│                        #                     出包时由 package.bat 放到 <exe 同级>\runtime\，启动时静默检测安装（见 runtime-deps.md）
 │                        #   cover-optimizer/  封面图规范化/瘦身：AI 大图 → 成品封面；或给现有库瘦身（见 cover-images.md）
+│                        #                     开发期工具，不进部署
 ├── public/              # 静态资源（字体、图标）
 ├── vendor/              # 随包第三方前端资源（内置播放器 DPlayer 的 js + MIT 许可 + README）；
 │                        #   由本地服务器按 /vendor/<文件名> 发给详情页（见 game-details.md）
 ├── locales/             # 打包用语言文件
-├── path-modes.json      # 三种模式（dev/prerelease/release）的目录规则：**唯一来源**，config.json 由它生成
+├── path-modes.json      # 两种模式（dev/release）的目录规则：**唯一来源**，config.json 由它生成；
+│                        #   写法决定搬不搬（字符串 = 就地、[源, 目标] = 部署时搬）
 ├── config.json          # 生效配置（开发态）。路径字段别手工改，改 path-modes.json 再生成
 ├── dev-data/            # 开发/测试态的数据根（库 + 权威库 + 公告；不算构建产物）
-├── release/             # **纯打包产物**：正式包（X 盘 config.json + 随包 data/），整目录不入库
-├── release_test/        # 预发布包（D 盘 config.json，不带数据）—— 与 release/ 分开放
+├── release/             # **正式落点**：X 盘在本机不存在时 promote 把整包落这儿（结构=正式机），整目录不入库
 ├── .pack-tmp/           # electron-builder 中转目录（打包成功后自动删除）
 ├── dist/                # 前端构建产物（vite build 输出）
 ├── dist-electron/       # 主进程编译产物（tsc 输出）
@@ -45,11 +49,13 @@ Playday/
 ├── deploy-web.bat       # 一键部署网站端
 ├── test-web.bat         # 网站端测试
 ├── sync-tags.bat        # 标签同步（json → 权威库）
-├── sync-game-content.bat # 游戏内容同步（简介/地区/标签 → 库）
+├── libraryjson-importto-librarydb.bat  # 整库 JSON 回写（**壳**：逻辑在 scripts/libraryjson-importto-librarydb.ps1）
+├── librarydb-exportto-libraryjson.bat  # 整库 JSON 导出（**壳**：逻辑在 scripts/librarydb-exportto-libraryjson.ps1）
+├── librarydb-backup.bat                # 只备份权威库（**壳**：逻辑在 scripts/librarydb-backup.ps1）
 ├── data-dir.bat         # 开发态数据路径（其它 bat 用 call 取，值来自 path-modes.json）
-├── package.bat          # 打包便携 exe 到 <输出目录>（默认 release/；纯产物，不碰数据）
-├── build-release.bat    # 出正式包（X 盘 → release/；双击即用，无参数）
-└── build-prerelease.bat # 出测试/预发布包（D 盘 → release_test/；双击即用，无参数）
+├── deploy.bat           # **一键部署测试版**（构建 → 铺到目的地 → 生成 config.json；支持 --dry-run）
+├── promote.bat          # **一键升正式**（改盘符 → 复制到 X → 校验 → 清测试目的地；支持 --dry-run）
+└── package.bat          # 只打一个便携产物到 release/（纯产物、不碰数据；日常用 deploy.bat）
 ```
 
 ## 主进程 `electron/`
@@ -63,7 +69,7 @@ Playday/
 | `core/paths.ts` | 数据根定位（`configRoot()`：环境变量 → exe 同级 data → 项目根） |
 | `core/db.ts` | sql.js 数据库访问层（建表、CRUD、`persist()` 落盘） |
 | `core/models.ts` | 数据模型（`Game`、`AppSettings`、`DEFAULT_SETTINGS` 等） |
-| `core/settings.ts` | 设置读写（`config.json`），`getLibraries()` 游戏库 |
+| `core/settings.ts` | 设置读写（`config.json`）；默认值合并、历史键清理 |
 | `core/auth.ts` | 登录/权限（用户等级）、企业用户 IP 匹配 |
 | `core/covers.ts` | 封面图库匹配、图片读取 |
 | `core/imageCache.ts` | 图片字节缓存：**按总字节数封顶的 LRU**（纯逻辑 + 单测，见 [封面图](./cover-images.md)） |
@@ -120,8 +126,9 @@ Playday/
 | 出包 | `prepare-release.mjs` | 按 `path-modes.json` 生成/校验某模式（dev / prerelease / release）的 `config.json`，release 模式顺带复制随包数据；规则逻辑在 `shared/pathModes.ts`（见 [路径模式与出包](./release-build.md)） |
 | 路径 | `lib/devData.mjs` | **开发态数据路径的唯一来源**（读 `path-modes.json` 的 dev 段；支持 `YUNGAME_DATA_DIR` 覆盖） |
 | 路径 | `data-dir.mjs` | 给 cmd 用的薄壳：打印数据根 / 权威库 / 运行时副本（bat 侧入口是仓库根的 `data-dir.bat`） |
+| 整库 JSON | `libraryjson-importto-librarydb.ps1` / `librarydb-exportto-libraryjson.ps1` / `librarydb-backup.ps1` | 仓库根那三个双击 bat 的**逻辑层**（bat 只剩壳，规矩见 `docs/PROJECT-MEMORY.md` §三.14）；真正的库操作在 `scripts/library-json.mjs` |
 
-> 封面瘦身不是脚本目录的东西：它在 `tools/cover-optimizer/`（2026-09-14 从
+> 封面瘦身不是脚本目录的东西：它在 `dev-tools/cover-optimizer/`（2026-09-14 从
 > 「仓库根 bat + `scripts/` 下的 ps1」搬过去，见 [封面图](./cover-images.md)）。
 
 ## 数据目录：`dev-data/`（开发态）与 `data/`（发布态）
@@ -158,11 +165,9 @@ Playday/
 | --- | --- | --- |
 | `coverImagesDir` | `<数据根>/CoverImages` | 封面图目录（读图白名单跟随它） |
 | `gameDetailsDir` | `<数据根>/Game_Details` | 详情页 HTML/视频 + 修改器 + 应用存档 |
-| `announcementsDir` | `<数据根>/announcements` | 公告目录（`announcement.html`） |
-| `libraryDir` | `<数据根>` | 数据库**库根**：运行时副本所在，也是权威库的默认父目录 |
-| `sourceLibraryDir` | `<库根>/Admin` | 权威库（源库）**目录**：只读数据来源，运行时副本由它复制 |
-| `defaultGameRootPath` | `<数据根>` | 游戏相对路径的基准（见 [启动与路径规则](./launch-and-paths.md)） |
-| `gameSaveHelperPath` | 未配置（备份不可用） | 存档备份工具 GameSaveHelper.exe |
+| `libraryDir` | `<数据根>` | 数据库**库根**：运行时副本所在；权威库固定在 `<库根>/Admin`、公告固定在 `<库根>/announcements`（都是**推导**，没有单独字段） |
+| `defaultGameRootPath` | `<数据根>` | 游戏相对路径的基准（见 [启动与路径规则](./launch-and-paths.md)）；release 模式同时是**部署目的地根** |
+| `gameSaveHelperDir` | 未配置（备份不可用） | 存档备份工具 GameSaveHelper 的**目录**（exe 文件名固定） |
 
 **统一语义**（所有 `xxxDir` 字段一致）：
 

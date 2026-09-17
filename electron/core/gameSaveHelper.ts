@@ -27,10 +27,9 @@ export function buildBackupArgs(gameName: string, savePaths: string[]): string[]
 // 返回 { path } 或 { error }，让调用方把 error 直接透给前端。
 export function resolveHelperExe(): { path: string } | { error: string } {
   const configured = gameSaveHelperExePath();
-  if (!configured) {
-    return { error: "未配置存档备份工具路径（config.json → settings.gameSaveHelperPath）" };
-  }
   if (!fs.existsSync(configured)) {
+    // 目录来自 config.json → settings.gameSaveHelperDir，exe 名固定 GameSaveHelper.exe
+    //（2026-09-17 起不把文件名暴露在配置里）。
     return { error: `存档备份工具不存在：${configured}` };
   }
   return { path: configured };

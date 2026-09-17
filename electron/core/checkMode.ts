@@ -25,7 +25,6 @@ import * as fs from "fs";
 import * as path from "path";
 import { app } from "electron";
 import { openDb, getGames } from "./db";
-import { getLibraries } from "./settings";
 import { configRoot, defaultGameRootPath } from "./paths";
 import { resolveAction, validateLaunchPath, findGameExecutable } from "./process";
 import { expandVariables } from "./scriptRunner";
@@ -57,7 +56,7 @@ const ORDER: FindingKind[] = [
   "save-no-match",
 ];
 
-function buildReport(summary: CheckSummary, meta: { dataRoot: string; gameRoot: string; libs: string }): string[] {
+function buildReport(summary: CheckSummary, meta: { dataRoot: string; gameRoot: string }): string[] {
   const lines: string[] = [];
   const sep = "=".repeat(72);
   lines.push(sep);
@@ -66,7 +65,6 @@ function buildReport(summary: CheckSummary, meta: { dataRoot: string; gameRoot: 
   lines.push(`版本      ：${app.getVersion?.() ?? "unknown"}`);
   lines.push(`数据根    ：${meta.dataRoot}`);
   lines.push(`游戏根    ：${meta.gameRoot}`);
-  lines.push(`游戏库    ：${meta.libs}`);
   lines.push(`检查游戏  ：${summary.checked} 个`);
   lines.push(sep);
   lines.push("");
@@ -125,16 +123,14 @@ export async function runCheckMode(): Promise<number> {
     // 打开数据库（与正常启动同一条路：复制权威库到运行时副本再读入内存）。
     await openDb();
     const games = getGames();
-    const libs = getLibraries();
     const gameRoot = defaultGameRootPath();
     const dataRoot = configRoot();
 
     const summary = checkGames(games, {
-      libraries: libs,
       gameRoot,
       expandVariables,
       resolveAction,
-      validateAction: (p, t) => validateLaunchPath(p, t, libs),
+      validateAction: (p, t) => validateLaunchPath(p, t),
       findExecutable: (dir) => findGameExecutable(dir),
       exists: (p) => fs.existsSync(p),
       isDir: (p) => {
@@ -156,7 +152,6 @@ export async function runCheckMode(): Promise<number> {
     for (const l of buildReport(summary, {
       dataRoot,
       gameRoot,
-      libs: libs.length ? libs.map((l) => `${l.name} → ${l.path}`).join(" ； ") : "(空)",
     })) {
       say(l);
     }

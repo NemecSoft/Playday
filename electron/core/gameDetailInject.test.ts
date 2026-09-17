@@ -8,7 +8,7 @@ import {
   injectVideoSection,
   labelsFor,
 } from "./gameDetailInject";
-import type { VideoScan } from "./videoLibrary";
+import { VIDEO_DIR_NAMES, type VideoScan } from "./videoLibrary";
 
 /** 一份"长得像真实详情页"的样板：container 里两个 section + 嵌套 div。 */
 const PAGE = `<!DOCTYPE html>
@@ -73,7 +73,7 @@ describe("buildVideoSection：按子目录分组", () => {
   });
 
   it("用相对路径 + 逐段编码（空格/中文都不能裸着放进 src）", () => {
-    const html = buildVideoSection({ scan: scanWithDirs });
+    const html = buildVideoSection({ scan: scanWithDirs, videoDirName: "videos" });
     expect(html).toContain('data-src="videos/%E5%AE%9E%E5%86%B5/%E7%AC%AC1%E6%9C%9F.mp4"');
     expect(html).not.toContain('src="videos/实况/第1期.mp4"');
   });
@@ -175,6 +175,8 @@ describe("buildVideoSection：预览封面（同名图片优先，否则留给�
   it("有同名图片 → 卡片带 has-poster 且 img 直接给 src（页面不用再抓帧）", () => {
     const html = buildVideoSection({
       scan: { root: ["1.mp4"], dirs: [] },
+      // 这一组只看"封面图怎么拼进 src"，所以显式用旧名 —— 新名/编码由上面那组用例钉。
+      videoDirName: "videos",
       posterFor: (rel) => (rel === "1.mp4" ? "1.jpg" : null),
     });
     expect(html).toContain('class="yungame-video-card has-poster"');
@@ -190,11 +192,30 @@ describe("buildVideoSection：预览封面（同名图片优先，否则留给�
   it("封面图路径里的中文与空格同样要逐段编码", () => {
     const html = buildVideoSection({
       scan: { root: ["实况/第1期.mp4"], dirs: [] },
+      videoDirName: "videos",
       posterFor: () => "实况/第1期 封面.jpg",
     });
     expect(html).toContain(
       'src="videos/%E5%AE%9E%E5%86%B5/%E7%AC%AC1%E6%9C%9F%20%E5%B0%81%E9%9D%A2.jpg"'
     );
+  });
+});
+
+// 2026-09-17 需求：视频目录从 `videos` 改成 `视频攻略&游戏实况`（数据太大，见核心 videoLibrary.ts
+// 的 VIDEO_DIR_NAMES）。URL 前缀必须跟着**实际命中的目录名**走，否则改名后整片 404 ——
+// 而那种错只在那只 iframe 的控制台里看得见，所以这里把前缀的两种取值都钉住。
+describe("视频目录名 → URL 前缀（改名后最容易悄悄坏掉的一环）", () => {
+  it("不传 videoDirName → 用新名，且整体编码（`&` 必须变成 %26）", () => {
+    const html = buildVideoSection({ scan: { root: ["1.mp4"], dirs: [] } });
+    const prefix = encodeURIComponent(VIDEO_DIR_NAMES[0]);
+    // `&` 不编码的话浏览器会把它当查询串分隔符 → 请求路径截断 → 404（这里是最容易漏的一步）
+    expect(prefix).toContain("%26");
+    expect(html).toContain(`data-src="${prefix}/1.mp4"`);
+  });
+
+  it("显式传旧名 `videos`（老数据还没搬的机器）→ 前缀仍是 videos/", () => {
+    const html = buildVideoSection({ scan: { root: ["1.mp4"], dirs: [] }, videoDirName: "videos" });
+    expect(html).toContain('data-src="videos/1.mp4"');
   });
 });
 

@@ -54,7 +54,7 @@
   "tier_badge_gold": "{{brand}}黃金版",
   "tier_badge_diamond": "{{brand}}鑽石版",
   "maintenance_title": "伺服器維護中",
-  "maintenance_body": "該版本正在定期維護，暫時無法進入，請稍後再試。",
+  "maintenance_body": "（{{tier}}）正在維護",
   "maintenance_exit": "結束",
   "outdated_title": "系統過舊",
   "outdated_body": "本機遊戲庫已 {{days}} 天未更新，請聯繫管理員取得最新版本，更新後再進入。",

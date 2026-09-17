@@ -12,6 +12,9 @@
 // 退出码非 0 表示有违规。忽略 node_modules / dist / release / 备份文件。
 import fs from 'node:fs'
 import path from 'node:path'
+// 规则 10 要用整库 JSON 的目录/元数据文件名与"哪些文件算表文件"的判定 ——
+// 这三处规则只允许有一份（与脚本 library-json.mjs 共用 scripts/lib/libraryJson.mjs）。
+import { LIBRARY_JSON_DIR, LIBRARY_JSON_META, tableOfFilesIn } from './lib/libraryJson.mjs'
 
 const ROOT = process.cwd()
 const SHARED_MODEL = 'shared/models.ts'
@@ -19,7 +22,9 @@ const SHIMS = ['electron/core/models.ts', 'src/types/models.ts']
 
 // 单一来源管理的实体类型名。
 const ENTITIES = [
-  'Game', 'GameAction', 'GameLibrary', 'GameName', 'GameVideo', 'GameLink',
+  // ⚠️ 名单里没有 GameLibrary：游戏库整套设计已于 2026-09-16 废弃、类型已删
+  // （库表 / IPC / 路径解析 / {LibraryName} 变量一并移除）。真加回来时记得也加回这里。
+  'Game', 'GameAction', 'GameName', 'GameVideo', 'GameLink',
   'Platform', 'AppUser', 'SessionUser', 'LibraryStats', 'LibraryPluginInfo',
   'AppSettings', 'CardTextStyle', 'ErrorReportConfig', 'CrashReport',
   'DesignerConfig', 'GradientSpec', 'DeepPartial',
@@ -240,16 +245,19 @@ const CONFIG_FILE = 'config.json'
 const CONFIG_REQUIRED_PATHS = [
   'coverImagesDir',
   'gameDetailsDir',
-  'announcementsDir',
   'libraryDir',
-  'sourceLibraryDir',
   'defaultGameRootPath',
-  // 下面两个也是"程序自带资源的落位"：runtimeDir 是运行库安装包目录、yungamestartDir 是
-  // 开机自启工具目录。以前它们是代码里写死的默认值（<exe 同级>/xxx），运维想换位置只能重新
-  // 出包；现在由 path-modes.json 定，所以也必须显式写在 config.json 里 —— 否则"实际在用哪个
-  // 目录"又变成隐式的（正是本规则要拦的那件事）。
+  // 下面几个也是"程序自带资源/环境数据的落位"：runtimeDir 是运行库安装包目录、yungamestartDir 是
+  // 开机自启工具目录、YunGameConfigDir 是用户表与维护表所在目录、gameSaveHelperDir 是存档工具目录。
+  // 以前它们是代码里写死的默认值（<exe 同级>/xxx），运维想换位置只能重新出包；现在由
+  // path-modes.json 定，所以也必须显式写在 config.json 里 —— 否则"实际在用哪个目录"又变成隐式的
+  // （正是本规则要拦的那件事）。
+  // 注：文件名（YunGame_UserList.json / YunGame_ServerStatus.json / GameSaveHelper.exe）由程序内部
+  // 固定，不配在 config.json 里（2026-09-17 需求：不把文件名暴露在配置里）。
   'runtimeDir',
   'yungamestartDir',
+  'YunGameConfigDir',
+  'gameSaveHelperDir',
 ]
 // 这几项必须真实存在 —— 配错就是"封面全空 / 读不到库"这类静默故障。
 // defaultGameRootPath 不查存在性：它是"游戏放在哪"的根，新机器上可能还没拷游戏进去。
@@ -283,65 +291,69 @@ if (fs.existsSync(configFull)) {
   }
 }
 
-// ---- 10) 人工内容源 data/game-content.json 必须在、且结构完好 ----
-// 由来：简介/地区/标签是**人工维护**的长期数据（不是构建产物）。它一度放在 release/data/
-// 下 —— 而 .gitignore 只放行 release/data 里的 library、announcements、config.json，
-// 于是那份几百 KB 的人工成果**根本没进 git**，随时可能随目录清理一起丢。现已固定在
-// data/game-content.json（仓库根，纳入版本管理）。
-// 这里拦两种事故：文件被删/挪走，以及被编辑坏（JSON 语法错、条目缺字段、整体变空）。
-// 重建/补齐：node scripts/gen-game-content.mjs（只补空缺，不覆盖已有值）。
-const CONTENT_FILE = 'data/game-content.json'
-const CONTENT_REQUIRED_KEYS = ['gameid', 'name', 'intro', 'region', 'tags', 'gamelevel']
-const contentFull = path.join(ROOT, CONTENT_FILE)
-if (!fs.existsSync(contentFull)) {
+// ---- 10) 整库 JSON（dev-data/library-json/）必须在、且结构完好 ----
+// 由来：游戏库的人工资内容（简介/地区/标签/权限等级/存档路径…）**只存在库里**，不是构建产物。
+//   它以前靠"人工内容表 data/game-content.json"承载，而那份表一度放在 release/data/ 下 ——
+//   .gitignore 只放行 release/data 里的 library、announcements、config.json，于是几百 KB 的
+//   人工成果**根本没进 git**，随时可能随目录清理一起丢。
+//   2026-09-16 改成"**整库 JSON 镜像**"：npm run db:export 导出 → 手改 → npm run db:import
+//   （或双击 libraryjson-importto-librarydb.bat）回写。它是 schema 驱动的（表/列现发现），加列加表都不用改代码，
+//   所以不必再维护"必需键列表"这种东西。位置固定在仓库根的 dev-data/library-json/（纳入版本管理）。
+// 这里拦两种事故：目录/文件被删或挪走，以及被编辑坏（JSON 语法错、整体变空、行不是对象）。
+// 重建：npm run db:export（从权威库重新导出，不碰库本身）。
+const LIBRARY_JSON_FULL = path.join(ROOT, LIBRARY_JSON_DIR)
+if (!fs.existsSync(LIBRARY_JSON_FULL)) {
   violations.push(
-    `${CONTENT_FILE} 不存在 —— 这是人工维护的游戏内容源（简介/地区/标签），不是构建产物，别删也别挪出仓库；补齐：node scripts/gen-game-content.mjs`,
+    `${LIBRARY_JSON_DIR}/ 不存在 —— 这是整库 JSON（人工内容的可编辑镜像，不是构建产物），别删也别挪出仓库；重建：npm run db:export`,
   )
 } else {
-  let items = null
-  try {
-    items = JSON.parse(fs.readFileSync(contentFull, 'utf8'))
-  } catch (e) {
-    violations.push(`${CONTENT_FILE}: JSON 解析失败（${e.message}）—— 手工编辑时括号/逗号写坏了？`)
+  const TABLE_FILES = tableOfFilesIn(fs.readdirSync(LIBRARY_JSON_FULL))
+  if (!TABLE_FILES.length) {
+    violations.push(`${LIBRARY_JSON_DIR}/ 里没有任何表文件（*.json）—— 内容丢了？重建：npm run db:export`)
   }
-  if (items !== null && !Array.isArray(items)) {
-    violations.push(`${CONTENT_FILE}: 顶层必须是数组（一条一个游戏）`)
-  } else if (Array.isArray(items)) {
-    if (!items.length) {
-      violations.push(`${CONTENT_FILE} 是空数组 —— 内容丢了？补齐：node scripts/gen-game-content.mjs`)
-    }
-    const noName = items.filter((it) => !it || typeof it.name !== 'string' || !it.name.trim())
-    if (noName.length) violations.push(`${CONTENT_FILE}: ${noName.length} 条缺 name 字段`)
-    const lackKey = items.filter((it) => it && CONTENT_REQUIRED_KEYS.some((k) => !(k in it)))
-    if (lackKey.length) {
-      violations.push(
-        `${CONTENT_FILE}: ${lackKey.length} 条缺字段（每条应有 ${CONTENT_REQUIRED_KEYS.join(' / ')}），例如 "${lackKey[0]?.name ?? '?'}"`,
-      )
-    }
-    // savepaths 是**可选**字段（没配存档的游戏就不该有这个键），但一旦写了必须是
-    // "非空字符串数组"：手写时最容易写成字符串或塞空数组，而坏值会让"备份存档"
-    // 拿着错路径去找文件 —— 只在这类静默故障上下守卫（与 cover_image 那次同理）。
-    const badSavePaths = items.filter(
-      (it) =>
-        it &&
-        'savepaths' in it &&
-        !(Array.isArray(it.savepaths) && it.savepaths.length > 0 && it.savepaths.every((p) => typeof p === 'string' && p.trim())),
+  const metaFile = path.join(LIBRARY_JSON_FULL, LIBRARY_JSON_META)
+  if (!fs.existsSync(metaFile)) {
+    violations.push(
+      `${LIBRARY_JSON_DIR}/${LIBRARY_JSON_META} 不存在 —— 导入时要靠它的指纹拦"拿旧导出回写"；重建：npm run db:export`,
     )
-    if (badSavePaths.length) {
-      violations.push(
-        `${CONTENT_FILE}: ${badSavePaths.length} 条 savepaths 不是「非空字符串数组」（例如 "${badSavePaths[0]?.name ?? '?'}"）—— 留空就别写这个键`,
-      )
+  } else {
+    try {
+      const meta = JSON.parse(fs.readFileSync(metaFile, 'utf8'))
+      if (typeof meta?.dbBytes !== 'number' || typeof meta?.dbMtimeMs !== 'number') {
+        violations.push(
+          `${LIBRARY_JSON_DIR}/${LIBRARY_JSON_META} 缺少 dbBytes / dbMtimeMs —— 被手改坏了？重建：npm run db:export`,
+        )
+      }
+    } catch (e) {
+      violations.push(`${LIBRARY_JSON_DIR}/${LIBRARY_JSON_META}: JSON 解析失败（${e.message}）`)
     }
-    // batconsole 同样是**可选**字段，三态：true / false / null（null = 回到跟随全局设置）。
-    // 坏值（"yes" / 1 / "true" 之类）在 apply 脚本里会被归一成 null，于是"想强制隐藏"
-    // 悄悄变成"跟随全局" —— 不报错、界面上也看不出来，属于同一类静默故障，故一并上守卫。
-    const badBatConsole = items.filter(
-      (it) => it && 'batconsole' in it && !(it.batconsole === null || typeof it.batconsole === 'boolean'),
-    )
-    if (badBatConsole.length) {
-      violations.push(
-        `${CONTENT_FILE}: ${badBatConsole.length} 条 batconsole 不是 true / false / null（例如 "${badBatConsole[0]?.name ?? '?'}"）—— 只写这三种值，别写 1 或字符串`,
-      )
+  }
+  for (const table of TABLE_FILES) {
+    const relFile = `${LIBRARY_JSON_DIR}/${table}.json`
+    let rows = null
+    try {
+      rows = JSON.parse(fs.readFileSync(path.join(LIBRARY_JSON_FULL, `${table}.json`), 'utf8'))
+    } catch (e) {
+      violations.push(`${relFile}: JSON 解析失败（${e.message}）—— 手工编辑时括号/逗号/引号写坏了？`)
+      continue
+    }
+    if (!Array.isArray(rows)) {
+      violations.push(`${relFile}: 顶层必须是数组（一行一个对象）`)
+      continue
+    }
+    if (!rows.length) {
+      violations.push(`${relFile} 是空数组 —— 内容丢了？重建：npm run db:export`)
+      continue
+    }
+    const notObject = rows.filter((r) => !r || typeof r !== 'object' || Array.isArray(r))
+    if (notObject.length) violations.push(`${relFile}: ${notObject.length} 行不是对象`)
+    // games.name 是库上的 NOT NULL + 唯一索引列：空的 name 一定是坏数据
+    // （其它表没有这种列，不查）。
+    if (table === 'games') {
+      const noName = rows.filter((r) => !r || typeof r.name !== 'string' || !r.name.trim())
+      if (noName.length) {
+        violations.push(`${relFile}: ${noName.length} 行缺 name（库上这一列 NOT NULL 且有唯一索引）`)
+      }
     }
   }
 }
@@ -374,6 +386,10 @@ for (const file of walk(ROOT, [], ['.ts', '.tsx', '.mts', '.mjs', '.js', '.bat',
 //   代码：scripts/lib/devData.mjs（唯一来源，读 path-modes.json 的 dev 段）
 //   cmd ：data-dir.bat → scripts/data-dir.mjs（cmd 里没法 import 模块，所以有个薄壳）
 // 这里把"又写死一处"变成自动失败。
+// 2026-09-17 扩到全部 `dev-` 素材目录：它们是"仓库里的源、部署时搬到目的地"，名字只该出现在
+// path-modes.json 里 —— 脚本里再写一遍就又会漂移（部署脚本按表搬、别处按写死的名字找，表现成"搬了没生效"）。
+const DEV_DIR_PATTERNS = [/dev-data/i, /dev-CoverImages/i, /dev-fonts/i, /dev-YunGameConfig/i];
+const DEV_DIR_NAMES = ['dev-data', 'dev-CoverImages', 'dev-fonts', 'dev-YunGameConfig'];
 const DEV_DATA_OWNERS = new Set([
   'scripts/lib/devData.mjs',
   'scripts/check-architecture.mjs', // 本规则的定义处（注释里要写出这个值）
@@ -381,14 +397,15 @@ const DEV_DATA_OWNERS = new Set([
 for (const file of walk(ROOT, [], ['.ts', '.tsx', '.mts', '.mjs', '.js', '.bat', '.ps1'])) {
   const r = rel(file)
   if (DEV_DATA_OWNERS.has(r)) continue
-  if (r.startsWith('dev-data/')) continue // 数据本身
+  if (DEV_DIR_NAMES.some((n) => r.startsWith(`${n}/`))) continue // 数据/素材本身
   if (r.includes('__tests__') || /\.test\.(ts|tsx|mjs|js)$/.test(r)) continue // 测试里的样例值
   if (r.startsWith('_')) continue // 一次性维护脚本
   if (r.startsWith('scripts/') && (r.includes('verify-') || r.includes('migrate-'))) continue // 历史一次性脚本
   const code = stripComments(fs.readFileSync(file, 'utf8'))
-  if (/dev-data/i.test(code)) {
+  const hit = DEV_DIR_PATTERNS.findIndex((re) => re.test(code))
+  if (hit >= 0) {
     violations.push(
-      `${r}: 又写死了开发态数据目录名 —— 代码请用 scripts/lib/devData.mjs，bat 请 call data-dir.bat（见 docs/design/release-build.md）`,
+      `${r}: 又写死了开发态目录名 ${DEV_DIR_NAMES[hit]} —— 代码请用 scripts/lib/devData.mjs（或读 path-modes.json），bat 请 call data-dir.bat（见 docs/design/release-build.md）`,
     )
   }
 }
@@ -399,5 +416,5 @@ if (violations.length) {
   process.exit(1)
 }
 console.log(
-  '✓ 架构检查通过：实体类型单一来源、分层无越界、渲染层无 Node/sql.js 依赖、数据目录名未写死、Tailwind 变量层齐备、内容源文件完好、数据根未指回 release/data',
+  '✓ 架构检查通过：实体类型单一来源、分层无越界、渲染层无 Node/sql.js 依赖、数据目录名未写死、Tailwind 变量层齐备、整库 JSON 完好、数据根未指回 release/data',
 )

@@ -5,9 +5,8 @@
 import * as fs from "fs";
 import * as path from "path";
 import { configPath, legacyConfigPath } from "./paths";
-import { AppSettings, DEFAULT_SETTINGS, GameLibrary } from "./models";
+import { AppSettings, DEFAULT_SETTINGS } from "./models";
 import type { DeepPartial } from "../../shared/models";
-import { getGameLibraries } from "./db";
 
 interface ConfigFile {
   settings: AppSettings;
@@ -80,13 +79,6 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === "object" && !Array.isArray(v);
 }
 
-// 获取游戏库列表。游戏库是"业务数据"，单一数据源是数据库 game_libraries 表，
-// 不从 config.json 读（配置里已彻底移除该字段，避免双份存储混乱）。
-export function getLibraries(): GameLibrary[] {
-  try {
-    return getGameLibraries();
-  } catch {
-    // 数据库可能未打开，返回空；正常流程 get_games 前数据库已就绪。
-    return [];
-  }
-}
+// 2026-09-16：`getLibraries()` 已删除 —— 游戏库（game_libraries 表 / `{Gamelibrary1}` 占位符）
+// 整套设计废弃。路径现在只有两种形态：绝对路径，或 `{InstallDir}\…`（由启动链路展开）。
+// 详见 docs/design/launch-and-paths.md 与 PROJECT-MEMORY.md 的 2026-09-16 交接条目。

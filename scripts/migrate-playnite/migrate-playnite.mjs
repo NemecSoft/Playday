@@ -466,7 +466,8 @@ async function main() {
   // --out-json：只导出映射结果（增量同步按 id 增/改时用），不碰数据库。
   // 为什么需要它：增量同步要用**真实映射**得到完整行（含 Playday 特有字段的默认值，
   // 如 game_level / actions 结构），手写一份既容易漏字段、也会和既有行形态不一致。
-  // 导出的 JSON 正好可以直接喂给 playday-db.mjs import（它按 id 更新/插入）。
+  // 导出的 JSON 可以合进 dev-data/library-json/games.json 的对应行，再 npm run db:import -- --apply 回写
+  // （2026-09-16 起；旧的 playday-db.mjs import 已退役，见 docs/design/library-json.md）。
   if (opts.outJson) {
     const mapped = games.map((g) => mapGame(g, maps))
     await fs.writeFile(opts.outJson, JSON.stringify(mapped, null, 2), 'utf8')

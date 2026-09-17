@@ -16,15 +16,15 @@ export interface ScriptLineResult {
 }
 
 // 把脚本里的占位符替换成实际值。
-// 支持：{InstallDir} {GameName} {GameId} {LibraryName} {AppDir}，大小写不敏感。
+// 支持：{InstallDir} {GameName} {GameId} {AppDir}，大小写不敏感。
+// ⚠️ 2026-09-16 起不再支持 `{LibraryName}`：游戏库（game_libraries）整套废弃。
+//    刻意**不静默替换成空串** —— 未知占位符原样留着，让写脚本的人一眼看出"这个变量没了"。
 export function expandVariables(script: string, game: Game): string {
   const installDir = game.installDirectory || "";
-  const lib = game.gameLibrary || "";
   const appDir = configRoot();
   let out = replaceCi(script, "{InstallDir}", installDir);
   out = replaceCi(out, "{GameName}", game.name);
   out = replaceCi(out, "{GameId}", game.id);
-  out = replaceCi(out, "{LibraryName}", lib);
   out = replaceCi(out, "{AppDir}", appDir);
   return out;
 }

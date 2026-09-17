@@ -41,6 +41,15 @@ export const adminDbPath = (root = devDataDir()) => path.join(root, "Admin", "li
 /** 运行时副本：`<数据根>/library/library.db`（客户端启动时从权威库复制一份）。 */
 export const runtimeDbPath = (root = devDataDir()) => path.join(root, "library", "library.db");
 
+/**
+ * 整库 JSON（人工编辑的内容镜像）目录：`<数据根>/library-json`。
+ *
+ * 为什么放在数据根下、而不是另起一个仓库目录：它就是"库的人工编辑面"，跟着数据走最不容易分家
+ *（2026-09-17 从仓库根的 data/library 搬过来）。**注意别和运行时副本的 `<数据根>/library` 混**：
+ * 那个目录由客户端每次启动从权威库重建、改了会被覆盖，这个才是你要手改的。
+ */
+export const libraryJsonDir = (root = devDataDir()) => path.join(root, "library-json");
+
 /** 数据根相对仓库的路径（git status 里显示的就是这个；数据在仓库外时返回 ""）。 */
 export function dataDirGitPath(root = devDataDir()) {
   const rel = path.relative(ROOT, root).split(path.sep).join("/");

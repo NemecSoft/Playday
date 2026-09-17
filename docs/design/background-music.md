@@ -21,7 +21,7 @@
 ## 二、目录与文件
 
 `settings.musicDir`（`config.json`）——**音乐目录属于"环境相关数据"，它的取值由
-`path-modes.json` 按模式（dev / prerelease / release）统一规定**，不要直接改 `config.json`
+`path-modes.json` 按模式（dev / release）统一规定**，不要直接改 `config.json`
 （见 [路径模式与出包](./release-build.md)）。本机当前是 `D:/KwDownload/song`：
 
 - **未配置** → `<数据根>/music`（与封面、详情页等数据目录的约定一致）；

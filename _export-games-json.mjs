@@ -1,4 +1,14 @@
-// 导出权威库 → games.json（供人工查看/可再用 playday-db.mjs import 写回）
+// 导出权威库 → **仓库根 games.json**：它是 tools/GameSaveHelper（随包发的存档备份工具）
+// 的**数据源**，不是数据管理链 —— 管理数据请用 npm run db:export / db:import
+// （见 docs/design/library-json.md）。2026-09-16：它的另一半（import-games.bat 把这文件写回库）
+// 已退役，只剩这一个"出口"方向。
+//
+// ⚠️ 这个文件是**接口**，别顺手优化：
+//   · 文件名/位置被 GameSaveHelper 的 bat 写死（发布测试环境.bat 指仓库根，
+//     发布正式环境.bat 指 X:\YunGame\PlayNite\games.json）；
+//   · GameSaveHelper 的 C++ 是**按精确文本锚点**解析的（`\n\t\t"name": "` / `\n\t\t"savePaths"`），
+//     所以下面的 `JSON.stringify(…, null, '\t')`（**tab 缩进**）和 camelCase 键名都不能改 ——
+//     改了就静默读不到（工具那边不报错，只是找不到游戏）。
 // 规则（用户指定）：
 //   - coverImage 一律置空字符串（不再使用）
 //   - developer/publisher/genre/tags/series/category/platform 等关系字段

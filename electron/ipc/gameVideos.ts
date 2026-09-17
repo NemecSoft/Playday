@@ -23,7 +23,7 @@
 import { ipcMain, shell } from "electron";
 import * as fs from "fs";
 import * as path from "path";
-import { resolveGameSubpath } from "../core/gameDirs";
+import { resolveGameVideoDir } from "../core/gameDirs";
 import {
   flattenVideos,
   isWebPlayable,
@@ -54,15 +54,20 @@ export function registerGameVideosIpc(ipc: typeof ipcMain) {
     ipc,
     "get_game_videos",
     async ({ gameId, gameName }: { gameId?: string; gameName?: string }) => {
-      const hit = resolveGameSubpath(gameId ?? "", gameName ?? "", "videos");
+      const hit = resolveGameVideoDir(gameId ?? "", gameName ?? "");
       if (!hit) return { found: false, dirName: "", dir: "", items: [] as GameVideoItem[] };
+      // URL 前缀 = **实际命中的视频目录名**（`视频攻略&游戏实况` / 兜底的 `videos`），
+      // 不能写死 "videos" —— 目录改名后这里会整片 404（详情页注入那份同理，
+      // 见 gameDetailInject.ts 的 videoDirName）。渲染层再拼成
+      // `${serverUrl}/games/${encodeURIComponent(dirName)}/${urlPath}`。
+      const urlPrefix = `${encodeRelPath(hit.videoDirName)}/`;
       const items: GameVideoItem[] = flattenVideos(scanVideos(hit.path)).map((v) => ({
         ...v,
-        urlPath: `videos/${encodeRelPath(v.rel)}`,
+        urlPath: `${urlPrefix}${encodeRelPath(v.rel)}`,
         absPath: path.join(hit.path, v.rel),
         playable: isWebPlayable(v.rel),
       }));
-      return { found: items.length > 0, dirName: hit.dirName, dir: hit.path, items };
+      return { found: items.length > 0, dirName: hit.gameDirName, dir: hit.path, items };
     },
     { field: "gameId", log: true }
   );

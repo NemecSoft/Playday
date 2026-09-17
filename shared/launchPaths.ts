@@ -3,8 +3,10 @@
 // 为什么要单独抽出来：
 //   1) 这套规则过去只写在 electron/core/process.ts 里，只能靠手搓临时脚本验证；
 //      抽成纯函数后可以直接单测（launchPaths.test.ts），改动不再靠人肉回归。
-//   2) 规则本身多且容易踩（{库名} / {InstallDir} / 相对安装目录 / 相对游戏根），
+//   2) 规则本身多且容易踩（{InstallDir} / 相对安装目录 / 相对游戏根 / 绝对路径），
 //      权威说明见 docs/design/launch-and-paths.md，每条规则都有对应单测。
+//   ⚠️ 2026-09-16：`{库名}`（库占位符）**已废弃** —— game_libraries 整条链移除（实测库里
+//      0 条路径用它）。解析时若还遇到它，返回**明确错误**，不再当相对路径拼到游戏根上。
 //
 // 分隔符约定：**统一用 `/`**（输出的规范形式）。
 // 为什么是 `/` 而不是 `\`：
@@ -17,12 +19,6 @@
 //   - **交给 cmd.exe 时必须换回 `\`**：cmd 会把以 `/` 开头的 token 当开关，
 //     所以拼命令行（启动 .bat）前用 toCmdPath() 转换。
 // 比较路径（如封面白名单）必须**两侧都过同一个规范化函数**，不能一边 `\` 一边 `/`。
-
-/** 游戏库占位符定义（对应 game_libraries 表的 name/path）。 */
-export interface PathLibrary {
-  name: string;
-  path: string;
-}
 
 const SEP = "/";
 /** Windows 原生分隔符（只给 toCmdPath 用）。 */
@@ -104,35 +100,15 @@ export function isAbsolutePath(p: string): boolean {
 }
 
 /**
- * 解析 `{库名}\rest` 形式的库占位符。
- * 只有 token 与某个库名相等（大小写不敏感）时才算命中；否则返回 null
- * —— `{InstallDir}` 这类"不是库名的占位符"必须落到别的分支处理。
- */
-export function resolveLibraryPlaceholder(
-  p: string,
-  libraries: readonly PathLibrary[],
-): { rest: string; root: string } | null {
-  const trimmed = p.trimStart();
-  if (!trimmed.startsWith("{")) return null;
-  const end = trimmed.indexOf("}");
-  if (end < 0) return null;
-  const token = trimmed.slice(1, end);
-  if (!token) return null;
-  const lib = libraries.find((l) => l.name.toLowerCase() === token.toLowerCase());
-  if (!lib || !lib.path.trim()) return null;
-  return { rest: trimmed.slice(end + 1).replace(/^[\\/]+/, ""), root: lib.path };
-}
-
-/**
  * 把路径解析成绝对路径（不碰磁盘）：
- *   - `{库名}\rest` → 库根 + rest
- *   - 绝对路径        → 原样
- *   - 相对路径        → 以 gameRoot（config.json 的 defaultGameRootPath）为基准
+ *   - 绝对路径 → 原样（只统一分隔符）
+ *   - 相对路径 → 以 gameRoot（config.json 的 defaultGameRootPath）为基准
+ *
+ * 2026-09-16 起不再处理 `{库名}\rest`：库占位符随 game_libraries 一起废弃
+ * （`{InstallDir}` 是另一套机制，由调用方在解析前展开，不在这里）。
  */
-export function resolvePath(p: string, libraries: readonly PathLibrary[], gameRoot: string): string {
+export function resolvePath(p: string, gameRoot: string): string {
   if (!p) return p;
-  const lib = resolveLibraryPlaceholder(p, libraries);
-  if (lib) return joinPaths(lib.root, lib.rest);
   // 绝对路径：内容不变，但分隔符也统一成 `/`（输出的规范形式只有一种，
   // 免得下游比较/展示时出现 `D:\a` 与 `D:/a` 两种写法）。
   if (isAbsolutePath(p)) return normalizePath(p);
@@ -140,7 +116,7 @@ export function resolvePath(p: string, libraries: readonly PathLibrary[], gameRo
 }
 
 /** 解析基准：命中哪条分支（便于日志/测试断言，不参与运行逻辑）。 */
-export type PathBasis = "library" | "absolute" | "installDir" | "gameRoot";
+export type PathBasis = "absolute" | "installDir" | "gameRoot";
 
 export interface ResolvedActionPath {
   /** 最终要执行/校验的绝对路径；出错时为空串。 */
@@ -153,15 +129,14 @@ export interface ResolvedActionPath {
 /**
  * 游玩指令 path 的解析 —— 启动链路的核心规则。
  *
- * 三种基准（顺序即优先级）：
+ * 两种基准（顺序即优先级）：
  *   1) 原始 path 是相对路径（既不以 `{` 开头、也不是绝对路径，如 `TPC.exe`、
  *      `bin\Inversion.exe`）→ 以**安装目录**为基准（Playnite 语义）。
- *   2) 展开占位符后以 `{库名}` 开头 → 库根（库占位符）。
- *   3) 其余相对结果 → 以**游戏根**（defaultGameRootPath）为基准。
+ *   2) 其余相对结果 → 以**游戏根**（defaultGameRootPath）为基准。
  *   绝对路径始终原样。
  *
  * 注意 `{InstallDir}` 展开后得到的是"相对游戏根"的路径（install_directory 本身
- * 就是按游戏根存的），所以它走第 3 条，**不能**再按安装目录拼一次。
+ * 就是按游戏根存的），所以它走第 2 条，**不能**再按安装目录拼一次。
  *
  * @param expand 占位符展开器（{InstallDir}/{GameName}/…）。做成回调是为了让本文件
  *               保持纯函数、不依赖游戏模型；主进程传入 expandVariables。
@@ -170,7 +145,6 @@ export function resolveActionPath(opts: {
   actionPath: string;
   /** 已解析成绝对的安装目录；空串 = 该游戏没配 install_directory。 */
   installDir: string;
-  libraries: readonly PathLibrary[];
   gameRoot: string;
   expand: (s: string) => string;
 }): ResolvedActionPath {
@@ -190,12 +164,18 @@ export function resolveActionPath(opts: {
   if (relativeInData && opts.installDir) {
     return { path: joinPaths(opts.installDir, expanded), basis: "installDir" };
   }
-  const basis: PathBasis = startsWithPlaceholder(expanded)
-    ? "library"
-    : isAbsolutePath(expanded)
-      ? "absolute"
-      : "gameRoot";
-  return { path: resolvePath(expanded, opts.libraries, opts.gameRoot), basis };
+  // 展开后仍以 `{` 开头 → 只可能是**库占位符**（`{Gamelibrary1}` 这类），它已废弃。
+  // 这里刻意**明确报错**，而不是当相对路径拼到游戏根上 —— 后者会拼出一个不存在的怪路径、
+  // 最后报"文件不存在"，让人以为是游戏装错了位置（排查方向完全被带偏）。
+  if (startsWithPlaceholder(expanded)) {
+    return {
+      path: "",
+      basis: "absolute",
+      error: `路径里的库占位符已废弃（game_libraries 不再使用）：${raw} —— 请改成绝对路径或 {InstallDir}\\…`,
+    };
+  }
+  const basis: PathBasis = isAbsolutePath(expanded) ? "absolute" : "gameRoot";
+  return { path: resolvePath(expanded, opts.gameRoot), basis };
 }
 
 /**

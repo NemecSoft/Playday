@@ -5,7 +5,7 @@ VP9 视频解码扩展。装不上不打扰用户，只写日志。
 
 - 规则层（判据、安装参数、脚本内容）：`electron/core/runtimeDeps.ts`（纯函数，有单测）
 - 执行层（找文件、起进程、写日志）：`electron/core/runtimeSetup.ts`
-- 安装包本体：`tools/runtime/`（打包时用 `extraResources` 带到 `resources/runtime/`）
+- 安装包本体：`dev-tools/runtime/`（打包时用 `extraResources` 带到 `resources/runtime/`）
 
 ## 一、三条硬要求
 
@@ -47,7 +47,7 @@ VP9 视频解码扩展。装不上不打扰用户，只写日志。
 
 ### 为什么 VP9 按包名通配匹配，不认版本
 
-本机实测：系统里的 VP9 扩展是 **1.2.20.0**，而 `tools/runtime/` 里发的是 **1.2.6.0**。按版本比对会
+本机实测：系统里的 VP9 扩展是 **1.2.20.0**，而 `dev-tools/runtime/` 里发的是 **1.2.6.0**。按版本比对会
 得出"没装 → 装一遍旧的"（甚至可能因为版本更低而失败）。所以判据是包名通配 `*VP9VideoExtensions*`，
 只看"有没有"，不看到底哪一版。
 
@@ -92,7 +92,7 @@ VP9 视频解码扩展。装不上不打扰用户，只写日志。
 查找顺序（第一个含目标文件的生效）：
 
 1. `settings.runtimeDir` —— **配置项**（由 `path-modes.json` 定，出包时写进 `config.json`）：
-   正式机 `X:/YunGame/Playnite/runtime`、测试机 `D:/YunGame/Playnite/runtime`、开发态 `tools/runtime`。
+   正式机 `X:/YunGame/Playnite/runtime`、测试机 `D:/YunGame/Playnite/runtime`、开发态 `dev-tools/runtime`。
    它默认就是 `<应用 exe 同级>\runtime\` —— 但因为是配置，运维想换成别处（比如共享盘）不必重新出包。
 2. `<应用 exe 同级>\runtime\` —— 出包时 `package.bat` 就把这三个文件放在这里，所以正常部署下
    它与第 1 条是**同一个目录**（去重后只剩一条）。这条是**保险**：配置若指到别处（比如共享盘），
@@ -126,8 +126,8 @@ VP9 视频解码扩展。装不上不打扰用户，只写日志。
 | `electron/core/runtimeDeps.test.ts` | 上面那层的单测（判据矩阵 + 上面几个坑的锁定） |
 | `electron/core/runtimeSetup.ts` | 执行层：找目录、起进程、写日志；启动时由 `main.ts` 调 `ensureRuntimeDeps()` |
 | `electron/core/paths.ts` | `runtimeDir()` / `yungamestartDir()`：读 `config.json` 并解析（相对路径以 exe 同级为基准） |
-| `tools/runtime/` | 三个安装包本体（入库、随包发） |
-| `package.bat` | 把 `tools\runtime` 复制成 `<包>\runtime\`（exe 同级目录，正是配置里的那个路径） |
+| `dev-tools/runtime/` | 三个安装包本体（入库、随包发） |
+| `package.bat` | 把 `dev-tools\runtime` 复制成 `<包>\runtime\`（exe 同级目录，正是配置里的那个路径） |
 | `path-modes.json` | 三种模式下这两个目录各在哪（唯一来源，出包时写进 `config.json`） |
 
 ## 待确认

@@ -19,9 +19,12 @@
 | **输入接受范围** | `\` 与 `/` 都收。库里现存的 `bin\Inversion.exe` 这类写法**不需要迁移** |
 | **写 config.json** | 推荐 `/`：JSON 里 `\` 必须写成 `\\`（难写、难读）；网络路径直接写 `//NAS/share/...` |
 | **交给 cmd.exe 时** | 用 `toCmdPath()` 换回 `\` —— cmd 会把以 `/` 开头的 token 当开关，`//NAS/share/x.bat` 直接传会被判成非法开关 |
+| **交给其它命令行工具时** | **同一个 `toCmdPath()`，同样必须 `\`**：`robocopy` 的位置参数（`/` 开头会被当开关）、`msiexec /i <包>`、拼进 PowerShell `-Command` 的脚本字符串、以及交给 NSIS / 存档工具 `settings.json` 的路径。**2026-09-16 实测定下**：`msiexec /i "X:/YunGame/Tools/Redist/msxml4sp3.msi" /qn` 在 cmd 与 Windows PowerShell 5.1 里**都不认**，换成 `X:\YunGame\…` 才装得上。<br>⚠️ 判据不是"怎么调"，而是"**收参数的那个程序会不会把自己那条命令行再解析一遍**"：普通程序 argv 直传（`spawn(exe, argv, { shell: false })`）时 `/` 没事（CreateProcess 接受 `/`）；但 `msiexec`、WiX Burn 安装器、NSIS **会再解析一次** —— 哪怕 argv 直传、路径带 `/` 照样炸（2026-09-16 用户在 cmd 与 Windows PowerShell 5.1 里各试一次，**两边都失败** —— 两个 shell 唯一的共同环节就是 msiexec，足见是它自己的解析器，不是 shell）。拿不准就一律 `toCmdPath()`。 |
 | **路径比较时** | 两侧必须过**同一个** `normalizePath()`。反例：`fs.realpathSync()` 返回原生 `\`，与 `/` 形式的封面目录比较会全部判不在（白名单失效 → 界面一片占位符） |
 
 实现：`shared/launchPaths.ts` 的 `normalizePath` / `joinPaths` / `toCmdPath`（均有单测）。
+使用点：`electron/core/process.ts`（用 cmd 启动 `.bat`）；另外**部署脚本**在调 robocopy（位置参数）与生成给外部工具读的路径时也必须过它
+（一键部署的设计见 [部署与路径模式表计划](../plans/2026-09-16-deploy-and-path-modes.md)）。
 
 ## 1. 涉及的路径字段
 
@@ -31,17 +34,20 @@
 | `actions[].path` | 启动动作路径（可能含占位符） | `{InstallDir}\golan.bat` |
 | `defaultGameRootPath`（config.json） | **游戏根**：所有相对路径的基准 | 生产 `X:\YunGame\Playnite` |
 
-## 2. 三种解析基准（优先级从高到低）
+## 2. 解析基准（优先级从高到低）
 
 | # | 原始 `path` 形态 | 基准 | 例（真实数据） | 单测 |
 | --- | --- | --- | --- | --- |
 | 1 | **相对路径**（不以 `{` 开头、也不是绝对路径） | **安装目录** | `TPC.exe`、`bin\Inversion.exe` | `规则1：…相对路径…` |
-| 2 | `{游戏库名}\rest` | **库根**（`game_libraries` 表） | `{Gamelibrary1}\game1\g.exe` | `规则2：…{库名}…` |
-| 3 | 其余相对结果 | **游戏根** `defaultGameRootPath` | 见 §3 | `规则3：…` |
+| 2 | 其余相对结果 | **游戏根** `defaultGameRootPath` | 见 §3 | `规则2：…` |
 | — | 绝对路径（`D:\…`、`\\server\…`） | 原样 | `X:\YunGame\Z\a.exe` | `绝对路径始终原样` |
 
 > 第 1 条是 Playnite 语义：动作路径写 `TPC.exe` 指的是"游戏自己目录下的 TPC.exe"。
 > 实测数据里 493 个动作只有文件名、32 个是 `bin\`/`win_x64\` 这类子目录 —— 都靠这条。
+
+> ⚠️ **库占位符（`{Gamelibrary1}\rest` → 库根）已废弃**（2026-09-16，`game_libraries` 整套移除）。
+> 实测库里 0 条路径用它。现在遇到 `{库名}` 开头的路径会**明确报错**
+> 「路径里的库占位符已废弃」，不再解析 —— 详见 [data-models.md](./data-models.md) 的「游戏路径规范」。
 
 ## 3. `{InstallDir}` 占位符
 
@@ -50,11 +56,13 @@
 
 - `install_directory` **本身是按游戏根存的相对路径**（如 `..\X\Sephiria`），
   所以展开 `{InstallDir}\golan.bat` 得到 `..\X\Sephiria\golan.bat`，
-  它是"相对游戏根"的路径 → **走第 3 条基准**，不能再按安装目录拼一次。
+  它是"相对游戏根"的路径 → **走第 2 条基准**，不能再按安装目录拼一次。
 - 游戏没配 `install_directory` 却又用到 `{InstallDir}` → 返回**明确错误**
   「该游戏未配置安装目录（install_directory 为空）」，
   而不是拼出一个不存在的怪路径再报含糊的"文件不存在"。
-- 展开流程：`{库名}` / `{InstallDir}` 等占位符先展开 → 再按上表解析基准。
+- 展开流程：`{InstallDir}` / `{GameName}` 等占位符先展开 → 再按上表解析基准。
+  （脚本里可用的占位符与启动动作共用一套，见 `electron/core/scriptRunner.ts` 的 `expandVariables`；
+  `{LibraryName}` 已随 game_libraries 一起移除。）
 
 ## 4. 游玩指令 vs 辅助动作
 
@@ -160,6 +168,59 @@ PlayniteUI.exe --check
 | `<数据根>\logs\check-latest.log` | 最新一次，固定路径（脚本/运维直接取这个） |
 
 退出码：`0` = 没问题；`1` = 发现问题；`2` = 自检本身失败（读不到库等）。
+
+## 9. 路径报告：`exe -log`（照常进界面，多写一份"实际全路径"日志）
+
+用途：**排查"测试机能跑、正式机不跑"**。config.json 里的路径是**故意写成相对值**的
+（`data`、`runtime`、`tools/GameSaveHelper/GameSaveHelper.exe`，见 [路径模式与部署](./release-build.md)），
+真正落在哪个盘、哪个目录，取决于 exe 在哪、数据根在哪 —— 那正是这类故障的现场证据。
+
+```bat
+PlayniteUI.exe -log
+```
+
+与 `--check` 的分工（两个参数互不影响）：`--check` 是**独立模式**（跑完就退、不起界面），
+`-log` **只是多写一份日志、照常进界面** —— 它要回答的是"真的跑起来时，各个目录落在哪"。
+
+输出（同样**以日志文件为准**）：
+
+| 文件 | 说明 |
+| --- | --- |
+| `<数据根>\logs\paths-<时间戳>.log` | 留档 |
+| `<数据根>\logs\paths-latest.log` | 最新一次，固定路径（就拿它与另一台机器 diff） |
+
+内容 = 头部（时间 / 版本 / 打包态 / 进程 / 应用目录 / 数据根 / 配置文件 / 资源目录）+ **每个路径字段两行**：
+
+```
+  runtimeDir
+    原值  ：runtime
+    实际  ：X:\YunGame\Playnite\runtime  [缺失]
+```
+
+「原值」照抄 config.json —— 一眼看出配置里写的是相对还是绝对；「实际」是**生产解析函数**算出来的
+全路径（报告不自己算 PATH，否则会与运行时脱节），后面标 `[存在]` / `[缺失]`。未配置的字段写"（未配置）"，
+**不冒充"缺失"**（没配 ≠ 缺文件）。另有"派生路径"一段：权威库、运行时副本、公告文件、随包前端资源、日志目录
+—— 这些配置里不写、但要真出事最先出问题的路径。
+
+**怎么用**：测试机与正式机各带 `-log` 启动一次，把两份 `paths-latest.log` 并排 diff ——
+字段顺序固定（同一份代码），「原值」多半相同（都由同一张表生成），「实际」会随盘符 / 应用目录变化；
+再看 `[缺失]`：缺失项 = 这个功能在这台机器上**静默失效**。
+
+### 开发态怎么看
+
+`dev-client.bat` **已经带 `-log`**（不用记参数），报告落在 `<仓库>\dev-data\logs\paths-latest.log`。
+开发态的"数据根"由 `path-modes.json` 的 dev 段决定，而 `dev-client.bat` 会先 `call data-dir.bat` 设好
+`YUNGAME_DATA_DIR` —— 所以报告读到的与你实际跑的是同一处。
+
+⚠️ **直接 `npx electron . -log`（不带环境变量）会看错地方**：`configRoot()` 在开发态会回退到**工程根**
+（`electron/core/paths.ts`），于是报告与日志落到 `<仓库>\logs\`，运行时副本也建到 `<仓库>\library\`。
+想看"真正的开发态路径"就用 `dev-client.bat`，或自己先设 `YUNGAME_DATA_DIR`。
+另：跑的是 `dist-electron` 编译产物，改了 `electron/**` 或 `shared/**` 要先 `npm run build`
+（`dev-client.bat` 每次启动都会替你编译一遍）。
+
+> 报告里的路径**按实际值原样显示**：绝对路径保持 config.json 里的写法（`D:/…`），
+> 相对路径解析后是 `/` 还是 `\` 取决于那个字段的解析器；看着不统一是正常的 ——
+> 两台机器上同一个字段的写法一致，所以不碍 diff。
 
 判据**不是另写一份**，而是复用真实启动链路的函数：动作选择 `process.resolveAction`、
 路径解析 `shared/launchPaths.ts` 的 `resolveActionPath`、存在性/可执行校验 `process.validateLaunchPath`、

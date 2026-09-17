@@ -54,7 +54,7 @@
   "tier_badge_gold": "{{brand}}黄金版",
   "tier_badge_diamond": "{{brand}}钻石版",
   "maintenance_title": "服务器维护中",
-  "maintenance_body": "该版本正在定期维护，暂时无法进入，请稍后再试。",
+  "maintenance_body": "（{{tier}}）正在维护",
   "maintenance_exit": "退出",
   "outdated_title": "系统过旧",
   "outdated_body": "本机游戏库已 {{days}} 天未更新，请联系管理员获取最新版本，更新后再进入。",

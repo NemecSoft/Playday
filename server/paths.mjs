@@ -72,7 +72,7 @@ export function resolveLibraryPaths(opts) {
   const { dataRoot } = opts;
   const baseDir = opts.baseDir ?? dataRoot;
   const root = resolveConfiguredPath(opts.libraryDir, baseDir) ?? dataRoot;
-  const sourceDir = resolveConfiguredPath(opts.sourceLibraryDir, baseDir) ?? joinPaths(root, "Admin");
+  const sourceDir = joinPaths(root, "Admin");
   return {
     root,
     sourceDir,
@@ -81,9 +81,14 @@ export function resolveLibraryPaths(opts) {
   };
 }
 
-/** 公告文件：<公告目录>/announcement.html。 */
-export function resolveAnnouncementFile(raw, dataRoot, baseDir = dataRoot) {
-  return joinPaths(resolveConfiguredDir(raw, dataRoot, "announcements", baseDir), "announcement.html");
+/** 公告目录：<库根>/announcements（2026-09-17 起不再单独配置 —— 与桌面端 shared/pathConfig.ts 同语义）。 */
+export function resolveAnnouncementsDir(libraryRoot) {
+  return joinPaths(libraryRoot, "announcements");
+}
+
+/** 公告文件：<库根>/announcements/announcement.html。 */
+export function resolveAnnouncementFile(libraryRoot) {
+  return joinPaths(libraryRoot, "announcements/announcement.html");
 }
 
 // ---- 读配置 ----
@@ -108,7 +113,8 @@ export function readSettingsFile({ dataRoot, appRoot }) {
 /**
  * 网站端需要的全部路径，一次算清。
  * 支持的自定义项与桌面端完全一致（config.json → settings）：
- *   coverImagesDir / gameDetailsDir / announcementsDir / libraryDir
+ *   coverImagesDir / gameDetailsDir / libraryDir
+ * （公告目录与权威库目录 2026-09-17 起不再单独配置：固定 <库根>/announcements 与 <库根>/Admin）
  */
 export function resolveServerPaths({ dataRoot, appRoot }) {
   const { file: configFile, settings } = readSettingsFile({ dataRoot, appRoot });
@@ -119,7 +125,6 @@ export function resolveServerPaths({ dataRoot, appRoot }) {
     dataRoot,
     baseDir,
     libraryDir: settings.libraryDir,
-    sourceLibraryDir: settings.sourceLibraryDir,
   });
   return {
     configFile,
@@ -129,6 +134,7 @@ export function resolveServerPaths({ dataRoot, appRoot }) {
     dbPath: library.runtime,
     coverDir: resolveConfiguredDir(settings.coverImagesDir, dataRoot, "CoverImages", baseDir),
     detailsDir: resolveConfiguredDir(settings.gameDetailsDir, dataRoot, "Game_Details", baseDir),
-    announcementsFile: resolveAnnouncementFile(settings.announcementsDir, dataRoot, baseDir),
+    // 公告跟着库根走（2026-09-17 起不再单独配置公告目录）
+    announcementsFile: resolveAnnouncementFile(library.root),
   };
 }

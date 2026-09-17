@@ -55,8 +55,10 @@
 
 从 config.json 读**两个**字段（都是既有字段，不新增）：
 
-- `settings.yunGameUserListPath` → 用户表（生产环境里它是**绝对路径**，正式 X 盘 / 测试 D 盘各一份，
-  所以这里必须跟着 config.json 走，不能写死）
+- `settings.YunGameConfigDir` → 网吧配置**目录**（2026-09-17 起：目录内部的文件名固定为
+  `YunGame_UserList.json` / `YunGame_ServerStatus.json`，不再逐文件配路径）。生产环境里它是**绝对路径**，
+  正式 X 盘 / 测试 D 盘各一份，所以必须跟着 config.json 走、不能写死；
+  旧键 `yunGameUserListPath` 仍兼容（老 config.json 不至于当场读不出用户表）
 - `settings.defaultGameRootPath` → 游戏根，也就是客户端 exe 所在目录、快捷方式的目标目录
 
 读不到时的兜底（与原版 appsettings 的 `MainPath.Primary/Fallback` 对应）：
@@ -79,7 +81,7 @@
 
 > 这个目录的绝对位置也记在 `config.json` → `settings.yungamestartDir`（由 `path-modes.json` 定：
 > 正式机 `X:/YunGame/Playnite/yungamestart`、测试机 `D:/YunGame/Playnite/yungamestart`、开发态
-> `tools/yungamestart` —— 那份是编译源头）。目前**没有代码消费者**：工具由用户自己开机启动（见下），
+> `dev-tools/yungamestart` —— 那份是编译源头）。目前**没有代码消费者**：工具由用户自己开机启动（见下），
 > 记下来是为了让"工具在哪"能从配置里读出来（运维脚本可以直接读 config.json；将来要在客户端里
 > 拉起它时也不必再找路径）。读写入口见 `electron/core/paths.ts` 的 `yungamestartDir()`。
 
@@ -109,7 +111,7 @@
 ### 6.1 怎么重新生成（2026-09-16 加深过一版）
 
 ```bat
-cd tools\yungamestart\assets
+cd dev-tools\yungamestart\assets
 node make-icons.mjs                :: 重生成两个 ico（原文件自动备份成 *.bak-<日期>）
 node make-icons.mjs --dry          :: 只算不写：看色标变成什么、文件会多大
 node make-icons.mjs --list         :: 列出当前 ico 里有哪些帧（查看用）
@@ -150,16 +152,16 @@ $i.ToBitmap().Save("out.png", [System.Drawing.Imaging.ImageFormat]::Png)
 ## 七、编译与出包
 
 ```bash
-tools\yungamestart\build.bat        # 用 MinGW g++ 编译 → dist\yungamestart.exe（+ 1.ico / 2.ico）
+dev-tools\yungamestart\build.bat        # 用 MinGW g++ 编译 → dist\yungamestart.exe（+ 1.ico / 2.ico）
 build-prerelease.bat / build-release.bat
 ```
 
-`package.bat` 在**清空输出目录之后**把 `tools\yungamestart\dist\*` 复制成
+`package.bat` 在**清空输出目录之后**把 `dev-tools\yungamestart\dist\*` 复制成
 `<包>\yungamestart\`（顺序很重要：输出目录每次打包都会被清空）。没有编译过不是错误 ——
 只是包里的 `yungamestart\` 不存在，并打印一行提示。所以顺序是：
 **先 `build.bat`，再出包**。
 
-编译命令的取舍（`tools/yungamestart/build.bat`）：`-mwindows`（无窗口）、
+编译命令的取舍（`dev-tools/yungamestart/build.bat`）：`-mwindows`（无窗口）、
 `-static -static-libgcc -static-libstdc++`（目标机不需要 MinGW 运行时）、
 `-finput-charset=UTF-8 -fexec-charset=UTF-8`（源码含中文）。
 
@@ -175,15 +177,15 @@ build-prerelease.bat / build-release.bat
 
 | 文件 | 职责 |
 | --- | --- |
-| `tools/yungamestart/src/main.cpp` | 主流程：路径 → IP → 用户表 → 等级 → 快捷方式 |
-| `tools/yungamestart/src/util.h` | 宽窄字符串、路径、日志（文件 + 控制台）、base64/XOR、IPv4 校验 |
-| `tools/yungamestart/src/json_lite.h` | 极简 JSON 扫描（只为我们需要的几个字段，不引第三方库） |
-| `tools/yungamestart/src/http.h` | WinHTTP GET（跟随重定向、超时、UA） |
-| `tools/yungamestart/src/shortcut.h` | IShellLink 建快捷方式 + 删"另一个等级"的快捷方式 |
-| `tools/yungamestart/build.bat` | 编译并暂存到 `dist\` |
-| `tools/yungamestart/assets/1.ico`、`2.ico` | 两个快捷方式图标（黄金 / 钻石），随包分发。**当前是原版那份图**（用户 2026-09-16 拍板先用原版、先不动）；同目录的 `make-icons.mjs` 默认参数会产出"加深版"，跑之前先看 §六.1 的警告 |
-| `tools/yungamestart/assets/make-icons.mjs` | 图标的**生成工具**：拆 ico 取源图 → 调画布 → 封 9 帧（≤48 DIB / ≥64 PNG）→ 备份原文件（见 §六） |
-| `tools/yungamestart/assets/make-icons-canvas.cjs` + `.html` | 上面那个工具的**画布半边**（Electron 里做像素活：换渐变、缩放、导出），开发用，不进包 |
+| `dev-tools/yungamestart/src/main.cpp` | 主流程：路径 → IP → 用户表 → 等级 → 快捷方式 |
+| `dev-tools/yungamestart/src/util.h` | 宽窄字符串、路径、日志（文件 + 控制台）、base64/XOR、IPv4 校验 |
+| `dev-tools/yungamestart/src/json_lite.h` | 极简 JSON 扫描（只为我们需要的几个字段，不引第三方库） |
+| `dev-tools/yungamestart/src/http.h` | WinHTTP GET（跟随重定向、超时、UA） |
+| `dev-tools/yungamestart/src/shortcut.h` | IShellLink 建快捷方式 + 删"另一个等级"的快捷方式 |
+| `dev-tools/yungamestart/build.bat` | 编译并暂存到 `dist\` |
+| `dev-tools/yungamestart/assets/1.ico`、`2.ico` | 两个快捷方式图标（黄金 / 钻石），随包分发。**当前是原版那份图**（用户 2026-09-16 拍板先用原版、先不动）；同目录的 `make-icons.mjs` 默认参数会产出"加深版"，跑之前先看 §六.1 的警告 |
+| `dev-tools/yungamestart/assets/make-icons.mjs` | 图标的**生成工具**：拆 ico 取源图 → 调画布 → 封 9 帧（≤48 DIB / ≥64 PNG）→ 备份原文件（见 §六） |
+| `dev-tools/yungamestart/assets/make-icons-canvas.cjs` + `.html` | 上面那个工具的**画布半边**（Electron 里做像素活：换渐变、缩放、导出），开发用，不进包 |
 | `shared/userLevel.ts` | **等级判定的权威实现**（客户端侧），C++ 里按同一规则重写 |
 | `scripts/encrypt-userlist.mjs` | 用户表加密（同一个密钥/算法） |
 

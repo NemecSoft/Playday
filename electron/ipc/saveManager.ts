@@ -17,7 +17,7 @@
 //    docs/design/user-level-detection.md。
 import { ipcMain, BrowserWindow } from "electron";
 import { getGame } from "../core/db";
-import { getLibraries, readSettings } from "../core/settings";
+import { readSettings } from "../core/settings";
 import { launchSaveBackup } from "../core/gameSaveHelper";
 import { resolvePath, subscribeGameExit } from "../core/process";
 import { registerCommand } from "./registry";
@@ -48,10 +48,9 @@ function backupGameSaveNow(
     return { ok: false, error: "该游戏未配置存档路径" };
   }
 
-  // 展开 {游戏库名} 占位符；通配符原样保留，由工具自己 FindFirstFile 匹配。
+  // 把存档路径解析成绝对路径；通配符原样保留，由工具自己 FindFirstFile 匹配。
   // 故意不过滤"没有匹配文件"的路径：交给工具逐条报告，避免 App 静默丢掉一条路径。
-  const libs = getLibraries();
-  const resolved = savePaths.map((sp) => resolvePath(sp, libs)).filter((p) => !!p);
+  const resolved = savePaths.map((sp) => resolvePath(sp)).filter((p) => !!p);
   if (resolved.length === 0) {
     return { ok: false, error: "该游戏的存档路径解析后为空" };
   }

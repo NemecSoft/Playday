@@ -13,11 +13,8 @@ import {
   setGameFavorite,
   setGameHidden,
   libraryStats,
-  getGameLibraries,
-  upsertGameLibrary,
-  deleteGameLibrary,
 } from "../core/db";
-import { readSettings, writeSettings, getLibraries } from "../core/settings";
+import { readSettings, writeSettings } from "../core/settings";
 import { applyCoversToLibrary } from "../core/covers";
 import {
   launchGame,
@@ -29,7 +26,7 @@ import {
   validateLaunchPath,
 } from "../core/process";
 import { expandVariables, runScript } from "../core/scriptRunner";
-import type { AppSettings, DeepPartial, Game, GameLibrary } from "../core/models";
+import type { AppSettings, DeepPartial, Game } from "../core/models";
 import { registerCommand } from "./registry";
 
 export function registerGamesIpc(ipc: typeof ipcMain) {
@@ -122,7 +119,6 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
         actionId,
         userLevel: settings.currentUserLevel,
         track: settings.trackPlaytime,
-        gameLibraries: getLibraries(),
         showBatConsole: settings.showBatConsole,
         monitorExe: game.monitorExe,
       });
@@ -145,10 +141,10 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
       const game = getGame(id);
       if (!game) return { launched: false, error: `游戏不存在：${id}` };
       const settings = readSettings();
-      // 把相对路径/占位符解析成绝对路径，再当成一个临时 File 动作启动。
+      // 把相对路径解析成绝对路径，再当成一个临时 File 动作启动。
       const { resolvePath } = await import("../core/process");
-      const resolved = resolvePath(p, getLibraries());
-      const precheck = validateLaunchPath(resolved, "File", getLibraries());
+      const resolved = resolvePath(p);
+      const precheck = validateLaunchPath(resolved, "File");
       if (!precheck.valid) {
         return { launched: false, error: `启动前检测未通过：${precheck.reason}` };
       }
@@ -157,7 +153,6 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
         actionId: "tmp",
         userLevel: settings.currentUserLevel,
         track: settings.trackPlaytime,
-        gameLibraries: getLibraries(),
         showBatConsole: settings.showBatConsole,
         monitorExe: game.monitorExe,
       });
@@ -185,22 +180,10 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
     return libraryStats();
   });
 
-  // ---------- 游戏库（按根目录组织） ----------
-  registerCommand(ipc, "get_game_libraries", async () => {
-    return getGameLibraries();
-  });
-
-  registerCommand(ipc, "upsert_game_library", async (lib: GameLibrary) => {
-    // 游戏库是"数据"，权威存数据库 game_libraries 表，config.json 不再写（历史双写已去掉）。
-    upsertGameLibrary(lib);
-    return true;
-  });
-
-  // 用 field="id" 解包：兼容对象包装 { id } 和 spread 传字符串，避免参数错位。
-  registerCommand(ipc, "delete_game_library", async ({ id }: { id?: string }) => {
-    deleteGameLibrary(id ?? "");
-    return true;
-  }, { field: "id" });
+  // ---------- 游戏库 ----------
+  // 2026-09-16：`get_game_libraries` / `upsert_game_library` / `delete_game_library`
+  // 三条命令已删除 —— game_libraries 整套设计废弃（前端本来也没有调用方）。
+  // 现在路径只有两种形态：绝对路径，或 `{InstallDir}\…`（启动链路展开）。
 
   // ---------- 平台 / 库插件 ----------
   registerCommand(ipc, "get_platforms", async () => {
@@ -281,8 +264,7 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
     let cwd: string | undefined;
     if (gameId) {
       const game = getGame(gameId);
-      const libs = getLibraries();
-      // 脚本统一在"安装目录"执行（game.installDirectory，如 {Gamelibrary1}\game1），
+      // 脚本统一在"安装目录"执行（game.installDirectory），
       // 而不是 exe 所在目录（可能是 bin 子目录）。很多游戏（尤其网吧联机版）需要在
       // 安装目录跑一个启动脚本，脚本 cwd 应与安装目录一致，与 exe 的 cwd 无关。
       cwd = game?.installDirectory || undefined;

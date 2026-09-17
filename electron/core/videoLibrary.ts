@@ -80,7 +80,44 @@ export function compareNatural(a: string, b: string): number {
 }
 
 /**
- * 扫描某游戏的 videos/ 目录（含一层子文件夹分组）。
+ * 视频目录的**候选名**（按优先级，第一个存在的生效）。
+ *
+ * 2026-09-17 需求：视频攻略 / 游戏实况的目录从 `videos` 改成 **`视频攻略&游戏实况`**
+ * （视频数据太大，用中文目录名把"攻略/实况"和别的素材区分开，见 docs/design/game-details.md）。
+ * `videos` **保留为兜底**：老数据没搬完的机器、或个别游戏还叫旧名，照样能看 —— 检测谁存在用谁，
+ * 不看配置、不加开关（需求原话："默认用检测是不是有 视频攻略&游戏实况，有就把这个文件夹下的视频罗列出来"）。
+ *
+ * ⚠️ 它只是**磁盘上的目录名**。拼给浏览器的 URL 前缀用的是**实际命中的那个名字**
+ * （`VideoDirHit.name` → `buildVideoSection` 的 `videoDirName`），所以两个名字并存时不会串台。
+ */
+export const VIDEO_DIR_NAMES = ["视频攻略&游戏实况", "videos"] as const;
+
+/** 命中的视频目录。 */
+export interface VideoDirHit {
+  /** 目录路径（拼在调用方给的"游戏目录"下）。 */
+  path: string;
+  /** 命中的目录名 —— 拼相对 URL 时**必须**用它，否则 URL 指不到真实位置。 */
+  name: string;
+}
+
+/**
+ * 在某个"游戏目录"下找视频目录：按 VIDEO_DIR_NAMES 顺序，第一个真实存在的目录生效。
+ * 都不存在 → null（没有视频是正常状态，不是错误）。
+ */
+export function findVideoDir(gameDir: string): VideoDirHit | null {
+  for (const name of VIDEO_DIR_NAMES) {
+    const p = path.join(gameDir, name);
+    try {
+      if (fs.statSync(p).isDirectory()) return { path: p, name };
+    } catch {
+      // 这个候选不存在，试下一个（新名没命中就试旧的 videos）
+    }
+  }
+  return null;
+}
+
+/**
+ * 扫描某游戏的视频目录（含一层子文件夹分组）。
  * 目录不存在 / 读不了 → 返回空结果，**不抛错**：没有视频是正常状态，不是错误。
  */
 export function scanVideos(videosRoot: string): VideoScan {

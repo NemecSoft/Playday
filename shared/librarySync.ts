@@ -37,3 +37,24 @@ export function shouldSyncDatabase(source: FileStamp | null, target: FileStamp |
   if (!source) return false;
   return !sameFileStamp(source, target);
 }
+
+/**
+ * 两个路径是否指同一个文件。
+ *
+ * 用途：`electron/core/db.ts` 的 `persist()` 里做**硬断言** —— 写目标绝不能是权威库
+ * （用户要求："客户端绝对不能回写库"）。不靠自觉：以后谁改了路径解析、或误把写目标指到源库，
+ * 当场抛错，而不是**静默覆盖**掉唯一权威数据。
+ *
+ * 只做字符串级归一化（**刻意不 import `node:path`**：shared/ 会打进渲染层 bundle）：
+ *   · 反斜杠 → 正斜杠；· 去掉结尾的斜杠；· 统一小写（Windows 文件系统大小写不敏感）。
+ * 最后一条在 Linux/macOS 上会误判（`/a` 与 `/A` 是两个文件），但本项目只发 Windows；
+ * 而且这里的方向是"判成相同就**拒绝写**"，保守偏严不会造成数据风险。
+ */
+export function sameFilePath(a: string, b: string): boolean {
+  const norm = (p: string) =>
+    String(p)
+      .replace(/\\/g, "/")
+      .replace(/\/+$/, "")
+      .toLowerCase();
+  return norm(a) === norm(b);
+}

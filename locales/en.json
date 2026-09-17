@@ -54,7 +54,7 @@
   "tier_badge_gold": "{{brand}} Gold",
   "tier_badge_diamond": "{{brand}} Diamond",
   "maintenance_title": "Server under maintenance",
-  "maintenance_body": "This edition is under scheduled maintenance. Please try again later.",
+  "maintenance_body": "Maintenance in progress ({{tier}})",
   "maintenance_exit": "Exit",
   "outdated_title": "Outdated version",
   "outdated_body": "The local game library has not been updated for {{days}} days. Please contact your administrator for the latest version.",

@@ -11,6 +11,7 @@ import * as fs from "fs";
 import * as path from "path";
 import {
   resolveAnnouncementFile,
+  resolveAnnouncementsDir,
   resolveConfiguredDir,
   resolveConfiguredPath,
   resolveLibraryPaths,
@@ -52,8 +53,8 @@ export function configRoot(): string {
 // 数据库路径：权威库 → 运行时副本 的**复制关系固定**，两个**目录**都可配置：
 //   settings.sourceLibraryDir（权威库目录，默认 <库根>/Admin）—— 只读数据来源；
 //   settings.libraryDir      （库根，默认数据根）—— 运行时副本所在，也是权威库的默认父目录。
-//   权威库      <权威库目录>/library.db        —— 手工维护的 games.json + 脚本写入
-//                                                （import-games.bat → playday-db.mjs）；
+//   权威库      <权威库目录>/library.db        —— 手工维护的整库 JSON 写进
+//                                                （npm run db:import，见 docs/design/library-json.md）；
 //   运行时副本  <库根>/library/library.db      —— 客户端每次启动从权威库复制一份再用。
 //
 // 为什么是"目录"而不是"db 文件路径"：
@@ -70,7 +71,8 @@ export function libraryPaths(): LibraryPaths {
     dataRoot: configRoot(),
     baseDir: appRoot(),
     libraryDir: readSettingsField("libraryDir"),
-    sourceLibraryDir: readSettingsField("sourceLibraryDir"),
+    // 权威库目录**不再单独配置**（2026-09-17）：固定 <库根>/Admin —— 复制关系因此只有一种可能，
+    // 配置里少一个能写歪的地方（与公告目录同理）。
   });
 }
 
@@ -172,7 +174,7 @@ export function vendorDir(): string {
 // 运行库安装包目录（settings.runtimeDir）：VC++ 运行库 x64/x86、VP9 解码扩展。
 // 未配置 → <应用 exe 同级>/runtime；打包版还有 <resources>/runtime 兜底（见 runtimeSetup.ts）。
 // ⚠️ 默认基准是 appRoot 而不是数据根：这是"程序自带资源"，跟程序走 —— 与 fontsDir 同一个道理。
-// 取值由 path-modes.json 定（正式机 X:/YunGame/Playnite/runtime、测试机 D:/... 同路径）。
+// 取值由 path-modes.json 定：部署态写相对路径 runtime（= <exe 同级>/runtime），开发态指仓库里的 dev-tools/runtime。
 export function runtimeDir(): string {
   return resolveConfiguredDir(readSettingsField("runtimeDir"), appRoot(), "runtime", appRoot());
 }
@@ -192,20 +194,45 @@ export function musicDir(): string {
   return resolveConfiguredDir(readSettingsField("musicDir"), configRoot(), "music", appRoot());
 }
 
-// 公告目录。
+// 公告目录：<库根>/announcements（2026-09-17 起不再单独配置 —— 它跟着库根走，
+// 与"权威库固定 <库根>/Admin"同一个道理：复制关系只有一种可能，配置里少一个能写歪的地方）。
+// 目录名的拼法在 shared/pathConfig.ts（架构守卫要求数据目录名只许出现在解析器里）。
 export function announcementsDir(): string {
-  return resolveConfiguredDir(readSettingsField("announcementsDir"), configRoot(), "announcements", appRoot());
+  return resolveAnnouncementsDir(libraryPaths().root);
 }
 
 // 公告文件名：<公告目录>/announcement.html
 export function announcementFile(): string {
-  return resolveAnnouncementFile(readSettingsField("announcementsDir"), configRoot(), appRoot());
+  return resolveAnnouncementFile(libraryPaths().root);
 }
 
-// 存档备份工具 GameSaveHelper.exe 的路径（<主程序目录>/config.json 的
-// settings.gameSaveHelperPath）。绝对路径原样；相对路径以应用 exe 所在目录为基准；未配置返回 null。
-export function gameSaveHelperExePath(): string | null {
-  return configuredPath("gameSaveHelperPath");
+// YunGameConfig 目录（config.json 的 settings.YunGameConfigDir）：用户表与维护表所在目录。
+// 未配置 → <应用目录>/YunGameConfig。**文件名由程序内部固定**（下面两个函数），
+// 不暴露在 config.json 里（2026-09-17 需求）。
+export function yunGameConfigDir(): string {
+  return resolveConfiguredDir(readSettingsField("YunGameConfigDir"), appRoot(), "YunGameConfig", appRoot());
+}
+
+// 用户表（按 IP 判等级的单一来源）。明文或 XOR+base64 密文都能读。
+// ⚠️ dev-tools/yungamestart（C++）读同一个目录下的同名文件 —— 改名要两边一起改。
+export function yunGameUserListFile(): string {
+  return path.join(yunGameConfigDir(), "YunGame_UserList.json");
+}
+
+// 服务器维护表（按用户等级控状态：Status=0 = 该等级维护中）。
+export function yunGameServerStatusFile(): string {
+  return path.join(yunGameConfigDir(), "YunGame_ServerStatus.json");
+}
+
+// 存档备份工具所在目录（config.json 的 settings.gameSaveHelperDir）：exe 名固定 GameSaveHelper.exe。
+export function gameSaveHelperDir(): string {
+  return resolveConfiguredDir(readSettingsField("gameSaveHelperDir"), appRoot(), "GameSaveHelper", appRoot());
+}
+
+// 存档备份工具 GameSaveHelper.exe 的完整路径（<gameSaveHelperDir>/GameSaveHelper.exe）。
+// 文件在不在由调用方判 —— electron/core/gameSaveHelper.ts 会给出明确报错。
+export function gameSaveHelperExePath(): string {
+  return path.join(gameSaveHelperDir(), "GameSaveHelper.exe");
 }
 
 // 游戏根目录（<主程序目录>/config.json 的 settings.defaultGameRootPath）：

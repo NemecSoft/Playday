@@ -21,7 +21,7 @@
 // 本模块只做字符串处理（不读文件、不碰 http），便于单测（见 gameDetailInject.test.ts）。
 // 需要读磁盘的部分（找同名封面图）由调用方以 `posterFor` 回调注入。
 
-import { isWebPlayable, type VideoScan } from "./videoLibrary";
+import { VIDEO_DIR_NAMES, isWebPlayable, type VideoScan } from "./videoLibrary";
 
 /** 注入区块的 DOM id（同时用于"防重复注入"）。 */
 export const VIDEO_SECTION_ID = "yungame-videos";
@@ -103,16 +103,17 @@ function encodeRel(rel: string): string {
 function videoCard(
   rel: string,
   labels: VideoSectionLabels,
-  posterRel: string | null
+  posterRel: string | null,
+  urlPrefix: string
 ): string {
   const name = rel.slice(rel.lastIndexOf("/") + 1);
   const playable = isWebPlayable(rel);
   const classes = `yungame-video-card${posterRel ? " has-poster" : ""}`;
   return [
-    `<div class="${classes}" data-src="videos/${esc(encodeRel(rel))}" data-rel="${esc(rel)}" data-external="${playable ? 0 : 1}">`,
+    `<div class="${classes}" data-src="${urlPrefix}${esc(encodeRel(rel))}" data-rel="${esc(rel)}" data-external="${playable ? 0 : 1}">`,
     `<div class="yungame-video-thumb">`,
     // 有同名封面图就直接给 src；没有的话留空，由页面脚本抓一帧回填（has-poster 控制显隐）。
-    `<img class="yungame-video-poster"${posterRel ? ` src="videos/${esc(encodeRel(posterRel))}"` : ""} alt="">`,
+    `<img class="yungame-video-poster"${posterRel ? ` src="${urlPrefix}${esc(encodeRel(posterRel))}"` : ""} alt="">`,
     `<span class="yungame-video-play">▶</span>`,
     `<span class="yungame-video-dur"></span>`,
     playable ? "" : `<span class="yungame-video-badge">${esc(labels.external)}</span>`,
@@ -130,14 +131,15 @@ function videoGroup(
   title: string | null,
   rels: string[],
   labels: VideoSectionLabels,
-  posterFor: (rel: string) => string | null
+  posterFor: (rel: string) => string | null,
+  urlPrefix: string
 ): string {
   if (rels.length === 0) return "";
   return [
     `<div class="yungame-video-group">`,
     title ? `<h3 class="yungame-video-group-title">${esc(title)}</h3>` : "",
     `<div class="yungame-video-grid">`,
-    ...rels.map((rel) => videoCard(rel, labels, posterFor(rel))),
+    ...rels.map((rel) => videoCard(rel, labels, posterFor(rel), urlPrefix)),
     `</div></div>`,
   ].join("");
 }
@@ -491,14 +493,23 @@ function sectionScript(labels: VideoSectionLabels, accent?: string | null): stri
 
 /**
  * 生成要注入的区块（没有视频时返回空串 —— 调用方据此原样发页面，等于什么都没做）。
- * 链接用相对路径，所以不需要知道"命中的目录名是 id 还是游戏名"。
  *
- * @param posterFor 找"与某条视频同名的封面图"，返回**相对 videos 目录**的路径或 null。
+ * 链接用**相对路径**，所以不需要知道"命中的目录名是 id 还是游戏名"；
+ * 但**必须**知道视频目录**叫什么**（`视频攻略&游戏实况`，或兜底的 `videos`）——
+ * 页面地址是 `/games/<游戏目录>/index.html`，相对链接 `视频攻略&游戏实况/1.mp4` 才会落到
+ * `/games/<游戏目录>/视频攻略&游戏实况/1.mp4`（服务器按真实路径发文件，见 gameServer.ts）。
+ * 这就是 `videoDirName` 必传的原因：传错 = 视频整片 404，而且只在那个 iframe 的控制台里报错。
+ *
+ * @param videoDirName 实际命中的视频目录名（`VideoDirHit.name`，见 core/videoLibrary.ts）。
+ *                    不传 = 按新名 `视频攻略&游戏实况` 拼（唯一的生产调用方 gameServer.ts 是**显式传**的；
+ *                    默认值只是让"只关心排版"的用例与将来的小调用方少写一个字段）。
+ * @param posterFor 找"与某条视频同名的封面图"，返回**相对视频目录**的路径或 null。
  *                  由调用方注入（它才有磁盘访问；本模块保持纯字符串处理便于单测）。
  * @param accent 内置播放器的主题色（= 主界面当前主题的强调色）；不传用原色。
  */
 export function buildVideoSection(opts: {
   scan: VideoScan;
+  videoDirName?: string;
   lang?: string | null;
   posterFor?: (rel: string) => string | null;
   accent?: string | null;
@@ -507,9 +518,12 @@ export function buildVideoSection(opts: {
   if (!scan || (scan.root.length === 0 && scan.dirs.length === 0)) return "";
   const labels = labelsFor(opts.lang);
   const posterFor = opts.posterFor ?? (() => null);
+  // 目录名要整体编码（含中文/空格/`&` —— `&` 不编码会被浏览器当成查询串分隔符）；
+  // 服务器侧收到的是编码过的 pathname，解码后按真实目录名取文件（gameServer.ts 的 decodeURIComponent）。
+  const urlPrefix = `${encodeURIComponent(opts.videoDirName ?? VIDEO_DIR_NAMES[0])}/`;
   const groups = [
-    videoGroup(null, scan.root, labels, posterFor), // 直接放在 videos/ 下的：不分组名
-    ...scan.dirs.map((d) => videoGroup(d.name, d.files, labels, posterFor)),
+    videoGroup(null, scan.root, labels, posterFor, urlPrefix), // 直接放在视频目录下的：不分组名
+    ...scan.dirs.map((d) => videoGroup(d.name, d.files, labels, posterFor, urlPrefix)),
   ].join("");
   if (!groups) return "";
   return [

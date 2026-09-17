@@ -15,9 +15,9 @@ import {
   sourceDatabasePath,
   runtimeDatabasePath,
 } from "./paths";
-import { shouldSyncDatabase, type FileStamp } from "../../shared/librarySync";
+import { sameFilePath, shouldSyncDatabase, type FileStamp } from "../../shared/librarySync";
 import { parseStoredBatConsole } from "../../shared/launchPaths";
-import type { AppUser, SessionUser, Game, GameLibrary, LibraryStats } from "./models";
+import type { AppUser, SessionUser, Game, LibraryStats } from "./models";
 
 // 全局的 sql.js 静态对象（init 一次复用）。
 let SQL: SqlJsStatic | null = null;
@@ -113,12 +113,6 @@ CREATE TABLE IF NOT EXISTS users (
     deleted_at TEXT
 );
 
-CREATE TABLE IF NOT EXISTS game_libraries (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    path TEXT
-);
-
 CREATE TABLE IF NOT EXISTS platform (
     id TEXT PRIMARY KEY,
     name TEXT,
@@ -126,6 +120,45 @@ CREATE TABLE IF NOT EXISTS platform (
     icon TEXT
 );
 `;
+
+/**
+ * 权威库 → 运行时副本：比"大小 + 修改时间"，**不一致就复制**（规则见 shared/librarySync.ts）。
+ *
+ * ⏱ 调用时机 = **应用启动**（`main.ts` 的 `app.whenReady()`，用户指定："启动就比较"），
+ *    openDb() 里还会再调一次做幂等兜底（走到 enterSystem / 自检都拿得到最新副本）。
+ *    为什么拆出来：这一步很轻（一次 stat；不一致时本机实测复制 7.7ms），
+ *    真正拖慢启动的是"sql.js 初始化 + 把库读进内存"——那个仍然留在点"进入系统"时。
+ *
+ * 两条细节都是踩出来的：
+ *   1) 判定为"大小 + 修改时间都相同才跳过"；权威库在 `//NAS` 上时省掉的是一次实打实的网络读。
+ *      复制必须用 `cpSync` 的 `preserveTimestamps` 把权威库的 mtime 带过去 —— 否则副本会被打上
+ *      "现在"的时间戳，两边永远不一致、判定永远为"要复制"（优化就白写了）。
+ *   2) 复制走"临时文件 + rename"（原子）：避免中途被杀留下半截文件 —— 那正是下次启动打不开的根源。
+ *
+ * ⚠️ 方向**永远单向**：只读权威库、只写副本。客户端任何地方都不许写权威库
+ *    （`persist()` 里有硬断言挡着，见 `sameFilePath`）。
+ */
+export function syncRuntimeDatabase(): void {
+  const sourcePath = sourceDatabasePath();
+  const runPath = runtimeDatabasePath();
+  try {
+    const srcStamp = fileStamp(sourcePath);
+    const dstStamp = fileStamp(runPath);
+    if (shouldSyncDatabase(srcStamp, dstStamp)) {
+      const dir = path.dirname(runPath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const tmp = `${runPath}.tmp`;
+      fs.cpSync(sourcePath, tmp, { preserveTimestamps: true });
+      fs.renameSync(tmp, runPath); // 同卷 rename 是原子的
+      console.log(`[db] 已从权威库复制运行时副本（${srcStamp?.size ?? 0} 字节）`);
+    } else if (srcStamp) {
+      console.log("[db] 运行时副本与权威库一致（大小/时间相同），跳过复制");
+    }
+  } catch (e) {
+    // 复制失败（如文件被占用）不致命：继续用现有运行时副本（打不开还有下面的自愈）。
+    console.error("[db] 从权威库复制运行时副本失败:", e);
+  }
+}
 
 // 初始化 sql.js 并打开（或创建）数据库文件。
 export async function openDb(): Promise<Database> {
@@ -158,41 +191,13 @@ export async function openDb(): Promise<Database> {
 
   const dbPath = databasePath();
 
-  // 权威库 → 运行时副本：
-  //   权威库 <权威库目录>/library.db 由手工维护的 games.json + 脚本写入（import-games.bat）；
-  //   每次启动复制成 <库根>/library/library.db，之后**所有读写都只在副本上**，
-  //   重启即回到权威数据。
+  // 权威库 → 运行时副本：与"应用启动"那一步是**同一份实现**（用户指定：启动就比较、不一致就复制）。
+  // 这里再调一次是幂等兜底 —— 直接调 openDb() 的入口（如 exe --check 自检）也能拿到最新副本。
+  // 之后**所有读写都只在副本上**，重启即回到权威数据。
   // 为什么这么设计（核心原因）：玩家可能**正在游戏**，而存档操作要读库里的存档路径；
   //   此时一旦发生"更新"，library/library.db 可能被破坏 → 存档就做不了。
   //   副本可丢弃 + 每次启动重建，就能把"更新破坏"限制在临时文件上。
-  // 复制这一步有两个细节都是踩出来的：
-  //   1) **大小 + 修改时间一致就跳过复制**（判定在 shared/librarySync.ts）。
-  //      权威库放在网络共享（//NAS/...）时，省掉的是一次实打实的网络读。
-  //      注意：复制时用 cpSync 的 preserveTimestamps 把权威库的 mtime 带过去 ——
-  //      否则 copyFileSync 会给副本打上"现在"的时间戳，两边永远不一致，判定白写。
-  //   2) 复制走"临时文件 + rename"（原子）：避免中途被杀留下半截文件 ——
-  //      那正是下次启动打不开的根源。
-  {
-    const sourcePath = sourceDatabasePath();
-    const runPath = runtimeDatabasePath();
-    try {
-      const srcStamp = fileStamp(sourcePath);
-      const dstStamp = fileStamp(runPath);
-      if (shouldSyncDatabase(srcStamp, dstStamp)) {
-        const dir = path.dirname(runPath);
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        const tmp = `${runPath}.tmp`;
-        fs.cpSync(sourcePath, tmp, { preserveTimestamps: true });
-        fs.renameSync(tmp, runPath); // 同卷 rename 是原子的
-        console.log(`[db] 已从权威库复制运行时副本（${srcStamp?.size ?? 0} 字节）`);
-      } else if (srcStamp) {
-        console.log("[db] 运行时副本与权威库一致（大小/时间相同），跳过复制");
-      }
-    } catch (e) {
-      // 复制失败（如文件被占用）不致命：继续用现有运行时副本（打不开还有下面的自愈）。
-      console.error("[db] 从权威库复制运行时副本失败:", e);
-    }
-  }
+  syncRuntimeDatabase();
 
   const dir = path.dirname(dbPath);
   if (!fs.existsSync(dir)) {
@@ -317,6 +322,15 @@ export function persist(): void {
   if (!db) return;
   const data = db.export();
   const dbPath = databasePath();
+
+  // 硬保护（用户要求："客户端绝对不能回写权威库"）：写目标只能是运行时副本。
+  // 不靠自觉 —— 以后谁改了路径解析、或误把写目标指到源库，这里当场抛错，
+  // 而不是**静默覆盖**掉唯一的那份权威数据。判据是纯函数 sameFilePath（有单测）。
+  const sourcePath = sourceDatabasePath();
+  if (sameFilePath(dbPath, sourcePath)) {
+    throw new Error(`[db] 拒绝写权威库（源库只读，客户端只许写运行时副本）：${dbPath}`);
+  }
+
   const dir = path.dirname(dbPath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -325,9 +339,12 @@ export function persist(): void {
 }
 
 // 关闭数据库连接（退出前调用）。
+// ⚠️ **不写库**（2026-09-16 用户指定："退出应用，不能写库"）：每个写操作都在改完之后自己
+//    `persist()` 落过盘了（见上面每个 CRUD 与 migrateAddColumns），退出时再整体导出一遍是
+//    **纯多余的重写**；而且它会把运行时副本的 mtime 改成"退出时刻"，破坏"大小 + 修改时间一致
+//    就跳过复制"的判定 —— 表现就是"明明什么都没改，下次启动还是复制一遍"。
 export function closeDb(): void {
   if (db) {
-    persist();
     db.close();
     db = null;
   }
@@ -364,49 +381,11 @@ export function getGame(id: string): Game | null {
   return row ? rowToGame(row) : null;
 }
 
-/**
- * 规范化"库占位符路径"，保证存库的都是合法格式 `{库名}\相对路径\文件`。
- *
- * 用户在管理端填启动路径时，占位符 `{Gamelibrary1}` 后面可能随手多敲/少敲斜杠或
- * 混用正反斜杠，例如：
- *   `{Gamelibrary1}\game1\game.exe`  ✅（本来就对，保留）
- *   `{Gamelibrary1}game1/game.exe`   ❌（少一个 \，/ 混用）
- *   `{Gamelibrary1}//game1\\game.exe`❌（重复斜杠）
- *   `{Gamelibrary1}/game1\game.exe`  ❌（/ 开头）
- * 本函数统一归一化成 `{Gamelibrary1}\game1\game.exe`。
- * 只处理以 `{...}` 占位符开头的路径；普通绝对路径（D:\Games\...）原样不动。
- */
-function normalizeLibPath(input?: string | null): string | null {
-  if (!input) return null;
-  let s = input.trim();
-  if (!s) return null;
-  // 只规范以 {占位符} 开头的库路径
-  const m = s.match(/^\{[^}]+\}/);
-  if (!m) return s;
-  const placeholder = m[0];
-  let rest = s.slice(placeholder.length);
-  // 去掉 rest 开头的 ./ .\ / \ 等冗余符号
-  rest = rest.replace(/^[\\/\.]+/, "");
-  // 内部统一成反斜杠，并去掉重复分隔符
-  rest = rest.replace(/[\\/]+/g, "\\");
-  rest = rest.replace(/^\\+/, "");
-  if (!rest) return placeholder; // 只有占位符没有后续路径
-  return `${placeholder}\\${rest}`;
-}
-
 export function upsertGame(game: Game): void {
   if (!db) throw new Error("数据库未打开");
-  // 统一规范化库占位符路径：installDirectory 和每个 action 的 path / workingDir。
-  // 这样无论从管理端、客户端还是脚本入口保存，入库的都是 {占位符}\相对路径 合法格式，
-  // 不会再有 ".\Gamelibrary\..." 和 "{Gamelibrary1}\..." 两套写法不一致的问题。
-  game.installDirectory = normalizeLibPath(game.installDirectory) ?? undefined;
-  if (Array.isArray(game.actions)) {
-    game.actions = game.actions.map((a) => ({
-      ...a,
-      path: normalizeLibPath(a.path) ?? undefined,
-      workingDir: normalizeLibPath(a.workingDir) ?? undefined,
-    }));
-  }
+  // 2026-09-16 起这里**不再改写路径**：以前会把 `{库名}\…` 统一规范成"占位符 + 反斜杠"格式
+  // （normalizeLibPath），而库占位符随 game_libraries 一起废弃了 —— 现在路径按原样入库
+  // （绝对路径 / `{InstallDir}\…` 两种形态都直接存）。
   const now = new Date().toISOString();
   const values = {
     $id: game.id,
@@ -746,33 +725,6 @@ export function replaceEnterpriseUsers(users: AppUser[]): number {
   }
   persist();
   return n;
-}
-
-// ===== 游戏库（按根目录组织） CRUD =====
-
-export function getGameLibraries(): GameLibrary[] {
-  const rows = allRows<Record<string, unknown>>("SELECT * FROM game_libraries");
-  return rows.map((r) => ({
-    id: String(r.id),
-    name: String(r.name),
-    path: r.path ? String(r.path) : "",
-  }));
-}
-
-export function upsertGameLibrary(lib: GameLibrary): void {
-  if (!db) throw new Error("数据库未打开");
-  db.run(
-    `INSERT INTO game_libraries (id, name, path) VALUES ($id, $name, $path)
-     ON CONFLICT(id) DO UPDATE SET name=$name, path=$path`,
-    { $id: lib.id, $name: lib.name, $path: lib.path } as never
-  );
-  persist();
-}
-
-export function deleteGameLibrary(id: string): void {
-  if (!db) throw new Error("数据库未打开");
-  db.run("DELETE FROM game_libraries WHERE id = $id", { $id: id });
-  persist();
 }
 
 // ===== 行转对象（把 0/1 还原成布尔，JSON 字符串还原成数组） =====

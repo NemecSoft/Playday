@@ -99,37 +99,25 @@ describe("resolveLibraryPaths：权威库目录与库根都可配置，复制关
     });
   });
 
-  it("配权威库目录 → 只动权威库，运行时副本仍由它复制（路径写在别的盘也行）", () => {
-    const p = resolveLibraryPaths({
-      dataRoot: DATA_ROOT,
-      sourceLibraryDir: "//NAS/YunGame/Admin",
-    });
-    expect(p.source).toBe("//NAS/YunGame/Admin/library.db");
-    expect(p.runtime).toBe("D:/YunGame/Playnite/data/library/library.db");
-  });
-
-  it("权威库目录支持相对路径（基准 = baseDir/appRoot，不是数据根）", () => {
-    // 传了 baseDir（桌面端 = exe 所在目录）：挂在 exe 目录上一级
-    expect(
-      resolveLibraryPaths({
-        dataRoot: DATA_ROOT,
-        baseDir: APP_ROOT,
-        sourceLibraryDir: "..\\Authoritative",
-      }).source,
-    ).toBe("D:/YunGame/Authoritative/library.db");
-    // 不传 baseDir 时保持旧行为（基准 = 数据根）
-    expect(
-      resolveLibraryPaths({ dataRoot: DATA_ROOT, sourceLibraryDir: "..\\Authoritative" }).source,
-    ).toBe("D:/YunGame/Playnite/Authoritative/library.db");
+  it("权威库固定在 <库根>/Admin（2026-09-17 收口：不再有 sourceLibraryDir 这个选项）", () => {
+    // 只给数据根：权威库 = <数据根>/Admin、运行时副本 = <数据根>/library
+    const p = resolveLibraryPaths({ dataRoot: DATA_ROOT });
+    expect(p.sourceDir).toBe("D:/YunGame/Playnite/data/Admin");
+    expect(p.source).toBe("D:/YunGame/Playnite/data/Admin/library.db");
+    // 改库根 → 两处一起跟着动（"配置的库"与"被复制的库"不可能分家）
+    const q = resolveLibraryPaths({ dataRoot: DATA_ROOT, libraryDir: "E:/Lib" });
+    expect(q.sourceDir).toBe("E:/Lib/Admin");
+    expect(q.runtime).toBe("E:/Lib/library/library.db");
   });
 });
 
-describe("resolveAnnouncementFile", () => {
-  it("默认 <数据根>/announcements/announcement.html；配了公告目录则跟过去", () => {
-    expect(resolveAnnouncementFile("", DATA_ROOT)).toBe(
+describe("resolveAnnouncementFile：跟着库根走（2026-09-17 起不再单独配公告目录）", () => {
+  it("公告文件 = <库根>/announcements/announcement.html", () => {
+    expect(resolveAnnouncementFile(DATA_ROOT)).toBe(
       "D:/YunGame/Playnite/data/announcements/announcement.html",
     );
-    expect(resolveAnnouncementFile("E:\\公告", DATA_ROOT)).toBe("E:/公告/announcement.html");
+    // 相对库根也照样规范化（两种分隔符都收）
+    expect(resolveAnnouncementFile("dev-data")).toBe("dev-data/announcements/announcement.html");
   });
 });
 
@@ -184,11 +172,12 @@ describe("parity：网站端 server/paths.mjs 与桌面端规则一致", () => {
             diff.push(`library ${JSON.stringify(opts)}: ${JSON.stringify(la)} vs ${JSON.stringify(lb)}`);
           }
         }
-        const aa = resolveAnnouncementFile(raw, DATA_ROOT, base);
-        const ab = serverPaths.resolveAnnouncementFile(raw, DATA_ROOT, base);
-        if (aa !== ab) diff.push(`announcement base=${base} raw=${JSON.stringify(raw)}: ${aa} vs ${ab}`);
       }
     }
+    // 公告：跟着库根走（2026-09-17 起不再单独配置公告目录）—— 两边都只接一个库根
+    const aa = resolveAnnouncementFile(DATA_ROOT);
+    const ab = serverPaths.resolveAnnouncementFile(DATA_ROOT);
+    if (aa !== ab) diff.push(`announcement: ${aa} vs ${ab}`);
     expect(diff).toEqual([]);
   });
 });

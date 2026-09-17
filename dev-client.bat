@@ -73,7 +73,7 @@ REM 为什么必须有这一步：path-modes.json 是"单一来源"，但客户�
 REM 改了表忘了同步 → 客户端拿**旧路径**跑（封面 / 库 / GameSaveHelper 静默失配），
 REM 不报错、不提示 —— 和本文件顶上注释踩过的"改了代码没重编"是同一类假象。
 REM 位置必须在编译之后：prepare-release 要求 dist-electron/shared/pathModes.js 不比源码旧。
-echo [dev] 同步 config.json (path-modes.json -> config.json)...
+echo [dev] 同步 config.json (path-modes.json → config.json)...
 call "%~dp0sync-config.bat"
 if errorlevel 1 (
     echo.
@@ -104,7 +104,12 @@ echo [dev] Vite 已就绪。
 :runelectron
 REM ---- 6. 启动 Electron（加载 5173）----
 echo [dev] 启动 Electron...
-call node_modules\.bin\electron.cmd . 2>dev-client-err.log
+REM -log：顺便写一份"本次实际用到的全路径"报告（<数据根>\logs\paths-latest.log）。
+REM  为什么开发期要它：path-modes.json 的 dev 段写的是相对路径（fonts、库根、dev-tools/runtime），
+REM  真正解析成哪个绝对目录只有跑起来才看得见；报告里每个字段都带 [存在]/[缺失]，
+REM  "配了但指到空处"当场暴露 —— 本项目最贵的一类故障就是不报错、只是静默失效。
+REM  不想每次写就删掉本行末尾的 -log。
+call node_modules\.bin\electron.cmd . -log 2>dev-client-err.log
 
 REM ---- 6. 退出前提示 ----
 echo.

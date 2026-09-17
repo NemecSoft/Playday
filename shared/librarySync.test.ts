@@ -1,7 +1,7 @@
 // 库同步判定规则的"可执行说明"。
 // 相关实现：electron/core/db.ts 的 openDb()（复制前先问这里的 shouldSyncDatabase）。
 import { describe, expect, it } from "vitest";
-import { sameFileStamp, shouldSyncDatabase } from "./librarySync";
+import { sameFilePath, sameFileStamp, shouldSyncDatabase } from "./librarySync";
 
 const A = { size: 1810432, mtimeMs: 1789000000000 };
 const B = { size: 1810432, mtimeMs: 1789000000000 };
@@ -49,5 +49,36 @@ describe("shouldSyncDatabase：跳过条件", () => {
   it("回归：如果复制时没带 mtime（副本被打成'现在'），判定必然要求再复制一次", () => {
     const runtimeJustCopiedNaively = { size: A.size, mtimeMs: A.mtimeMs + 5000 };
     expect(shouldSyncDatabase(A, runtimeJustCopiedNaively)).toBe(true);
+  });
+});
+
+describe("sameFilePath：写库硬保护的判据（persist 的目标不能是权威库）", () => {
+  const SRC = "D:\\data\\Admin\\library.db";
+  const RUN = "D:\\data\\library\\library.db";
+
+  it("回归：权威库与运行时副本**不是**同一个文件（保护不能把正常写副本也拦掉）", () => {
+    expect(sameFilePath(SRC, RUN)).toBe(false);
+  });
+
+  it("斜杠方向 / 大小写 / 结尾斜杠不同，仍判为同一文件", () => {
+    expect(sameFilePath(SRC, "D:/data/Admin/library.db")).toBe(true);
+    expect(sameFilePath(SRC, "d:\\DATA\\admin\\LIBRARY.DB")).toBe(true);
+    expect(sameFilePath("D:\\data\\Admin\\", "D:/data/Admin")).toBe(true);
+  });
+
+  it("回归：同一路径写法变体必须都判为同一文件（否则保护形同虚设）", () => {
+    // 这正是"绝对不能回写权威库"要挡的场景：解析结果写法不同、指向同一个文件
+    const variants = [
+      "D:/data/Admin/library.db",
+      "D:\\data\\Admin\\library.db",
+      "d:\\data\\admin\\library.db",
+      "D:\\data\\Admin\\library.db\\",
+    ];
+    for (const v of variants) expect(sameFilePath(SRC, v)).toBe(true);
+  });
+
+  it("不同目录 / 只差文件名的后缀 → 不是同一个文件", () => {
+    expect(sameFilePath(SRC, "D:\\data\\Admin\\library.db.bak-20260916")).toBe(false);
+    expect(sameFilePath(SRC, "D:\\data\\Admin2\\library.db")).toBe(false);
   });
 });

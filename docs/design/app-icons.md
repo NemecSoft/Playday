@@ -36,7 +36,7 @@ tray.ts 里那条"ico 不 resize"的注释就是这个原因。
 | 谁执行 | `electron/core/appIcon.ts::refreshAppIcons()`：给**所有窗口** `setIcon()` + 给托盘 `setImage()` |
 | 什么时候 | ① 启动时（用上次落库的 `settings.currentUserLevel`，首帧就是对的）；② 每条"把等级写进 settings"的命令之后 —— `get_current_user` / `resolve_enterprise` / `login_personal` / `logout`（都在 `electron/ipc/auth.ts`） |
 | 为什么必须运行期刷新 | 等级是**开机后才判出来**的（读用户表按公网 IP 命中），个人会话登录/退登还会再变。启动时定死会出现"钻石门店顶着黄金图标" |
-| 资源从哪来 | 源文件只有一处：`tools/yungamestart/assets/1.ico`、`2.ico`（make-icons.mjs 生成，同时也是快捷方式图标）。`electron-builder.yml` 的 `extraResources` 把它俩发到 `resources/` 下；dev 则直接读仓库路径 —— 两条候选路径都在 `appIcon.ts` 里 |
+| 资源从哪来 | 源文件只有一处：`dev-tools/yungamestart/assets/1.ico`、`2.ico`（make-icons.mjs 生成，同时也是快捷方式图标）。`electron-builder.yml` 的 `extraResources` 把它俩发到 `resources/` 下；dev 则直接读仓库路径 —— 两条候选路径都在 `appIcon.ts` 里 |
 | 兜底 | 等级图标找不到 → 退 `1.ico`；再找不到 → 返回 null，窗口/托盘各自回落到 `tray.ico`/`tray.png`/`icon.ico`，不崩 |
 
 **⚠️ 漏了会怎样**：某条命令忘了调 `refreshAppIcons()` 不会报错，表现只是"这台机器图标不对"
@@ -64,7 +64,7 @@ tray.ts 里那条"ico 不 resize"的注释就是这个原因。
 `#930BB0`（深紫），一个图标里同时代表两个版本。
 
 > ⚠️ 这四个色是从那两个图标的**"加深版"**上取的关键色；而那两个图标后来按用户决定
-> **回退成原版**了（`tools/yungamestart/assets/*.ico` = `release/yungamestart/` 那份，
+> **回退成原版**了（`dev-tools/yungamestart/assets/*.ico` = `release/yungamestart/` 那份，
 > 见 [yungamestart.md §六.1](./yungamestart.md)）。**系统图标沿用这四个色、没有跟着回退** ——
 > 两者是各自独立的资产，别因为"1/2.ico 回到原版"就把 `icon.svg` 也改回去。
 
@@ -101,7 +101,7 @@ node_modules\electron\dist\electron.exe public\icons\render-icon.cjs
 
 ## 4. 怎么验证（图形文件不能靠"看着像"）
 
-1. **帧结构**：`node tools\yungamestart\assets\make-icons.mjs --list` 那套是给快捷方式图标的；
+1. **帧结构**：`node dev-tools\yungamestart\assets\make-icons.mjs --list` 那套是给快捷方式图标的；
    看 `public/icons/*.ico` 可以用同一份 `scripts/lib/ico.cjs` 的 `parseIco` 列一列（帧数/尺寸/编码）。
 2. **真 Windows 加载器**（最有说服力 —— 走的正是 Explorer 那套解码）：
 

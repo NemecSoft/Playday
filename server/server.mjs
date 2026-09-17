@@ -29,8 +29,8 @@ const ROOT = path.resolve(__dirname, "..");
 // （桌面端还好好的，只有网站端封面/详情全空）。取路径的逻辑见 scripts/lib/devData.mjs。
 const DATA_DIR = process.env.YUNGAME_DATA_DIR || devDataDir();
 const DIST_DIR = path.join(ROOT, "dist"); // 前端构建产物（vite build 输出）
-// 所有数据目录都从 config.json 解析（settings.coverImagesDir / gameDetailsDir /
-// announcementsDir / libraryDir），与桌面端同一套语义 —— 见 server/paths.mjs。
+// 所有数据目录都从 config.json 解析（settings.coverImagesDir / gameDetailsDir / libraryDir；
+// 公告与权威库从 libraryDir 推导），与桌面端同一套语义 —— 见 server/paths.mjs。
 // 以前这里把 CoverImages / Game_Details / announcements / library 全写死，
 // 桌面端配了自定义目录网站端读不到（"配了没用"）。
 // 注意：目录在启动时确定，改配置后需重启网站端。

@@ -3,20 +3,22 @@
 // 为什么要这一步：最终要的简介是**玩家视角的极简一句话**（"当大学校长，建校园，管师生，开各种奇葩专业，模拟经营。"），
 // 爬来的 marketing 文案直接当简介不合格（太长、不在玩家视角、还常重复游戏名）。
 // 所以按批导出素材 → 人/AI 据此重写 → 写成 data/batches/*.json → 再由
-// merge-authored-intros.mjs 合并进 data/game-content.json（正式内容总表）。
+// merge-authored-intros.mjs 合并进 data/library/games.json（整库 JSON 的简介列）。
+// 合并完还要 npm run db:import（或双击 libraryjson-importto-librarydb.bat）才落到库里。
 //
 // 用法：
 //   node scripts/dump-intro-material.mjs                      # 前 40 条
 //   node scripts/dump-intro-material.mjs --offset 40 --limit 60
 import fs from "fs";
 import path from "path";
+import { LIBRARY_JSON_DIR } from "./lib/libraryJson.mjs";
 
 const argv = process.argv.slice(2);
 const argOf = (name, dflt) => {
   const i = argv.indexOf(name);
   return i >= 0 && argv[i + 1] ? argv[i + 1] : dflt;
 };
-const TABLE = argOf("--table", path.join(process.cwd(), "data/game-content.json"));
+const TABLE = argOf("--table", path.join(process.cwd(), LIBRARY_JSON_DIR, "games.json"));
 const DETAILS = argOf("--details", "D:/Addons");
 const OFFSET = Number(argOf("--offset", "0")) || 0;
 const LIMIT = Number(argOf("--limit", "40")) || 40;

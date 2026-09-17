@@ -17,7 +17,7 @@ import {
   toCmdPath,
 } from "../../shared/launchPaths";
 import { getGame, upsertGame } from "./db";
-import type { Game, GameAction, GameLibrary } from "./models";
+import type { Game, GameAction } from "./models";
 import { expandVariables, runScript } from "./scriptRunner";
 import { canPlay } from "./auth";
 
@@ -41,9 +41,10 @@ const lastExit = new Map<string, number>();
 // 并由 docs/design/launch-and-paths.md 作为权威说明。
 // 这里只负责把"游戏上下文 + config.json 里的游戏根"喂给它。
 
-// 兼容旧调用点（ipc/saveManager、ipc/games 用的是两参数版本）：基准取 defaultGameRootPath。
-export function resolvePath(p: string, gameLibraries: GameLibrary[]): string {
-  return resolvePathPure(p, gameLibraries, defaultGameRootPath());
+// 单参数版本：基准取 config.json 的 defaultGameRootPath（相对路径的锚）。
+// 2026-09-16 起不再传"游戏库列表"——库占位符随 game_libraries 一起废弃。
+export function resolvePath(p: string): string {
+  return resolvePathPure(p, defaultGameRootPath());
 }
 
 // 在安装目录里找一个可执行文件（移植 find_game_executable）。
@@ -158,7 +159,6 @@ export function launchGame(
     actionId?: string;
     userLevel: number;
     track: boolean;
-    gameLibraries: GameLibrary[];
     // .bat/.cmd 控制台窗口的**全局默认值**（设置界面「运行 .bat/.cmd 指令时显示控制台窗口」）。
     // 默认 false=隐藏。⚠️ 它只是默认值 —— 逐游戏配了就以逐游戏为准（见下面的归并）。
     showBatConsole?: boolean;
@@ -178,7 +178,6 @@ export function launchGame(
   // 规则与两个会静默失效的写法见 shared/launchPaths.ts 的 resolveShowBatConsole。
   const showBatConsole = resolveShowBatConsole(game.showBatConsole, options.showBatConsole ?? false);
 
-  const libs = options.gameLibraries;
   // 有启动动作就按动作启动；没有则尝试在安装目录自动找 exe。
   const action = resolveAction(game, options.actionId);
   let childStarted = false;
@@ -195,13 +194,12 @@ export function launchGame(
       // 导致所有用该占位符的游玩指令（实测 755 个）一律报"文件不存在"。
       const installDirRaw = (game.installDirectory ?? "").trim();
       // 解析后的安装目录：既用于拼相对动作路径，也用于后面的进程监控。
-      const installAbs = installDirRaw ? resolvePath(expandVariables(installDirRaw, game), libs) : "";
-      // 路径规则统一交给 shared/launchPaths.ts（纯函数 + 单测）：三种基准、
+      const installAbs = installDirRaw ? resolvePath(expandVariables(installDirRaw, game)) : "";
+      // 路径规则统一交给 shared/launchPaths.ts（纯函数 + 单测）：各基准、
       // {InstallDir} 展开、以及"需要安装目录但没配"的明确报错都在那里。
       const resolvedAction = resolveActionPath({
         actionPath: p,
         installDir: installAbs,
-        libraries: libs,
         gameRoot: defaultGameRootPath(),
         expand: (s) => expandVariables(s, game),
       });
@@ -225,7 +223,7 @@ export function launchGame(
       }
       if (!exeDir) exeDir = path.dirname(exeResolved);
       // 运行前检测：目标必须存在且是可执行文件。
-      const precheck = validateLaunchPath(exeResolved, "File", libs);
+      const precheck = validateLaunchPath(exeResolved, "File");
       if (!precheck.valid) {
         return {
           launched: false,
@@ -252,8 +250,8 @@ export function launchGame(
     }
   } else if (game.installDirectory) {
     // 没有启动动作：在安装目录里自动找 exe。
-    // 安装目录本身也可能是 {库名}\相对 或 {InstallDir} 写法，先展开占位符再解析。
-    const installDir = resolvePath(expandVariables(game.installDirectory, game), libs);
+    // 安装目录本身可能是 {InstallDir} 写法，先展开占位符再解析。
+    const installDir = resolvePath(expandVariables(game.installDirectory, game));
     const found = findGameExecutable(installDir);
     if (found) {
       const spawned = doSpawn(game, found.exe, [], found.wd, options.track, showBatConsole, options.monitorExe, installDir);
@@ -587,11 +585,11 @@ export interface ActionValidation {
 
 const EXECUTABLE_EXTS = ["exe", "bat", "cmd", "lnk", "com"];
 
-export function validateLaunchPath(p: string, actionType: string | undefined, libs: GameLibrary[]): ActionValidation {
+export function validateLaunchPath(p: string, actionType: string | undefined): ActionValidation {
   if (actionType && actionType.toUpperCase() === "URL") {
     return { valid: p.trim() !== "", resolved: p, reason: "", extension: "" };
   }
-  const resolved = resolvePath(p, libs);
+  const resolved = resolvePath(p);
   if (!resolved.trim()) {
     return { valid: false, resolved, reason: "路径为空", extension: "" };
   }

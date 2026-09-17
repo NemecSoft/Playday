@@ -3,10 +3,10 @@
 // 规则：社区评分（games.community_score）**大于**阈值 = 火爆。
 //
 // 阈值的来龙去脉（别照着注释猜数据）：
-//   · community_score 是**人工填**的字段（本机库里 1277 个游戏只有 1 个有值：
-//     「帝国时代1：决定版」89 分，其余全是 NULL）。填写的入口是
-//     data/game-content.json 的 `score` 字段 → 用 apply-game-content-to-db.mjs / 
-//     sync-game-content.bat 同步进库（见 docs/design/game-content.md）。
+//   · community_score 是**人工填**的字段（本机库里 1285 个游戏只有 1 个有值：
+//     「帝国时代1：决定版」89 分，其余全是 NULL）。填写的入口是整库 JSON：
+//     dev-data/library-json/games.json 里那一行的 community_score 列 → 再 npm run db:import -- --apply
+//     （或双击 libraryjson-importto-librarydb.bat）回写进库（见 docs/design/library-json.md）。
 //   · 所以这个阈值只是**约定值**，想改就改这一个常量 —— 桌面端与网站端共用本文件，
 //     改完全网生效，不存在第二个地方要同步。
 export const HOT_SCORE_MIN = 100;

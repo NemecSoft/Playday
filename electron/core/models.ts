@@ -17,7 +17,6 @@ export type {
   ErrorReportConfig,
   Game,
   GameAction,
-  GameLibrary,
   GameLink,
   GameName,
   GameVideo,

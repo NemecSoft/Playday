@@ -6,6 +6,14 @@ import react from "@vitejs/plugin-react";
 // 用 .mts 后缀强制 Vite 按 ESM 加载本配置，避免 "Vite's Node API is deprecated"
 // 的 CJS 警告（package.json 未设 "type":"module"，若叫 .ts 会被当 CommonJS 加载）。
 export default defineConfig({
+  // ⚠️ base 必须是相对路径 "./"：打包版窗口用 electron/windows.ts 的 win.loadFile() 加载
+  // dist/index.html —— 那是 **file:// 协议**，而默认的 base "/" 会把 /assets/index-xxx.js
+  // 解析到**盘根**（file:///D:/assets/…）→ 模块加载失败 → React 永不挂载，界面上只剩
+  // index.html 里那句静态的 "Playday 加载中..."，而且**没有任何报错**（模块加载失败不触发
+  // window.onerror，所以 boot 屏的错误处理器也不响）。2026-09-17 用户实测：部署版第一次
+  // 启动就卡在那里。开发态没事是因为 dev 走 http://localhost:5173/，绝对路径在那儿是对的。
+  // 网站端（server.mjs）在根路径提供 dist/，相对路径同样正确。
+  base: "./",
   plugins: [react()],
   server: {
     port: 5173,

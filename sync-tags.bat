@@ -65,7 +65,7 @@ if errorlevel 1 (
 )
 
 echo.
-echo [sync] 同步完成 ✅  旧库已备份到 %PLAYDAY_ADMIN_DB%.bak-<时间戳>
+echo [sync] 同步完成 ✅  旧库已备份到 %PLAYDAY_ADMIN_DB%.bak-＜时间戳＞
 echo        如需回退，把对应 .bak 复制回 library.db 覆盖即可。
 echo.
 echo [sync] 提示：客户端下次启动会自动从权威库复制到运行时副本 library\library.db。

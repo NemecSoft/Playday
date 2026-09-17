@@ -50,18 +50,18 @@ Windows 上图片本来就没有硬解通路，见 [gpu-acceleration.md](./gpu-a
 另外 `src/utils/assets.ts` 的 blob 缓存上限是**按张数**（`BLOB_LRU_CAP = 220`）而不是按字节：
 图越大，最坏内存越不可控（平均 334KB ≈ 74MB，全 1.8MB 则 ≈ 400MB）。这是个已知隐患，见「非目标」。
 
-## 四、工具：`tools/cover-optimizer/`
+## 四、工具：`dev-tools/cover-optimizer/`
 
 零新依赖（Windows PowerShell 5.1 + GDI+，不需要 ImageMagick / sharp / node 库）。
 2026-09-14 从「仓库根 bat + `scripts/` 下的 ps1」搬成 `tools/` 下自成一个目录（与
-`tools/yungamestart/`、`tools/GameSaveHelper/` 同一套约定），用法细节见该目录的 README。
+`dev-tools/yungamestart/`、`dev-tools/GameSaveHelper/` 同一套约定），用法细节见该目录的 README。
 
 ```bat
 REM 1) AI 出的大图 → 直接产出能放进 CoverImages 的封面
-tools\cover-optimizer\optimize-covers.bat -Source "D:\ai-covers\2026-09" -OutDir "D:\YunGame\PlayNite\CoverImages"
+dev-tools\cover-optimizer\optimize-covers.bat -Source "D:\ai-covers\2026-09" -OutDir "D:\YunGame\PlayNite\CoverImages"
 
 REM 2) 给现有库瘦身：把过大的 PNG 转成同目录 JPEG（原图保留，删掉 jpg 即可回退）
-tools\cover-optimizer\optimize-covers.bat -Slim
+dev-tools\cover-optimizer\optimize-covers.bat -Slim
 ```
 
 规则：
@@ -88,9 +88,9 @@ tools\cover-optimizer\optimize-covers.bat -Slim
 
 | 文件 | 职责 |
 | --- | --- |
-| `tools/cover-optimizer/optimize-covers.bat` | 双击/命令行入口（纯 ASCII；写死 Windows PowerShell 5.1 绝对路径 —— `System.Drawing` 在 PowerShell 7 里不可用） |
-| `tools/cover-optimizer/optimize-covers.ps1` | 实现（**必须 UTF-8 with BOM**，否则 5.1 按 ANSI 解析中文会乱码，同 `tools/GameSaveHelper/tools/Build-GameSave.ps1` 的约定）。找仓库根靠"向上找 `path-modes.json`"，不依赖目录深度 |
-| `tools/cover-optimizer/README.md` | 这个工具的用法/规则/两个坑 |
+| `dev-tools/cover-optimizer/optimize-covers.bat` | 双击/命令行入口（纯 ASCII；写死 Windows PowerShell 5.1 绝对路径 —— `System.Drawing` 在 PowerShell 7 里不可用） |
+| `dev-tools/cover-optimizer/optimize-covers.ps1` | 实现（**必须 UTF-8 with BOM**，否则 5.1 按 ANSI 解析中文会乱码，同 `tools/GameSaveHelper/tools/Build-GameSave.ps1` 的约定）。找仓库根靠"向上找 `path-modes.json`"，不依赖目录深度 |
+| `dev-tools/cover-optimizer/README.md` | 这个工具的用法/规则/两个坑 |
 | `shared/coverMatch.ts` | 封面匹配与格式优先级（唯一来源） |
 | `electron/core/db.ts` → `game_level` / `cover_image` | 封面不入库，运行期扫描目录按名字匹配 |
 

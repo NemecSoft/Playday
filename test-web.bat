@@ -26,7 +26,7 @@ if errorlevel 1 (
 node scripts\data-dir.mjs --exists
 if errorlevel 1 (
     echo [警告] 数据不完整（缺权威库或运行时副本）：%YUNGAME_DATA_DIR%
-    echo         请确认桌面版数据正常（config.json 的 libraryDir / sourceLibraryDir）。
+    echo         请确认桌面版数据正常（config.json 的 libraryDir；权威库固定为 它的 Admin\ 子目录）。
     choice /C YN /M "继续？"
     if errorlevel 2 exit /b 1
 ) else (

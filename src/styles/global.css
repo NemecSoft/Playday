@@ -4345,36 +4345,45 @@ textarea {
   overflow: hidden;
 }
 
-/* 公告窗口的"进系统拦截条"：压在公告内容之上（红警示色），必须一眼看到 ——
+/* 公告窗口命中门禁（维护中 / 库过旧）时的**整屏拦截** ——
+   2026-09-17 需求原话："这个提示不够明显，要直接在中间大大的显示服务器维护。
+   而不要再显示通用内容了"。所以不再是"公告顶上压一条小横幅"，而是**整屏只说这一件事**：
+   居中、大字、警示色；通用公告内容与"自定义公告"提示都不再渲染。
    见 docs/design/user-level-detection.md 的门禁两节（维护中 / 库过旧）。
-   两种命中情况共用这一套样式（原来叫 .ann-maintenance，只管维护；现在两处都用，
-   所以改成中性的 .ann-gate）。 */
-.ann-gate {
+   ⚠️ 字号用 px（不用 rem）：项目有字号缩放（postcss-font-scale.cjs 只处理 px），
+   写 rem 会绕过"字体大小"设置。 */
+.ann-block {
   position: relative;
   z-index: 3;
+  flex: 1 1 auto;
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin: 0 0 10px;
-  padding: 10px 12px;
-  border-radius: 10px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 36px 32px;
+  text-align: center;
+}
+/* 图标与标题共用一个警示色，标题再加一层同色光晕 —— 一眼就是"出事了"，不是"介绍一下"。 */
+.ann-block-icon {
+  color: var(--danger, #e5484d);
+  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--danger, #e5484d) 55%, transparent));
+}
+.ann-block-title {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0.08em;
   color: #fff;
-  background: color-mix(in srgb, var(--danger, #e5484d) 26%, rgba(0, 0, 0, 0.55));
-  border: 1px solid color-mix(in srgb, var(--danger, #e5484d) 60%, transparent);
+  text-shadow: 0 0 28px color-mix(in srgb, var(--danger, #e5484d) 55%, transparent);
 }
-.ann-gate svg {
-  flex: none;
-  margin-top: 1px;
-}
-.ann-gate-title {
-  font-weight: 700;
-  font-size: 14px;
-  margin-bottom: 2px;
-}
-.ann-gate-body {
-  font-size: 12px;
-  line-height: 1.5;
-  opacity: 0.9;
+.ann-block-body {
+  margin: 0;
+  max-width: 30em;
+  font-size: 16px;
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.86);
 }
 /* 被拦住时的"退出"按钮：与"进入系统"同形，改成警示色 */
 .ann-enter-btn.ann-exit-btn {

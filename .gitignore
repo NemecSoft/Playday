@@ -108,9 +108,12 @@ dev-data/library/*
 
 # ============================================================
 # data/（仓库根）：**故意入库**，别加忽略规则
-# 这里放人工维护、丢失不可恢复的内容数据 —— 目前是 game-content.json
-# （每个游戏的简介/地区/标签，几千条手工内容）。它原本在 release/data/ 下，
-# 而上面那些规则只放行 library、announcements、config.json，等于没进版本管理。
+# 这里放人工维护、丢失不可恢复的内容数据：
+#   library/  整库 JSON（一表一文件：games.json / users.json / …）—— 库的可编辑镜像，
+#             由 npm run db:export 生成、npm run db:import 回写（见 docs/design/library-json.md）
+#   batches/  手写简介的批次小文件（merge-authored-intros.mjs 合并进 games.json）
+# 它原本在 release/ 那个目录树下（那里按上面规则只放行 library、announcements、
+# config.json），等于没进版本管理 —— 所以固定在仓库根。
 # ============================================================
 
 # ============================================================
