@@ -142,6 +142,13 @@
 > `tokens.css` 在 `:root` 里给了它 `#ffffff` 兜底，会让"白字压在亮 accent 上"这件事
 > 在静态主题下永远改不动（2026-09-18 实测）。
 
+**生成的是两份产物，必须同源**：`global.css` 的主题块 **和** `src/utils/themeLibraryStatic.ts`
+（"设置 → 配色"里那 11 条 `s-*` 条目）。为什么后者也要生成：用户从列表里选这些经典主题时，
+走的是 `applyPaletteTheme(entry.palette)`（**内联注入 `:root`**），**不会设 `data-theme`** ——
+也就是说**列表里真正生效的是那份 TS**。它曾经是手工产物，于是 CSS 改了、界面上还是旧色
+（实测：CSS 里 `--accent` 已是 `#1d71ea`，条目录里还写着 `#2d7ff9`）。
+守卫测试同时断言这两份都等于生成器的输出。
+
 **改造前实测出来的问题**（`npm run themes:audit` 的判据 = 文字读得清 / 按钮字压得住 / 边框看得见 / 语义色分得开）：
 
 | 问题 | 例子 |
@@ -229,10 +236,10 @@
 | --- | --- | --- | --- |
 | `WindowBackgourndBrush` 起始 | `#303030` | `bgTop` | 窗口是"炭黑 → 酒红"的斜向渐变 |
 | `WindowBackgourndBrush` 暗端 | `#800000`（stop 在 1.5） | `bgBase` → `#651010` | stop 越界，可视区实测只走到约 66.7%，故按该处取值 |
-| `MainColor`（NormalBrush） | `#545B67` | `bgPanel` | **面板是中性灰**（不是红）——"Mixed"的含义就在这 |
-| `PopupBackgroundBrush` | `#383C44` | `secondary` | |
-| `PopupBackgroundColor` | `#171E26` | `muted` | |
-| `NormalBorderBrush` | `#4C545D` | `border` | |
+| `MainColor`（NormalBrush） | `#545B67` | `bgPanel` → `#4f3734` | 原版是中性灰（"Mixed" 的含义）；2026-09-18 按用户反馈改为**同酒红色相**推导，见下 |
+| `PopupBackgroundBrush` | `#383C44` | `secondary` → `#4a322f` | 同上 |
+| `PopupBackgroundColor` | `#171E26` | `muted` → `#2e1917` | 同上 |
+| `NormalBorderBrush` | `#4C545D` | `border` → `#715754` | 同上 |
 | `PopupBorderColor` | `#FFAF612E` | `borderStrong` → `#AF612E` | 前缀 `FF` 是不透明度，去掉才是颜色 |
 | `GlyphColor` | `#F4A460` | `primary` / `accent` / `ring` | `GlyphBrush` 渐变 `#F4A460→#D2691E` 的亮端（琥珀橙） |
 | `HoverColor` | `#9A4545` | `bgItemHover` | 同时是 `ButtonBackgroundBrush`（砖红） |
@@ -249,9 +256,27 @@
 | `background` | `#3B2A2A` | 窗口渐变按 8:2 取的代表色（以炭黑为主、带酒红），文字对比度 13:1 |
 | `card` | `#583838` | `GridItemBackgroundColor` `#609a4545`（38% 砖红）叠在 `#303030` 上合成 |
 | `bgItemActive` | `#7A3A3A` | 砖红家族加深一档；原版选中的 `HighlightGlyphColor` `#c08080` 太亮（白字压上只有 3.1:1），且本表不能存 alpha |
-| `bgSidebar` / `bgInput` | `#2E2626` / `#44474F` | 窗口底压暗一档 / 面板灰压暗（原版输入框是透明底） |
+| `bgSidebar` / `bgInput` | `#2E2626` / `#37211f` | 窗口底压暗一档 / 面板灰压暗（原版输入框是透明底；后者 2026-09-18 同酒红色相重推，见下） |
 | `accentHover` | `#FFBE7A` | `GlyphColor` 提亮（原版没有 hover 档） |
 | `textDim` | `#B89448` | 原值 `TextColorDarker #707070` 在卡片上只有 2.08:1，提亮一档保证"看得见"；**2026-09-14 起整体换成金色系**，见下 |
+
+**底色重推（2026-09-18，用户反馈"游戏酒红这个主题的底色有点不大好"）**：
+
+问题出在上面那批**中性蓝灰**上（`bgPanel #545B67` / `secondary #383C44` / `muted #171E26` /
+`border #69717B` / `bgInput #44474F`）—— 它们抄自原版，压在一套酒红上就是"外来的灰"；
+更要紧的是**层级反了**：`bgPanel`（tone **38.5**）比窗口底 `bgBase`（tone **22.4**）还亮一大截，
+卡片比面板暗，看着发闷。详情页里那块灰就是它（`.hero/.section { background: var(--bg-panel) }`）。
+
+这 5 个值改用 `scripts/lib/md3Color.mjs`（chroma + MD3 色调体系）**从 `bgBase` 的酒红色相重新推导**：
+同色相、彩度压到 0.035、只走 tone。推完的层级：
+
+```
+muted 12  <  bgInput 16  <  bgBase 22  <  secondary 24  <  bgPanel 26  <  card 28  <  bgItemHover 42
+                                          （描边 border = tone 40，与面板差 13.8 ≥ MD3 的"看得见"下限 8）
+```
+
+品牌色（琥珀 `accent` / 亮金文字 / 砖红卡片与悬停 / 炭黑→酒红渐变）**一律没动** —— 那些才是这套主题的性格，
+只换掉了"不跟着酒红走的那几个灰"。对比度仍由 `src/utils/__tests__/themeContrast.test.ts` 守着（亮金压新面板 ≥ 7.2:1）。
 
 **游戏名固定色（2026-09-14 需求）**：本主题的**卡片标题（游戏名）固定 `#FFCC00` 亮金**，
 不跟随 `accent` —— 琥珀橙 `#F4A460` 压在砖红卡片 `#583838` 上偏"融进背景"，标题在 15px 上不够抓眼。

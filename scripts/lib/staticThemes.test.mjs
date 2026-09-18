@@ -25,11 +25,15 @@ const { plans } = runStaticThemes();
 const planOf = (id) => plans.find((p) => p.id === id);
 
 describe("静态主题配色（global.css）", () => {
-  it("文件内容 = 生成器的输出（手改色值会在这里失败）", () => {
+  it("两份产物都 = 生成器的输出（手改色值会在这里失败）", () => {
     // 失败时：跑 `node scripts/gen-static-themes.mjs --apply` 重新生成，
     // **不要手改色值** —— 手改的那处下一轮生成就被抹掉，而且没有任何判据保证它。
     const r = runStaticThemes();
-    expect(r.changed ? "不一致（跑 node scripts/gen-static-themes.mjs --apply）" : "一致").toBe("一致");
+    const hint = "不一致（跑 node scripts/gen-static-themes.mjs --apply）";
+    // global.css 与 src/utils/themeLibraryStatic.ts 必须同时是最新的：
+    // 用户从"设置 → 配色"里选这些经典主题时，实际生效的是后者（内联注入），不是 CSS 块。
+    expect(r.cssChanged ? `global.css ${hint}` : "一致").toBe("一致");
+    expect(r.entriesChanged ? `themeLibraryStatic.ts ${hint}` : "一致").toBe("一致");
   });
 
   it("11 套主题（含默认那套）全部存在且都有判据可查", () => {

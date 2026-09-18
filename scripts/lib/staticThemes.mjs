@@ -517,6 +517,112 @@ export function renderStaticThemes(css, opts = {}) {
 }
 
 /* ------------------------------------------------------------------ *
+ * 生成「设置 → 配色」里的条目：src/utils/themeLibraryStatic.ts
+ *
+ * 为什么要生成这份 TS：
+ *   这 11 套主题原本只以 `:root[data-theme="…"]` 存在于 CSS 里，而**设置里的配色下拉读的是
+ *   themeLibrary**，所以它们在界面上一直没出现过。补了一份条目（`s-<id>`）之后，
+ *   用户从列表里选一套时走的是 `applyPaletteTheme(entry.palette)`（**内联注入到 :root**），
+ *   并不会去设 `data-theme` 属性 —— 也就是说：**列表里选，实际生效的是这份 TS 里的值**。
+ *   所以它必须由同一个生成器产出。曾经它是手工产物，结果 CSS 改了、列表里还是旧色
+ *   （实测：`--accent` 已是 `#1d71ea`，条目里还写着 `#2d7ff9`）。
+ * ------------------------------------------------------------------ */
+
+/** 生成物路径。 */
+export const ENTRIES_PATH = path.resolve(HERE, "../../src/utils/themeLibraryStatic.ts");
+
+/** 展示名（**设计信息**，不是色值 —— 色值全部来自 global.css 那几个块）。 */
+const THEME_META = {
+  default: { zh: "默认暗色", desc: "Playday 默认（经典主题，色值由 MD3 生成）" },
+  cartoon: { zh: "卡通", desc: "明亮、圆润、暖色（经典主题，色值由 MD3 生成）" },
+  cyberpunk: { zh: "赛博朋克", desc: "暗底霓虹、发光边（经典主题，色值由 MD3 生成）" },
+  memphis: { zh: "孟菲斯", desc: "几何原色、活泼（经典主题，色值由 MD3 生成）" },
+  neumorphism: { zh: "新拟态", desc: "柔和浮雕、浅灰（经典主题，色值由 MD3 生成）" },
+  comic: { zh: "美漫", desc: "粗黑描边、网点（经典主题，色值由 MD3 生成）" },
+  ghibli: { zh: "吉卜力", desc: "柔和自然色（经典主题，色值由 MD3 生成）" },
+  chinese: { zh: "中国风", desc: "墨红、金、宣纸（经典主题，色值由 MD3 生成）" },
+  wow: { zh: "魔兽世界", desc: "羊皮纸暗底 + 金（经典主题，色值由 MD3 生成）" },
+  lol: { zh: "英雄联盟", desc: "符文之地午夜 + 金（经典主题，色值由 MD3 生成）" },
+  pubg: { zh: "绝地求生", desc: "军绿 / 卡其 + 炭灰（经典主题，色值由 MD3 生成）" },
+};
+
+/** 条目字段 → global.css 变量。顺序照着 ThemeEntry 的习惯写法。 */
+const ENTRY_MAP = [
+  ["background", "--bg-base"],
+  ["foreground", "--text-primary"],
+  ["card", "--bg-panel"],
+  ["cardForeground", "--text-primary"],
+  ["primary", "--accent"],
+  // accent 底上的文字色：条目里叫 primaryForeground —— 与 CSS 的 --accent-fg 是同一件事。
+  ["primaryForeground", "--accent-fg"],
+  ["secondary", "--bg-item-hover"],
+  ["secondaryForeground", "--text-primary"],
+  ["muted", "--bg-input"],
+  ["mutedForeground", "--text-secondary"],
+  ["border", "--border"],
+  ["ring", "--accent"],
+  ["bgBase", "--bg-base"],
+  ["bgTop", "--bg-top"],
+  ["bgSidebar", "--bg-sidebar"],
+  ["bgPanel", "--bg-panel"],
+  ["bgItemHover", "--bg-item-hover"],
+  ["bgItemActive", "--bg-item-active"],
+  ["bgInput", "--bg-input"],
+  ["borderStrong", "--border-strong"],
+  ["textPrimary", "--text-primary"],
+  ["textSecondary", "--text-secondary"],
+  ["textDim", "--text-dim"],
+  ["accent", "--accent"],
+  ["accentHover", "--accent-hover"],
+  ["accentSoft", "--accent-soft"],
+  ["success", "--success"],
+  ["warning", "--warning"],
+  ["danger", "--danger"],
+];
+
+/** 生成 `themeLibraryStatic.ts` 的完整内容。 */
+export function renderStaticThemeEntries(plans) {
+  const head = [
+    "// ⚙️ 本文件由 scripts/gen-static-themes.mjs 生成 —— **不要手改**。",
+    "//",
+    "// 它是 global.css 里那 11 套经典主题（中国风 / 魔兽 / 赛博朋克 …）的配色条目：",
+    "// 那些主题本来靠 :root[data-theme=\"…\"] 切换，而设置里的配色下拉读的是 themeLibrary，",
+    "// 所以要先变成条目才在界面上出现。",
+    "//",
+    "// ⚠️ 用户从列表里选这些主题时走的是 applyPaletteTheme(entry.palette)（内联注入 :root），",
+    "//    **不会设 data-theme 属性** —— 所以列表里真正生效的是本文件的值，必须与 CSS 同步。",
+    "//",
+    "// 色值的源头只有一个：global.css 里那几个主题块。改配色请改那边（或改生成器的种子/参数），",
+    "// 然后重跑：node scripts/gen-static-themes.mjs --apply",
+    'import type { ThemeEntry } from "./themeLibrary";',
+    "",
+    "export const staticThemeEntries: ThemeEntry[] = [",
+  ].join("\n");
+
+  const blocks = plans.map((p) => {
+    const meta = THEME_META[p.id] ?? { zh: p.id, desc: "经典主题（色值由 MD3 生成）" };
+    const palette = ENTRY_MAP.map(([field, cssVar]) => {
+      const value = p.colors[cssVar];
+      return value === undefined ? null : `      ${field}: ${JSON.stringify(value)},`;
+    }).filter(Boolean);
+    return [
+      "  {",
+      `    id: "s-${p.id}",`,
+      `    name: ${JSON.stringify(p.id)},`,
+      `    zh: ${JSON.stringify(meta.zh)},`,
+      `    desc: ${JSON.stringify(meta.desc)},`,
+      '    category: "经典主题",',
+      "    palette: {",
+      ...palette,
+      "    },",
+      "  },",
+    ].join("\n");
+  });
+
+  return `${head}\n${blocks.join("\n")}\n];\n`;
+}
+
+/* ------------------------------------------------------------------ *
  * 探测 + 读写
  * ------------------------------------------------------------------ */
 
@@ -549,7 +655,7 @@ export const THEME_OPTS = {
   memphis: { accentAltSeed: "#4361ee" },
 };
 
-export function runStaticThemes({ apply = false, file = GLOBAL_CSS } = {}) {
+export function runStaticThemes({ apply = false, file = GLOBAL_CSS, entriesFile = ENTRIES_PATH } = {}) {
   const css = fs.readFileSync(file, "utf8");
   const accentAsText = detectAccentAsText(css);
   const { css: next, plans } = renderStaticThemes(css, {
@@ -557,6 +663,22 @@ export function runStaticThemes({ apply = false, file = GLOBAL_CSS } = {}) {
     accentAltSeedOf: (id) => THEME_OPTS[id]?.accentAltSeed ?? null,
     preferWhiteAccentOf: (id) => !!THEME_OPTS[id]?.preferWhiteAccent,
   });
-  if (apply && next !== css) fs.writeFileSync(file, next, "utf8");
-  return { changed: next !== css, plans, next, css };
+  const entries = renderStaticThemeEntries(plans);
+  const prevEntries = fs.existsSync(entriesFile) ? fs.readFileSync(entriesFile, "utf8") : "";
+  const cssChanged = next !== css;
+  const entriesChanged = entries !== prevEntries;
+  if (apply) {
+    if (cssChanged) fs.writeFileSync(file, next, "utf8");
+    if (entriesChanged) fs.writeFileSync(entriesFile, entries, "utf8");
+  }
+  return {
+    /** 任一产物与生成结果不一致（守卫测试看这个）。 */
+    changed: cssChanged || entriesChanged,
+    cssChanged,
+    entriesChanged,
+    plans,
+    next,
+    css,
+    entries,
+  };
 }

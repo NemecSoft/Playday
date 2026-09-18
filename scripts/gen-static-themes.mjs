@@ -17,7 +17,7 @@ const ONLY = (() => {
   return i >= 0 ? argv[i + 1] : null;
 })();
 
-const { changed, plans } = runStaticThemes({ apply: APPLY });
+const { changed, cssChanged, entriesChanged, plans } = runStaticThemes({ apply: APPLY });
 
 const shown = ONLY ? plans.filter((p) => p.id === ONLY) : plans;
 if (!shown.length) {
@@ -58,7 +58,9 @@ for (const p of shown) {
 }
 
 console.log(
-  `\n共 ${shown.length} 套，${changed ? "文件与生成结果**不一致**" : "文件与生成结果一致"}${APPLY ? "（已写回）" : "（空跑，未写盘）"}`,
+  `\n共 ${shown.length} 套；global.css ${cssChanged ? "与生成结果**不一致**" : "一致"}；` +
+    `themeLibraryStatic.ts ${entriesChanged ? "与生成结果**不一致**" : "一致"}` +
+    `${APPLY ? "（已写回）" : "（空跑，未写盘）"}`,
 );
 if (bad) console.log(`⚠️ ${bad} 条判据不达标`);
 process.exit(bad ? 1 : 0);

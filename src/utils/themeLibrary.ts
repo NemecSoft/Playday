@@ -164,6 +164,17 @@ export const themeLibrary: ThemeEntry[] = [
     //   bgSidebar #2E2626   ← 窗口底压暗一档；bgInput #44474F ← 面板灰压暗（原版输入框是透明的）
     //   accentHover #FFBE7A ← GlyphColor 提亮（原版没有 hover 档）
     //   textDim #8A8A8A     ← TextColorDarker #707070 提亮一档（#707070 在卡片上只有 2.08:1）
+    //
+    // 2026-09-18 用户："游戏酒红这个主题的底色，我觉得有点不大好" —— 指的是下面那批**中性蓝灰**
+    //   （MainColor #545B67 / PopupBackgroundBrush #383C44 / PopupBackgroundColor #171E26 /
+    //     NormalBorderBrush #69717B）：压在一套酒红上就是"外来的灰"，而且 bgPanel(tone 38.5)
+    //   比窗口底 bgBase(tone 22.4) 还亮一大截 —— **层级是反的**（卡片比面板暗，看着发闷）。
+    //   这 5 个值（secondary / muted / border / bgPanel / bgInput）改用 scripts/lib/md3Color.mjs
+    //   （chroma + MD3 色调体系）**从 bgBase 的酒红色相重新推导**：同色相、彩度压到 0.035、只走 tone。
+    //   推完的层级：muted 12 < bgInput 16 < bgBase 22 < secondary 24 < bgPanel 26 < card 28
+    //   < bgItemHover 42；描边 tone 40（与面板差 13.8 ≥ MD3 的"看得见"下限 8）。
+    //   ⚠️ 品牌色（琥珀 accent / 亮金文字 / 砖红卡片与悬停 / 炭黑→酒红渐变）一律**没动** ——
+    //      那些才是这套主题的性格；只换掉了"不跟着酒红走的那几个灰"。
     id: "p-emixednite",
     name: "eMixedNite",
     zh: "游戏红酒",
@@ -177,19 +188,19 @@ export const themeLibrary: ThemeEntry[] = [
       cardForeground: "#FFCC00",
       primary: "#F4A460",
       primaryForeground: "#201714",
-      secondary: "#383C44",
+      secondary: "#4a322f",
       secondaryForeground: "#FFCC00",
-      muted: "#171E26",
+      muted: "#2e1917",
       mutedForeground: "#E0B84A",
-      border: "#69717B",
+      border: "#715754",
       ring: "#F4A460",
       bgBase: "#651010",
       bgTop: "#303030",
       bgSidebar: "#2E2626",
-      bgPanel: "#545B67",
+      bgPanel: "#4f3734",
       bgItemHover: "#9A4545",
       bgItemActive: "#7A3A3A",
-      bgInput: "#44474F",
+      bgInput: "#37211f",
       borderStrong: "#AF612E",
       // ↓ 文字色 = 2026-09-14 用户指定："都改成和游戏名一样的亮金色"。
       //   原主题是 TextColor #ffe（暖白）/ TextColorDark #a0a0a0（灰），这里整体换成金色系：
