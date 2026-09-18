@@ -63,22 +63,34 @@ export function gamesHtmlDir(): string {
 
 ```
 <详情页根>/
+├── _shared/            # 框架三件套（shell.html / detail.js / detail.css）+ vendor/
 ├── <游戏id>/           # 优先（id 稳定、无重名）
-│   └── index.html
+│   ├── images/         # 截图（详情页的"游戏截图"就来自这里）
+│   ├── 视频攻略&游戏实况/   # 视频（服务器注入"游戏视频"区块时读它）
+│   └── …（修改器 / 游戏存档 等）
 └── <游戏名>/           # 兜底（按名匹配，兼容无 id 场景）
-    └── index.html
+    └── …
 ```
 
-对应查找函数 `electron/ipc/gameHtml.ts::gameHtmlPagePath()`：
+> **⚠️ 没有 `index.html` 了**（2026-09-18 起）：详情页改成**按数据现拼**，
+> 每个游戏的静态页与 `css/`、`info.json` 全部删除；`<目录>/index.html` 这个路径仍然存在，
+> 但它是由服务器**当场拼出来**的（壳页 + 库里的那一行 + 目录里的图片/视频）。
+
+对应查找函数 `electron/core/gameDirs.ts::resolveGameDir()`（判断"**目录在不在**"）：
 
 ```ts
-const idCandidates = [gameId, gameName];
-for (const c of idCandidates) {
-  const p = path.join(root, c, "index.html");
-  if (fs.existsSync(p) && fs.statSync(p).isFile()) return p;
+for (const c of [gameId, gameName]) {          // 优先 id，其次游戏名
+  const dir = path.join(root, c);
+  if (fs.statSync(dir).isDirectory()) return dir;
 }
-return null; // 前端显示"未找到详情页"
+return null; // 前端显示"详情内容正在建设中"（2026-09-17 起不再显示 404）
 ```
+
+**判据为什么是"目录"而不是"文件"**：目录里有 `images/`、视频、修改器、存档，文字数据在库里 ——
+这些才是"有没有资料"的实质。曾经判据是 `<目录>/index.html` 文件存在性，
+静态页一删就**全库被判成"没有资料"**，界面上只剩"《xxx》的详情内容正在建设中"（实测踩过）。
+两端必须同一口径：桌面端 `electron/ipc/gameHtml.ts`、网站端 `server/server.mjs` 的
+`get_game_html_page` 都返回 `{ path, dir }`（`dir` 供前端拼 iframe 地址 —— 它可能就是游戏 id）。
 
 > **同一目录还承载"修改器"**：`electron/ipc/trainer.ts` 用同样的"id → 游戏名"规则，在该游戏子目录下找 `修改器/` 子目录来发现修改器 exe。因此 `gameDetailsDir` 一旦改到 `D:/Addons`，修改器目录也一并跟随。
 
@@ -91,6 +103,18 @@ return null; // 前端显示"未找到详情页"
 - 提供 `/api/videos` 动态接口，列出某游戏**视频目录**（`视频攻略&游戏实况/`，旧名 `videos/` 兜底）下的视频（含子目录分组）。
   扫描/分组/排序逻辑在 `electron/core/videoLibrary.ts`（含目录名候选探测），与详情页前端用的 `get_game_videos` 是同一份。
 - 防路径穿越：不允许 `..` 或绝对路径段，保证不越出详情页根目录。
+
+它除了 `/games/`，还有几条"**现取别处资源**"的路由（都不落在详情页根里）：
+
+| 路由 | 取自哪 | 谁在用 | 安全约束 |
+| --- | --- | --- | --- |
+| `/CoverImages/<文件名>` | config 的 `coverImagesDir`（`core/coverAssets.ts`） | **详情页的封面** —— 页面里只放这一个 URL，不再复制副本 | 只放行裸文件名 + 封面扩展名白名单 |
+| `/fonts/<文件名>` | 生效的 fonts 目录（`core/fonts.ts`） | 应用自带字体 | 白名单 + CORS（开发态页面在 5173） |
+| `/music/<相对路径>` | config 的 `musicDir`（`core/music.ts`） | 背景音乐 | CORS + Range（能拖进度） |
+| `/vendor/<文件名>` | `vendor/`（`core/vendorAssets.ts`） | 内置播放器 DPlayer | 只放行裸文件名 + `.js/.css` |
+
+> `/CoverImages/<文件名>` 这条**路径约定与网站端 `server/server.mjs` 完全一致** ——
+> 同一份生成的详情页（`Addons/` 里那些 `index.html`）在桌面端和网站端都要能显示封面。
 
 ### 启动时机：惰性启动（重要）
 
@@ -246,6 +270,21 @@ registerCommand(ipc, "get_game_server_url", async () => {
 
 详情页模板自带一套**浅色**样式（`body` 是 `#f6f7f9`、卡片 `#fff`、正文 `#222`，见 `D:/Addons/<游戏>/css/style.css`）。
 它嵌在深色界面里就是一块白纸（现场反馈"跟外面完全脱节"）。现在**服务器在发页面时把当前主题注入进去**。
+
+**封面版式（2026-09-18 用户要求"封面再大一些，左右占满"）**：模板原本是"封面固定 240px 在左、信息在右"的横排，
+现在改成封面独占一整行的 banner ——
+
+```css
+.hero { flex-direction: column; }                                  /* 原来没这句（横排） */
+.hero-cover { flex: 0 0 auto; width: 100%; }                       /* 原来 flex: 0 0 240px */
+.hero-cover img { max-height: 560px; object-fit: cover; object-position: center top; }  /* 原来没有后三项 */
+```
+
+为什么 `max-height` + `object-fit`：封面图横竖版都有，竖版占满整行会到 1300+ px 高；给个上限再按顶部裁切，
+横版封面基本不被裁。**改的是页面自己的 `css/style.css`**，不是主题注入那条路 —— 那边是"只动颜色"
+（`detailTheme.test.ts` 有断言禁止出现 `display:` / `font-size:` / `margin`），而版式属于页面自己的排版资产。
+批量改的脚本：`scripts/enlarge-hero-cover.mjs`（默认只预览，`--apply` 才写，`--revert --apply` 回退；
+实测 1327 份 `css/style.css` 里 1326 份模板一致，剩 1 份模板不同、脚本会单独报出来跳过）。
 
 | 维度 | 做法 | 为什么 |
 | --- | --- | --- |

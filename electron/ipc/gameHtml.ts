@@ -6,18 +6,40 @@ import { ipcMain } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { gamesHtmlDir } from "../core/paths";
-import { resolveGameSubpath } from "../core/gameDirs";
+import { resolveGameDir } from "../core/gameDirs";
 import { startGameServer, getGameServerBaseUrl } from "../core/gameServer";
 import { setDetailTheme } from "../core/detailTheme";
 import { registerCommand } from "./registry";
 
-// 返回某游戏的详情页 HTML 文件路径。规则：
-//   1. 有 id 子目录 `<详情根>/<id>/index.html` → 用它
-//   2. 否则用游戏名子目录 `<详情根>/<name>/index.html`
-//   3. 都没有 → 返回 null（前端显示"未找到详情页"）
-// 这条"优先 id、其次游戏名"的规则统一在 core/gameDirs.ts，这里只声明要 index.html。
+// 返回某游戏的详情页路径。规则：
+//   1. 有 id 子目录 `<详情根>/<id>/` → 用它
+//   2. 否则用游戏名子目录 `<详情根>/<name>/`
+//   3. 都没有 → 返回 null（前端显示"详情内容正在建设中"）
+// 这条"优先 id、其次游戏名"的规则统一在 core/gameDirs.ts。
+//
+// ⚠️ 2026-09-18：**判据从"index.html 文件在不在"改成了"目录在不在"**。
+//   详情页已改为按数据现拼（服务器现拼，见 core/gameServer.ts 的 buildDetailPage），
+//   1285 个静态 index.html 全部删除 —— 还看文件的话全库都会被判成"没有资料"，
+//   界面上只剩"《xxx》的详情内容正在建设中"（实测就是这个症状）。
+//   返回的路径照旧是 `<目录>/index.html`：那个文件虽不存在，但服务器会现拼出来发，
+//   前端拿它拼 iframe 地址的逻辑一行都不用改。
 export function gameHtmlPagePath(gameId: string, gameName: string): string | null {
-  return resolveGameSubpath(gameId, gameName, "index.html", "file")?.path ?? null;
+  return gameHtmlPageHit(gameId, gameName)?.path ?? null;
+}
+
+/**
+ * 同上，但**把实际命中的目录名一起带出来**。
+ *
+ * 为什么必须带：详情页 iframe 的地址是 `<服务器>/games/<目录名>/index.html`，而这个目录名
+ * 可能就是**游戏 id**（命中规则第 1 条）。前端以前拿 `game.name` 自己猜 —— 命中 id 目录的
+ * 游戏拼出来必然 404，这就是"详情页有时打不开"的第二个来源。目录名只有主进程知道，就由它给。
+ */
+export function gameHtmlPageHit(
+  gameId: string,
+  gameName: string
+): { path: string; dir: string } | null {
+  const hit = resolveGameDir(gameId, gameName);
+  return hit ? { path: path.join(hit.path, "index.html"), dir: hit.dirName } : null;
 }
 
 export function registerGameHtmlIpc(ipc: typeof ipcMain) {
@@ -31,7 +53,8 @@ export function registerGameHtmlIpc(ipc: typeof ipcMain) {
     ) => {
       const gameId = typeof a === "string" ? a : a?.gameId ?? "";
       const gameName = typeof a === "string" ? b ?? "" : a?.gameName ?? "";
-      return gameHtmlPagePath(gameId, gameName);
+      // 返回 { path, dir }：dir 是实际命中的目录名，前端拿它拼 iframe 地址。
+      return gameHtmlPageHit(gameId, gameName);
     }
   );
 
@@ -64,16 +87,14 @@ export function registerGameHtmlIpc(ipc: typeof ipcMain) {
     { unwrap: "object" }
   );
 
-  // 列出 Game_Details/ 目录下有哪些游戏的详情页（管理端诊断用）。
+  // 列出 Game_Details/ 目录下有哪些游戏（诊断用）。
+  // 判据同 gameHtmlPageHit：只要**目录在**就算（详情页是现拼的，没有 index.html 文件）。
   registerCommand(ipc, "list_game_html_dirs", async () => {
     const root = gamesHtmlDir();
     if (!fs.existsSync(root)) return [];
     const dirs: string[] = [];
     for (const e of fs.readdirSync(root, { withFileTypes: true })) {
-      if (e.isDirectory()) {
-        const idx = path.join(root, e.name, "index.html");
-        if (fs.existsSync(idx)) dirs.push(e.name);
-      }
+      if (e.isDirectory() && e.name !== "_shared") dirs.push(e.name);
     }
     dirs.sort();
     return dirs;

@@ -50,6 +50,19 @@ export function resolveGameSubpath(
   return null;
 }
 
+/**
+ * 某游戏的**详情目录本身**（id 优先、其次游戏名）。
+ *
+ * 为什么单独有它（2026-09-18）：详情页改成"按数据现拼"之后，`<游戏目录>/index.html`
+ * 这个文件**不存在了**（1285 个静态页已删，改由服务器现拼，见 gameServer.ts 的 buildDetailPage）。
+ * 判定"这个游戏有没有资料"若还去看那个文件，**全库都会被判成没有资料** ——
+ * 界面上就是一句"详情内容正在建设中"（实测踩过，见 docs/design/game-details.md）。
+ * 正确的判据是**目录在不在**：目录里放着 images/、视频、修改器、存档，文字数据在库里。
+ */
+export function resolveGameDir(gameId: string, gameName: string): GameSubpathHit | null {
+  return resolveGameSubpath(gameId, gameName, "", "dir");
+}
+
 /** 命中的视频目录：比 `GameSubpathHit` 多一个"视频目录叫什么"。 */
 export interface GameVideoDirHit {
   /** 视频目录绝对路径。 */

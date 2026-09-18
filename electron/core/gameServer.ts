@@ -12,6 +12,9 @@ import * as path from "path";
 import { resolveFontRequest } from "./fonts";
 import { resolveMusicRequest } from "./music";
 import { resolveVendorRequest } from "./vendorAssets";
+import { activeCoverDir, resolveCoverRequest } from "./coverAssets";
+import { COVER_IMAGE_EXTS } from "../../shared/coverMatch";
+import { getGames } from "./db";
 import { findVideoDir, findVideoPoster, scanVideos } from "./videoLibrary";
 import { buildVideoSection, injectVideoSection } from "./gameDetailInject";
 import {
@@ -74,11 +77,19 @@ function normalizeDir(dir: string): string {
 // 本机运行的 HTTP 服务器句柄。
 let server: http.Server | null = null;
 let baseUrl = "";
+// 正在启动中的那一次：并发调用必须拿到**同一个 Promise**。
+// 这里以前写的是 `if (server) return baseUrl` —— server 已经创建但还没绑定完成时
+// baseUrl 仍是空串，于是第二个调用者当场拿到 ""；而详情页和「游戏资料」页开机都会
+// 同时要地址（开发态 React 严格模式还会双跑一次 effect），谁后到谁就永远拼不出 URL、
+// 页面一直空白 —— 用户报的"详情页有时打不开"就是这个（2026-09-18 修）。
+let starting: Promise<string> | null = null;
 
-// 启动服务器：绑定 127.0.0.1 的随机端口，静态托管 Game_Details/ 目录。
-// 返回 base URL（如 http://127.0.0.1:4321）；失败返回空字符串。
+// 启动服务器：绑定 127.0.0.1 的**随机空闲端口**（listen(0)，由系统分配，不存在
+// "端口被别的程序占了"这回事），静态托管 Game_Details/ 目录。
+// 返回 base URL（如 http://127.0.0.1:4321）；启动失败会 reject（调用方自己兜底）。
 export async function startGameServer(root: string): Promise<string> {
-  if (server) return baseUrl; // 已启动，直接复用
+  if (baseUrl) return baseUrl; // 已就绪，直接复用
+  if (starting) return starting; // 正在启动 → 复用同一次（并发安全）
   server = http.createServer((req, res) => {
     // 用 URL 解析请求路径和查询参数。
     const url = new URL(req.url || "/", "http://127.0.0.1");
@@ -120,6 +131,21 @@ export async function startGameServer(root: string): Promise<string> {
       return;
     }
 
+    // 封面图：`/CoverImages/<文件名>` → 配置的封面目录下那个文件。
+    // 详情页的封面**唯一来源**就是这里（页面里不再复制 `<游戏目录>/images/cover.*`）——
+    // 见 core/coverAssets.ts 顶部说明。路径与网站端 server/server.mjs 的同名路由一致，
+    // 所以同一份生成的页面在两个端都能显示。页面与本服务器同源 → 不需要 CORS。
+    if (pathname.startsWith("/CoverImages/")) {
+      const full = resolveCoverRequest(pathname.slice("/CoverImages/".length));
+      if (!full) {
+        res.writeHead(404);
+        res.end("Not Found");
+        return;
+      }
+      serveFileAt(full, req, res);
+      return;
+    }
+
     // 随包第三方前端资源：`/vendor/<文件名>` → vendor 目录下那个文件（内置播放器 DPlayer）。
     // 详情页与它**同源**（页面就是这个服务器发的），所以不需要 CORS 头。
     // 只放行裸文件名 + 扩展名白名单，见 vendorAssets.ts。
@@ -150,7 +176,14 @@ export async function startGameServer(root: string): Promise<string> {
     serveFile(root, rel, req, res);
   });
 
-  return new Promise<string>((resolve) => {
+  // 绑定失败（权限 / 端口异常）必须 reject：调用方拿到错误还能重试，
+  // 而"永远 pending"会让详情页一直停在加载态、连个提示都没有。
+  starting = new Promise<string>((resolve, reject) => {
+    server!.once("error", (err) => {
+      server = null;
+      starting = null;
+      reject(err);
+    });
     server!.listen(0, "127.0.0.1", () => {
       const addr = server!.address();
       const port = typeof addr === "object" && addr ? addr.port : 0;
@@ -158,6 +191,7 @@ export async function startGameServer(root: string): Promise<string> {
       resolve(baseUrl);
     });
   });
+  return starting;
 }
 
 // 静态文件服务（按"根目录 + 相对路径"）：支持 Range 请求（视频拖动播放关键），读文件流式返回。
@@ -203,8 +237,7 @@ function isGameDetailIndex(root: string, filePath: string): boolean {
 function serveGameDetailIndex(filePath: string, req: http.IncomingMessage, res: http.ServerResponse): void {
   let html: string;
   try {
-    if (!fs.statSync(filePath).isFile()) throw new Error("not a file");
-    html = fs.readFileSync(filePath, "utf-8");
+    html = buildDetailPage(filePath);
   } catch {
     res.writeHead(404);
     res.end("Not Found");
@@ -243,6 +276,91 @@ function serveGameDetailIndex(filePath: string, req: http.IncomingMessage, res: 
     "Cache-Control": "no-store",
   });
   res.end(buf);
+}
+
+/**
+ * 详情页：**按数据现拼**（2026-09-18 用户："不要直接生成1285个页面，而是根据数据和框架，
+ * 每次动态生成。不然，我加一个游戏，又要你写一遍页面"）。
+ *
+ * 落点就在"发页面"这一步 —— 主题注入、视频区块注入都在这条链上，一起生效：
+ *   库里的这一行数据 → 壳页（三处占位符）→ 注入主题 → 注入视频区块 → 发出
+ * 版面与选项卡由 <详情根>/_shared/detail.js 在浏览器里画（6 套，随机一套）。
+ *
+ * 为什么封面只给"名字"、让页面自己试扩展名：服务器不必为了一个文件名去扫整个封面目录
+ * （那是全库操作）；页面按 .jpg/.jpeg/.png/.webp 试四次即可，命不中就退化成没有封面。
+ */
+/**
+ * 找某游戏的封面文件 → `/CoverImages/<文件名>`；没有就返回空串。
+ *
+ * 为什么由服务器解析、而不是让页面按名字拼几种后缀去试（原做法）：
+ *   试错的代价是**每个游戏 3 个 404**（控制台刷满 "CoverImages/xxx.png 404"，看着像程序坏了）。
+ *   这里只做 4 次 stat（不是扫目录 —— 原注释担心的"全库操作"依然没发生），一次就给出准的。
+ * 扩展名与"哪些文件算封面"同一份定义：shared/coverMatch.ts 的 COVER_IMAGE_EXTS。
+ */
+function findCoverUrl(gameName: string): string {
+  const dir = activeCoverDir();
+  for (const ext of COVER_IMAGE_EXTS) {
+    const file = `${gameName}.${ext}`;
+    try {
+      if (fs.statSync(path.join(dir, file)).isFile()) {
+        return "/CoverImages/" + encodeURIComponent(file);
+      }
+    } catch {
+      /* 这个后缀没有，试下一个 */
+    }
+  }
+  return "";
+}
+
+function buildDetailPage(filePath: string): string {
+  const gameDir = path.dirname(filePath);
+  const dirName = path.basename(gameDir);
+  const shellPath = path.join(path.dirname(gameDir), "_shared", "shell.html");
+  const shell = fs.readFileSync(shellPath, "utf-8");
+
+  // 按目录名找库里这一行（详情目录以游戏名命名）；找不到就退化成只有目录名的页面，不报错。
+  const g = getGames().find((x) => x.name === dirName) ?? null;
+
+  let shots: string[] = [];
+  try {
+    shots = fs
+      .readdirSync(path.join(gameDir, "images"))
+      .filter((f) => /\.(jpg|jpeg|png|webp)$/i.test(f))
+      .sort((a, b) => a.localeCompare(b, "zh-CN", { numeric: true }));
+  } catch {
+    /* 没有 images/ 目录 = 没有截图 */
+  }
+
+  const data = {
+    name: g?.name ?? dirName,
+    origin: g?.originName ?? "",
+    region: g?.region ?? [],
+    genre: g?.genre ?? [],
+    tags: g?.tags ?? [],
+    platform: g?.platform ?? [],
+    series: g?.series ?? [],
+    developer: g?.developer ?? [],
+    publisher: g?.publisher ?? [],
+    version: g?.version ?? "",
+    description: g?.description ?? "",
+    cover: g?.name ?? dirName, // 旧字段：留着兼容老页面，新页面用下面的 coverUrl
+    coverUrl: findCoverUrl(g?.name ?? dirName), // 已经解析好的、**确实存在**的那一个封面 URL（没有则空串）
+    shots,
+  };
+
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const title = `${data.name} · 游戏介绍`;
+  const desc = String(data.description || "").replace(/\s+/g, " ").slice(0, 160);
+  // 顺序要紧：先填 TITLE/DESC（它们是 HTML 文本），最后塞 DATA（JSON，不能过 HTML 转义）。
+  // 两处讲究：
+  //   · 全局替换（/g）：壳页里若还有别处出现占位符（注释、说明文字），也得一并填掉；
+  //   · 替换值用**函数**给：字符串形式里 `$&` / `$'` 会被当成替换模式，而简介里完全可能
+  //     出现 `$` —— 那是静默改内容，用函数返回就不受这套规则影响。
+  return shell
+    .replace(/\{\{TITLE\}\}/g, esc(title))
+    .replace(/\{\{DESC\}\}/g, esc(desc))
+    .replace(/\{\{DATA\}\}/g, () => JSON.stringify(data));
 }
 
 // 静态文件服务（按绝对路径）。
@@ -332,9 +450,13 @@ export function getGameServerBaseUrl(): string {
 }
 
 // 关闭服务器（应用退出时调用）。
+// baseUrl / starting 一并清掉：不清的话下次 startGameServer 会直接返回**已经失效的旧地址**
+// （那个端口早就没了），前端就又是一个打不开的空白页。
 export function stopGameServer(): void {
   if (server) {
     server.close();
     server = null;
   }
+  baseUrl = "";
+  starting = null;
 }

@@ -230,9 +230,27 @@ async function handleApi(cmd, body) {
       return paths.map(readCoverFile);
     }
     case "get_game_html_page": {
-      const gameId = body?.gameId ?? "";
-      const f = path.join(DETAILS_DIR, `${gameId}.html`);
-      return fs.existsSync(f) ? f : "";
+      // 与桌面端 electron/ipc/gameHtml.ts **同一口径**（2026-09-18 改）：
+      //   判据是"**游戏目录**在不在"，不是"磁盘上有没有 index.html" ——
+      //   详情页已改成按数据现拼（见下面的 sendDetailPage），1285 个静态页全删了；
+      //   还看文件的话网站端会把每个游戏都判成"没有资料"，界面上就是一句
+      //   "《xxx》的详情内容正在建设中"。
+      // 返回 { path, dir }：dir 是实际命中的目录名（可能命中游戏 id），前端要用它拼 iframe 地址，
+      // 不能拿游戏名猜 —— 形状与桌面端保持一致（旧版这里返回裸路径字符串，前端拿不到 dir）。
+      for (const key of [body?.gameId, body?.gameName]) {
+        if (!key) continue;
+        // 只认"单个目录名"：带路径分隔符的一律不认（这是个本地服务，但别留穿越口子）
+        if (/[\\/]/.test(key) || key === "." || key === "..") continue;
+        const dir = path.join(DETAILS_DIR, key);
+        try {
+          if (fs.statSync(dir).isDirectory()) {
+            return { path: path.join(dir, "index.html"), dir: key };
+          }
+        } catch {
+          /* 这个候选不存在，试下一个（id 没命中就试游戏名） */
+        }
+      }
+      return null;
     }
     // 桌面端独有/需要写文件的功能，网站端返回不可用（或空）。
     case "launch_game":
@@ -264,6 +282,115 @@ const MIME = {
   ".ttf": "font/ttf",
   ".woff2": "font/woff2",
 };
+
+/**
+ * 现拼某游戏的详情页（2026-09-18）。
+ *
+ * 背景：详情页从"每个游戏一个静态 index.html"改成"按数据现拼"了 —— 1285 个静态页已删除。
+ * 这条路由以前是"从磁盘读文件"，删完就全站 404，详情页整片空白（用户实测："详情页现在没内容"）。
+ *
+ * 与桌面端的关系：桌面端是 electron/core/gameServer.ts 的 buildDetailPage（TS，打进 asar），
+ * 网站端是零依赖的 .mjs，两者互相 import 不了，所以数据装配各有一份。**但版面只有一份** ——
+ * 壳页（`<详情根>/_shared/shell.html`）与 detail.js / detail.css 是两端共用的，这里只负责
+ * 把库里的那一行和目录里的截图摆进三处占位符，所以两端观感一致。
+ *
+ * 封面只给名字、让页面自己试扩展名：服务器不必为了一个文件名去扫整个封面目录（那是全库操作）。
+ */
+/**
+ * 找某游戏的封面文件 → `/CoverImages/<文件名>`；没有就返回空串。
+ *
+ * 与桌面端 electron/core/gameServer.ts 的 findCoverUrl 同一口径（那边用 shared/coverMatch.ts 的
+ * COVER_IMAGE_EXTS，这里是零依赖 .mjs 拿不到，所以把后缀名单写在这儿 —— 改一处要改两处，
+ * 名单本身极少变）。为什么不做"页面自己拼后缀试 4 次"：那样每个游戏 3 个 404，控制台刷屏。
+ */
+const COVER_EXTS = ["jpg", "jpeg", "png", "webp"];
+function findCoverUrl(gameName) {
+  for (const ext of COVER_EXTS) {
+    const file = `${gameName}.${ext}`;
+    try {
+      if (fs.statSync(path.join(COVER_DIR, file)).isFile()) {
+        return "/CoverImages/" + encodeURIComponent(file);
+      }
+    } catch {
+      /* 这个后缀没有，试下一个 */
+    }
+  }
+  return "";
+}
+
+async function sendDetailPage(res, dirName) {
+  const shellPath = path.join(DETAILS_DIR, "_shared", "shell.html");
+  let shell;
+  try {
+    shell = fs.readFileSync(shellPath, "utf-8");
+  } catch (e) {
+    console.error("[detail] 读不到壳页（缺少 _shared/shell.html）：", shellPath, e?.message ?? e);
+    res.writeHead(500);
+    res.end("detail shell not found");
+    return;
+  }
+
+  let g = null;
+  try {
+    const d = await openDb();
+    const r = d.exec("SELECT * FROM games WHERE name = $n", { $n: dirName })[0];
+    if (r && r.values.length) {
+      const row = Object.fromEntries(r.columns.map((c, i) => [c, r.values[0][i]]));
+      g = withCover(rowToGame(row));
+    }
+  } catch (e) {
+    // 库里没这一行就退化成"只有目录名"的页面，不报错（与桌面端同口径）。
+    console.warn("[detail] 查库失败，退化成目录名页面:", dirName, e?.message ?? e);
+  }
+
+  let shots = [];
+  try {
+    shots = fs
+      .readdirSync(path.join(DETAILS_DIR, dirName, "images"))
+      .filter((f) => /\.(jpg|jpeg|png|webp)$/i.test(f))
+      .sort((a, b) => a.localeCompare(b, "zh-CN", { numeric: true }));
+  } catch {
+    /* 没有 images/ 目录 = 没有截图 */
+  }
+
+  const data = {
+    name: g?.name ?? dirName,
+    origin: g?.originName ?? "",
+    region: g?.region ?? [],
+    genre: g?.genre ?? [],
+    tags: g?.tags ?? [],
+    platform: g?.platform ?? [],
+    series: g?.series ?? [],
+    developer: g?.developer ?? [],
+    publisher: g?.publisher ?? [],
+    version: g?.version ?? "",
+    description: g?.description ?? "",
+    cover: g?.name ?? dirName, // 旧字段：留着兼容老页面，新页面用下面的 coverUrl
+    coverUrl: findCoverUrl(g?.name ?? dirName), // 已解析好、**确实存在**的那一个封面 URL（没有则空串）
+    shots,
+  };
+
+  const esc = (s) =>
+    String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  const title = `${data.name} · 游戏介绍`;
+  const desc = String(data.description || "").replace(/\s+/g, " ").slice(0, 160);
+  // 顺序要紧：先填 TITLE/DESC（HTML 文本，要转义），最后塞 DATA（JSON，不能过 HTML 转义）。
+  // 全局替换 + 函数式替换值：理由见桌面端 core/gameServer.ts 的 buildDetailPage（同一条坑）。
+  const html = shell
+    .replace(/\{\{TITLE\}\}/g, esc(title))
+    .replace(/\{\{DESC\}\}/g, esc(desc))
+    .replace(/\{\{DATA\}\}/g, () => JSON.stringify(data));
+  res.writeHead(200, {
+    "Content-Type": "text/html; charset=utf-8",
+    // 与桌面端同口径：不缓存，改完数据刷新即见。
+    "Cache-Control": "no-store",
+  });
+  res.end(html);
+}
 
 function sendFile(res, filePath, fallbackIndex = false) {
   let p = filePath;
@@ -316,10 +443,18 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // 3) 游戏详情静态页：/Game_Details/<file>
+  // 3) 游戏详情页：/Game_Details/<游戏目录>[/index.html]
+  //    `/<一级目录>/index.html`（或直接 `<一级目录>/`）= 详情页首页 → **现拼**（见 sendDetailPage）；
+  //    更深层的路径（images/、视频、字体…）照旧按磁盘发。
+  //    以前这里一律从磁盘读文件 —— 静态页删掉之后详情页整片空白，就是因为首页也没了。
   if (pathname.startsWith("/Game_Details/")) {
     const file = pathname.slice("/Game_Details/".length);
     const safe = path.normalize(file).replace(/^(\.\.(\/|\\|$))+/, "");
+    const parts = safe.split(/[\\/]/).filter(Boolean);
+    if (parts.length === 1 || (parts.length === 2 && parts[1].toLowerCase() === "index.html")) {
+      void sendDetailPage(res, parts[0]);
+      return;
+    }
     sendFile(res, path.join(DETAILS_DIR, safe));
     return;
   }
