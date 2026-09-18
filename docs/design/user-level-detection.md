@@ -36,7 +36,17 @@ cipher = base64( UTF8(明文) XOR key[i % key.length] )      // XOR 对称，解
   同目录下**没有**加密文件。生产机部署的可能是加密版。
 - 因此实现必须**自动判别**：内容以 `[` / `{` 开头 → 当明文解析；否则按上面的算法解一次。
   （只认一种会在这两种部署里挂掉一种。）
-- **一键加密**：`encrypt-userlist.bat`（实现在 `scripts/encrypt-userlist.mjs`）。
+- **一键加密 / 解密**：双击 `userlist-crypt.bat`（选 1 加密 / 2 解密；支持把文件拖到它上面；
+  实现在 `scripts/encrypt-userlist.mjs`）。
+  - **加密**（明文 → 密文）：默认就是"把 jsoncrypt 里的明文加密成线上密文"这一步；
+  - **解密**（密文 → 明文）：**默认写到同目录的 `<原名>.decrypted.json`、不覆盖密文** ——
+    想人工编辑密文版时先做这一步，改完再用加密方向写回去；
+  - **日常更新走这个**：明文主本是 `files/YunGame_UserList.json`（**统一改这一份**），
+    双击 `update-userlist.bat` 就是"加密 → 覆盖当前生效那份"（自动备份旧的；加参数 `y` 跳过确认）。
+    该 bat 里不写死任何路径 —— 目标目录由 config.json 的 `YunGameConfigDir` 决定，换盘符/换部署位置都跟着走；
+  - 命令行等价：`node scripts/encrypt-userlist.mjs [--decrypt] <源> [目标]`（加 `--dry-run` 只预览）；
+    只给目标**文件名**（不带目录）时，落在"当前生效那份"所在目录 —— `update-userlist.bat` 靠的就是这条规则；
+  - 单向入口 `encrypt-userlist.bat` 仍然可用（只做加密，兼容旧习惯）。
   默认就是"把 jsoncrypt 里的明文加密成线上密文"这一步：
 
   ```

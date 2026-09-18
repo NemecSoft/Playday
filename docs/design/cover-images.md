@@ -11,6 +11,16 @@
 APNG(png 且带 acTL) 100  >  webp 80  >  gif 60  >  jpg/jpeg 40  >  png 20  >  bmp 10
 ```
 
+**谁在用这份规则**（三处，改一处就得改三处）：桌面端 `electron/core/covers.ts`（网格封面）、
+网站端 `server/coverMatch.mjs`、详情页生成器 `Addons/scripts/gen_sites.py`。
+
+> **详情页（`Addons/<游戏>/index.html`）的封面同样走这一份，而且是唯一源**：页面里只放
+> `/CoverImages/<文件名>` 一个 URL，图由本地 HTTP 服务器现取（桌面端 `core/coverAssets.ts`、
+> 网站端 `server/server.mjs` 各有一条同名路由，路径约定一致）。
+> 以前是把封面**复制**一份到 `<游戏目录>/images/cover.<ext>` —— 同一张图两个源必然漂移：
+> 实测「大富翁11-网吧联机版」页面上显示的是爬来的那张（19.8 KB），CoverImages 里却是另一张（456 KB）。
+> 2026-09-18 起**不再复制**；`info.json` 里的 `cover` 字段随之作废（留作历史，别再当封面来源）。
+
 这条优先级是下面工具设计的依据：**在同目录放一个 `.jpg`（或 `.webp`），会自动顶掉原来的
 `.png`，而原图可以留着随时回退。**
 
@@ -92,6 +102,7 @@ dev-tools\cover-optimizer\optimize-covers.bat -Slim
 | `dev-tools/cover-optimizer/optimize-covers.ps1` | 实现（**必须 UTF-8 with BOM**，否则 5.1 按 ANSI 解析中文会乱码，同 `tools/GameSaveHelper/tools/Build-GameSave.ps1` 的约定）。找仓库根靠"向上找 `path-modes.json`"，不依赖目录深度 |
 | `dev-tools/cover-optimizer/README.md` | 这个工具的用法/规则/两个坑 |
 | `shared/coverMatch.ts` | 封面匹配与格式优先级（唯一来源） |
+| 详情页静态站生成器（**仓库外**：`Addons/scripts/gen_sites.py`） | 第三处镜像是它：按同一套规则去封面目录找同名图，页面里只放 **`/CoverImages/<文件名>` 一个 URL**（2026-09-18 起**不再复制副本**，唯一源就是 CoverImages；见下）。封面目录清单在同目录的 `cover-dirs.txt`（由 config 的 `coverImagesDir` 解析而来）。**改匹配规则时这里也要跟着改** |
 | `electron/core/db.ts` → `game_level` / `cover_image` | 封面不入库，运行期扫描目录按名字匹配 |
 
 ## 六、性能：滚动为什么"卡一下"，以及 2026-09 的修复

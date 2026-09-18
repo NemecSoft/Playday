@@ -228,6 +228,16 @@ PlayniteUI.exe -log
 **不额外展开** `{InstallDir}`）—— 自检要回答的是"用户点下去会不会成功"，不是"理想情况"。
 把整个库跑一遍不建窗口的代价：不需要 Chromium 窗口栈，`app.whenReady()` 之前就发起、跑完 `app.exit()`。
 
+同一套判据还有**第二个消费者**：点「开始游戏」之前的启动前检测（IPC `check_game_launch`，
+前端在 `gamesStore.launchGame` 里、**弹启动横幅之前**调用）。它复用 `launchCheck.checkLaunchAction`
+—— 也就是 `checkGame` 里与启动相关的那几类，把**存档路径**那部分滤掉（存档是备份功能的事，不该拦启动）。
+依赖装配只有一份：`checkMode.makeCheckDeps`（自检与启动前检测共用）。
+
+> 为什么要在真正启动**之前**单独问一次：启动横幅有最短展示时长（`MIN_LAUNCH_BANNER_MS = 3` 秒）。
+> 先弹横幅再报错的话，用户会看到"正在启动《X》…"停三秒、然后才看到"找不到"，像是"启动了却起不来"
+> —— 而实际上根本没启动过。所以检测不通过时**直接提示"找不到游戏"**，横幅根本不出现。
+> 检测这一步本身抛异常时**不当作"找不到"**，照旧交给 `launch_game` 去报真实错误。
+
 规则层单测：`electron/core/launchCheck.test.ts`（含 `{InstallDir}` 未配、
 `*.*` 要匹配无扩展名文件这类真实踩过的坑）。
 

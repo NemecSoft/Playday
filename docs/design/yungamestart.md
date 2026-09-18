@@ -187,7 +187,7 @@ build-prerelease.bat / build-release.bat
 | `dev-tools/yungamestart/assets/make-icons.mjs` | 图标的**生成工具**：拆 ico 取源图 → 调画布 → 封 9 帧（≤48 DIB / ≥64 PNG）→ 备份原文件（见 §六） |
 | `dev-tools/yungamestart/assets/make-icons-canvas.cjs` + `.html` | 上面那个工具的**画布半边**（Electron 里做像素活：换渐变、缩放、导出），开发用，不进包 |
 | `shared/userLevel.ts` | **等级判定的权威实现**（客户端侧），C++ 里按同一规则重写 |
-| `scripts/encrypt-userlist.mjs` | 用户表加密（同一个密钥/算法） |
+| `scripts/encrypt-userlist.mjs` | 用户表**加解密**（同一个密钥/算法；双击入口 `userlist-crypt.bat`） |
 
 > ⚠️ C++ 里的 `kLauncherExe = PlayniteUI.exe` 与 `build.config.ts` 的 `CLIENT_EXE_NAME`
 > 是**两处**写死的同一个名字（C++ 读不到 TS）。改名时两边一起改，否则快捷方式会指向不存在的 exe。

@@ -112,13 +112,13 @@ promote.bat           # 正式版：把测过的那份改盘符 → 复制到 X 
 
 两个都是**双击即用**（都接受一个可选的 `--dry-run` 空跑：只打印计划、一个字节不写）。
 
-### `deploy.bat`：没有"中间包"
+### `deploy.bat`：没有"中间包"，而且**能跳就跳**
 
 ```text
-[1/4] npm run build                    （主进程 + 渲染层）
-[2/4] electron-builder --dir           → .pack-tmp\win-unpacked（中转）
+[1/4] node scripts\build.mjs           （增量构建，见下节）
+[2/4] node scripts\pack.mjs            → .pack-tmp\win-unpacked（中转，同时是下次的基准）
 [3/4] node scripts\deploy.mjs          → 程序 + dev-* 素材 + config.json 落到目的地
-[4/4] 删掉中转目录
+[4/4] 保留中转目录（下次增量打包要用它）
 ```
 
 为什么不再有 `release_test\` 这样的中间站：**这台机器上的目的地就是测试环境**，多一个中间目录只是多一次
@@ -134,6 +134,53 @@ promote.bat           # 正式版：把测过的那份改盘符 → 复制到 X 
 5. 逐项搬运（robocopy `/E` + 大文件多线程）；
 6. 按表重新生成 `config.json`；
 7. 写下本次记录。
+
+### 增量：改一处不再等一分钟（2026-09-17）
+
+需求原话：*"实现增量编译，也就是轻微的改动就编译好久才能发布到正式机上"*。
+先把每一步量了一遍（这台机器、热态），才知道该动哪儿：
+
+| 步骤 | 原来 | 现在 |
+| --- | --- | --- |
+| `tsc` 主进程 | 1.5s | 1.5s（本来就有 `incremental`） |
+| `tsc` 渲染层类型检查 | 5.7s | **2.3s**（`tsconfig.json` 补上 `incremental`） |
+| `vite build` | 11.5s | **0s**（渲染层输入没变就整段跳过） |
+| `electron-builder --dir` | 16.6s | **0s**（骨架没变 → 复用运行时）／6.9s（只重打 `app.asar`） |
+| **改一行主进程代码的合计** | **≈45s＋** | **≈11s** |
+
+三个机制：
+
+| 机制 | 在哪 | 判据与要点 |
+| --- | --- | --- |
+| 渲染层跳过 | `scripts/build.mjs` | 指纹（路径+大小+mtime）存 `dist/.build-fingerprint`，覆盖 `src / shared / locales / public / index.html / 配置`。⚠️ **清单漏一个被 import 的目录 = 静默跳过构建、发出旧内容**，所以脚本里有一条自检：`src` 里"跳出 `src` 的 import"，其顶层目录必须已登记（`locales/` 就是这么被发现的） |
+| 运行时复用 | `scripts/pack.mjs` | 「骨架指纹」= electron 版本 + `electron-builder.yml` + `package.json` + 随包素材的源（**字体目录名从规则表取**，不写死）。没变就不跑 electron-builder |
+| **程序不打成 asar** | `electron-builder.yml` 的 `asar: false` | 打成 118MB 的 `app.asar` 时，里面改一个字节 → 整个文件的大小/日期都变 → **每台客户机重搬 118MB**。改成 `resources/app/` 下的普通文件（实测 7179 个 / 116.3MB），改一行代码就只有那一个文件变。**别顺手改回 `asar: true`** |
+| 只同步变了的文件 | `scripts/pack.mjs` | 把 `dist/` `dist-electron/` 增量同步进 `resources/app/`，且复制后 `utimesSync` 把 mtime **对齐源文件** —— 没变的文件在目的地保持老日期，robocopy 会跳过，客户机的差分复制也跟着跳过 |
+
+`.pack-tmp/`（`.gitignore`）既是要发布的中转产物、也是下次差分的**基准**（骨架指纹就写在它里面），
+删了它下次自动整包重打 —— 所以 `deploy.bat` **不再删** `.pack-tmp`。
+
+> 🔑 **这套机制的地基是一句话：文件的 mtime 就是"要不要重搬"的信号。**
+> 客户机是靠**差分复制（大小/日期）**同步的（FastCopy / robocopy 都是这个判据），
+> 所以一个字节没变的文件，**连 mtime 都不能动**。三条改动都是为它服务的：
+> `syncDir` 复制完 `utimesSync` 对齐 mtime；`gen_sites.py`（详情页生成器）改成"内容没变就不写文件"；
+> `tsc` 的 `.tsbuildinfo` 挪到 `dist-electron` **之外**（它每次编译都变，放里面等于每次发布都白搬一个文件）。
+
+为什么用 mtime 而不用内容哈希：`public/` 有 46MB 素材，逐字节哈希省不下什么；
+而 mtime **不会漏改**（编辑 / `git checkout` / 生成都会更新它），最坏只是"多构建一次"。
+注意比较要用**秒级**：`utimesSync` 对齐 mtime 时有亚毫秒取整，毫秒级比较会稳定漏掉几十个文件（踩过）。
+
+强制走全量：`deploy.bat --full`（= `build.mjs --force` + `pack.mjs --full`）；
+只想清缓存：`node scripts/pack.mjs --clean`。
+
+> 顺带修掉一个一直存在的 bug：`deploy.mjs` 判断"哪些程序文件过期"时，
+> 一边存的是**完整相对路径**（`resources\app.asar`）、另一边比的是**顶层项名**，两边永远对不上 ——
+> 于是每次部署都把 `resources` 整棵树当过期项删掉再重拷（白拷 `app.asar` 118MB + 字体 33MB）。
+> 现在改成同一套口径（dry-run 里那串"旧程序文件 `resources\…`"就是它的症状）。
+>
+> 顺带量出来的一个事实：`dist/` 51.9MB 里**真正的代码只有 5.1MB**，另外 46MB 是
+> `fonts`(32.8MB) + `live2d`(13.4MB) 静态素材 —— 它们每次都被 `vite` 重拷、再同步进 `resources/app/`。
+> 想再快一档就得从这里动（例如把素材移出 `dist/` 走 `extraResources`），目前没做。
 
 ### `promote.bat`：升正式
 
@@ -223,7 +270,9 @@ promote.bat           # 正式版：把测过的那份改盘符 → 复制到 X 
 | `shared/pathModes.ts` | 解析 / 校验规则 + `copyPlan()` / `targetRoot()` / `runtimeValue()` / `targetIsFile()`（纯函数，单测 `shared/pathModes.test.ts`） |
 | `scripts/deploy.mjs` | 部署：安全锁、清单驱动搬运、生成 `config.json`、写部署记录 |
 | `scripts/promote.mjs` | 升正式：整包复制 → config 与库改盘符（备份 + 打印）→ 校验 → 清测试目的地 |
-| `deploy.bat` / `promote.bat` | 两个双击入口 |
+| `scripts/build.mjs` | 增量构建：渲染层输入没变就跳过 `vite build`；自带"输入清单是否漏登记"的自检 |
+| `scripts/pack.mjs` | 增量打包：骨架没变就复用运行时、只重打 `app.asar`（`--full` / `--clean`） |
+| `deploy.bat` / `promote.bat` | 两个双击入口（`deploy.bat --full` = 强制全量） |
 | `scripts/prepare-release.mjs` | 只负责"按模式生成/校验 `config.json`"（`sync-config.bat` 与单测在用） |
 | `package.bat` | 只打一个便携产物目录（不部署）；日常用 `deploy.bat` |
 | `config.json` | 开发态生效配置（由规则生成，别手工改路径字段） |
