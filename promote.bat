@@ -21,7 +21,8 @@ REM
 REM  Why no rebuild here: what was tested IS that directory. A rebuild would
 REM  replace it with something nobody tested, which makes the test worthless.
 REM
-REM  ASCII-ONLY ON PURPOSE (same reason as package.bat).
+REM  ASCII-ONLY ON PURPOSE (same reason as package.bat). Chinese for the user
+REM  comes from scripts\bat-msg.mjs - see deploy.bat's note.
 REM ============================================================
 setlocal
 
@@ -31,14 +32,14 @@ REM ---- Node 22 managed by proto (fall back to the system node) ----
 set "NODE22=C:\Users\Administrator\.proto\tools\node\22.23.2"
 if exist "%NODE22%\node.exe" (
     set "PATH=%NODE22%;%PATH%"
-    echo [promote] using Node 22.23.2 (proto)
+    call node scripts\bat-msg.mjs node.proto-ok
 ) else (
-    echo [promote] proto Node 22 not found - using the system node
+    call node scripts\bat-msg.mjs node.proto-fallback
 )
 
-echo ============================================
-echo  Playday promote (test -^> production)
-echo ============================================
+REM  Chinese for the user comes from scripts\bat-msg.mjs, never from this file:
+REM  see the ASCII-ONLY note at the top.
+call node scripts\bat-msg.mjs promote.header
 
 REM ---- NO build here, on purpose ----
 REM  promote is "take the tested folder, fix the paths, move it" - nothing else.
@@ -46,29 +47,24 @@ REM  It still reads the same rule table (from shared/pathModes.ts), so it needs 
 REM  parser's build output; deploy.bat always produces it. If it is missing we say so
 REM  instead of silently compiling (a recompile here would defeat the point).
 if not exist "dist-electron\shared\pathModes.js" (
-    echo [ERROR] dist-electron\shared\pathModes.js is missing - run deploy.bat once first.
-    echo         ^(promote reads the rule table; that parser is build output^)
+    call node scripts\bat-msg.mjs promote.err-parser
     pause
     exit /b 1
 )
 
 REM ---- promote ----
-echo [1/2] promoting (no rebuild)...
+call node scripts\bat-msg.mjs promote.step
 call node scripts\promote.mjs %*
 if errorlevel 1 (
-    echo [ERROR] promote failed - the test destination was NOT cleared (by design).
+    call node scripts\bat-msg.mjs promote.err-failed
     pause
     exit /b 1
 )
 
-echo [2/2] done
 echo.
-echo ============================================
-echo  done. The next step is printed in the log above.
-echo  Log : logs\promote-last.log  (the whole run, kept on disk)
-echo ============================================
+call node scripts\bat-msg.mjs promote.done
 echo.
-echo   ---- finished - press any key to close this window ----
+call node scripts\bat-msg.mjs wait-key
 pause >nul
 exit /b 0
 endlocal

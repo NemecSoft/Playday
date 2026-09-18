@@ -1,40 +1,44 @@
 @echo off
 chcp 65001 >nul
-title Playday - 导出数据库为 games.json（给存档工具 GameSaveHelper 用）
-cd /d "%~dp0"
-
 REM ============================================================
-REM  这是**给 dev-tools/GameSaveHelper（存档备份工具）的数据出口**，不是数据管理工具：
-REM    管理数据请用  npm run db:export / db:import  （或双击 libraryjson-importto-librarydb.bat）
-REM    这条链的另一半（import-games.bat 把 games.json 写回库）已于 2026-09-16 退役。
-REM  ⚠️ 输出格式（camelCase 字段 + tab 缩进）是 GameSaveHelper 的 C++ 按精确文本锚点
-REM     解析的接口，不能改 —— 见 _export-games-json.mjs 头部说明。
+REM  Playday - export the database to games.json (for GameSaveHelper).
+REM
+REM  This is the DATA OUTLET for dev-tools/GameSaveHelper (the save-backup
+REM  tool), not a data-management tool:
+REM    to manage data use  npm run db:export / db:import
+REM    (or double-click libraryjson-importto-librarydb.bat)
+REM    The other half of that chain (import-games.bat, games.json -> library)
+REM    was retired on 2026-09-16.
+REM  WARNING: the output format (camelCase fields + tab indent) is an interface
+REM  parsed by GameSaveHelper's C++ via exact text anchors - do not change it.
+REM  See the header of _export-games-json.mjs.
+REM
+REM  ASCII-ONLY: Chinese for the user is printed by scripts\bat-msg.mjs.
 REM ============================================================
 
-REM 权威库路径由规则表决定（path-modes.json 的 dev 段，见 data-dir.bat）。
+REM The authoritative library path comes from the rule table (path-modes.json
+REM "dev" section, see data-dir.bat).
 call "%~dp0data-dir.bat"
 if errorlevel 1 goto :end
 
-echo ==============================================
-echo   %PLAYDAY_ADMIN_DB% -^> games.json
-echo ==============================================
+call node scripts\bat-msg.mjs title.export-games
+call node scripts\bat-msg.mjs export-games.header "%PLAYDAY_ADMIN_DB%"
 echo.
 
 if not exist "%PLAYDAY_ADMIN_DB%" (
-  echo [错误] 找不到权威库 %PLAYDAY_ADMIN_DB%
+  call node scripts\bat-msg.mjs export-games.err-nodb "%PLAYDAY_ADMIN_DB%"
   goto :end
 )
 
 node _export-games-json.mjs
 if errorlevel 1 (
   echo.
-  echo [失败] 导出未完成，原 games.json 未被改动
+  call node scripts\bat-msg.mjs export-games.err-failed
   goto :end
 )
 
 echo.
-echo [完成] 已导出为项目根目录 games.json（coverImage 置空，
-echo         developer/genre/tags/series 等均为名称数组）。
+call node scripts\bat-msg.mjs export-games.done
 
 :end
 echo.

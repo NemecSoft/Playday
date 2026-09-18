@@ -1,97 +1,115 @@
-chcp 65001
 @echo off
+chcp 65001 >nul
 REM ============================================================
-REM  Playday (YunGame) 客户端开发模式启动脚本
-REM  功能：1) 后台启动 Vite 开发服务器(5173)
-REM        2) 用 Electron 加载开发服务器（带 ?window=client）
-REM  前置：已执行 npm install；本机有显示器（否则窗口看不到）
+REM  Playday (YunGame) dev client launcher.
+REM
+REM  What it does: 1) start the Vite dev server (5173) in the background
+REM                2) compile the main process, then run Electron on it
+REM  Requires: npm install already done; a display (else no window shows).
+REM
+REM  ASCII-ONLY - do NOT put Chinese back into this file. cmd re-reads a .bat
+REM  while it executes and tracks a byte offset; with multi-byte text (Chinese)
+REM  in the file it resumes at the WRONG offset and runs half a line as a
+REM  command - that is the "'xx' is not recognized as an internal or external
+REM  command" garbage, and no terminal can fix it. Chinese for the user comes
+REM  from scripts\bat-msg.mjs. Same rule as package.bat.
 REM ============================================================
 setlocal
 
-REM ---- 0. 切到工程根目录（脚本所在目录）----
+REM ---- 0. go to the project root (this script's directory) ----
 cd /d "%~dp0"
+call node scripts\bat-msg.mjs title.dev-client
 
-REM ---- 1. 用 proto 管理的 Node 22（找不到就用系统 node）----
+REM ---- 1. Node 22 managed by proto (fall back to the system node) ----
 set "NODE22=C:\Users\Administrator\.proto\tools\node\22.23.2"
 if exist "%NODE22%\node.exe" (
     set "PATH=%NODE22%;%PATH%"
-    echo [dev] 使用 Node 22.23.2 (proto)
+    call node scripts\bat-msg.mjs node.proto-ok
 ) else (
-    echo [dev] 未找到 proto Node 22，使用系统默认 node
+    call node scripts\bat-msg.mjs node.proto-fallback
 )
 
-REM ---- 2. 关键环境变量 ----
-REM 数据目录：由规则表（path-modes.json 的 dev 段）决定，这里只取一次 ——
-REM 别在本文件里写死目录名，否则挪数据时又是一处会漏的重复（取值见 data-dir.bat）。
-REM 为什么还要显式设 YUNGAME_DATA_DIR：configRoot() 在开发态本来会回退到工程根，
-REM 而 config.json 里的 libraryDir 等字段是**相对路径**（相对 appRoot = 工程根），
-REM 两者必须落在同一个地方，否则会出现"库文件按一套路径找、封面按另一套找"的隐性错位。
-REM 封面/详情页不在数据根里 —— 它们是 config.json 的 coverImagesDir / gameDetailsDir
-REM 指定的 D 盘绝对路径，所以 dev 与打包版看的是同一批封面，不会两边各跑出一份。
+REM ---- 2. the environment the client needs ----
+REM  Data dir: decided by the rule table (path-modes.json, "dev" section) and
+REM  read ONCE, here (see data-dir.bat). Never hard-code a directory name in
+REM  this file - that would be one more copy to forget when the data moves.
+REM  Why set YUNGAME_DATA_DIR explicitly: in dev, configRoot() would otherwise
+REM  fall back to the repo root, while config.json's libraryDir and friends are
+REM  RELATIVE paths (relative to appRoot = repo root). Both have to land in the
+REM  same place, or the library and the covers get looked up under two
+REM  different roots - silently.
+REM  Covers / game details are NOT under the data root: they are the absolute
+REM  D: paths from config.json's coverImagesDir / gameDetailsDir, so dev and the
+REM  packaged build read the same files instead of each growing its own copy.
 call "%~dp0data-dir.bat"
 if errorlevel 1 (
-    echo [dev] 无法确定开发态数据目录，已中止（先检查 node 与 path-modes.json 的 dev 段）。
+    call node scripts\bat-msg.mjs dev.err-datadir
     pause
     exit /b 1
 )
-REM 让主进程走 Vite 开发服务器
+REM  Make the main process load the Vite dev server.
 set "VITE_DEV_SERVER_URL=http://localhost:5173"
-REM 无头服务器若没有显示器，可取消下一行注释（禁 GPU 加速，避免报错）
+REM On a headless machine there may be no display: uncomment the next line
+REM (disables GPU acceleration, which would otherwise error out).
 REM set "ELECTRON_DISABLE_GPU=1"
 
-echo ============================================
-echo  Playday 客户端开发模式
-echo  数据目录: %YUNGAME_DATA_DIR%
-echo  Vite     : http://localhost:5173
-echo ============================================
+call node scripts\bat-msg.mjs dev.header "%YUNGAME_DATA_DIR%"
 
-REM ---- 3. 启动 Vite 开发服务器（后台）----
-echo [dev] 启动 Vite 开发服务器...
+REM ---- 3. start the Vite dev server (background) ----
+REM ---- 3.5. auto-import the library JSON if it is newer than the authoritative DB ----
+REM Why: editing the library games.json used to require a manual
+REM `npm run db:import -- --apply`; forgetting it looked like "I changed it but the
+REM UI did not" (2026-09-18). sync does nothing when the DB is already up to date
+REM (one stat call), and backs the DB up before it ever writes.
+REM Paths are NOT hardcoded here on purpose - sync resolves them itself
+REM (scripts/lib/devData.mjs); the arch check rejects directory names in .bat files.
+call node scripts\library-json.mjs sync
+
+call node scripts\bat-msg.mjs dev.start-vite
 start "Playday Vite" /min cmd /c "cd /d %~dp0 && node node_modules\vite\bin\vite.js --port 5173 --strictPort"
 
-REM ---- 4. 编译主进程（必须在 Electron 之前完成）----
-REM 为什么要有这一步：本脚本最后只是 `call electron .`，跑的是 dist-electron/ 里的
-REM **编译产物**。以前改了 electron/** 或 shared/** 不重新编译，dev 里跑的还是旧代码，
-REM 而且毫无提示（踩过：改了路径解析/封面匹配，重启后以为生效了、其实没有）。
-REM 放在 Vite 启动之后：编译与 Vite 启动并行，总等待 ≈ max(编译时间, Vite 就绪时间)。
-echo [dev] 编译主进程 (tsc -p tsconfig.main.json)...
+REM ---- 4. compile the main process (must finish before Electron) ----
+REM Why this step exists: the last line just runs `electron .`, which loads the
+REM COMPILED output under dist-electron/. Editing electron/** or shared/** and
+REM not recompiling used to mean dev silently ran the OLD code, with no hint
+REM (hit that once: path resolution / cover matching changed, the restart
+REM looked fine, and it was not).
+REM Placed AFTER Vite starts so compiling and Vite startup overlap: total wait
+REM is about max(compile time, Vite ready time).
+call node scripts\bat-msg.mjs dev.compiling
 call node_modules\.bin\tsc.cmd -p tsconfig.main.json > dev-client-build.log 2>&1
 if errorlevel 1 (
     echo.
-    echo [dev] ***********************************************************
-    echo [dev]  主进程编译失败，已中止启动（避免拿旧代码跑出假象）
-    echo [dev]  错误详情：dev-client-build.log
-    echo [dev] ***********************************************************
+    call node scripts\bat-msg.mjs dev.err-compile
     type dev-client-build.log
     pause
     exit /b 1
 )
-echo [dev] 主进程编译完成。
+call node scripts\bat-msg.mjs dev.compiled
 
-REM ---- 4.5 同步 config.json（path-modes.json 是路径的唯一来源）----
-REM 为什么必须有这一步：path-modes.json 是"单一来源"，但客户端真正读的是 config.json。
-REM 改了表忘了同步 → 客户端拿**旧路径**跑（封面 / 库 / GameSaveHelper 静默失配），
-REM 不报错、不提示 —— 和本文件顶上注释踩过的"改了代码没重编"是同一类假象。
-REM 位置必须在编译之后：prepare-release 要求 dist-electron/shared/pathModes.js 不比源码旧。
-echo [dev] 同步 config.json (path-modes.json → config.json)...
+REM ---- 4.5 sync config.json (path-modes.json is the single source) ----
+REM Why this is mandatory: path-modes.json is the single source for paths, but
+REM the client reads config.json. Edit the table, forget to sync, and the client
+REM runs on the OLD path (covers / library / GameSaveHelper silently mismatch):
+REM no error, no hint - the same class of illusion as "edited the code, did not
+REM rebuild" above. It must run AFTER the compile: prepare-release requires
+REM dist-electron/shared/pathModes.js to be no older than its source.
+call node scripts\bat-msg.mjs dev.sync-config
 call "%~dp0sync-config.bat"
 if errorlevel 1 (
     echo.
-    echo [dev] ***********************************************************
-    echo [dev]  路径配置同步失败，已中止启动（config.json 与 path-modes.json 不一致）
-    echo [dev]  宁可不开，也不要用旧路径跑出"好像没问题"的假象
-    echo [dev] ***********************************************************
+    call node scripts\bat-msg.mjs dev.err-syncconfig
     pause
     exit /b 1
 )
 
-REM ---- 5. 等待 Vite 就绪（最多 30 秒）----
-echo [dev] 等待 Vite 就绪...
+REM ---- 5. wait for Vite to be ready (at most 30 seconds) ----
+call node scripts\bat-msg.mjs dev.wait-vite
 set /a tries=0
 :waitvite
 set /a tries+=1
 if %tries% gtr 30 (
-    echo [dev] 警告: Vite 未在预期时间内就绪，仍尝试启动 Electron
+    call node scripts\bat-msg.mjs dev.warn-vite-timeout
     goto runelectron
 )
 powershell -NoProfile -Command "try { (Invoke-WebRequest -Uri 'http://localhost:5173' -UseBasicParsing -TimeoutSec 1).StatusCode -eq 200 } catch { $false }" >nul 2>&1
@@ -99,20 +117,21 @@ if errorlevel 1 (
     timeout /t 1 /nobreak >nul
     goto waitvite
 )
-echo [dev] Vite 已就绪。
+call node scripts\bat-msg.mjs dev.vite-ready
 
 :runelectron
-REM ---- 6. 启动 Electron（加载 5173）----
-echo [dev] 启动 Electron...
-REM -log：顺便写一份"本次实际用到的全路径"报告（<数据根>\logs\paths-latest.log）。
-REM  为什么开发期要它：path-modes.json 的 dev 段写的是相对路径（fonts、库根、dev-tools/runtime），
-REM  真正解析成哪个绝对目录只有跑起来才看得见；报告里每个字段都带 [存在]/[缺失]，
-REM  "配了但指到空处"当场暴露 —— 本项目最贵的一类故障就是不报错、只是静默失效。
-REM  不想每次写就删掉本行末尾的 -log。
+REM ---- 6. start Electron (it loads 5173) ----
+call node scripts\bat-msg.mjs dev.start-electron
+REM -log: also write "every path this run actually used" (<data root>\logs\paths-latest.log).
+REM  Why dev wants that: path-modes.json's "dev" section holds relative paths
+REM  (fonts, library root, dev-tools/runtime); which absolute directories they
+REM  resolve to is only visible once it runs. Every field is tagged [exists] /
+REM  [missing], so "configured but pointing at nothing" shows up on the spot -
+REM  the most expensive failure class in this project is the silent one.
+REM  Drop the -log at the end of the next line if you do not want it every run.
 call node_modules\.bin\electron.cmd . -log 2>dev-client-err.log
 
-REM ---- 6. 退出前提示 ----
+REM ---- 6. what happens when it exits ----
 echo.
-echo [dev] Electron 已退出。Vite 开发服务器仍在后台运行。
-echo       如需停止，可在任务管理器结束 "Playday Vite" 窗口，或运行 dev-stop.bat。
+call node scripts\bat-msg.mjs dev.exited
 endlocal

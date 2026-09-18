@@ -1,13 +1,34 @@
-@echo off
-REM ============================================================================
-REM  GameSaveHelper.bat - 兼容转发入口
-REM
-REM  建议直接用 GameSaveHelper.exe（严格参数检查，不做推断）：
-REM      GameSaveHelper.exe 大富翁11 "D:\games\Z\Richman 11\2074800\*.*"
-REM      GameSaveHelper.exe 大富翁11            REM 走 config.json 配置
-REM
-REM  这个 bat 只把参数原样转给 exe：
-REM      GameSaveHelper.bat 大富翁11 "D:\...2074800\*.*" "D:\...settings\*.*"
-REM ============================================================================
-"%~dp0GameSaveHelper.exe" %*
-exit /b %ERRORLEVEL%
+@echo off
+
+REM ============================================================================
+
+REM  GameSaveHelper.bat - compatibility forwarding entry.
+
+REM
+
+REM  Prefer calling GameSaveHelper.exe directly (it validates arguments strictly
+
+REM  and infers nothing):
+
+REM
+
+REM      GameSaveHelper.exe "<game name>" "D:\games\Z\Richman 11\2074800\*.*"
+
+REM
+
+REM      GameSaveHelper.exe "<game name>"        REM takes paths from config.json
+
+REM
+
+REM  This bat only forwards its arguments to the exe unchanged:
+
+REM
+
+REM      GameSaveHelper.bat "<game>" "D:\...2074800\*.*" "D:\...settings\*.*"
+
+REM ============================================================================
+
+"%~dp0GameSaveHelper.exe" %*
+
+exit /b %ERRORLEVEL%
+

@@ -22,13 +22,12 @@ set "GXX=C:\Tools\mingw64\bin\g++.exe"
 if not exist "%GXX%" (
     where g++ >nul 2>nul
     if errorlevel 1 (
-        echo [yungamestart] ERROR: g++ not found.
-        echo [yungamestart]        install MinGW-w64, or edit GXX in this file.
+        call node "%~dp0..\..\scripts\bat-msg.mjs" yungamestart.err-gxx
         exit /b 1
     )
     set "GXX=g++"
 )
-echo [yungamestart] compiler: %GXX%
+call node "%~dp0..\..\scripts\bat-msg.mjs" yungamestart.compiler "%GXX%"
 
 if not exist "dist" mkdir "dist"
 
@@ -42,7 +41,7 @@ REM  -finput-charset      sources are UTF-8 (Chinese comments and log text)
     -o "dist\yungamestart.exe" "src\main.cpp" ^
     -lole32 -lshell32 -lwinhttp
 if errorlevel 1 (
-    echo [yungamestart] ERROR: compile failed.
+    call node "%~dp0..\..\scripts\bat-msg.mjs" yungamestart.err-compile
     exit /b 1
 )
 
@@ -52,12 +51,6 @@ REM  and points the desktop shortcut at them - same as the original WPF app.
 copy /y "assets\1.ico" "dist\1.ico" >nul
 copy /y "assets\2.ico" "dist\2.ico" >nul
 
-echo [yungamestart] OK
-for %%F in ("dist\yungamestart.exe") do echo   exe  : %%~fF  (%%~zF bytes)
-echo   icons: dist\1.ico  dist\2.ico
-echo.
-echo Next step: deploy.bat (it copies dist\* into the destination's yungamestart\,
-echo per path-modes.json); when the test passes, promote.bat upgrades it to the
-echo production machine.
+call node "%~dp0..\..\scripts\bat-msg.mjs" yungamestart.ok
 endlocal
 pause

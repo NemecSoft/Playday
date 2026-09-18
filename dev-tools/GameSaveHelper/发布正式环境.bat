@@ -1,11 +1,12 @@
 @echo off
 chcp 65001 >nul
-title GameSaveHelper - 正式环境
-REM 路径如有变化，修改下面 GAMESJSON / COVER 两行
+REM Paths: if they change, edit the GAMESJSON / COVER lines below.
+REM (the window title is Chinese, so it comes from scripts\bat-msg.mjs)
 
 set GAMESJSON=X:\YunGame\PlayNite\games.json
 set COVER=X:\YunGame\PlayNite\CoverImages
 
+call "%~dp0..\..\scripts\bat-msg.mjs" title.gsh-prod
 call build-release.bat %GAMESJSON% %COVER%
 
 pause

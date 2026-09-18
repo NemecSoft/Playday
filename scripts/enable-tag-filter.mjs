@@ -75,5 +75,5 @@ function processHtml(p) {
 }
 
 walk(ROOT);
-console.log(`模式: ${APPLY ? "APPLY" : "DRY-RUN"}`);
+console.log(`模式: ${APPLY ? "执行" : "预览"}`);
 console.log(`详情页已改造: ${modified}，跳过(已注入或无标签): ${skipped}`);

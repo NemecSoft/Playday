@@ -16,7 +16,7 @@ const apply = process.argv.includes("--apply");
 console.log("== migrate-libs-to-db ==");
 console.log("DB:   ", DB);
 console.log("CONFIG", CONFIG);
-console.log("模式: ", apply ? "APPLY" : "DRY-RUN");
+console.log("模式: ", apply ? "执行" : "预览");
 
 const SQL = await initSqlJs({ locateFile: (f) => path.join(process.cwd(), "node_modules", "sql.js", "dist", f) });
 const db = new SQL.Database(new Uint8Array(fs.readFileSync(DB)));

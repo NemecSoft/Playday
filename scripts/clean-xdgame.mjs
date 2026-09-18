@@ -94,7 +94,7 @@ function processJson(p) {
 
 walk(ROOT);
 
-console.log(`模式: ${APPLY ? "APPLY（真正修改）" : "DRY-RUN（仅统计）"}`);
+console.log(`模式: ${APPLY ? "执行（真正修改）" : "预览（仅统计）"}`);
 console.log(`index.html 将修改: ${htmlModified} 个文件`);
 console.log(`  - 顶栏来源链接: ${totalHtml.topbar} 处`);
 console.log(`  - 视频 section:  ${totalHtml.video} 处`);

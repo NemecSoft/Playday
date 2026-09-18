@@ -1,7 +1,8 @@
 ﻿#Requires -Version 5.1
 <#
   librarydb-exportto-libraryjson.ps1 —— 整库 JSON 管理：**导出（出口）方向**
-  把权威库 <数据根>\Admin\library.db 倒成 $jsonDir\*.json（一表一文件），供人工编辑。
+  把权威库 <数据根>\Admin\library.db 倒成整库 JSON 目录（scripts/data-dir.mjs --json 打印的那个）
+  里的 *.json（一表一文件），供人工编辑。
 
   双击入口 = 仓库根的 librarydb-exportto-libraryjson.bat（**只当壳**）。
   规矩见 docs\PROJECT-MEMORY.md 硬约定 §三.14（逻辑写 .ps1，bat 只当壳）。
@@ -44,5 +45,5 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host ''
-Write-Host '[db] 改完 $jsonDir\*.json 后，双击 libraryjson-importto-librarydb.bat 回写（会先预览再确认）。'
+Write-Host "[db] 改完 $jsonDir\*.json 后，双击 libraryjson-importto-librarydb.bat 回写（会先预览再确认）。"
 exit 0

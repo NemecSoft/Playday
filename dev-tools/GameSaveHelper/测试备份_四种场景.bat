@@ -1,92 +1,88 @@
 @echo off
 chcp 65001 >nul
-title GameSaveHelper - 存档备份四种场景测试
-
 REM ============================================================================
-REM  测试备份_四种场景.bat
-REM  每个场景都会弹出 GameSaveHelper 窗口（和直接传参运行一样），
-REM  看完结果关掉窗口，自动继续测下一个场景。
+REM  Scenario test for the save backup: four cases, each opens a GameSaveHelper
+REM  window (exactly like running it with arguments by hand). Close the window and
+REM  the script moves on to the next case.
 REM
-REM  场景1：savePaths 为空      → 双点校园              预期：红底提示「存档配置为空」
-REM  场景2：1 条路径            → 影子诡局：被诅咒的海盗 预期：绿底成功并生成备份包
-REM  场景3：2 条路径            → 大富翁11              预期：绿底成功并生成备份包
-REM  场景4：3 条路径(1个空目录) → 医院666-网吧联机版     预期：绿底成功，空目录自动跳过
-REM  备份包输出到桌面；存档路径从配置文件（games.json）读取
+REM  Case 1: savePaths empty     -> expect: red window "no save config", no package
+REM  Case 2: 1 path              -> expect: green "backup ok", package on desktop
+REM  Case 3: 2 paths             -> expect: green, both paths in one package
+REM  Case 4: 3 paths (1 empty)   -> expect: green, the empty dir is skipped
+REM  Packages land on the desktop; the save paths come from games.json.
+REM
+REM  ASCII-ONLY: the game names and every message are Chinese, so they come from
+REM  scripts\bat-msg.mjs (see the note in deploy.bat).
 REM ============================================================================
 
 cd /d "%~dp0"
 set "EXE=%~dp0GameSaveHelper.exe"
+set "BM=%~dp0..\..\scripts\bat-msg.mjs"
 set /a PASS=0, FAIL=0
 
-echo ==================================================
-echo  GameSaveHelper 存档备份四种场景测试
-echo  （每个场景会弹窗显示结果，关闭窗口后自动继续）
-echo ==================================================
+REM Read the four game names and the desktop glob once (all Chinese, from bat-msg).
+for /f "delims=" %%g in ('call "%BM%" gsh.game1') do set "G1=%%g"
+for /f "delims=" %%g in ('call "%BM%" gsh.game2') do set "G2=%%g"
+for /f "delims=" %%g in ('call "%BM%" gsh.game3') do set "G3=%%g"
+for /f "delims=" %%g in ('call "%BM%" gsh.game4') do set "G4=%%g"
+for /f "delims=" %%g in ('call "%BM%" gsh.backup-glob') do set "BLOB=%%g"
+
+call "%BM%" title.gsh-scenarios
+call "%BM%" gsh.scenario-header
 echo.
 
-echo ---------- 场景 1 / 4：savePaths 为空 ----------
-echo 游戏：双点校园
-echo 预期：红底窗口提示「存档配置为空，请联系管理员」（不生成备份包）
-echo 关闭弹出的窗口后自动继续...
+call "%BM%" gsh.scenario1
 echo.
-"%EXE%" 双点校园
+"%EXE%" "%G1%"
 if errorlevel 2 (
-    echo 【通过】已正确提示「存档配置为空，请联系管理员」
+    call "%BM%" gsh.pass1
     set /a PASS+=1
 ) else (
-    echo 【失败】没有得到预期的「配置为空」结果
+    call "%BM%" gsh.fail1
     set /a FAIL+=1
 )
 echo.
 
-echo ---------- 场景 2 / 4：1 条路径 ----------
-echo 游戏：影子诡局：被诅咒的海盗
-echo 预期：绿底窗口显示「备份成功」，备份包生成到桌面
+call "%BM%" gsh.scenario2
 echo.
-"%EXE%" 影子诡局：被诅咒的海盗
+"%EXE%" "%G2%"
 if not errorlevel 1 (
-    echo 【通过】备份包已生成到桌面
+    call "%BM%" gsh.pass-backup
     set /a PASS+=1
 ) else (
-    echo 【失败】窗口里是红底失败信息，请检查存档路径
+    call "%BM%" gsh.fail-red
     set /a FAIL+=1
 )
 echo.
 
-echo ---------- 场景 3 / 4：2 条路径 ----------
-echo 游戏：大富翁11
-echo 预期：绿底窗口显示「备份成功」，两条路径都打进同一个包
+call "%BM%" gsh.scenario3
 echo.
-"%EXE%" 大富翁11
+"%EXE%" "%G3%"
 if not errorlevel 1 (
-    echo 【通过】备份包已生成到桌面
+    call "%BM%" gsh.pass-backup
     set /a PASS+=1
 ) else (
-    echo 【失败】窗口里是红底失败信息，请检查存档路径
+    call "%BM%" gsh.fail-red
     set /a FAIL+=1
 )
 echo.
 
-echo ---------- 场景 4 / 4：3 条路径，其中 1 个是空目录 ----------
-echo 游戏：医院666-网吧联机版
-echo 预期：绿底窗口显示「备份成功」，空目录被自动跳过并在详情中列出
+call "%BM%" gsh.scenario4
 echo.
-"%EXE%" 医院666-网吧联机版
+"%EXE%" "%G4%"
 if not errorlevel 1 (
-    echo 【通过】空目录已跳过，备份包已生成到桌面
+    call "%BM%" gsh.pass-skip
     set /a PASS+=1
 ) else (
-    echo 【失败】窗口里是红底失败信息，请检查存档路径
+    call "%BM%" gsh.fail-red
     set /a FAIL+=1
 )
 echo.
 
-echo ==================================================
-echo  测试结果：通过 %PASS% 项 / 失败 %FAIL% 项
-echo ==================================================
+call "%BM%" gsh.result "%PASS%" "%FAIL%"
 echo.
-echo 最近生成的备份包（桌面）：
-dir /b /o-d "%USERPROFILE%\Desktop\存档备份【*】*.exe" 2>nul
+call "%BM%" gsh.recent-backups
+dir /b /o-d "%USERPROFILE%\Desktop\%BLOB%" 2>nul
 echo.
-echo 说明：双击任一备份包，点「存档恢复」即可还原到原始位置。
+call "%BM%" gsh.usage-note
 pause

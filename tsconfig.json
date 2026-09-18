@@ -10,6 +10,13 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    // 增量类型检查：本配置是 noEmit（只查不产出），但 tsc 仍会把"上次的检查结果"写进
+    // tsBuildInfoFile，下次只重查改动到的文件。实测这台机器 5.7s → ~1s。
+    // ⚠️ 产物必须放**仓库根**，不能放 dist/ —— vite 的 emptyOutDir 会连它一起删掉，
+    //    那样每次构建都是冷启动。文件名以 .tsbuildinfo 结尾，正好被 .gitignore 的
+    //    `*.tsbuildinfo` 覆盖（别改成 .tsbuildinfo-renderer 那种后缀，那个不匹配）。
+    "incremental": true,
+    "tsBuildInfoFile": "renderer.tsbuildinfo",
     "jsx": "react-jsx",
     "strict": true,
     "noUnusedLocals": false,

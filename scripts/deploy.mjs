@@ -275,7 +275,22 @@ function main() {
   // ---- 本次要清理的（只限于"以前我们写过"的）----
   // 注意 --no-program：那次的语义是"只搬素材、程序原样不动"，所以**不能**把上次记的程序文件当成过期项
   //（否则会把整个程序删掉 —— 那是把一个调试开关变成事故）。
-  const nowProgram = new Set(programEntries);
+  // ⚠️ 口径必须与下面"本次写过哪些"（programFiles）**完全一致**：目录要展开成相对文件路径。
+  // 以前这里直接塞的是顶层项名（resources、locales…），而 prev.program 里存的是
+  // "resources\app.asar" 这种完整相对路径 —— 两者永远对不上，于是**每次部署都把
+  // resources 整棵树当过期项删掉再重拷**（实测白拷 app.asar 118MB + 字体 33MB + vendor）。
+  // 2026-09-17 修：dry-run 里那一长串"旧程序文件 resources\…"就是这个 bug 的症状。
+  const nowProgram = new Set();
+  if (!args.noProgram) {
+    for (const name of programEntries) {
+      const src = path.join(args.staging, name);
+      if (fs.statSync(src).isDirectory()) {
+        for (const f of listFiles(src)) nowProgram.add(path.join(name, f));
+      } else {
+        nowProgram.add(name);
+      }
+    }
+  }
   const staleProgram = args.noProgram ? [] : (prev?.program ?? []).filter((n) => !nowProgram.has(n));
   const staleAssets = (prev?.assets ?? []).filter((a) => !fs.existsSync(a.src));
   const nowTargets = new Set(items.map((i) => i.target));

@@ -1,31 +1,37 @@
-chcp 65001
 @echo off
+chcp 65001 >nul
 REM ============================================================
-REM  Playday 一键部署为网站
-REM  1) 构建前端（vite build → dist/）
-REM  2) 启动 Node 网站后端（数据目录由 path-modes.json 的 dev 段决定）
-REM  访问 http://localhost:8080
-REM  说明：网站版能看游戏库/详情/封面/登录，不支持启动游戏。
+REM  Playday - deploy as a website (browser version).
+REM    1) build the front end (vite build -> dist/)
+REM    2) start the Node web back end (data dir comes from path-modes.json)
+REM  Open http://localhost:8080
+REM  Note: the web version can browse the library / details / covers / login,
+REM        but cannot launch games.
+REM
+REM  ASCII-ONLY: Chinese for the user is printed by scripts\bat-msg.mjs.
+REM  See the note in deploy.bat for the reason (cmd cuts multi-byte lines).
 REM ============================================================
 setlocal
 cd /d "%~dp0"
+call node scripts\bat-msg.mjs title.deploy-web
 
-echo [1/2] 构建前端...
+call node scripts\bat-msg.mjs deploy-web.step-build
 call npm run build
 if errorlevel 1 (
-    echo [错误] 前端构建失败
+    call node scripts\bat-msg.mjs deploy-web.err-build
     exit /b 1
 )
 
-REM 先清理旧的 8080 占用进程，避免 EADDRINUSE。
+REM Clear whatever still holds 8080 first, otherwise EADDRINUSE.
+REM Find the owning process by port (PowerShell), so other node processes survive.
 for /f "delims=" %%i in ('powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { $_.OwningProcess } | Sort-Object -Unique"') do (
-    echo   [清理] 端口 8080 被进程 %%i 占用，正在停止...
+    call node scripts\bat-msg.mjs deploy-web.clear-port %%i
     powershell -NoProfile -Command "Stop-Process -Id %%i -Force -ErrorAction SilentlyContinue"
 )
 timeout /t 1 /nobreak >nul
 
-echo [2/2] 启动网站后端...
-echo 访问 http://localhost:8080
+call node scripts\bat-msg.mjs deploy-web.step-serve
+call node scripts\bat-msg.mjs deploy-web.visit
 node server/server.mjs
 
 endlocal

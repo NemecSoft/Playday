@@ -10,9 +10,12 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     // 增量编译：dev-client.bat 每次启动都会先编译主进程（见该脚本注释），
-    // 增量能把重复编译从 ~6 秒降到 ~1 秒。产物放 dist-electron（已在 .gitignore）。
+    // 增量能把重复编译从 ~6 秒降到 ~1 秒。
+    // ⚠️ tsbuildinfo **必须放在 dist-electron 之外**（2026-09-17 改）：它每次编译都会变，
+    //    而 `dist-electron/**` 是要打进包、并靠差分复制同步到客户机的 —— 放里面就等于
+    //    每次发布都白搬一个 1MB 的文件（正是"主程序动不动就变化"那类问题）。`*.tsbuildinfo` 已在 .gitignore。
     "incremental": true,
-    "tsBuildInfoFile": "dist-electron/.tsbuildinfo",
+    "tsBuildInfoFile": "main.tsbuildinfo",
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false

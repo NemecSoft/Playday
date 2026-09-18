@@ -1,19 +1,26 @@
 @echo off
 chcp 65001 >nul
-title Playday - 备份权威库（Admin\library.db → library.db.bak-＜时间戳＞）
 REM ============================================================
-REM  **双击壳**：只做四件事 —— 切到仓库根 → 调 PowerShell → 把退出码带出去 → pause。
-REM  真正的逻辑在 scripts\librarydb-backup.ps1。
+REM  Playday - back up the authoritative library.
+REM  Admin\library.db -> library.db.bak-<timestamp>
 REM
-REM  为什么这么分（见 docs\PROJECT-MEMORY.md 硬约定 §三.14）：cmd 的解析层（重定向、括号块、
-REM  ^ 转义、% 展开、chcp 之后的英文报错）坑一个接一个，踩中的代价是"**静默产生垃圾文件 +
-REM  误导性报错**"。所以：**逻辑一律写 .ps1，bat 只当壳**，而且壳里不许出现裸的尖括号（要写就转义）。
+REM  THIN SHELL: go to the repo root -> call PowerShell -> pass the exit code
+REM  through -> pause. The real logic is in scripts\librarydb-backup.ps1.
 REM
-REM  什么时候用：手改 整库 JSON 目录\*.json 之前想留个点；或要跑别的会动库的脚本之前。
-REM  单纯回写（libraryjson-importto-librarydb.bat）不需要先跑这个 —— 它写库前会自动备份。
+REM  Why split like this (docs\PROJECT-MEMORY.md, hard rule 3.14): cmd's parsing
+REM  layer (redirection, parenthesised blocks, ^ escaping, % expansion, English
+REM  errors after chcp) is one trap after another, and hitting one costs a
+REM  "silently created junk file + a misleading error". So: all logic lives in
+REM  the .ps1, the .bat is only a shell - and the shell stays pure ASCII.
+REM
+REM  When to use it: before hand-editing *.json in the library-json directory,
+REM  or before running any other script that touches the library. A plain
+REM  write-back (libraryjson-importto-librarydb.bat) does not need it - it makes
+REM  its own backup before writing.
 REM ============================================================
 setlocal
 cd /d "%~dp0"
+call node scripts\bat-msg.mjs title.librarydb-backup
 powershell -NoProfile -ExecutionPolicy Bypass -File "scripts\librarydb-backup.ps1" %*
 set "RC=%errorlevel%"
 echo.

@@ -20,7 +20,7 @@ REM ============================================================
 setlocal
 set "PS=%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe"
 if not exist "%PS%" (
-    echo [ERROR] Windows PowerShell 5.1 not found: "%PS%"
+    call node "%~dp0..\..\scripts\bat-msg.mjs" covers.err-powershell "%PS%"
     exit /b 1
 )
 "%PS%" -NoProfile -ExecutionPolicy Bypass -File "%~dp0optimize-covers.ps1" %*

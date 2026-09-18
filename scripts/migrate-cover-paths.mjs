@@ -51,7 +51,7 @@ const noBackup = process.argv.includes("--no-backup");
 console.log("== migrate-cover-paths ==");
 console.log("DB:       ", DB);
 console.log("CoverDir: ", COVER_DIR, "(exists?", fs.existsSync(COVER_DIR), ")");
-console.log("模式:     ", apply ? "APPLY（真改库）" : "DRY-RUN（只看，不改库）");
+console.log("模式:     ", apply ? "执行（真改库）" : "预览（只看，不改库）");
 
 if (!fs.existsSync(DB)) {
   console.error("找不到数据库：", DB);

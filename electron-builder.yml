@@ -36,6 +36,19 @@ files:
   - dist-electron/** # 主进程编译产物（tsc 输出）
   - package.json
 
+# ---- 差分发布：程序**不打成 app.asar**，而是在 resources/app/ 下放普通文件 ----
+# 需求原话（2026-09-17）："实现差分编译、差分复制，能不动的就不动。因为要同步到客户机……"
+#  客户机是靠**差分复制（大小/日期）**同步的（FastCopy / robocopy 都是这个判据），
+#  所以**文件的 mtime 就是"要不要重搬"的信号** —— 一个字节没变的文件，连 mtime 都不能动。
+#
+# 为什么必须关掉 asar：asar 是一个**单文件**。实测它 118MB（含 dist 51.9MB + 生产依赖），
+#  里面改一个字节 → 整个文件的大小/日期都变 → 差分复制判定"变了" → **每台客户机重搬 118MB**。
+#  拆成普通文件后，改一行代码只有那一个文件变，其余文件连日期都不动。
+#
+# 代价与取舍：文件数变多（约 7600 个），冷启动会多几次文件打开；
+#  换来的是"能不动的就不动"。**别顺手改回 asar: true** —— 一改回去差分就失效了。
+asar: false
+
 # 说明：sql.js 在 package.json 的 dependencies 里，electron-builder 会自动把
 # 生产依赖的 node_modules（含 sql.js 的 .wasm 文件）一起打进 app.asar，
 # 主进程 locateFile 会从 app.asar 内读取，无需额外处理。

@@ -13,8 +13,8 @@ REM  After editing, write it back to the database:
 REM      npm run db:import -- --apply
 REM  (or double-click libraryjson-importto-librarydb.bat)
 REM
-REM  ASCII-ONLY ON PURPOSE (same reason as package.bat): Node prints
-REM  Chinese for the user; this file prints English.
+REM  ASCII-ONLY ON PURPOSE (same reason as package.bat): Chinese for the
+REM  user is printed by scripts\bat-msg.mjs, so this file stays pure ASCII.
 REM ============================================================
 setlocal
 cd /d "%~dp0"
@@ -24,17 +24,17 @@ set "NODE22=C:\Users\Administrator\.proto\tools\node\22.23.2"
 if exist "%NODE22%\node.exe" (
     set "PATH=%NODE22%;%PATH%"
 ) else (
-    echo [new-game-id] proto Node 22 not found - using the system node
+    call node scripts\bat-msg.mjs node.proto-fallback
 )
 
 call node scripts\new-game-id.mjs %*
 if errorlevel 1 (
     echo.
-    echo [ERROR] could not generate an id - read the message above.
+    call node scripts\bat-msg.mjs new-game-id.err
 )
 
 echo.
-echo   ---- finished - press any key to close this window ----
+call node scripts\bat-msg.mjs wait-key
 pause >nul
 exit /b 0
 endlocal

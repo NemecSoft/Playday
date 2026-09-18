@@ -35,7 +35,7 @@ const noBackup = process.argv.includes("--no-backup");
 console.log("== fill-game-descriptions ==");
 console.log("JSON:    ", JSON_FILE);
 console.log("DB:      ", DB);
-console.log("模式:    ", apply ? "APPLY（真改库）" : "DRY-RUN（只看，不改库）");
+console.log("模式:    ", apply ? "执行（真改库）" : "预览（只看，不改库）");
 
 if (!fs.existsSync(JSON_FILE)) {
   console.error("找不到 JSON：", JSON_FILE);

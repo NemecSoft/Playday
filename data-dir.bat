@@ -26,7 +26,7 @@ cd /d "%~dp0"
 for /f "delims=" %%i in ('node scripts\data-dir.mjs --bat') do set "%%i"
 
 if not defined YUNGAME_DATA_DIR (
-    echo [data-dir] cannot resolve the dev data path. node missing, or path-modes.json broken?
+    call node scripts\bat-msg.mjs data-dir.err
     endlocal
     exit /b 1
 )

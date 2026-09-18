@@ -1,43 +1,46 @@
 @echo off
 chcp 65001 >nul
-title GameSaveHelper - 推送到 GitHub
+REM ============================================================================
+REM  push-to-git.bat - initialise / commit / push this tool to GitHub.
+REM  ASCII-ONLY: Chinese for the user AND the commit message come from
+REM  scripts\bat-msg.mjs (a Chinese string in here would break cmd's parsing).
+REM ============================================================================
 
 cd /d "%~dp0"
+call "%~dp0..\..\scripts\bat-msg.mjs" title.gsh-push-git
 
 set "REPO_URL=https://github.com/NemecSoft/GameSaveHelper.git"
 
-echo ==================================================
-echo  GameSaveHelper 推送到 GitHub
-echo  仓库: %REPO_URL%
-echo ==================================================
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-push.header "%REPO_URL%"
 echo.
 
-REM ---------- 1. 初始化仓库（已初始化则跳过） ----------
+REM ---------- 1. init the repo (skip when it already is one) ----------
 if not exist ".git" (
-    echo [1/5] git init ...
+    call "%~dp0..\..\scripts\bat-msg.mjs" gsh-push.step-init
     git init
     if errorlevel 1 goto :fail
 ) else (
-    echo [1/5] 已经是 git 仓库，跳过 init
+    call "%~dp0..\..\scripts\bat-msg.mjs" gsh-push.skip-init
 )
 
-REM ---------- 2. 添加全部文件（.gitignore 排除了编译产物） ----------
-echo [2/5] git add ...
+REM ---------- 2. stage everything (.gitignore keeps build output out) ----------
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-push.step-add
 git add -A
 if errorlevel 1 goto :fail
 
-REM ---------- 3. 提交（有暂存变更才提交，重复运行不会产生空提交） ----------
-echo [3/5] git commit ...
+REM ---------- 3. commit (only when something is staged, so re-running is safe) ----------
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-push.step-commit
 git diff --cached --quiet
 if errorlevel 1 (
-    git commit -m "更新 %date% %time%"
+    for /f "delims=" %%m in ('call "%~dp0..\..\scripts\bat-msg.mjs" gsh-push.commit-msg "%date%" "%time%"') do set "MSG=%%m"
+    git commit -m "%MSG%"
     if errorlevel 1 goto :fail
 ) else (
-    echo        没有新的变更需要提交
+    call "%~dp0..\..\scripts\bat-msg.mjs" gsh-push.nothing
 )
 
-REM ---------- 4. 分支名改为 main，配置远程仓库 ----------
-echo [4/5] 配置分支 main 和远程仓库 ...
+REM ---------- 4. branch main + remote ----------
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-push.step-remote
 git branch -M main 2>nul
 git remote get-url origin >nul 2>&1
 if errorlevel 1 (
@@ -47,21 +50,18 @@ if errorlevel 1 (
     git remote set-url origin "%REPO_URL%"
 )
 
-REM ---------- 5. 推送 ----------
-echo [5/5] git push ...
+REM ---------- 5. push ----------
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-push.step-push
 git push -u origin main
 if errorlevel 1 goto :fail
 
 echo.
-echo ==================================================
-echo  完成！已推送到 %REPO_URL%
-echo ==================================================
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-push.done "%REPO_URL%"
 pause
 exit /b 0
 
 :fail
 echo.
-echo 推送失败，请检查上面的错误信息。
-echo 常见原因：没装 git / 网络·代理不通 / GitHub 未登录授权（首次 push 会弹浏览器登录）。
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-push.err
 pause
 exit /b 1

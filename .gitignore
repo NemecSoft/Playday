@@ -77,7 +77,9 @@ tools/GameSaveHelper/.git_disabled/
 #   release_test/ 预发布包（D 盘 config.json，不随包带数据）
 #   两者只差 config.json 里的盘符，所以**必须分开放**：混在一个目录里就分不清
 #   哪个包能上生产机。
-#   .pack-tmp/    electron-builder 的中转目录（打包成功后自动删除，只在失败时残留）
+#   .pack-tmp/    electron-builder 的中转目录。**2026-09-17 起不再删** —— 它同时是
+#                 差分打包的基准（骨架指纹也在里面）：下次只同步变了的程序文件，
+#                 不再重拷 330MB 的 Electron 运行时（scripts/pack.mjs）。
 # 开发/测试态的数据在 dev-data/ —— 见下。
 # ============================================================
 release/

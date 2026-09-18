@@ -66,7 +66,7 @@ function walk(dir) {
 }
 walk(ROOT);
 
-console.log(`模式: ${APPLY ? "APPLY" : "DRY-RUN"}`);
+console.log(`模式: ${APPLY ? "执行" : "预览"}`);
 console.log(`info.json 修改: ${infoChanged} 个（其中简化掉"|"描述段的 ${infoSimplified} 个）`);
 console.log(`index.html 修改: ${htmlChanged} 个（其中简化掉"|"描述段的 ${htmlSimplified} 个）`);
 console.log("--- 样例 ---");

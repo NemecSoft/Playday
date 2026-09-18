@@ -1,7 +1,8 @@
 ﻿#Requires -Version 5.1
 <#
   libraryjson-importto-librarydb.ps1 —— 整库 JSON 管理：**回写（进口）方向**
-  把 $jsonDir\*.json 写进权威库 <数据根>\Admin\library.db。
+  把整库 JSON 目录（scripts/data-dir.mjs --json 打印的那个）里的 *.json 写进权威库
+  <数据根>\Admin\library.db。
 
   双击入口 = 仓库根的 libraryjson-importto-librarydb.bat（**只当壳**：切目录 → 调本脚本 → pause）。
   ⚠️ 规矩（docs\PROJECT-MEMORY.md 硬约定 §三.14）：**逻辑一律写 .ps1，别往 bat 里塞**。
@@ -51,13 +52,11 @@ foreach ($line in (& node 'scripts\data-dir.mjs' '--bat')) {
   if ($line -match '^([A-Z_]+)=(.*)$') { $dataVars[$Matches[1]] = $Matches[2] }
 }
 $adminDb = $dataVars['PLAYDAY_ADMIN_DB']
-if (-not $adminDb) {
-  Write-Host '[错误] 取不到权威库路径（data-dir.mjs 没输出）—— 见 scripts/lib/devData.mjs 与 path-modes.json。'
+$jsonDir = $dataVars['PLAYDAY_LIBRARY_JSON']
+if (-not $adminDb -or -not $jsonDir) {
+  Write-Host '[错误] 取不到权威库 / 整库 JSON 目录（data-dir.mjs 没输出）—— 见 scripts/lib/devData.mjs 与 path-modes.json。'
   exit 1
 }
-
-# 整库 JSON 目录：**从唯一来源取**（scripts/data-dir.mjs → lib/devData.mjs），本文件不许写死目录名
-$jsonDir = (& node (Join-Path $PSScriptRoot 'data-dir.mjs') --json)
 
 Write-Host '============================================'
 Write-Host ' Playday 整库 JSON 回写（libraryjson → librarydb）'
@@ -66,9 +65,11 @@ Write-Host " 权威库: $adminDb"
 Write-Host '============================================'
 
 # ---- 4. 前置检查：JSON 目录与权威库都在 ----
-if (-not (Test-Path -LiteralPath '$jsonDir')) {
+#   ⚠️ 这里曾经写成单引号 '$jsonDir'：PowerShell 的**单引号字符串不展开变量**，于是它拿着一串
+#   字面量去 Test-Path，必然报"找不到"（2026-09-17 实测撞到）。凡是引用变量的字符串一律用双引号。
+if (-not (Test-Path -LiteralPath $jsonDir)) {
   Write-Host ''
-  Write-Host '[错误] 找不到 $jsonDir\ —— 先导出一次：双击 librarydb-exportto-libraryjson.bat'
+  Write-Host "[错误] 找不到整库 JSON 目录 $jsonDir —— 先导出一次：双击 librarydb-exportto-libraryjson.bat"
   exit 1
 }
 if (-not (Test-Path -LiteralPath $adminDb)) {
@@ -103,7 +104,7 @@ if (($previewOut -join "`n") -match '共\s*0\s*处变化') {
   Write-Host ''
   Write-Host '[db] 没有要回写的改动 —— 库与 JSON 已经完全一致（按设计不写库、不产生备份）。'
   Write-Host '     若你确实改过 JSON 却没看到差异，检查两点：'
-  Write-Host '       1) 改的是 $jsonDir\games.json（整库镜像）；仓库根那个 games.json 是给存档工具看的只读导出，改它不影响库；'
+  Write-Host "       1) 改的是 $jsonDir\games.json（整库镜像）；仓库根那个 games.json 是给存档工具看的只读导出，改它不影响库；"
   Write-Host '       2) 文件确实保存了，且改的是库里有这一列的字段（拼错的列名会被拦下）。'
   exit 0
 }

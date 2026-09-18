@@ -67,7 +67,7 @@ console.log("详情页  :", DETAILS_DIR);
 console.log("权威库  :", ADMIN_DB);
 console.log(
   "模式    :",
-  DRY ? "DRY-RUN（不写文件）" : "写文件",
+  DRY ? "预览（不写文件）" : "写文件",
   REFRESH_LEVEL ? "｜重算 game_level" : "｜保留已有 game_level",
   REFRESH_SAVEPATHS ? "｜重取 save_paths" : "｜保留已有 save_paths",
   "\n",

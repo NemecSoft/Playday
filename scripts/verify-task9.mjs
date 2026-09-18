@@ -34,7 +34,7 @@ const mainSrc = fs.readFileSync(path.join(ROOT, "electron", "main.ts"), "utf-8")
 const traySrc = fs.readFileSync(path.join(ROOT, "electron", "core", "tray.ts"), "utf-8");
 console.log("register.ts 注册 system:", registerSrc.includes("registerSystemIpc"));
 console.log("main.ts 创建托盘:", mainSrc.includes("createTray"));
-console.log("tray.ts 有打开/退出菜单:", traySrc.includes("打开") && traySrc.includes("退出"));
+console.log("tray.ts 有显示/退出菜单:", traySrc.includes("显示") && traySrc.includes("退出"));
 
 // ---- 校验：system 命令全集存在 ----
 for (const cmd of ["get_app_info","minimize_window","maximize_window","is_maximized","is_fullscreen","toggle_fullscreen","close_window","hide_window","show_window","show_notification","quit"]) {

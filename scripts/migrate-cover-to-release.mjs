@@ -36,7 +36,7 @@ const apply = process.argv.includes("--apply");
 console.log("== migrate-cover-to-release ==");
 console.log("DB:      ", DB);
 console.log("CoverDir:", COVER_DIR, "(exists?", fs.existsSync(COVER_DIR), ")");
-console.log("模式:    ", apply ? "APPLY" : "DRY-RUN");
+console.log("模式:    ", apply ? "执行" : "预览");
 
 if (!fs.existsSync(DB) || !fs.existsSync(COVER_DIR)) {
   console.error("数据库或封面目录不存在，中止。");

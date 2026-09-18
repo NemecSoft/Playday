@@ -388,7 +388,7 @@ async function doImport() {
   console.log("== 整库 JSON 回写 ==");
   console.log(`JSON   : ${rel(DIR)}`);
   console.log(`权威库 : ${rel(DB)}`);
-  console.log(`模式   : ${APPLY ? "APPLY（会写库 + 备份）" : "DRY-RUN（只看会改多少）"}${MERGE ? "｜合并（不删库里的行）" : "｜整表替换"}\n`);
+  console.log(`模式   : ${APPLY ? "执行（会写库 + 备份）" : "预览（只看会改多少）"}${MERGE ? "｜合并（不删库里的行）" : "｜整表替换"}\n`);
 
   // 指纹：拦住"拿旧导出回写"。
   const metaFile = path.join(DIR, LIBRARY_JSON_META);
@@ -602,7 +602,29 @@ async function doImport() {
   // 备份必须在**原子替换之前**：这份就是"回退点"，内容必须是写库前的原库。
   // 名字规则与 `backup` 子命令共用一份（见 backupDb）→ `library.db.bak-20260916-043012`。
   const bak = backupDb();
-  fs.renameSync(tmp, DB);
+  try {
+    fs.renameSync(tmp, DB);
+  } catch (e) {
+    // Windows 上"重命名覆盖一个正被打开的文件"会直接 EPERM/EBUSY，而这个报错本身
+    // 完全看不出"是被占用"（2026-09-17 实测：客户端/dev 正在跑，启动时要读一次权威库，
+    // 正好撞上写库那一刻）。所以这里把原因和该做什么写清楚 —— 别让人去猜堆栈。
+    if (e.code === "EPERM" || e.code === "EACCES" || e.code === "EBUSY") {
+      console.error(
+        [
+          "✗ 写不进去：权威库正被别的程序占用（Windows 不允许覆盖一个打开着的文件）。",
+          "  最常见的占用者：正在运行的 Playday 客户端（PlayniteUI.exe）或 `npm run dev`",
+          "  —— 它们启动时要读一次权威库，正好和你这次写入撞上了。",
+          "",
+          "  怎么办：关掉客户端 / 停掉 dev，再跑一次。",
+          "  **库没有被改动**；写库前的回退点已经备好（见下面那行 [备份]）。",
+          `  已经写好的新库留在临时文件里：${rel(tmp)}`,
+          "  （下次写入会自动覆盖它；不想留就手动删掉，不影响任何正确性。）",
+        ].join("\n"),
+      );
+      process.exit(1);
+    }
+    throw e;
+  }
   console.log(`\n[备份] ${rel(bak)}（${mbOf(bak)} MB —— 写库**之前**的原库，回退就是把它拷回来）`);
   console.log(`[写入] ${rel(DB)}（${plans.map((p) => p.table).join(", ")}）`);
 
@@ -629,9 +651,44 @@ async function doImport() {
   console.log(`  回退：把 ${rel(bak)} 复制回 library.db 覆盖即可。`);
 }
 
+/**
+ * `sync` 子命令：**JSON 比权威库新，就自动回写**（dev 启动时自动跑，见 package.json 的 dev）。
+ *
+ * 为什么有它（2026-09-18 用户原话）："games.json 修改了，启动 dev 没有给我入库啊，要入库，我不想麻烦"
+ * —— 以前改完 JSON 必须手动 `npm run db:import -- --apply`，忘了就是"我明明改了，界面却没变"。
+ *
+ * 两个刻意的选择：
+ *   · 判据用 **mtime**（JSON 比库新才动手）：不懂指纹那套也能一眼看懂；
+ *     而且纯读一次 stat，没改动时启动零成本。
+ *   · 真回写时**直接复用 import 那套**（spawn 自己 + `--apply --force`）：
+ *     备份、原子替换、行数预览全都在，不复制一份逻辑出来。用 --force 是因为
+ *     "games.json 是唯一事实源"这条规矩在 docs/design/library-json.md 里写着 ——
+ *     自动同步就该按事实源覆盖；而且回写前**必然留一份 .bak**，改错也能退回去。
+ */
+function doSync() {
+  const jsonFile = path.join(DIR, tableFileOf("games"));
+  if (!fs.existsSync(jsonFile) || !fs.existsSync(DB)) {
+    console.log("[库] 缺 games.json 或权威库，跳过自动回写。");
+    return;
+  }
+  const jsonM = fs.statSync(jsonFile).mtimeMs;
+  const dbM = fs.statSync(DB).mtimeMs;
+  if (jsonM <= dbM) {
+    console.log("[库] games.json 不比权威库新，跳过自动回写。");
+    return;
+  }
+  console.log("[库] 检测到 games.json 比权威库新 → 自动回写（先备份，再原子替换）…\n");
+  const { spawnSync } = require("node:child_process");
+  const r = spawnSync(process.execPath, [process.argv[1], "import", "--apply", "--force"], {
+    stdio: "inherit",
+  });
+  process.exit(r.status ?? 1);
+}
+
 async function main() {
   if (cmd === "export") await doExport();
   else if (cmd === "import") await doImport();
+  else if (cmd === "sync") doSync();
   else if (cmd === "find") await doFind();
   else if (cmd === "backup") doBackup();
   else {

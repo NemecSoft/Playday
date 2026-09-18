@@ -1,33 +1,37 @@
 @echo off
 chcp 65001 >nul
-title GameSaveHelper - 检测 games.json
-
 REM ============================================================================
-REM  检测gamesjson.bat - 检查 games.json 格式问题并报出行号
-REM  结果：屏幕显示 + 完整清单写入 gamesjson-问题清单.txt
-REM  用法：直接双击；或带参数指定其他 games.json 路径
+REM  check-gamesjson.bat - report format problems in games.json, with line numbers.
+REM  Result: on screen + the full list is written to the report file (its name is
+REM          Chinese, so it comes from scripts\bat-msg.mjs).
+REM  Usage: double-click; or pass another games.json path as an argument.
 REM ============================================================================
 
 cd /d "%~dp0"
+call "%~dp0..\..\scripts\bat-msg.mjs" title.gsh-checkjson
 
 set "GAMESJSON=%~1"
 if "%GAMESJSON%"=="" set "GAMESJSON=D:\AI\Code\Playnite\Playday\games.json"
 
 if not exist "%GAMESJSON%" (
-    echo [ERROR] 找不到文件：%GAMESJSON%
+    call "%~dp0..\..\scripts\bat-msg.mjs" gsh.err-nofile "%GAMESJSON%"
     pause
     exit /b 2
 )
 
+REM The report file name is Chinese: read it into a variable, never write it here.
+for /f "delims=" %%r in ('call "%~dp0..\..\scripts\bat-msg.mjs" gsh.report-file') do set "REPORT=%%r"
+
 node "tools\check-gamesjson.mjs" "%GAMESJSON%"
 if errorlevel 1 (
     echo.
-    echo [ERROR] 检测脚本运行失败，请确认已安装 node（v18+）。
+    call "%~dp0..\..\scripts\bat-msg.mjs" gsh.err-node
     pause
     exit /b 1
 )
 
 echo.
-set /p OPEN=是否打开完整清单（gamesjson-问题清单.txt）？[Y/N]：
-if /i "%OPEN%"=="Y" start "" "gamesjson-问题清单.txt"
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh.ask-open
+set /p OPEN=
+if /i "%OPEN%"=="Y" start "" "%REPORT%"
 exit /b 0

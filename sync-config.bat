@@ -22,52 +22,49 @@ REM  WHY THIS FILE IS ASCII-ONLY: it gets CALLED from other bats, and cmd.exe
 REM  decodes a .bat with the console code page active when it opened the file.
 REM  Multi-byte text can be mis-decoded, a line can get split, and cmd then
 REM  runs the tail of a comment. Same rule as data-dir.bat.
+REM  Every Chinese line for the user is therefore printed by scripts\bat-msg.mjs,
+REM  never echoed here.
 REM
-REM  WHY NO PARENTHESES IN ECHO TEXT: an echo line inside an IF ERRORLEVEL
-REM  block ends the block at the first closing bracket, the rest of the line
-REM  is then parsed as a command and cmd dies with
-REM  "or was unexpected at this time". Hit that once while writing this file.
-REM  Brackets [ ] are safe - use them.
+REM  That also retired the old "no parentheses in echo text" trap: cmd ends an
+REM  IF block at the first closing bracket, so a stray ")" used to kill the file
+REM  ("or was unexpected at this time"). Node prints the Chinese now, and cmd
+REM  never parses that text. Brackets [ ] stay safe for the ASCII lines here.
 REM ============================================================
 setlocal
 cd /d "%~dp0"
 REM node prints UTF-8; without this a double-click run shows mojibake.
 chcp 65001 >nul
 
-echo [sync-config] 1/3 preview --dry-run, writes nothing...
+call node scripts\bat-msg.mjs sync-config.step-preview
 node scripts\prepare-release.mjs --mode dev --dry-run
 if errorlevel 1 (
     echo.
-    echo [sync-config] FAILED at preview. Reason is above; config.json untouched.
-    echo   Usual causes: path-modes.json "dev" section invalid - dev must be on
-    echo   the D: drive, no missing or unknown field names - or the compiled
-    echo   artifact dist-electron\shared\pathModes.js is missing, or older than
-    echo   its source shared\pathModes.ts. Rebuild with: npm run build
+    call node scripts\bat-msg.mjs sync-config.err-preview
     endlocal
     exit /b 1
 )
 
 echo.
-echo [sync-config] 2/3 writing config.json...
+call node scripts\bat-msg.mjs sync-config.step-write
 node scripts\prepare-release.mjs --mode dev
 if errorlevel 1 (
     echo.
-    echo [sync-config] FAILED while writing. config.json was NOT synced.
+    call node scripts\bat-msg.mjs sync-config.err-write
     endlocal
     exit /b 1
 )
 
 echo.
-echo [sync-config] 3/3 verifying --check...
+call node scripts\bat-msg.mjs sync-config.step-verify
 node scripts\prepare-release.mjs --mode dev --check
 if errorlevel 1 (
     echo.
-    echo [sync-config] FAILED at verification. The two files still disagree.
+    call node scripts\bat-msg.mjs sync-config.err-verify
     endlocal
     exit /b 1
 )
 
 echo.
-echo [sync-config] OK: dev config.json matches path-modes.json.
+call node scripts\bat-msg.mjs sync-config.ok
 endlocal
 exit /b 0

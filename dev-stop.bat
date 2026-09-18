@@ -1,8 +1,16 @@
 @echo off
+chcp 65001 >nul
 REM ============================================================
-REM  Playday 开发模式停止脚本
-REM  结束后台的 Vite 开发服务器窗口（标题 Playday Vite）。
+REM  Playday dev-mode stop.
+REM  Kills the background Vite dev server window (title "Playday Vite").
+REM
+REM  ASCII-ONLY - do NOT put Chinese back into this file. The file is UTF-8 but
+REM  the console may be on code page 936, and cmd then cuts multi-byte sequences
+REM  in half while reading: the REM/echo prefix is lost and the tail of the line
+REM  gets executed as a command ("'xx' is not recognized ..."). Chinese for the
+REM  user is printed by scripts\bat-msg.mjs instead. Same rule as package.bat.
 REM ============================================================
-echo [dev] 正在停止 Vite 开发服务器...
+cd /d "%~dp0"
+call node scripts\bat-msg.mjs dev-stop.stopping
 taskkill /fi "WINDOWTITLE eq Playday Vite*" /f >nul 2>&1
-echo [dev] 已发送停止信号。若仍有残留，可在任务管理器中手动结束。
+call node scripts\bat-msg.mjs dev-stop.done

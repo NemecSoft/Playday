@@ -54,7 +54,7 @@ function walk(dir) {
 }
 walk(ROOT);
 
-console.log(`模式: ${APPLY ? "APPLY" : "DRY-RUN"}`);
+console.log(`模式: ${APPLY ? "执行" : "预览"}`);
 console.log(`index.html 补充修改: ${htmlModified} 个`);
 console.log(`  - "信息来自 xdgame.com": ${htmlHits.fromXdg} 处`);
 console.log(`  - 单行 footer 版权:      ${htmlHits.singleFooter} 处`);

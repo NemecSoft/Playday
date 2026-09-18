@@ -1,17 +1,18 @@
 @echo off
 chcp 65001 >nul
-title GameSaveHelper - 构建 Release
-
 REM ============================================================================
-REM  build-release.bat - 组装可部署的 release 目录
-REM  产物：release\GameSaveHelper.exe + settings.json（配置） + template（模板）
-REM        + assets\icon.ico + nsis（编译器，可选）
-REM  用法：build-release.bat [gamesJson路径] [coverDir路径]
-REM        第 1 个参数可选，指定 settings.json 里的 games.json 路径
-REM        第 2 个参数可选，指定封面图目录 coverDir：
-REM          测试环境（默认）：D:\YunGame\PlayNite\CoverImages
-REM          正式环境：        X:\YunGame\PlayNite\CoverImages
-REM  说明：设 SKIP_NSIS=1 可跳过复制 NSIS（几十 MB）
+REM  build-release.bat - assemble a deployable release directory.
+REM  Produces: release\GameSaveHelper.exe + settings.json + template\
+REM            + assets\icon.ico + nsis\ (optional compiler)
+REM  Usage: build-release.bat [gamesJsonPath] [coverDirPath]
+REM    arg 1 (optional): the games.json path written into settings.json
+REM    arg 2 (optional): the cover image directory:
+REM      test environment (default): D:\YunGame\PlayNite\CoverImages
+REM      production:                 X:\YunGame\PlayNite\CoverImages
+REM  Note: set SKIP_NSIS=1 to skip copying NSIS (tens of MB).
+REM
+REM  ASCII-ONLY: Chinese for the user is printed by scripts\bat-msg.mjs
+REM  (see the note in deploy.bat).
 REM ============================================================================
 
 cd /d "%~dp0"
@@ -21,33 +22,32 @@ set "COVER=%~2"
 if "%GAMESJSON%"=="" set "GAMESJSON=D:\AI\Code\Playnite\Playday\games.json"
 if "%COVER%"=="" set "COVER=D:\YunGame\PlayNite\CoverImages"
 
-echo ==================================================
-echo  GameSaveHelper 构建 Release
-echo ==================================================
+call "%~dp0..\..\scripts\bat-msg.mjs" title.gsh-build-release
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-build.header
 
-echo [1/4] 编译主程序 ...
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-build.step-compile
 call build.bat
 if errorlevel 1 goto :fail
 
-echo [2/4] 准备目录 %REL%\ ...
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-build.step-prepare "%REL%"
 rd /s /q "%REL%" 2>nul
 mkdir "%REL%" 2>nul
 mkdir "%REL%\template" 2>nul
 mkdir "%REL%\assets" 2>nul
 
-echo [3/4] 复制文件 ...
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-build.step-copy
 copy /y "GameSaveHelper.exe" "%REL%\" >nul
 copy /y "template\GameSaveHelper.nsi" "%REL%\template\" >nul
 copy /y "assets\icon.ico" "%REL%\assets\" >nul
 if not exist "%REL%\GameSaveHelper.exe" goto :fail
 
 if not "%SKIP_NSIS%"=="1" (
-    echo     复制 NSIS 编译器（较大，可 set SKIP_NSIS=1 跳过）...
+    call "%~dp0..\..\scripts\bat-msg.mjs" gsh-build.copy-nsis
     robocopy nsis "%REL%\nsis" /E /NFL /NDL /NJH /NJS >nul
     if errorlevel 8 goto :fail
 )
 
-echo [4/4] 生成配置文件 settings.json ...
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-build.step-settings
 (
 echo {
 echo   "gamesJson": "%GAMESJSON:\=\\%",
@@ -59,16 +59,13 @@ echo }
 ) > "%REL%\settings.json"
 
 echo.
-echo ==================================================
-echo  完成！release 目录内容：
-echo ==================================================
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-build.done
 dir /b "%REL%"
 echo.
-echo 部署说明：整个 release 文件夹拷到目标机器即可。
-echo 如路径有变化，直接编辑 release\settings.json。
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-build.deploy-note
 exit /b 0
 
 :fail
 echo.
-echo [ERROR] 构建 release 失败，请检查上面的错误信息。
+call "%~dp0..\..\scripts\bat-msg.mjs" gsh-build.err
 exit /b 1
