@@ -151,14 +151,14 @@
 
 :root {
   /* Default (dark) theme */
-  --bg-base: #171a1f;
-  --bg-top: #21262e;
-  --bg-sidebar: #1c2027;
-  --bg-panel: #1f242c;
-  --bg-item-hover: #2a303a;
-  --bg-item-active: #2f3641;
-  --bg-input: #101318;
-  --border: #2e3540;
+  --bg-base: #111318;
+  --bg-top: #1d1f25;
+  --bg-sidebar: #191b21;
+  --bg-panel: #1d1f25;
+  --bg-item-hover: #282a2f;
+  --bg-item-active: #32353a;
+  --bg-input: #0c0e13;
+  --border: #46494f;
 
   /* 全局统一的"按钮/标题文字色"，默认用 --text-primary（主题主文字色）。
      关键设计：之前用 var(--accent)（品牌强调色），但 Recordly 等浅色 accent
@@ -167,16 +167,23 @@
      在所有配色下都清晰（暗黑下浅、中国红下金、Recordly 下深）。
      将来想"统一改"按钮文字色，只改这里即可。 */
   --ui-accent: var(--text-primary);
-  --border-strong: #3a4250;
-  --text-primary: #e6e9ee;
-  --text-secondary: #9aa4b2;
-  --text-dim: #667080;
-  --accent: #2d7ff9;
-  --accent-hover: #4d94ff;
-  --accent-soft: rgba(45, 127, 249, 0.14);
-  --success: #3ecf8e;
-  --warning: #f0b429;
-  --danger: #e5484d;
+  --border-strong: #8e9198;
+  --text-primary: #dde2f0;
+  --text-secondary: #c1c6d4;
+  --text-dim: #8b919d;
+  --accent: #1d71ea;
+  --accent-hover: #3687ff;
+  --accent-soft: color-mix(in srgb, #1d71ea 16%, transparent);
+  --accent-fg: #ffffff;
+  --success: #6ccb71;
+  --warning: #edb627;
+  --danger: #ff9c8d;
+  /* 窗口控制按钮的"关闭红"：Windows 的**平台约定色**，不随主题变（所以不归配色生成器管）。
+     值仍由 chroma 按 MD3 的 on-color 判据推出：白字压在原色 #e5484d 上只有 3.91:1（不达标），
+     压到 tone 51 后 4.70:1；按下态再深一档 6.32:1。
+     守卫测试断言这一对与白字 ≥ 4.5:1（scripts/lib/staticThemes.test.mjs）。 */
+  --window-close: #d53840;
+  --window-close-active: #bc1a2c;
   --glow: none;
   /* Global text highlight: outline width/color + glow shadow color.
      Applied on `body` (inherited by all text). Dark themes set these to give
@@ -199,24 +206,25 @@
 
 /* ---- Cartoon theme: bright, colorful, playful ---- */
 :root[data-theme="cartoon"] {
-  --bg-base: #fff6e9;
-  --bg-top: #ffe8d6;
-  --bg-sidebar: #ffdccc;
-  --bg-panel: #fffdf7;
-  --bg-item-hover: #ffecd9;
-  --bg-item-active: #ffe0c2;
-  --bg-input: #fff1df;
-  --border: #f2cfa5;
-  --border-strong: #eab884;
-  --text-primary: #4a3b2a;
-  --text-secondary: #8a6d52;
-  --text-dim: #c0a184;
-  --accent: #ff8a5c;
-  --accent-hover: #ffa27b;
-  --accent-soft: rgba(255, 138, 92, 0.18);
-  --success: #3ecf8e;
-  --warning: #f0b429;
-  --danger: #e5484d;
+  --bg-base: #fff9ec;
+  --bg-top: #f3ede0;
+  --bg-sidebar: #f9f3e6;
+  --bg-panel: #f3ede0;
+  --bg-item-hover: #eee8db;
+  --bg-item-active: #e8e2d5;
+  --bg-input: #fffff2;
+  --border: #ccc6b9;
+  --border-strong: #7c766b;
+  --text-primary: #221b0a;
+  --text-secondary: #4e4634;
+  --text-dim: #756c59;
+  --accent: #fc8759;
+  --accent-hover: #e47143;
+  --accent-soft: color-mix(in srgb, #fc8759 16%, transparent);
+  --accent-fg: #630000;
+  --success: #07781f;
+  --warning: #935f00;
+  --danger: #b81611;
   --glow: none;
   --radius: 10px;
   --radius-lg: 16px;
@@ -225,24 +233,25 @@
 
 /* ---- Cyberpunk theme: dark neon, glowing edges ---- */
 :root[data-theme="cyberpunk"] {
-  --bg-base: #0a0f1e;
-  --bg-top: #0f1526;
-  --bg-sidebar: #0d1322;
-  --bg-panel: #111a2e;
-  --bg-item-hover: #1a2540;
-  --bg-item-active: #1f2b4a;
-  --bg-input: #070b16;
-  --border: #1e2b4a;
-  --border-strong: #2f3f6b;
-  --text-primary: #d6fbff;
-  --text-secondary: #8fd6e0;
-  --text-dim: #4f7a8a;
+  --bg-base: #0f131c;
+  --bg-top: #1b1f29;
+  --bg-sidebar: #171b25;
+  --bg-panel: #1b1f29;
+  --bg-item-hover: #252a34;
+  --bg-item-active: #30353f;
+  --bg-input: #0a0e17;
+  --border: #41495a;
+  --border-strong: #8791a5;
+  --text-primary: #dce3f0;
+  --text-secondary: #c1c6d4;
+  --text-dim: #8b919d;
   --accent: #00f0ff;
-  --accent-hover: #4df5ff;
-  --accent-soft: rgba(0, 240, 255, 0.16);
-  --success: #2bff88;
-  --warning: #faff05;
-  --danger: #ff3b5c;
+  --accent-hover: #93ffff;
+  --accent-soft: color-mix(in srgb, #00f0ff 16%, transparent);
+  --accent-fg: #00393e;
+  --success: #62fc71;
+  --warning: #ffefcd;
+  --danger: #ff4032;
   --glow: 0 0 12px rgba(0, 240, 255, 0.55);
   --radius: 4px;
   --radius-lg: 8px;
@@ -251,24 +260,26 @@
 
 /* ---- Memphis theme: bold geometric primaries, playful dots ---- */
 :root[data-theme="memphis"] {
-  --bg-base: #fff6ec;
-  --bg-top: #ffe8d0;
-  --bg-sidebar: #ffdcc0;
-  --bg-panel: #fffdf8;
-  --bg-item-hover: #ffe9d2;
-  --bg-item-active: #ffddc0;
-  --bg-input: #fff0de;
-  --border: #ffc39a;
-  --border-strong: #ffab70;
-  --text-primary: #3a2a33;
-  --text-secondary: #8a6677;
-  --text-dim: #c49aab;
+  --bg-base: #fff8ee;
+  --bg-top: #f4ede3;
+  --bg-sidebar: #faf3e9;
+  --bg-panel: #f4ede3;
+  --bg-item-hover: #eee7dd;
+  --bg-item-active: #e8e1d8;
+  --bg-input: #fffef8;
+  --border: #ccc5bc;
+  --border-strong: #7c766e;
+  --text-primary: #231a0b;
+  --text-secondary: #504535;
+  --text-dim: #776b5a;
   --accent: #ff4d6d;
-  --accent-hover: #ff6d87;
-  --accent-soft: rgba(255, 77, 109, 0.16);
-  --success: #06d6a0;
-  --warning: #ffb703;
-  --danger: #e63946;
+  --accent-hover: #e63259;
+  --accent-soft: color-mix(in srgb, #ff4d6d 16%, transparent);
+  --accent-fg: #570015;
+  --accent-alt: #5173ff;
+  --success: #00791c;
+  --warning: #916000;
+  --danger: #bd0000;
   --glow: none;
   --radius: 12px;
   --radius-lg: 20px;
@@ -277,24 +288,25 @@
 
 /* ---- Neumorphism theme: soft extruded light gray ---- */
 :root[data-theme="neumorphism"] {
-  --bg-base: #e0e5ec;
-  --bg-top: #d3dbe6;
-  --bg-sidebar: #d8dfe9;
-  --bg-panel: #e6ebf2;
-  --bg-item-hover: #d8e0ea;
-  --bg-item-active: #cdd7e3;
-  --bg-input: #e0e5ec;
-  --border: #cdd5e3;
-  --border-strong: #b9c4d6;
-  --text-primary: #3a4553;
-  --text-secondary: #6b7a8f;
-  --text-dim: #9aa7ba;
-  --accent: #8ab4f8;
-  --accent-hover: #a3c4fa;
-  --accent-soft: rgba(138, 180, 248, 0.28);
-  --success: #7bd0a0;
-  --warning: #e8c070;
-  --danger: #f2888c;
+  --bg-base: #f5faff;
+  --bg-top: #eaeef3;
+  --bg-sidebar: #eff4f9;
+  --bg-panel: #eaeef3;
+  --bg-item-hover: #e4e9ee;
+  --bg-item-active: #dee3e8;
+  --bg-input: #fbffff;
+  --border: #c2c7cc;
+  --border-strong: #74777c;
+  --text-primary: #101d29;
+  --text-secondary: #3a4856;
+  --text-dim: #606f7e;
+  --accent: #80a9ec;
+  --accent-hover: #6b93d5;
+  --accent-soft: color-mix(in srgb, #80a9ec 16%, transparent);
+  --accent-fg: #0a2d66;
+  --success: #37733a;
+  --warning: #876400;
+  --danger: #a04035;
   --glow: none;
   --radius: 14px;
   --radius-lg: 22px;
@@ -303,24 +315,25 @@
 
 /* ---- US Comic theme: bold black outlines, halftone dots ---- */
 :root[data-theme="comic"] {
-  --bg-base: #fffdf0;
-  --bg-top: #ffe9b0;
-  --bg-sidebar: #ffdf96;
-  --bg-panel: #fffef8;
-  --bg-item-hover: #fff3cf;
-  --bg-item-active: #ffe9b0;
-  --bg-input: #fff7df;
-  --border: #f2d479;
-  --border-strong: #e63946;
-  --text-primary: #2b2d42;
-  --text-secondary: #6a6d82;
-  --text-dim: #9b9ea8;
-  --accent: #e63946;
-  --accent-hover: #ef5a65;
-  --accent-soft: rgba(230, 57, 70, 0.15);
-  --success: #2a9d8f;
-  --warning: #f4a261;
-  --danger: #e63946;
+  --bg-base: #fcfaed;
+  --bg-top: #f0eee1;
+  --bg-sidebar: #f6f4e7;
+  --bg-panel: #f0eee1;
+  --bg-item-hover: #ebe9dc;
+  --bg-item-active: #e5e3d6;
+  --bg-input: #fffff3;
+  --border: #c9c7ba;
+  --border-strong: #79776c;
+  --text-primary: #1f1c0b;
+  --text-secondary: #4a4735;
+  --text-dim: #716e5a;
+  --accent: #d01d34;
+  --accent-hover: #b40022;
+  --accent-soft: color-mix(in srgb, #d01d34 16%, transparent);
+  --accent-fg: #ffffff;
+  --success: #39723d;
+  --warning: #8c6300;
+  --danger: #ac3700;
   --glow: none;
   --radius: 2px;
   --radius-lg: 4px;
@@ -329,24 +342,25 @@
 
 /* ---- Ghibli theme: soft pastel nature tones, hand-drawn warmth ---- */
 :root[data-theme="ghibli"] {
-  --bg-base: #f6f3e7;
-  --bg-top: #eef0da;
-  --bg-sidebar: #e9ecd6;
-  --bg-panel: #faf8ee;
-  --bg-item-hover: #f0f2e0;
-  --bg-item-active: #e7ebd2;
-  --bg-input: #f1efdf;
-  --border: #d9ddc2;
-  --border-strong: #c3caa4;
-  --text-primary: #3d4a33;
-  --text-secondary: #7d8f6a;
-  --text-dim: #a9b891;
+  --bg-base: #fdfaed;
+  --bg-top: #f1eee1;
+  --bg-sidebar: #f7f4e7;
+  --bg-panel: #f1eee1;
+  --bg-item-hover: #ebe8dc;
+  --bg-item-active: #e6e3d6;
+  --bg-input: #fffff2;
+  --border: #cac7ba;
+  --border-strong: #7a776c;
+  --text-primary: #201b0a;
+  --text-secondary: #4b4734;
+  --text-dim: #726d5a;
   --accent: #6d9a5e;
-  --accent-hover: #83ac72;
-  --accent-soft: rgba(109, 154, 94, 0.18);
-  --success: #8fbf6f;
-  --warning: #e0b060;
-  --danger: #d97b6f;
+  --accent-hover: #59854a;
+  --accent-soft: color-mix(in srgb, #6d9a5e 16%, transparent);
+  --accent-fg: #043000;
+  --success: #2e7534;
+  --warning: #886400;
+  --danger: #9c443a;
   --glow: none;
   --radius: 16px;
   --radius-lg: 24px;
@@ -355,24 +369,25 @@
 
 /* ---- Chinese (中国风) theme: ink red, gold, paper elegance ---- */
 :root[data-theme="chinese"] {
-  --bg-base: #f5efe1;
-  --bg-top: #eadbc0;
-  --bg-sidebar: #e3d2b4;
-  --bg-panel: #faf6ea;
-  --bg-item-hover: #f0e6cf;
-  --bg-item-active: #e9dcbe;
-  --bg-input: #f1ead8;
-  --border: #dcc9a3;
-  --border-strong: #c8a24b;
-  --text-primary: #3a2f28;
-  --text-secondary: #7d6a55;
-  --text-dim: #a8987f;
+  --bg-base: #fff9eb;
+  --bg-top: #f3ede0;
+  --bg-sidebar: #f9f3e5;
+  --bg-panel: #f3ede0;
+  --bg-item-hover: #eee8da;
+  --bg-item-active: #e8e2d4;
+  --bg-input: #fffff1;
+  --border: #ccc6b9;
+  --border-strong: #7c766a;
+  --text-primary: #211b0a;
+  --text-secondary: #4e4634;
+  --text-dim: #756c59;
   --accent: #9e1b32;
-  --accent-hover: #b92a42;
-  --accent-soft: rgba(158, 27, 50, 0.14);
-  --success: #7a9e3f;
-  --warning: #c8a24b;
-  --danger: #a3352b;
+  --accent-hover: #850021;
+  --accent-soft: color-mix(in srgb, #9e1b32 16%, transparent);
+  --accent-fg: #ffffff;
+  --success: #287630;
+  --warning: #896400;
+  --danger: #a23816;
   --glow: none;
   --radius: 6px;
   --radius-lg: 12px;
@@ -381,24 +396,25 @@
 
 :root[data-theme="wow"] {
   /* World of Warcraft — gold lettering on Alliance blue / dark parchment */
-  --bg-base: #14100a;
-  --bg-top: #1c1810;
-  --bg-sidebar: #0f0c08;
-  --bg-panel: #1a140d;
-  --bg-item-hover: #2a2114;
-  --bg-item-active: #34291a;
-  --bg-input: #1f1810;
-  --border: #4a3c1f;
-  --border-strong: #c8a44e;
-  --text-primary: #f8edc6;
-  --text-secondary: #e0c368;
-  --text-dim: #b69d55;
+  --bg-base: #17130d;
+  --bg-top: #231f19;
+  --bg-sidebar: #1f1b15;
+  --bg-panel: #231f19;
+  --bg-item-hover: #2e2923;
+  --bg-item-active: #39342d;
+  --bg-input: #110d08;
+  --border: #4d4841;
+  --border-strong: #959089;
+  --text-primary: #eae1d4;
+  --text-secondary: #cec5b8;
+  --text-dim: #988f83;
   --accent: #c8a44e;
-  --accent-hover: #e8c46e;
-  --accent-soft: rgba(200, 164, 78, 0.18);
-  --success: #7a9e3f;
-  --warning: #c8a44e;
-  --danger: #b32d2d;
+  --accent-hover: #deba64;
+  --accent-soft: color-mix(in srgb, #c8a44e 16%, transparent);
+  --accent-fg: #482900;
+  --success: #58a45c;
+  --warning: #dd985c;
+  --danger: #ff9c8d;
   --glow: 0 0 8px rgba(200, 164, 78, 0.35);
   --text-glow: 0 0 4px rgba(232, 196, 110, 0.55), 0 0 8px rgba(232, 196, 110, 0.25);
   --text-stroke: 0.5px;
@@ -410,24 +426,25 @@
 
 :root[data-theme="lol"] {
   /* League of Legends — Runeterra midnight gold on hextech blue */
-  --bg-base: #0a0a14;
-  --bg-top: #0f1428;
-  --bg-sidebar: #07070d;
-  --bg-panel: #101426;
-  --bg-item-hover: #1a2042;
-  --bg-item-active: #232a55;
-  --bg-input: #0f1428;
-  --border: #1f2548;
-  --border-strong: #c8aa6e;
-  --text-primary: #f0ebd6;
-  --text-secondary: #e0c890;
-  --text-dim: #a79db8;
+  --bg-base: #12121c;
+  --bg-top: #1e1e29;
+  --bg-sidebar: #1a1a25;
+  --bg-panel: #1e1e29;
+  --bg-item-hover: #292934;
+  --bg-item-active: #33343f;
+  --bg-input: #0d0d17;
+  --border: #474756;
+  --border-strong: #8e8f9e;
+  --text-primary: #e0e1f0;
+  --text-secondary: #c4c5d4;
+  --text-dim: #8f8f9d;
   --accent: #c8aa6e;
-  --accent-hover: #e8c886;
-  --accent-soft: rgba(200, 170, 110, 0.16);
-  --success: #7fb069;
-  --warning: #c8aa6e;
-  --danger: #c83a3a;
+  --accent-hover: #dec083;
+  --accent-soft: color-mix(in srgb, #c8aa6e 16%, transparent);
+  --accent-fg: #442b00;
+  --success: #72b274;
+  --warning: #d99f7b;
+  --danger: #ff9c8d;
   --glow: 0 0 10px rgba(120, 90, 200, 0.4);
   --text-glow: 0 0 4px rgba(200, 170, 110, 0.5), 0 0 8px rgba(120, 90, 200, 0.3);
   --text-stroke: 0.5px;
@@ -439,24 +456,25 @@
 
 :root[data-theme="pubg"] {
   /* PUBG — military olive/tan on charcoal */
-  --bg-base: #2a2a26;
-  --bg-top: #2f2f2b;
-  --bg-sidebar: #1f1f1c;
-  --bg-panel: #33332e;
-  --bg-item-hover: #3d3d36;
-  --bg-item-active: #45453e;
-  --bg-input: #2f2f2b;
-  --border: #4a4a44;
-  --border-strong: #8b7e5e;
-  --text-primary: #f0ebdd;
-  --text-secondary: #c4b68d;
-  --text-dim: #8f8872;
+  --bg-base: #141410;
+  --bg-top: #20201c;
+  --bg-sidebar: #1c1c18;
+  --bg-panel: #20201c;
+  --bg-item-hover: #2a2a26;
+  --bg-item-active: #353531;
+  --bg-input: #0e0e0b;
+  --border: #474742;
+  --border-strong: #91918c;
+  --text-primary: #e4e4d5;
+  --text-secondary: #c8c8b9;
+  --text-dim: #929284;
   --accent: #b8a06e;
-  --accent-hover: #d0b78a;
-  --accent-soft: rgba(184, 160, 110, 0.18);
-  --success: #8aa84a;
-  --warning: #d8a04a;
-  --danger: #c84a3a;
+  --accent-hover: #ceb683;
+  --accent-soft: color-mix(in srgb, #b8a06e 16%, transparent);
+  --accent-fg: #412c00;
+  --success: #65af68;
+  --warning: #e39856;
+  --danger: #ff9c8d;
   --glow: none;
   --text-glow: 0 0 3px rgba(220, 205, 165, 0.4), 0 0 6px rgba(0, 0, 0, 0.35);
   --text-stroke: 0.5px;
@@ -1724,11 +1742,14 @@ textarea {
   background: rgba(128, 128, 128, 0.28);
 }
 .window-controls button.close:hover {
-  background: #e5484d;
+  /* Windows 关闭键的平台约定红（不随主题变）：色值由 chroma 按 MD3 的 on-color 判据推出来的，
+     白字压原色 #e5484d 只有 3.91:1（不达标），压到 tone 51 后 4.70:1。
+     变量定义在下面 `:root` 里；守卫测试断言它与白字 ≥ 4.5:1。 */
+  background: var(--window-close);
   color: #fff;
 }
 .window-controls button.close:active {
-  background: #c93a3f;
+  background: var(--window-close-active);
   color: #fff;
 }
 
@@ -1783,15 +1804,17 @@ textarea {
 .sidebar-toggle-btn:hover,
 .sidebar-toggle-btn:focus-visible {
   background: var(--accent);
-  color: #fff;
-  box-shadow: 0 0 12px rgba(255, 224, 130, 0.5);
+  /* accent 底上的文字色由配色生成器算（见 scripts/lib/staticThemes.mjs 的 --accent-fg）：
+     白字够读才是白字，不够就是"同色相压暗"的深色 —— 卡通那套亮橙就是后者。 */
+  color: var(--accent-fg, #fff);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 50%, transparent);
   border-color: var(--accent);
 }
-/* 抽屉展开时的激活态：按钮背景用 accent、文字白色、发光增强，
+/* 抽屉展开时的激活态：按钮背景用 accent、文字用 accent 的对比色、发光增强，
    与"收起态"的 accent-soft 暖金字形成明显区别，让用户一眼看出当前是开/关。 */
 .sidebar-toggle-btn.open {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-fg, #fff);
   border-color: var(--accent);
   box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent);
 }
@@ -2233,19 +2256,6 @@ textarea {
   background: var(--accent-soft);
   color: var(--accent-hover);
 }
-.level-badge.level-1 {
-  background: rgba(231, 57, 70, 0.16);
-  color: #e63946;
-}
-.level-badge.level-2 {
-  background: rgba(244, 162, 97, 0.2);
-  color: #d97742;
-}
-.level-badge.level-3 {
-  background: rgba(42, 157, 143, 0.18);
-  color: #2a9d8f;
-}
-
 /* Top panel (toolbar) */
 .toolbar {
   height: 36px;
@@ -2753,7 +2763,9 @@ textarea {
 /* 主按钮跟随主题强调色（原来是写死的绿色，换了主题就出戏）。 */
 .cover-btn.play {
   background: var(--accent);
-  color: var(--primary-foreground, #fff);
+  /* accent 底上的文字色：一套变量管两边 —— 静态主题由生成器写进 CSS，
+     运行时配色库由 applyPaletteTheme 注入（见 src/utils/themeApply.ts 的 ACCENT_FG_VAR）。 */
+  color: var(--accent-fg, #fff);
   border: 1px solid color-mix(in srgb, var(--accent) 70%, #000);
 }
 .cover-btn.play:hover {
@@ -3270,7 +3282,7 @@ textarea {
 }
 .details-view .play-btn {
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-fg, #fff);
   padding: 10px 26px;
   border-radius: var(--radius);
   font-size: 14px;
@@ -3366,7 +3378,7 @@ textarea {
 .btn.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--accent-fg, #fff);
 }
 .btn.primary:hover {
   background: var(--accent-hover);
@@ -3841,11 +3853,12 @@ textarea {
   box-shadow: var(--hairline-cover, inset 0 0 0 1px var(--hairline));
 }
 :root[data-theme="cyberpunk"] .grid-card.selected .cover {
-  box-shadow: 0 0 16px rgba(0, 240, 255, 0.6);
+  /* 光晕由 accent 现推，不写死——写死的那个值改主题时会与 accent 脱钩 */
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 60%, transparent);
 }
 :root[data-theme="cyberpunk"] .group-header {
   color: var(--accent);
-  text-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+  text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
 }
 
 /* Top panel / title bar subtle tint for cartoon */
@@ -3858,80 +3871,72 @@ textarea {
   border-radius: var(--radius-lg);
 }
 
-/* Scrollbar accent per theme */
-:root[data-theme="cyberpunk"] ::-webkit-scrollbar-thumb {
-  background: #2f3f6b;
-}
-:root[data-theme="cartoon"] ::-webkit-scrollbar-thumb {
-  background: #eab884;
-}
-:root[data-theme="memphis"] ::-webkit-scrollbar-thumb {
-  background: #ffab70;
-}
-:root[data-theme="neumorphism"] ::-webkit-scrollbar-thumb {
-  background: #b9c4d6;
-}
-:root[data-theme="comic"] ::-webkit-scrollbar-thumb {
-  background: #f2d479;
-}
-:root[data-theme="ghibli"] ::-webkit-scrollbar-thumb {
-  background: #c3caa4;
-}
-:root[data-theme="chinese"] ::-webkit-scrollbar-thumb {
-  background: #c8a24b;
-}
+/* 滚动条：**不再按主题各写一条**。
+   上面那条通用规则（color-mix(text-primary 18%)）本来就跟随主题 —— 它当年加进来
+   就是为了干掉"硬编码的蓝色滑块"，而这 7 条是同一件事的第二批，属于历史遗留：
+   手挑的色值与主题生成器无关，改主题时它们不会跟着动。已删除（2026-09-18）。 */
 
 /* ---- Per-theme cover card polish ---- */
 
-/* Neumorphism: soft extruded cover cards */
+/* Neumorphism: soft extruded cover cards
+   双色阴影原来写死 #c4cddb / #ffffff —— 改成从主题表面推导：
+   暗侧 = 表面混一点主文字色（≈深一档），亮侧 = --bg-input（亮色主题下它正是纯白）。 */
 :root[data-theme="neumorphism"] .grid-card .cover {
-  box-shadow: 8px 8px 16px #c4cddb, -8px -8px 16px #ffffff;
+  box-shadow:
+    8px 8px 16px color-mix(in srgb, var(--bg-base) 86%, var(--text-primary)),
+    -8px -8px 16px var(--bg-input);
   border-color: transparent;
 }
 :root[data-theme="neumorphism"] .sidebar-panel,
 :root[data-theme="neumorphism"] .topbar {
-  box-shadow: 4px 4px 12px #c4cddb, -4px -4px 12px #ffffff;
+  box-shadow:
+    4px 4px 12px color-mix(in srgb, var(--bg-base) 86%, var(--text-primary)),
+    -4px -4px 12px var(--bg-input);
 }
 
-/* Comic: bold pop-art outlines + halftone accents */
+/* Comic: bold pop-art outlines + halftone accents
+   墨线（#2b2d42）与红（#e63946）都改用主题令牌：前者就是这套配色的深墨主文字色，后者就是 accent。 */
 :root[data-theme="comic"] .grid-card .cover {
-  border: 3px solid #2b2d42;
+  border: 3px solid var(--text-primary);
   border-radius: 0;
-  box-shadow: 4px 4px 0 rgba(43, 45, 66, 0.9);
+  box-shadow: 4px 4px 0 color-mix(in srgb, var(--text-primary) 90%, transparent);
 }
 :root[data-theme="comic"] .group-header {
   font-family: "Impact", "Microsoft YaHei", sans-serif;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: #e63946;
-  text-shadow: 1px 1px 0 #2b2d42;
+  color: var(--accent);
+  text-shadow: 1px 1px 0 var(--text-primary);
 }
 :root[data-theme="comic"] .btn.primary {
-  border: 2px solid #2b2d42;
-  box-shadow: 3px 3px 0 #2b2d42;
+  border: 2px solid var(--text-primary);
+  box-shadow: 3px 3px 0 var(--text-primary);
 }
 
-/* Memphis: playful dots behind content areas */
+/* Memphis: playful dots behind content areas
+   两个图案色 = accent（粉红）+ --accent-alt（蓝，由生成器从原种子推导）。 */
 :root[data-theme="memphis"] .content {
-  background-image: radial-gradient(rgba(255, 77, 109, 0.12) 1.2px, transparent 1.2px),
-    radial-gradient(rgba(67, 97, 238, 0.12) 1.2px, transparent 1.2px);
+  background-image: radial-gradient(color-mix(in srgb, var(--accent) 12%, transparent) 1.2px, transparent 1.2px),
+    radial-gradient(color-mix(in srgb, var(--accent-alt, var(--accent)) 12%, transparent) 1.2px, transparent 1.2px);
   background-size: 22px 22px, 22px 22px;
   background-position: 0 0, 11px 11px;
 }
 
 /* Chinese: subtle paper grain + ink-red group headers */
 :root[data-theme="chinese"] .group-header {
-  color: #9e1b32;
+  color: var(--accent);
   font-weight: 700;
 }
 :root[data-theme="chinese"] .content {
-  background-image: radial-gradient(rgba(158, 27, 50, 0.05) 0.8px, transparent 0.8px);
+  background-image: radial-gradient(color-mix(in srgb, var(--accent) 5%, transparent) 0.8px, transparent 0.8px);
   background-size: 9px 9px;
 }
 
 /* Ghibli: soft round covers with gentle warmth */
 :root[data-theme="ghibli"] .grid-card .cover {
-  box-shadow: inset 0 0 0 1px rgba(109, 154, 94, 0.2), 0 4px 14px rgba(130, 150, 90, 0.25);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent),
+    0 4px 14px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 /* ---------- Login screen ---------- */
 .login-screen {
@@ -4297,7 +4302,8 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0d1117;
+  /* 跟随主题（公告窗会拿到注入的主题变量；没有变量时兜底值与原写死的 #0d1117 一致） */
+  background: var(--bg-base, #0d1117);
   overflow: hidden;
 }
 .announcement-window .announcement-card {
@@ -4375,7 +4381,7 @@ textarea {
   font-weight: 800;
   line-height: 1.15;
   letter-spacing: 0.08em;
-  color: #fff;
+  color: var(--text-primary, #fff); /* 同上：写死 #fff 会让浅色配色下的标题直接消失 */
   text-shadow: 0 0 28px color-mix(in srgb, var(--danger, #e5484d) 55%, transparent);
 }
 .ann-block-body {
@@ -4385,9 +4391,46 @@ textarea {
   line-height: 1.75;
   color: rgba(255, 255, 255, 0.86);
 }
-/* 被拦住时的"退出"按钮：与"进入系统"同形，改成警示色 */
+/* 被拦住时的"退出"按钮：与"进入系统"同形，改成警示色。
+   animation: none —— 主按钮那条呼吸光晕（.ann-enter-btn 的 annEnterGlow）动的是 box-shadow，
+   动画会盖掉这里没有写的 box-shadow，不关掉的话红色按钮外面会闪一圈蓝光。 */
 .ann-enter-btn.ann-exit-btn {
+  animation: none;
   background: color-mix(in srgb, var(--danger, #e5484d) 70%, #000);
+}
+/* 正常进入时的「取消进入」：**次要按钮** —— 透明底 + 描边 + 小一号字，
+   不跟"进入系统"抢注意力（那圈荧光是留给主操作按钮的）。
+   选择器带两个 class，特异性高于下面那条 .ann-enter-btn，不依赖书写顺序。
+   2026-09-18 用户要求：它**靠右**，"进入系统"要**严格居中** —— 所以这里用绝对定位把它
+   移出文档流（父级 .announcement-footer 已经是 position: relative）：于是居中计算里
+   只剩"进入系统"一个元素，主按钮才落在正中间；留在文档流里的话它会被这个按钮挤偏半个身位。 */
+.ann-enter-btn.ann-quit-btn {
+  animation: none;          /* 同上：不加会被主按钮的呼吸光晕带上 */
+  font-size: 14px;          /* 主按钮已经 16px，次要的压回 14px 才有主次 */
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 0;
+  padding: 11px 22px;
+  border-color: var(--border-strong, rgba(255, 255, 255, 0.28));
+  background: color-mix(in srgb, var(--text-primary, #fff) 8%, transparent);
+  color: var(--text-secondary, rgba(255, 255, 255, 0.86));
+  font-weight: 500;
+  letter-spacing: 1px;
+  box-shadow: none;
+}
+.ann-enter-btn.ann-quit-btn:hover {
+  filter: none;
+  background: color-mix(in srgb, var(--text-primary, #fff) 16%, transparent);
+  box-shadow: none;
+}
+/* 按下时的垂直居中靠上面那句 translateY(-50%) 撑着，这里必须原样写回去：
+   通用规则 .ann-enter-btn:active { transform: translateY(1px) } 写在后面、权重相同，
+   不覆盖的话按钮一按下就往上跳半个高度。 */
+.ann-enter-btn.ann-quit-btn:active {
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .announcement-body {
@@ -4452,7 +4495,7 @@ textarea {
 .announcement-content h1 { font-size: 24px; }
 .announcement-content h2 { font-size: 19px; }
 .announcement-content p { margin: 0 0 12px; }
-.announcement-content a { color: var(--accent-hover, #4d94ff); }
+.announcement-content a { color: var(--accent-hover, #3687ff); }
 .announcement-content code {
   background: var(--bg-input, rgba(0,0,0,0.3));
   padding: 2px 6px;
@@ -4465,15 +4508,18 @@ textarea {
 .announcement-hero { text-align: center; padding: 8px 0 4px; }
 .announcement-badge {
   display: inline-block;
-  background: linear-gradient(90deg, #ff5c5c, #ff9d2e);
-  color: #fff;
+  /* 原来是"红→橙"写死渐变 + 白字：白压在 #ff9d2e 上只有 2.06:1（几乎看不清）。
+     改成跟随主题：底色 accent、文字用生成器算的 on-color（--accent-fg），
+     在任何配色下都达标；而且换主题时它跟着变，不再是"永远是那个红"。 */
+  background: var(--accent, #1d71ea);
+  color: var(--accent-fg, #fff);
   font-weight: 700;
   font-size: 12px;
   letter-spacing: 1px;
   padding: 4px 12px;
   border-radius: 999px;
   margin-bottom: 14px;
-  box-shadow: 0 4px 18px rgba(255, 92, 92, 0.5);
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--accent, #1d71ea) 50%, transparent);
   animation: announcePulse 1.6s ease-in-out infinite;
 }
 @keyframes announcePulse {
@@ -4481,37 +4527,104 @@ textarea {
   50% { transform: scale(1.06); }
 }
 .announcement-hero h1 span {
-  background: linear-gradient(90deg, var(--accent-hover, #4d94ff), #ff5ce1);
+  /* 原先右端写死 #ff5ce1（洋红），与主题无关 —— 改成 accent-hover → 第二图案色（没有就用 accent） */
+  background: linear-gradient(
+    90deg,
+    var(--accent-hover, #3687ff),
+    var(--accent-alt, var(--accent, #1d71ea))
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+/* 分节小标题：「界面增强」「功能增强」—— 保持**居中**，两侧各一条渐隐细线。
+   （2026-09-18 用户澄清："界面增强、功能增强还是居中的，只是列表的内容左对齐"。） */
+.announcement-hero .ann-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--accent-hover, #3687ff);
+  animation: announceItemIn 0.45s ease-out backwards;
+}
+.announcement-hero .ann-section::before,
+.announcement-hero .ann-section::after {
+  content: "";
+  flex: 1 1 auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--border-strong, rgba(255, 255, 255, 0.22)),
+    transparent
+  );
+}
+/* 列表：序号徽标 —— 用 CSS 计数器自动编号，公告正文里不用自己写 1/2/3。
+   counter-reset 放在 ul（不是 hero）上：公告分「界面增强」「功能增强」两节，
+   **每节各自从 1 重新开始数**（要改回跨节连着数，把它挪到 .announcement-hero 上即可）。
+   2026-09-18 用户要求"列表的内容加点 padding、左对齐"：
+   块从 inline-block 换成 block —— inline-block 会跟着 hero 的 text-align: center 整块居中，
+   左边空一大截；block 占满整行、文字自然靠左，再给整块加左内边距，编号不贴着内容区边缘。 */
 .announcement-hero ul {
+  counter-reset: ann-item;
+  display: block;
+  text-align: left;
   list-style: none;
-  padding: 0;
-  margin: 18px 0;
+  padding: 0 0 0 14px;
+  margin: 10px 0 4px;
 }
 .announcement-hero li {
-  margin: 8px 0;
+  counter-increment: ann-item;
   position: relative;
-  padding-left: 24px;
+  margin: 11px 0;
+  padding-left: 46px;   /* 编号徽标 26px + 与文字之间的间距（原 40px，这次加了点 padding） */
+  line-height: 1.6;
+  animation: announceItemIn 0.45s ease-out backwards;
 }
 .announcement-hero li::before {
-  content: "✦";
+  content: counter(ann-item);
   position: absolute;
-  left: 4px;
-  color: var(--accent-hover, #4d94ff);
-  animation: announceSpin 6s linear infinite;
+  left: 0;
+  top: 0.05em;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-fg, #fff);
+  background: var(--accent, #1d71ea);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--accent, #1d71ea) 45%, transparent);
 }
-@keyframes announceSpin {
-  to { transform: rotate(360deg); }
+/* 条目逐条淡入：开屏那一下别整块"啪"地出现 */
+@keyframes announceItemIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
 }
+.announcement-hero li:nth-child(1) { animation-delay: 0.05s; }
+.announcement-hero li:nth-child(2) { animation-delay: 0.12s; }
+.announcement-hero li:nth-child(3) { animation-delay: 0.19s; }
+.announcement-hero li:nth-child(4) { animation-delay: 0.26s; }
+.announcement-hero li:nth-child(5) { animation-delay: 0.33s; }
+.announcement-hero li:nth-child(6) { animation-delay: 0.4s; }
+/* 底部那行**当前时间**：留空的 .hint 由组件填入（见 AnnouncementWindow 的 AnnouncementClock），
+   在里面写了字就显示你写的字。 */
 .announcement-hero .hint {
-  margin-top: 18px;
-  font-size: 12px;
+  margin-top: 22px;
+  padding-top: 14px;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  font-variant-numeric: tabular-nums;   /* 秒数跳动时数字不左右抖 */
   color: var(--text-dim, #667080);
   border-top: 1px dashed var(--border, #2e3540);
-  padding-top: 12px;
+  /* 空着的时候也占一行的高度：这行是由组件填的（当前时间），不预留的话
+     "空 → 填上"那一下会把正文高度顶高一行，自动适配就会量歪。 */
+  min-height: 1.7em;
 }
 
 /* ================= 公告异形窗口（真·透明抠图样式） =================
@@ -4532,7 +4645,10 @@ textarea {
   user-select: none;
 }
 
-/* 内容区：公告滚动，占满面板中部 */
+/* 内容区：公告滚动，占满面板中部。
+   高度不用手算：正文由 AnnouncementWindow 的 useFitAnnouncement 量出
+   "自然高度 ÷ 可视高度"后自动缩放（2026-09-18 用户要求："不要算，而要整个页面自动适合"），
+   所以这里的 padding 保持原样即可 —— 以后改公告内容不用回来调数值。 */
 .announcement-body {
   position: relative;
   flex: 1 1 auto;
@@ -4547,9 +4663,13 @@ textarea {
   overflow-y: auto;
   padding-right: 8px;
 }
-/* 公告富文本排版 */
+/* 公告富文本排版
+   ⚠️ 正文颜色**必须走主题变量**：这里曾经写死 #e6e9ee（浅色字），那是当初只为暗色主题调的，
+   于是换到「新拟态」这类浅色配色时，整段公告是"浅字压浅底" —— 一个字都看不清
+   （2026-09-18 用户实测："用的新拟态这种主体，为什么公告的字都是看不清楚的颜色？"）。
+   兜底值保留原来的浅色：万一某个配色没定义 --text-primary，暗色下观感不变。 */
 .ann-html {
-  color: #e6e9ee;
+  color: var(--text-primary, #e6e9ee);
   font-size: 14px;
   line-height: 1.7;
 }
@@ -4561,7 +4681,7 @@ textarea {
 .ann-html h1 { font-size: 24px; }
 .ann-html h2 { font-size: 19px; }
 .ann-html p { margin: 0 0 12px; }
-.ann-html a { color: #4d94ff; }
+.ann-html a { color: var(--accent-hover, #3687ff); } /* 同上：链接色也跟主题走 */
 .ann-html code {
   background: rgba(0, 0, 0, 0.3);
   padding: 2px 6px;
@@ -4577,6 +4697,7 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 14px;
   padding: 18px 0 22px;
   z-index: 3;
 }
@@ -4584,22 +4705,32 @@ textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 150px;
-  padding: 11px 32px;
-  border: 1px solid rgba(120, 180, 255, 0.6);
+  min-width: 220px;         /* 2026-09-18 用户要求"再宽一些"，原来 150px */
+  padding: 13px 44px;       /* 顺手加高，更好按（原来 11px 32px） */
+  /* 原来写死"蓝→紫"渐变 + 白字（白压 #2d7ff9 只有 3.6:1，不达标）。
+     改成跟随主题：底色 accent、文字 on-color、描边与光晕由 accent 派生。 */
+  border: 1px solid color-mix(in srgb, var(--accent, #1d71ea) 60%, transparent);
   border-radius: 999px;
-  background: linear-gradient(90deg, #2d7ff9, #5b5bf0);
-  color: #fff;
-  font-size: 15px;
+  background: var(--accent, #1d71ea);
+  color: var(--accent-fg, #fff);
+  font-size: 16px;          /* 原来 15px */
   font-weight: 600;
-  letter-spacing: 2px;
+  letter-spacing: 3px;      /* 原来 2px */
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(45, 127, 249, 0.4);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent, #1d71ea) 40%, transparent);
   transition: filter 0.15s, transform 0.15s, box-shadow 0.2s;
+  /* 呼吸光晕：用户要求主按钮"明显一些"。
+     ⚠️ 它动的是 box-shadow —— 次要按钮（.ann-quit-btn）和门禁按钮（.ann-exit-btn）
+     都用 animation: none 关掉了，否则会跟着一起呼吸。 */
+  animation: annEnterGlow 2.6s ease-in-out infinite;
+}
+@keyframes annEnterGlow {
+  0%, 100% { box-shadow: 0 8px 24px color-mix(in srgb, var(--accent, #1d71ea) 40%, transparent); }
+  50% { box-shadow: 0 12px 40px color-mix(in srgb, var(--accent, #1d71ea) 78%, transparent); }
 }
 .ann-enter-btn:hover {
   filter: brightness(1.12);
-  box-shadow: 0 10px 30px rgba(45, 127, 249, 0.55);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--accent, #1d71ea) 55%, transparent);
 }
 .ann-enter-btn:active { transform: translateY(1px); }
 
@@ -4796,13 +4927,16 @@ textarea {
   gap: 8px;
   border: none;
   border-radius: 24px;
-  background: linear-gradient(90deg, #3ecf8e, #2fb8a0);
-  color: #06231a;
+  /* 原来是写死的绿色渐变 + 深色字（可读，但**与主题无关**）——
+     同一个页面上的 `.details-view .play-btn` 走的是 var(--accent)，两个"播放"按钮两套取色。
+     现在统一跟随主题（详情页的 HTML 由服务器注入主题变量，见 electron/core/detailTheme.ts）。 */
+  background: var(--accent, #1d71ea);
+  color: var(--accent-fg, #fff);
   font-weight: 700;
   font-size: 15px;
   padding: 10px 28px;
   cursor: pointer;
-  box-shadow: 0 6px 20px rgba(62, 207, 142, 0.4);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--accent, #1d71ea) 40%, transparent);
   transition: transform 0.15s, filter 0.15s;
 }
 .detail-play:hover {
@@ -4873,29 +5007,6 @@ textarea {
   height: calc(100vh - 56px);
   color: var(--text-secondary);
   font-size: 14px;
-}
-.detail-404 {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: calc(100vh - 56px);
-  color: var(--text-color);
-  gap: 6px;
-  padding: 0 24px;
-  text-align: center;
-}
-.detail-404-code {
-  font-size: 72px;
-  font-weight: 800;
-  color: var(--accent-color, #3b82f6);
-  line-height: 1;
-  margin-bottom: 8px;
-}
-.detail-404 p { margin: 0; }
-.detail-404-hint {
-  font-size: 13px;
-  color: var(--text-secondary);
 }
 .detail-gallery {
   display: grid;
@@ -5023,8 +5134,8 @@ textarea {
 .designer-chip.active {
   background: var(--accent);
   border-color: var(--accent);
-  color: var(--text-primary);
-  color: #fff;
+  /* 原先是两行 color（--text-primary 紧接着被 #fff 覆盖）= 一句死代码，顺手删掉 */
+  color: var(--accent-fg, #fff);
 }
 
 /* ================= 社区氛围 ================= */
@@ -5046,8 +5157,9 @@ textarea {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 5px rgba(34, 197, 94, 0.8);
+  /* "在线"= 语义色 success，跟着主题走（原来写死 #22c55e） */
+  background: var(--success);
+  box-shadow: 0 0 5px color-mix(in srgb, var(--success) 80%, transparent);
 }
 .who-online-list {
   display: flex;
@@ -5181,7 +5293,7 @@ textarea {
 .crash-icon {
   font-size: 40px;
   line-height: 1;
-  color: #e74856;
+  color: var(--danger);
 }
 .crash-title {
   font-size: 18px;
@@ -5253,7 +5365,7 @@ textarea {
 .crash-btn-primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--accent-fg, #fff);
 }
 .crash-btn:disabled {
   opacity: 0.5;

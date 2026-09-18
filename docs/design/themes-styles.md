@@ -87,6 +87,94 @@
 | `body.theme-reactbits`（global.css L390-418） | 光晕动态**背景**挂在"主题"下 | 属于"背景效果"，应归入配色/背景层，不与形状主题耦合 |
 | `fx` 里的 `cyber` / `neon` 等 | 部分 fx 在 global.css 里可能带霓虹等**颜色效果** | fx 只保留形状/质感/动效，颜色一律走 `var(--accent)` 派生 |
 
+### 2.3.1 配色的生成与修复：MD3 色调体系（脚本基线）
+
+2026-09-18 起，配色的**推导与修复**统一走 `scripts/lib/md3Color.mjs`：chroma-js + Material Design 3
+的 tonal（色调）体系。判据不是眼睛，是 **tone** —— MD3 的 CIE L*（0 = 纯黑，100 = 纯白），
+配合 MD3 的角色对照表 `ROLE_TONES`（表面 6/98、主色 80/40、正文 90/10、outline 60/50 …）。
+
+**为什么换掉旧做法**：`fix-contrast.mjs` 原来修对比度是"RGB 三通道每步各 ±2 硬拖"，
+**不保色相** —— 酒红被拖成灰粉、金色被拖成土黄，越修越脏。"不合适"多半就是这么来的。
+现在改色只走 tone：色相与彩度原样带着走（色域装不下时保色相、退彩度）。
+
+| 工具 | 干什么 |
+| --- | --- |
+| `scripts/lib/md3Color.mjs` | 引擎：tone ↔ OKLCH 换算、保色相的色调调整、色域映射、**最小改动**的对比度达标、MD3 角色 tone 对照表、语义色固定色相 |
+| `scripts/fix-contrast.mjs` | 修 `themeLibrary.ts`：① 文字可读性 ② 语义色撞车归位 ③ 边框色调间距 ④ MD3 角色偏离（只提示）。默认空跑，`--apply` 才写，`--only p-xxx` 只处理一个配色 |
+| `scripts/contrast-audit.mjs` | 只读审计（老工具，仍在） |
+| `scripts/lib/md3Color.test.mjs` | 引擎测试：锁住"改 tone 保色相""修对比度刚好够"等性质，`npm test` 会跑 |
+
+**一次修复的战果**（2026-09-18）：扫描 43 个配色，改 **78 处 / 32 个配色**（`npm run check` 的对比度守卫全过）。
+例：twitter 的 `textDim` 1.89:1 → 3.07:1、`textSecondary` 2.98 → 4.12；
+赛博朋克的 `primaryForeground`（白字压在亮青按钮上，旧脚本判"无解"直接跳过）改成深色后 3.45 → 4.61。
+
+> **别再改回去的地方**：旧写回方式是 `src.split(/id:\s*"([^"]+)"/)` 再 `join("")` ——
+> split 会把 `id: "` 和结尾那个 `"` 一并吃掉，join 回去就成 `p-playnite,`，**直接把文件写成语法错误**
+> （2026-09-18 踩过，靠 `npm run check` 抓到）。现在改为**按 id 锚定的原地替换**，见该脚本注释。
+
+#### 静态主题（`global.css` 的 11 套）也走同一套引擎
+
+之前这批是**手写色值**（"待收敛"），2026-09-18 起改成**由生成器推导**：
+`scripts/lib/staticThemes.mjs`，CLI 是 `scripts/gen-static-themes.mjs`（`npm run themes:gen` / `npm run themes:audit`）。
+覆盖 `default`（裸 `:root`，首启动那套）+ 卡通 / 赛博朋克 / 孟菲斯 / 新拟态 / 美漫 / 吉卜力 / 中国风 / 魔兽 / LOL / PUBG。
+
+推导规则一句话：**色相与彩度保留（那是每套主题的性格），只把 tone 对齐 MD3 角色表**。
+
+- **表面**（`--bg-*`）由该主题自己的 `--bg-base` 派生：同色相、极低彩度（MD3 的 neutral），
+  只换 tone —— 于是"表面层级"（base 98 / panel 94 / hover 90 / active 86，暗色 6/12/17/22）
+  在任何主题下都一致，不再各写各的；
+- **文字**保留各自的"暖墨 / 冷墨"，只对齐 tone（正文 90·10、次要 80·30、提示 60·46）；
+- **accent 一般不碰**；只有它被当**文字**用时（如 `.group-header { color: var(--accent) }`）
+  才按最小改动挪 tone 到 4.5:1 —— 这一条是**自动探测**的（扫文件里有没有这种用法），不用维护名单；
+- **语义色**（成功 / 警告 / 危险）也是"够好就不动"：只有当它在背景上读不清、或与品牌色
+  ΔE < 12（分不出来）时才归位 MD3 固定色相（145° / 85° / 29°）并挪开色相。
+
+派生出来的变量：
+
+| 变量 | 是什么 | 怎么算 |
+| --- | --- | --- |
+| `--accent-fg` | **accent 底上的文字色**（MD3 的 on-primary） | 白字 ≥ 4.5:1 就用白字；否则"同色相压暗"到刚好达标（`fitTone`，不把品牌色改浅） |
+| `--accent-alt` | 第二个图案色（目前只有孟菲斯用） | 从原种子推导，只对齐 tone |
+
+> **`--accent-fg` 是"静态主题"与"运行时配色库"共用的同一个变量名。**
+> 静态主题由生成器写进 CSS；运行时配色库（96 套）由 `applyPaletteTheme()` 注入
+> （值 = 它自己的 `primaryForeground`）。**别再用 `--primary-foreground`** ——
+> `tokens.css` 在 `:root` 里给了它 `#ffffff` 兜底，会让"白字压在亮 accent 上"这件事
+> 在静态主题下永远改不动（2026-09-18 实测）。
+
+**改造前实测出来的问题**（`npm run themes:audit` 的判据 = 文字读得清 / 按钮字压得住 / 边框看得见 / 语义色分得开）：
+
+| 问题 | 例子 |
+| --- | --- |
+| **白字压在亮 accent 上读不清** —— `.btn.primary` 等 7 处写死 `color: #fff`，**10 套里 9 套不达标**，最差 1.41:1 | 赛博朋克 `#00f0ff`、卡通 `#fc8759`、魔兽 / LOL / PUBG 的金 |
+| 边框与表面只差 3~5 个 tone（屏幕上那条线直接消失） | 孟菲斯、卡通、赛博朋克 |
+| `warning` 写成近白色（tone 96）、或干脆与品牌色同值（"警告"和"品牌色"混成一片） | 赛博朋克 `#ffefcd`；魔兽 / LOL / PUBG 的金 |
+| 7 条主题专属滚动条滑块是手挑色值（与主题生成器无关，改配色时不会跟着动） | cyberpunk / cartoon / memphis / comic / ghibli / chinese —— **已删除**：上面那条通用规则本来就跟随主题 |
+
+> **别手改色值**：`scripts/lib/staticThemes.test.mjs` 断言"文件内容 = 生成器的输出"。
+> 手改的那一处下一轮生成就会被抹掉、并且当场测试失败。要调配色 → 改生成器（或它的种子）→ `npm run themes:gen`。
+>
+> **同理别在"主题专属修饰"段里写色值**：那一段（`global.css` 靠后的 `:root[data-theme=…] .xxx`）
+> 原来还写死了二十来个 hex（墨线、图案色、光晕、新拟态阴影 …），现在全部改成 `var(--accent)` /
+> `var(--accent-alt)` / `var(--text-primary)` / `color-mix(…)` 派生 —— 主题色一变它们自动跟着变。
+
+**顺手收进主题体系的"体系外固定色"**（2026-09-18，同一轮）：
+
+| 位置 | 原来 | 现在 |
+| --- | --- | --- |
+| 公告窗徽标 `.announcement-badge` | 写死"红→橙"渐变 + 白字（白压在 `#ff9d2e` 上 **2.06:1**，几乎看不清） | `var(--accent)` + `var(--accent-fg)` |
+| 公告窗头像 / "进入系统"按钮（含呼吸光晕） | 写死"蓝→紫"渐变 + 白字（3.6:1）+ 蓝色投影 | 同上，描边与光晕由 accent 派生 |
+| 公告窗标题的渐变字 | 右端写死洋红 `#ff5ce1` | `--accent-hover` → `--accent-alt`（没有就用 accent） |
+| 详情页"开始游戏"按钮 `.detail-play` | 写死绿色渐变（与同页 `.details-view .play-btn` 的 `var(--accent)` **两套取色**） | 统一跟随主题 |
+| "在线"小圆点 / 崩溃页图标 | 写死 `#22c55e` / `#e74856` | `var(--success)` / `var(--danger)` |
+| 窗口关闭键 | 写死 `#e5484d`（白字 **3.91:1**） | `--window-close` / `--window-close-active`：**平台约定色**（不随主题变，所以没进生成器），但值仍由 chroma 按 on-color 判据推出（4.70 / 6.32:1），并由守卫测试钉住 |
+| `.level-badge.level-1/2/3` | 三个写死色 | **删除** —— 全仓搜不到这个类（死 CSS） |
+
+> **故意保留的固定色**（它们不该跟主题走）：封面上的"玻璃"次级按钮（`.cover-btn.details`，
+> 它永远落在深色封面上）、卡片文字的"暖白"默认值、分级色 `--tier-color` 的兜底、二维码的白底/黑底。
+> 另外还有一类**没动的**：`body.theme-diamond` 与 5 套 `p-grad-*` 的**渐变背景**、reactbits 的紫色光晕 ——
+> 它们是"背景方案"而不是"配色令牌"，属于 §2.3 记的另一件事。
+
 ### 2.4 游戏夜色（`p-playnite`，取材 Playnite 原版）
 
 需求原话：*"添加一种配色 playnite 的原始配色，源码里有"*。色值**逐条取自原版源码**，不靠眼睛调：
@@ -258,10 +346,14 @@
 |------|------|
 | `src/utils/styleLibrary.ts` | 主题库（**只留 apple / s2 / mechanical**） |
 | `src/utils/themeLibrary.ts` | 配色库（**全保留**） |
-| `src/styles/global.css` | `:root[data-fx=…]`（主题形状特效）、`body.theme-*`（配色变量） |
+| `src/styles/global.css` | `:root[data-fx=…]`（主题形状特效）、11 套静态配色（由生成器写）、`body.theme-*` |
 | `src/utils/themeApply.ts` | 注入应用主题变量与配色变量 |
 | `src/components/settings/ThemesSection.tsx` | 主题 + 配色选择 UI |
 | `src/main.tsx` | 启动时恢复 `themeId` / `styleId` |
+| `scripts/lib/md3Color.mjs` | MD3 色调体系引擎：tone ↔ OKLCH、保色相改 tone、色域映射、最小改动达标 |
+| `scripts/lib/staticThemes.mjs` + `scripts/gen-static-themes.mjs` | `global.css` 那 11 套静态配色的**生成器**（`npm run themes:gen` / `themes:audit`） |
+| `scripts/fix-contrast.mjs` | `themeLibrary` 的修复（对比度 / 语义色归位 / 边框色调间距） |
+| `scripts/lib/*.test.mjs` | 上述工具链的守卫测试（`npm test` 会跑） |
 
 ---
 

@@ -86,6 +86,18 @@ const KEY_TO_VAR: Record<keyof ThemePaletteTokens, string> = {
   titleColor: "--title-fill",
 };
 
+/**
+ * `--accent-fg` = **accent 底上的文字色**（MD3 的 on-primary）。
+ *
+ * 为什么需要它单独存在、而不是直接用 `--primary-foreground`：
+ *   静态主题（`global.css` 的 11 套）**没有** `--primary-foreground`（那是运行时配色库注入的），
+ *   而 `tokens.css` 在 `:root` 里给了它一个 `#ffffff` 兜底 —— 于是"白字压在亮 accent 上读不清"
+ *   这件事在静态主题下**永远回落到白字**，改不动。
+ *   所以统一成一个变量：静态主题由生成器写进 CSS（见 scripts/lib/staticThemes.mjs），
+ *   运行时配色库在这里注入（值就是它自己的 `primaryForeground`，本来就是为这个用途算的）。
+ */
+const ACCENT_FG_VAR = "--accent-fg";
+
 /** Apply a palette's tokens onto :root (documentElement inline style). */
 export function applyPaletteTheme(palette: ThemePaletteTokens): void {
   const root = document.documentElement;
@@ -100,6 +112,9 @@ export function applyPaletteTheme(palette: ThemePaletteTokens): void {
     if (!value) return;
     root.style.setProperty(KEY_TO_VAR[k], value);
   });
+  // accent 底上的文字色：做成 `--accent-fg`，与静态主题那套**同一个变量名**。
+  // 不注入时（配色没定义 primaryForeground）自然回落到 CSS 里该主题/默认的值。
+  if (palette.primaryForeground) root.style.setProperty(ACCENT_FG_VAR, palette.primaryForeground);
   // 顺手把新配色同步给主进程（详情页 HTML 注入用，见 syncDetailTheme）。
   // 刻意**不 await**：切主题本身要立刻生效，不能被一次 IPC 拖住。
   void syncDetailTheme();
@@ -138,7 +153,7 @@ export async function syncDetailTheme(): Promise<void> {
 /** Clear any runtime-injected palette (fall back to static data-theme). */
 export function clearPaletteTheme(): void {
   const root = document.documentElement;
-  (Object.values(KEY_TO_VAR)).forEach((v) => {
+  [...Object.values(KEY_TO_VAR), ACCENT_FG_VAR].forEach((v) => {
     root.style.removeProperty(v);
   });
 }
