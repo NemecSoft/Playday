@@ -138,7 +138,10 @@ export async function syncDetailTheme(): Promise<void> {
   try {
     const cs = getComputedStyle(document.documentElement);
     const vars: Record<string, string> = {};
-    for (const name of Object.values(KEY_TO_VAR)) {
+    // ⚠️ `--accent-fg` 不在 KEY_TO_VAR 里（它不是"配色库字段"，而是两边共用的派生变量），
+    // 但它必须一起送过去 —— 详情页的「选项卡选中态」等 accent 底上的文字要用它，
+    // 漏了的话那边只会拿到兜底白字（而白字压在亮 accent 上正是我们刚修掉的问题）。
+    for (const name of [...Object.values(KEY_TO_VAR), ACCENT_FG_VAR]) {
       const v = cs.getPropertyValue(name).trim();
       if (v) vars[name] = v;
     }

@@ -1,0 +1,351 @@
+/* ============================================================
+   游戏详情页 · 共用样式（生成页专用）
+   生成器：scripts/libraryjson-generatedetailpages.mjs
+   落到：<详情根>/_shared/detail.css，页面用 ../_shared/detail.css 引用
+
+   硬约束（都来自用户原话，改之前先读这里）：
+     1. **只有一套版面**（2026-09-18 定版，用户："就按我上面的选择的设计就行啦…去掉换版面，
+        直接随机就行了"）：**上面 = 封面 + 说明**（左右分栏），**下面 = 图片 / 视频 / 其他**
+        （选项卡）。场上只有两个随机量，由 detail.js 写在这两个属性上：
+          · <html data-cover-side="left|right"> —— 封面在左还是右
+          · <html data-tabs-side="left|right">  —— 选项卡靠左还是靠右
+        类名沿用原模板的 .topbar/.container/.hero/.section/.tag/.desc/.gallery/.footer ——
+        electron/core/detailTheme.ts 的颜色覆盖与 gameDetailInject.ts 的视频区块都认这些名字。
+        ⚠️ 曾经有 7 套候选版面（上下通排 / 海报式 / 沉浸式 / 资料页 / 选项卡在右 …），
+           按"设计是反复造 → 验证 → 取舍"的原则**已全部删除**。别再按编号加回来：
+           要改排布就直接改下面这几条基础规则（只有一份，不会再有人去维护 7 份）。
+     2. **颜色只走变量** var(--主题变量, 原浅色值)：注入主题后跟主界面走，没注入时退浅色。
+     3. **图片一律完整展示，绝不裁切**（2026-09-18："所有版面都要保持图片的完整展示性，
+        不要显示这样的半拉子图片"）→ 全文件不许出现 object-fit: cover。
+     4. **版面铺满左右**（2026-09-18："版面要自动扩展到左右边缘，不要左右留那么大的空隙"）
+        → 容器不再有 1080px 居中上限，只留一点随窗口缩放的左右内边距；截图墙用 auto-fill
+        自己按宽度决定列数。
+     另外：detail.js 仍会按主图宽高给 <html data-hero="wide|tall"> 打标（当前没有规则用它，
+        留着是为了以后想按横/竖版微调节奏时直接可用）。
+   ============================================================ */
+
+:root {
+  /* 铺满左右：不再用固定 max-width，内边距随窗口宽度走（小窗口 16px，宽屏最多 44px） */
+  --dp-pad: clamp(16px, 2.2vw, 44px);
+  --dp-radius: 14px;
+  --dp-gap: 18px;
+  --dp-tall-cap: 70vh; /* 横版 banner 的高度上限：竖版封面撑太高时用 contain 收缩（不裁） */
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  background: var(--bg-base, #f6f7f9);
+  color: var(--text-primary, #222);
+  line-height: 1.7;
+  overflow-y: scroll; /* 切版面时不希望滚动条闪 */
+}
+a { color: var(--accent-hover, #2b6cb0); text-decoration: none; }
+a:hover { text-decoration: underline; }
+img { max-width: 100%; }
+
+/* ---------- 顶栏 ----------
+   被嵌进应用 iframe 时整条隐藏（.dp-embedded 由 detail.js 按"是否在 iframe 里"加上）：
+   应用自己有返回按钮和游戏标签，页面再挂一条"游戏库 · 返回全部游戏"就是重复导航。
+   网站端单独打开时保留它 —— 那是唯一的返回入口。 */
+html.dp-embedded .topbar { display: none; }
+/* 顶栏只在"网站端单独打开"时可见（嵌在应用里会被 detail.js 加 .dp-embedded 藏掉），
+   文字色跟随主题，别写死白字（浅色配色下会看不见） */
+.topbar { background: var(--bg-top, #1f2937); color: var(--text-primary, #fff); padding: 10px 0; }
+.topbar-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 0 var(--dp-pad);
+  font-size: 14px;
+}
+.topbar a { color: var(--accent, #9ec5fe); }
+
+/* ---------- 容器与卡片外壳 ----------
+   .hero / .section 的底色与描边由主题注入覆盖（同名选择器、靠顺序取胜）。 */
+.container {
+  padding: 20px var(--dp-pad) 56px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--dp-gap);
+}
+.hero, .section {
+  background: var(--bg-panel, #fff);
+  border: 1px solid var(--border, #e6e8ee);
+  border-radius: var(--dp-radius);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .05);
+}
+.section { padding: 20px 24px; }
+.section h2 {
+  font-size: 18px;
+  margin: 0 0 14px;
+  padding-left: 10px;
+  border-left: 4px solid var(--accent, #4f46e5);
+}
+.desc { font-size: 15px; color: var(--text-secondary, #333); white-space: pre-wrap; }
+/* 简介块：两个版面都放在英雄区里（见 detail.js，2026-09-18 从独立选项卡挪进来）。
+   标题样式与 .section h2 保持一致 —— 它是同一类"小节标题"。 */
+.hero-desc { margin-top: 14px; }
+.hero-desc h2 {
+  font-size: 16px;
+  margin: 0 0 8px;
+  padding-left: 9px;
+  border-left: 4px solid var(--accent, #4f46e5);
+}
+.empty { color: var(--text-dim, #999); font-size: 14px; }
+
+/* ---------- hero：主图 + 标题 + 标签 + 元信息 ---------- */
+.hero {
+  padding: clamp(18px, 1.8vw, 28px);
+  display: flex;
+  /* 定版：**信息在左、封面在右**。DOM 里封面在前，所以默认 row-reverse 把它推到右边；
+     左右由 <html data-cover-side> 随机决定（见 detail.js 第 5 段）—— 用 flex 方向而不是改
+     DOM 顺序，是因为这样不会重排内容、也不丢滚动位置。 */
+  flex-direction: row-reverse;
+  gap: clamp(20px, 2.4vw, 40px);
+  align-items: flex-start;
+}
+html[data-cover-side="left"] .hero { flex-direction: row; }
+/* 主图舞台（2026-09-18 按"横版优先"重新设计）：
+   本库封面绝大多数是**横版**，所以主图区不是一个"框住图片"的盒子，而是一个**固定比例的舞台**：
+     · 图按真实比例 contain 落在舞台正中 —— 完整展示，绝不裁（这是硬约束）；
+     · 四周留白由**同一张图的模糊放大版**填满（见下面的 ::before）——
+       留白于是变成有意的背景色块，而不是难看的黑边；
+     · 模糊层是纯装饰，所以它可以溢出、可以裁，不影响前景主图。
+   data-hero 由 detail.js 按图片真实宽高比标出，供各版面微调（横版/竖版两套节奏）。 */
+.hero-cover {
+  position: relative;
+  overflow: hidden;
+  /* 封面按**原图尺寸**显示（--dp-cover-maxw 由 detail.js 写成 naturalWidth），
+     但最多占英雄区一半 —— 分栏版式得给左边的信息栏留出宽度。 */
+  flex: 0 0 auto;
+  width: min(46%, var(--dp-cover-maxw, 46%));
+  max-height: 56vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--bg-input, rgba(0, 0, 0, .06));
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .22);
+}
+.hero-cover::before {
+  content: "";
+  position: absolute;
+  inset: -8%;
+  background-image: var(--dp-cover, none);
+  background-size: cover;
+  background-position: center;
+  filter: blur(26px) saturate(1.25) brightness(.72);
+  opacity: .92;
+  z-index: 0;
+  pointer-events: none;
+}
+.hero-cover img {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  /* 高度由图片自己决定（不撑成舞台高），只受上面那条 56vh 上限约束 ——
+     否则舞台高度是 auto 时 height:100% 算不出来，图会被压扁。 */
+  height: auto;
+  max-height: 56vh;
+  object-fit: contain;   /* 按真实比例，不裁不拉伸 */
+  display: block;
+}
+.hero-info { flex: 1 1 0; min-width: 0; }
+/* 简介与封面同高：太长时自己滚，不把英雄区撑高（这是定版的一部分） */
+.hero-desc { max-height: 40vh; overflow: auto; }
+/* 字号用 clamp：宽窗口下标题更大更有气势，窄窗口不挤爆一行（版面靠"节奏"而不是靠固定像素） */
+.hero-title {
+  font-size: clamp(24px, 2.4vw, 36px);
+  font-weight: 700;
+  line-height: 1.22;
+  margin: 0 0 6px;
+  letter-spacing: .2px;
+}
+.hero-origin { color: var(--text-dim, #888); font-size: 15px; margin-bottom: 12px; }
+.tags { margin: 0 0 12px; }
+.tag {
+  display: inline-block;
+  background: var(--bg-item-hover, #eef2ff);
+  color: var(--text-secondary, #3730a3);
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin: 0 6px 6px 0;
+}
+/* 版本 / 地区 / 平台 / 类型 … 那一行：默认当胶囊，版面 4 会把它变成两列表格 */
+.hero-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; font-size: 13px; color: var(--text-dim, #666); }
+.hero-meta .mi { background: var(--bg-input, rgba(0, 0, 0, .05)); border-radius: 6px; padding: 2px 8px; }
+.hero-meta .mi b { font-weight: 600; color: var(--text-secondary, #444); margin-right: 4px; }
+
+/* ---------- 截图：大图 + 全部小图（Splide 两个实例联动，见 detail.js 第 3.2 段） ----------
+   结构：.dp-shots
+           ├─ .dp-stage → .gallery.splide（主图，一次一张）+ .dp-counter（"4/8"）
+           └─ .gallery-thumbs.splide（全部小图，一行，横向可拖）
+   用户要求："能全显示出来小图，然后一张一张看大图"。
+   ⚠️ `.gallery` 这个类名必须留着（主题注入认它，见文件头）。
+   硬约束：图片一律**完整展示**（contain），绝不用 cover 裁图 —— 留白由舞台底色承接。 */
+.dp-shots { display: flex; flex-direction: column; gap: 10px; }
+.dp-stage {
+  position: relative;
+  border-radius: 12px;
+  background: var(--bg-input, rgba(0, 0, 0, .06));
+  border: 1px solid var(--border, rgba(0, 0, 0, .06));
+  overflow: hidden;
+}
+.gallery, .gallery-thumbs { margin: 0; }
+/* 兜底：**没挂上轮播库时也要能看**（库加载失败绝不等于白屏）——
+   ⚠️ 必须给 li 一个实际宽度：li 是 flex 项、里面的 img 又是 width:100%，
+   两边互相依赖会被算成宽度 0，整栏空白（2026-09-18 实测过）。 */
+.gallery:not([data-dp-carousel]) .splide__track,
+.gallery-thumbs:not([data-dp-carousel]) .splide__track { overflow: visible; }
+.gallery:not([data-dp-carousel]) .splide__list {
+  list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px;
+}
+.gallery:not([data-dp-carousel]) .splide__list > li { flex: 1 1 320px; min-width: 0; }
+/* 轮播挂上之后宽度交给 Splide（它写行内宽度），我们别插手 */
+.gallery.splide[data-dp-carousel] .splide__list > li { flex: 0 0 auto; }
+.gallery .splide__slide { min-width: 0; display: flex; align-items: center; justify-content: center; }
+/* 大图：按图片自身比例完整显示（contain），舞台高度由 detail.js 固定，翻页时不跳高矮 */
+.gallery img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;   /* 完整展示，不裁 */
+  display: block;
+  cursor: zoom-in;
+}
+/* 小图条：等高、横向可拖；当前那张描一圈 accent（Splide 会给当前 slide 加 .is-active） */
+.gallery-thumbs .splide__list { list-style: none; margin: 0; padding: 0; }
+.gallery-thumbs .splide__slide { display: flex; }
+.gallery-thumbs img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;   /* 小图也不裁 */
+  background: var(--bg-input, rgba(0, 0, 0, .06));
+  border: 1px solid var(--border, rgba(0, 0, 0, .12));
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: .6;
+  transition: opacity .15s, border-color .15s, box-shadow .15s;
+}
+.gallery-thumbs .splide__slide.is-active img,
+.gallery-thumbs img:hover { opacity: 1; }
+.gallery-thumbs .splide__slide.is-active img {
+  border-color: var(--accent, #2d7ff9);
+  box-shadow: 0 0 0 1px var(--accent, #2d7ff9);
+}
+/* 计数器（"4/8"，压在舞台右下角，不挡点击） */
+.dp-counter {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .62);
+  color: #fff;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .5px;
+  pointer-events: none;
+}
+.dp-counter:empty { display: none; }
+/* Splide 的箭头**吃主题色** —— 不然换什么配色它都是自带的蓝，一眼就露馅 */
+.gallery .splide__arrow {
+  background: var(--bg-panel, #fff);
+  border: 1px solid var(--border, #e6e8ee);
+  opacity: .92;
+}
+.gallery .splide__arrow svg { fill: var(--text-secondary, #444); }
+
+/* ---------- 页脚 ---------- */
+.footer { text-align: center; color: var(--text-dim, #999); font-size: 13px; padding: 8px 0 0; }
+
+/* 视频区块（服务器注入，id=yungame-videos）默认排在最后，按 section 看待 */
+#yungame-videos { margin: 0; }
+
+/* ============================================================
+   已删除的候选版面（2026-09-18 定版，别再按编号加回来）
+   ── 版面 1 上下通排 / 2 海报式 / 3 沉浸式 / 4 资料数据页 / 7 选项卡在右，
+      以及"换版面"与"封面左右调换"两个角标按钮（.dp-switch）都删了。
+      按用户的话："去掉换版面，直接随机就行了…不要上下的了。"
+      排布现在只有一份，写在上面 .hero / .hero-cover 那几条基础规则里。
+   ============================================================ */
+
+/* ============================================================
+   选项卡（定版就是它：上面 封面 + 说明，下面 图片 / 视频 / 其他 切换）
+   2026-09-18 用户："下面是选项卡，而不要这样的左右排列"、"选项卡也可随机左右"。
+
+   · 选项卡的 DOM 一直在页面里（.dp-tabs / .dp-tabbar / .dp-panel），这里给它选项卡行为；
+   · **靠左还是靠右**由 <html data-tabs-side="left|right"> 决定（detail.js 随机写）。
+     对齐写在 .dp-tabs 上而不是 tabbar 自己的 justify-content ——
+     tabbar 是 width:max-content（宽度贴合内容），它内部没有可对齐的余量。
+   · 视频面板里的东西由页面脚本把服务器注入的 #yungame-videos 搬进去，不重复生成。
+   ============================================================ */
+.dp-tabs { display: flex; flex-direction: column; gap: var(--dp-gap); align-items: flex-start; }
+html[data-tabs-side="right"] .dp-tabs { align-items: flex-end; }
+.dp-panels { display: flex; flex-direction: column; gap: var(--dp-gap); align-self: stretch; }
+.dp-tabbar {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 999px;
+  background: var(--bg-panel, #fff);
+  border: 1px solid var(--border, #e6e8ee);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .05);
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.dp-video-slot { min-width: 0; }
+/* 选项卡上已经写着"游戏截图 / 游戏视频"，面板里就不再重复一遍小标题 */
+.dp-panel > h2 { display: none; }
+.dp-panel { display: none; }
+.dp-panel.is-on { display: block; animation: dpPanelIn .28s ease-out; }
+@keyframes dpPanelIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.dp-tab {
+  appearance: none;
+  border: none;
+  background: none;
+  color: var(--text-secondary, #555);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 9px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color .15s, background .15s, box-shadow .15s;
+}
+.dp-tab:hover { background: var(--bg-item-hover, rgba(0, 0, 0, .05)); }
+.dp-tab.is-on {
+  /* accent 底上的文字色走 --accent-fg（主界面那套生成的 on-color）：
+     白字压在亮 accent 上读不清，这正是主界面刚修掉的问题，这里不能又写回 #fff。
+     该变量由主界面 syncDetailTheme 一起注入（见 src/utils/themeApply.ts）。 */
+  color: var(--accent-fg, #fff);
+  background: linear-gradient(120deg, var(--accent, #2d7ff9), var(--accent-hover, #5b5bf0));
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent, #2d7ff9) 45%, transparent);
+}
+.dp-count {
+  margin-left: 6px;
+  font-size: 12px;
+  opacity: .75;
+}
+
+/* 窄屏：左右并排会挤成一条，退回上下；封面回到全宽。
+   这是**唯一**需要按屏宽退化的一处（定版只有一套排布，所以退化也只写一份）。 */
+@media (max-width: 900px) {
+  .hero { flex-direction: column; }
+  .hero-cover { width: min(100%, var(--dp-cover-maxw, 100%)); }
+}
+/* 窄屏兜底（窗口再小也别把主图压成一条） */
+@media (max-width: 720px) {
+  .hero { flex-direction: column; }
+  .hero-cover { flex: 0 0 auto; width: 100%; }
+  .gallery { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+}
