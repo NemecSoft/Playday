@@ -187,7 +187,7 @@ export function registerSystemIpc(ipc: typeof ipcMain) {
     return true;
   });
 
-  // 显示并聚焦主窗口（托盘菜单"打开"调用）。
+  // 显示并聚焦主窗口（托盘菜单"显示 XX"调用）。
   ipc.handle("show_window", async (e) => {
     const win = getClientWindow();
     if (win) {

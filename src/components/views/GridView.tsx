@@ -6,7 +6,7 @@
 // additionally load lazily via IntersectionObserver (useLazyImage), so neither
 // the IPC bridge nor layout is flooded at startup.
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useGamesStore } from "../../stores/gamesStore";
 import { useUIStore } from "../../stores/uiStore";
 import { useScrollStore } from "../../stores/scrollStore";
@@ -26,6 +26,7 @@ import { isHotGame } from "../../utils/hotBadge";
 import { useAuthStore } from "../../stores/authStore";
 import {
   CARD_WIDTH_MIN,
+  cardTitleHeight,
   clampCardGap,
   contentWidthOf,
   singleColumnCardWidth,
@@ -114,16 +115,34 @@ export default function GridView({ groups }: Props) {
   // 标题行高随字号动态计算 —— 原来写死 22px 是按 15px 字号估的，字号调大后公式会低估，
   // 行高就靠 ResizeObserver 校正，滚动时会出现"间距忽大忽小"。这里让它一开始就准。
   const titleLineHeight = Math.round(clampCardFontSize(cardFontSize) * fontScale * 1.2) + 4;
-  // 副标题（英文原名）行高：库里很多游戏有本地化中文名，副标题普遍存在，
-  // 统一预留 15px 行高最稳（避免有副标题的卡片溢出盖住下方）。没副标题的卡片
-  // 实际更矮，虚拟列表按行内最高卡片排布，不影响正确性。
+  // 副标题（英文原名）行高。
   const origNameHeight = Math.round(15 * fontScale);
-  const titlePlusDesc =
-    6 +        // .grid-card padding-top
-    7 +        // .title-wrap margin-top
-    titleLineHeight + // .title 行高（随游戏名字号动态计算）
-    origNameHeight + // 副标题（英文原名）行高
-    (showCardDescription ? 4 + descFontSize * 1.5 * CARD_DESC_LINES : 0); // 简介：margin-top + N 行截断(line-height 1.5)
+  // 标题区基础高度：.grid-card padding-top(6) + .title-wrap margin-top(7) + .title 行高。
+  const titleBase = 6 + 7 + titleLineHeight;
+  // 简介块高度：margin-top(4) + padding + N 行截断（line-height 1.5）。
+  const descBlockHeight = 4 + descFontSize * 1.5 * CARD_DESC_LINES;
+  // 逐行标题区高度：**只加这一行真的有的部分**（公式在 utils/gridLayout 的 cardTitleHeight）。
+  // 以前是无条件预留副标题、并按全局开关预留简介，于是没有它们的行白留 ~15px / ~70px；
+  // 首帧渲染完 ResizeObserver 实测回来把行高改小 → 总高度和下面所有行的位置一起变 ——
+  // 拖动右侧滚动条时就是"一跳一跳"。按行估准后，实测值与估算值一致，滚动中途不会再改行高。
+  //
+  // 说明：别名（alt-names）会换行、行数取决于卡宽与文字长度，无法从数据算出，所以这里不含它 ——
+  // 它是目前唯一还可能"实测 != 估算"的来源（真要去掉，得在 CSS 里把它固定成 N 行高）。
+  const titleHeightFor = useCallback(
+    (row: VirtualGridRow) => {
+      if (row.type !== "cards") return titleBase; // 标题行由 useVirtualGrid 按固定高算
+      return cardTitleHeight(
+        { base: titleBase, origName: origNameHeight, descBlock: descBlockHeight },
+        {
+          origName: row.games.some((g) => !!g.originName && displayName(g) !== g.originName),
+          intro: row.games.some((g) => !!g.intro && g.intro.trim().length > 0),
+        },
+      );
+    },
+    [titleBase, origNameHeight, descBlockHeight],
+  );
+  // 兜底值（没有逐行估算时才用得上，正常每行都被上面覆盖）：按"全都有"给最大。
+  const titlePlusDesc = titleBase + origNameHeight + (showCardDescription ? descBlockHeight : 0);
   const { scrollRef, cols, totalSize, items, virtualizer, rowStartIndex, measureRow, referenceWidth } =
     useVirtualGrid({
       groups,
@@ -131,6 +150,7 @@ export default function GridView({ groups }: Props) {
       cardGap,
       cardRowGap,
       titleHeight: titlePlusDesc,
+      titleHeightFor,
       collapsedGroups: collapsedSet,
       sidebarOccupiedWidth,
     });
@@ -208,16 +228,22 @@ export default function GridView({ groups }: Props) {
   const gap = clampCardGap(cardGap);
 
   // 行内子内容（封面/简介/alt-names）首次 mount 时可能还没渲染好，
-  // measureElement 第一次测得高度偏低。只在"初次挂载 / 简介开关 / 列数变化"时
-  // 下一帧强制重测一次，让真实行高生效。
-  // 注意：不要把 rowGap 放进来——拖滑块时每次 save 都会触发全量重测，
-  // 反而造成排布抖动（"跳动"）。行高变化已由 useVirtualGrid 内部按 rowHeight 处理。
+  // measureElement 第一次测得高度偏低。只在"初次挂载 / 简介开关"时下一帧强制重测一次，
+  // 让真实行高生效。
+  // 注意两件事，都是踩过的坑：
+  //   · 不要把 rowGap 放进来 —— 拖滑块时每次 save 都会触发全量重测，反而造成排布抖动（"跳动"）。
+  //     行高变化已由 useVirtualGrid 内部按 rowHeight 处理。
+  //   · 不要把 items.length 放进来 —— 它是"当前渲染窗口里的行数"，滚到列表顶/底时本来就会变
+  //     （窗口被边界裁掉）。measure() 会丢掉所有真实测量值重新估算，总高度跟着变，
+  //     于是**正在进行的平滑滚动被打断/往回夹**：表现出来就是"PageDown 像没反应"、
+  //     "Ctrl+End 到不了最底，只往下挪一屏"。列数变化由 useVirtualGrid 内部
+  //     allRows.length 那条 effect 覆盖，这里不需要再管。
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
       virtualizer.measure();
     });
     return () => cancelAnimationFrame(raf);
-  }, [items.length, showCardDescription, virtualizer]);
+  }, [showCardDescription, virtualizer]);
 
   const renderRow = (row: VirtualGridRow, startIndex: number) => {
     if (row.type === "header") {

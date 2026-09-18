@@ -85,6 +85,14 @@ export const api = {
   getGame: (id: string) => call<Game | null>("get_game", { id }),
   saveGame: (game: Game) => call<Game>("upsert_game", { game }),
   deleteGame: (id: string) => call<void>("delete_game", { id }),
+  /**
+   * 启动前检测（只看启动项，不看存档路径）。
+   *
+   * 与 launch_game 里的检测是**同一份判据**（主进程 launchCheck.checkLaunchAction），
+   * 区别只是时机：这个在弹"正在启动"横幅**之前**问，找不到就直接报"找不到"。
+   */
+  checkGameLaunch: (id: string, actionId?: string) =>
+    call<{ ok: boolean; reason?: string }>("check_game_launch", { id, actionId: actionId ?? null }),
   launchGame: (id: string, actionId?: string) =>
     call<{ launched: boolean; error?: string }>("launch_game", { id, actionId: actionId ?? null }),
   // 旧版本名 stop_game_tracking → 新命令 stop_game；返回累计秒数。
@@ -185,10 +193,22 @@ export const api = {
     }>("get_library_age"),
 
   // —— 游戏详情页 ——
+  // `dir` = 主进程实际命中的那个目录名（**优先游戏 id、其次游戏名**）—— 详情页 iframe 的
+  // URL 必须用它，不能拿 game.name 猜：命中 id 目录的游戏用 game.name 拼出来就是 404。
+  // 兼容旧返回：网站端（server.mjs）这条命令可能仍返回裸路径字符串。
   getGameHtmlPage: (gameId: string, gameName?: string) =>
-    call<string | null>("get_game_html_page", { gameId, gameName: gameName ?? null }).then(
-      (path) => ({ found: !!path, name: gameName || gameId, path: path || "" })
-    ),
+    call<{ path?: string; dir?: string } | string | null>("get_game_html_page", {
+      gameId,
+      gameName: gameName ?? null,
+    }).then((r) => {
+      const hit = typeof r === "string" ? { path: r, dir: "" } : r;
+      return {
+        found: !!hit?.path,
+        name: gameName || gameId,
+        path: hit?.path || "",
+        dir: hit?.dir || "",
+      };
+    }),
   getGameServerUrl: () => call<string>("get_game_server_url"),
   // 把"当前生效的主题配色"交给主进程，供详情页 HTML 注入（见 electron/core/detailTheme.ts）。
   // fire-and-forget：详情页注入失败最多是"页面保持它自己的颜色"，不该影响主界面，

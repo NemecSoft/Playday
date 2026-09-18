@@ -75,6 +75,16 @@ export interface UseVirtualGridOptions {
   cardRowGap?: number;
   /** Height of the title line + padding below a cover, added to row height. */
   titleHeight?: number;
+  /**
+   * 逐行的"标题区高度"（不传就用统一的 titleHeight）。
+   *
+   * 为什么要有它：卡片文字区的高度是**每行都不一样**的（有没有英文原名副标题、
+   * 有没有简介）。统一预留会让没内容的行偏高，首帧后被 ResizeObserver 实测改回来 ——
+   * 改行高 = 改总高度 = 下面所有行的位置一起变，拖动滚动条时就是"一跳一跳"。
+   * 逐行算准，实测与估算一致，滚动中途就不会再改行高。
+   * 传进来的函数**引用要稳定**（调用方用 useCallback），否则拍平 memo 每次渲染都重算。
+   */
+  titleHeightFor?: (row: VirtualGridRow) => number;
   /** Vertical space reserved below each group header (gap between groups). */
   groupGap?: number;
   /** Height of a group header row. */
@@ -119,6 +129,7 @@ export function useVirtualGrid({
   sidebarOccupiedWidth = 0,
   cardRowGap = 8,
   titleHeight = 46,
+  titleHeightFor,
   groupGap = 22,
   headerHeight = 28,
   collapsedGroups,
@@ -198,22 +209,32 @@ export function useVirtualGrid({
         for (let i = 0; i < group.games.length; i += cols) {
           const key = `r:${group.key}:${i}`;
           const seq = Math.floor(i / cols);
-          flat.push({
+          const row: VirtualGridRow = {
             type: "cards",
             key,
             groupKey: group.key,
             games: group.games.slice(i, i + cols),
             isLastInGroup: seq === rowCount - 1,
             seq,
-          });
-          meta.push(rowHeight);
+          };
+          flat.push(row);
+          // 逐行估算：整行高仍旧走 gridLayout 的同一个公式，只是标题区换成这一行真的有的部分。
+          meta.push(
+            rowHeightFor(
+              containerWidth,
+              cols,
+              gap,
+              titleHeightFor ? titleHeightFor(row) : titleHeight,
+              rowGap,
+            ),
+          );
           starts.set(key, cardIndex);
           cardIndex += Math.min(cols, group.games.length - i);
         }
       }
     }
     return { allRows: flat, rowMeta: meta, rowStartIndex: starts };
-  }, [groups, cols, rowHeight, headerRowHeight, collapsedGroups]);
+  }, [groups, cols, containerWidth, gap, rowGap, titleHeight, titleHeightFor, headerRowHeight, collapsedGroups]);
 
   // useVirtualizer needs the actual scroll element. Pass a getter so it can
   // resolve the ref on every internal measurement cycle (it does measureElement
@@ -225,6 +246,28 @@ export function useVirtualGrid({
   // 高度从"公式估算"校正为"真实渲染高度"。这解决公式漏算 alt-names 等导致
   // 下一行封面压住上一行文字的问题。
   const rowHeightCache = useRef<Map<string, { height: number; index: number }>>(new Map());
+
+  // 滚动中暂存实测高度，等滚动停手 SCROLL_SETTLE_MS 之后再统一写回。
+  //
+  // 为什么要拖这一下：写回一行的高度 = 改这一行 + 改总高度 → 滚动条拇指长度、以及
+  // 下面所有行的 translateY 都在用户手指底下变一次。拖动右侧滚动条时那就是"一跳一跳"。
+  // 滚动期间先攒着（此时行按逐行估算的高度排布，本来就基本一致），停手后一次性补上。
+  const pendingHeightsRef = useRef<Map<string, number>>(new Map());
+  const lastScrollAtRef = useRef(0);
+  const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      lastScrollAtRef.current = Date.now();
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
+    };
+  }, []);
 
   // 当卡片高度公式的输入（cardRowGap / titleHeight）变化时，所有缓存的高度
   // 都作废（因为卡片间距变了），清空让 GridView 重新测量。
@@ -252,14 +295,9 @@ export function useVirtualGrid({
     overscan: 6,
   });
 
-  // 写入一行卡片的真实测量高度，并让虚拟列表重新计算该行位置（只重测这一行）。
-  // 若高度没变就不触发重测，避免不必要的 reflow。
-  // 用 resizeItem(index, size) 精确只更新这一行，而不是全量 measure()。
-  const measureRow = useCallback(
+  // 真正把实测高度写回去（只重设这一行，不做全量 measure()）。
+  const applyMeasuredHeight = useCallback(
     (rowKey: string, height: number) => {
-      if (!Number.isFinite(height) || height <= 0) return;
-      const cached = rowHeightCache.current.get(rowKey);
-      if (cached && Math.abs(cached.height - height) < 0.5) return; // 高度没变，跳过
       const index = allRows.findIndex((r) => r.key === rowKey);
       if (index === -1) return;
       rowHeightCache.current.set(rowKey, { height, index });
@@ -267,6 +305,34 @@ export function useVirtualGrid({
       virtualizer.resizeItem(index, height);
     },
     [allRows, virtualizer],
+  );
+
+  // 写入一行卡片的真实测量高度，并让虚拟列表重新计算该行位置（只重测这一行）。
+  // 若高度没变就不触发重测，避免不必要的 reflow。
+  //
+  // **滚动中只攒不写**：写回一行的高度会同时改总高度，滚动条拇指和下面所有行的位置
+  // 都会在用户手指底下动一下（拖动滚动条时最明显）。所以滚动期间先记进 pending，
+  // 滚动停手 SCROLL_SETTLE_MS 之后再统一写回 —— 那时用户的手已经离开滚动条了。
+  const SCROLL_SETTLE_MS = 140;
+  const measureRow = useCallback(
+    (rowKey: string, height: number) => {
+      if (!Number.isFinite(height) || height <= 0) return;
+      const cached = rowHeightCache.current.get(rowKey);
+      if (cached && Math.abs(cached.height - height) < 0.5) return; // 高度没变，跳过
+      if (Date.now() - lastScrollAtRef.current < SCROLL_SETTLE_MS) {
+        pendingHeightsRef.current.set(rowKey, height);
+        if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
+        flushTimerRef.current = setTimeout(() => {
+          flushTimerRef.current = null;
+          const pending = pendingHeightsRef.current;
+          pendingHeightsRef.current = new Map();
+          for (const [key, h] of pending) applyMeasuredHeight(key, h);
+        }, SCROLL_SETTLE_MS);
+        return;
+      }
+      applyMeasuredHeight(rowKey, height);
+    },
+    [applyMeasuredHeight],
   );
 
   // Force the virtualizer to re-measure after mount and whenever the scroll

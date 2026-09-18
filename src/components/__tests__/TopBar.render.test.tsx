@@ -69,19 +69,16 @@ describe("TopBar 徽标已挪走", () => {
   });
 });
 
-// 「游戏资料」选项卡（2026-09-15）：与「主页」同级、排在它后面。
-// 这里只钉"有没有接进顶栏"，内容与挂载策略在 MainContent / GameDataView。
+// 固定选项卡（2026-09-18 起只剩两个）：主页 → 工具。
+// 原第三个「游戏资料」（详情页那套静态站点的总目录页）已移除 —— 见 src/utils/tabs.ts 的注释。
+// 这条**故意钉"不再有 tab_data"**：它被移除是有原因的（重复入口），别哪天又被加回来。
 describe("TopBar 顶部选项卡", () => {
-  it("含「游戏资料」，顺序为 主页 → 游戏资料 → 工具", () => {
+  it("固定选项卡为 主页 → 工具，且不再有「游戏资料」", () => {
     const html = render();
     expect(html).toContain("[tab_home]");
-    expect(html).toContain("[tab_data]");
     expect(html).toContain("[tab_tools]");
-    const home = html.indexOf("[tab_home]");
-    const data = html.indexOf("[tab_data]");
-    const tools = html.indexOf("[tab_tools]");
-    expect(home).toBeLessThan(data);
-    expect(data).toBeLessThan(tools);
+    expect(html).not.toContain("[tab_data]");
+    expect(html.indexOf("[tab_home]")).toBeLessThan(html.indexOf("[tab_tools]"));
   });
 });
 

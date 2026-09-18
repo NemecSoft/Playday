@@ -4,6 +4,7 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  FIXED_TAB_IDS,
   MAX_GAME_TABS,
   activateTab,
   backTab,
@@ -26,9 +27,9 @@ const activeGame = (s: TabState) => gameIdOfTab(s.activeId) ?? null;
 const gameTabIds = (s: TabState) => s.tabs.filter((t) => isGameTabId(t.id)).map((t) => t.id);
 
 describe("初始状态", () => {
-  it("三个固定选项卡都在，默认激活主页，历史只有主页", () => {
+  it("两个固定选项卡都在，默认激活主页，历史只有主页", () => {
     const s = initialTabState();
-    expect(s.tabs.map((t) => t.id)).toEqual(["home", "data", "tools"]);
+    expect(s.tabs.map((t) => t.id)).toEqual(["home", "tools"]);
     expect(s.activeId).toBe("home");
     expect(s.history).toEqual(["home"]);
     expect(canGoBack(s)).toBe(false);
@@ -68,13 +69,14 @@ describe("activateTab：激活并记访问历史", () => {
   });
 
   it("从历史中间切走 → 截断后面的分支（浏览器行为）", () => {
+    // 2026-09-18：原先中间那一格借的是「游戏资料」固定选项卡，它已移除 —— 改用游戏标签当中间格。
     let s = initialTabState();
-    s = activateTab(s, "tools"); // home → tools
-    s = activateTab(s, "data"); // home → tools → data
-    s = backTab(s); // 回到 tools（data 还在历史里、还在前面）
+    s = openGameTab(s, "g1"); // home → game:g1
+    s = activateTab(s, "tools"); // home → game:g1 → tools
+    s = backTab(s); // 回到 game:g1（tools 还在历史里、还在前面）
     expect(canGoForward(s)).toBe(true);
-    s = activateTab(s, "home"); // 从 tools 处切走 → data 那条分支被截断
-    expect(s.history).toEqual(["home", "tools", "home"]);
+    s = activateTab(s, "home"); // 从 game:g1 处切走 → tools 那条分支被截断
+    expect(s.history).toEqual(["home", "game:g1", "home"]);
     expect(canGoForward(s)).toBe(false);
   });
 
@@ -87,7 +89,7 @@ describe("activateTab：激活并记访问历史", () => {
 describe("openGameTab：每游戏一个标签", () => {
   it("新游戏 → 追加到末尾并激活", () => {
     const s = openGameTab(initialTabState(), "g1");
-    expect(s.tabs.map((t) => t.id)).toEqual(["home", "data", "tools", "game:g1"]);
+    expect(s.tabs.map((t) => t.id)).toEqual(["home", "tools", "game:g1"]);
     expect(activeGame(s)).toBe("g1");
   });
 
@@ -118,7 +120,7 @@ describe("closeTab：可关的只有游戏标签", () => {
   it("固定选项卡关不掉", () => {
     const s = initialTabState();
     expect(closeTab(s, "home")).toBe(s);
-    expect(closeTab(s, "data")).toBe(s);
+    // 2026-09-18：「游戏资料」固定选项卡已移除（见 tabs.ts 注释），这条断言随之去掉。
     expect(closeTab(s, "tools")).toBe(s);
   });
 
@@ -128,7 +130,7 @@ describe("closeTab：可关的只有游戏标签", () => {
     s = activateTab(s, "tools"); // home → g1 → tools
     s = activateTab(s, gameTabId("g1")); // … → g1
     s = closeTab(s, gameTabId("g1"));
-    expect(s.tabs.map((t) => t.id)).toEqual(["home", "data", "tools"]);
+    expect(s.tabs.map((t) => t.id)).toEqual(["home", "tools"]);
     expect(s.activeId).toBe("tools"); // 历史里 g1 的前一格
   });
 
@@ -151,7 +153,7 @@ describe("closeTab：可关的只有游戏标签", () => {
 });
 
 describe("closeGameTabs：一键关其它 / 关全部（顶栏右键菜单）", () => {
-  /** 固定三个 + g1/g2/g3（当前激活 g3）。 */
+  /** 固定两个 + g1/g2/g3（当前激活 g3）。 */
   const withThree = () => {
     let s = initialTabState();
     s = openGameTab(s, "g1");
@@ -160,13 +162,13 @@ describe("closeGameTabs：一键关其它 / 关全部（顶栏右键菜单）", 
     return s;
   };
 
-  it("传 keepId = 关闭其它：只留那一个，固定三个一个不少", () => {
+  it("传 keepId = 关闭其它：只留那一个，固定两个一个不少", () => {
     const s = closeGameTabs(withThree(), gameTabId("g2"));
     expect(gameTabIds(s)).toEqual([gameTabId("g2")]);
+    // 从**单一来源**取，而不是写死是哪个：这条断言要证明的是"固定标签一个都没被关掉"。
+    // （2026-09-18 移除「游戏资料」时，这里写死的三个值成了唯一漏改的地方 —— 别再写死了。）
     expect(s.tabs.filter((t) => isFixedTabId(t.id)).map((t) => t.id)).toEqual([
-      "home",
-      "data",
-      "tools",
+      ...FIXED_TAB_IDS,
     ]);
   });
 

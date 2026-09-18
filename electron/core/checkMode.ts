@@ -28,7 +28,7 @@ import { openDb, getGames } from "./db";
 import { configRoot, defaultGameRootPath } from "./paths";
 import { resolveAction, validateLaunchPath, findGameExecutable } from "./process";
 import { expandVariables } from "./scriptRunner";
-import { KIND_LABEL, checkGames, type CheckSummary, type FindingKind } from "./launchCheck";
+import { KIND_LABEL, LAUNCH_KINDS, checkGames, type CheckDeps, type CheckSummary, type FindingKind } from "./launchCheck";
 
 /** 当前是不是自检模式（`exe --check`）。 */
 export function isCheckMode(argv: readonly string[] = process.argv): boolean {
@@ -47,14 +47,41 @@ function stamp(d = new Date()): string {
 }
 
 /** 问题类型的展示顺序：先启动项（会拦人），后存档路径。 */
-const ORDER: FindingKind[] = [
-  "no-play-action",
-  "action-resolve-error",
-  "action-missing",
-  "action-unknown-type",
-  "save-path-missing",
-  "save-no-match",
-];
+const ORDER: FindingKind[] = [...LAUNCH_KINDS, "save-path-missing", "save-no-match"];
+
+/**
+ * 组装检测要用的**生产依赖**（真实 fs + 真实路径/动作规则）。
+ *
+ * 为什么抽成函数而不写在 runCheckMode 里：`--check` 上线前体检、"点开始游戏"前的
+ * 启动前检测（electron/ipc/games.ts 的 check_game_launch）必须用**同一份**判据 ——
+ * 否则会出现"体检说没问题、点了却起不来"这种最坏情况。
+ * actionId 只有"启动前检测"才用得上（用户可能选了某个具体启动项），自检不传。
+ */
+export function makeCheckDeps(gameRoot = defaultGameRootPath(), actionId?: string): CheckDeps {
+  return {
+    gameRoot,
+    expandVariables,
+    // 只把 actionId 透传进去，动作选择规则本身仍然复用生产实现（resolveAction）。
+    resolveAction: (g) => resolveAction(g, actionId),
+    validateAction: (p, t) => validateLaunchPath(p, t),
+    findExecutable: (dir) => findGameExecutable(dir),
+    exists: (p) => fs.existsSync(p),
+    isDir: (p) => {
+      try {
+        return fs.statSync(p).isDirectory();
+      } catch {
+        return false;
+      }
+    },
+    listDir: (p) => {
+      try {
+        return fs.readdirSync(p);
+      } catch {
+        return null;
+      }
+    },
+  };
+}
 
 function buildReport(summary: CheckSummary, meta: { dataRoot: string; gameRoot: string }): string[] {
   const lines: string[] = [];
@@ -126,28 +153,7 @@ export async function runCheckMode(): Promise<number> {
     const gameRoot = defaultGameRootPath();
     const dataRoot = configRoot();
 
-    const summary = checkGames(games, {
-      gameRoot,
-      expandVariables,
-      resolveAction,
-      validateAction: (p, t) => validateLaunchPath(p, t),
-      findExecutable: (dir) => findGameExecutable(dir),
-      exists: (p) => fs.existsSync(p),
-      isDir: (p) => {
-        try {
-          return fs.statSync(p).isDirectory();
-        } catch {
-          return false;
-        }
-      },
-      listDir: (p) => {
-        try {
-          return fs.readdirSync(p);
-        } catch {
-          return null;
-        }
-      },
-    });
+    const summary = checkGames(games, makeCheckDeps(gameRoot));
 
     for (const l of buildReport(summary, {
       dataRoot,

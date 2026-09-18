@@ -328,6 +328,14 @@ function sectionScript(labels: VideoSectionLabels, accent?: string | null): stri
   }
 
   function closeCard(card) {
+    // 浮层（应用内最大化的载体）先摘掉：播放器就挂在里面，一并回收。
+    var ov = card.__overlay;
+    if (ov) {
+      card.__overlay = null;
+      if (ov.parentNode) ov.parentNode.removeChild(ov);
+    }
+    document.body.classList.remove("yungame-video-open");
+    card.classList.remove("is-playing");
     exitWebFull(card); // 万一还在网页全屏态：先让它退出状态、搬回来 + 解锁，免得页面滚不动
     var holder = el(card, "yungame-video-player");
     var dp = card.__dp;
@@ -351,10 +359,58 @@ function sectionScript(labels: VideoSectionLabels, accent?: string | null): stri
     card.classList.remove("is-open");
   }
   function openCard(card) {
-    var thumb = el(card, "yungame-video-thumb");
+    // 再点同一张卡片 = 关掉（卡片本身就当按钮用，见下面的浮层说明）
+    if (card.__overlay) {
+      closeCard(card);
+      return;
+    }
+    // 卡片**留在列表里原样不动**（用户："点击播放，原来的卡片排放不要动（相当于一个卡片按钮）"）。
+    // 播放器起在一个**独立的整页浮层**里：标题 + 「按 Esc 退出」提示 + 关闭按钮。
+    // 旧做法是把卡片本身搬进覆盖层 —— 那样"排列"必然被改（卡片一走，列表就空出一格），
+    // 所以这里从结构上就跟卡片解耦：**浮层是浮层、卡片是卡片**。
+    ensureOverlayStyle();
     var holder = document.createElement("div");
     holder.className = "yungame-video-player";
-    thumb.appendChild(holder);
+    var ov = document.createElement("div");
+    ov.className = "yungame-video-overlay";
+    // 标题只从 .yungame-video-title 取，**不要用 card.textContent** ——
+    // 卡片里的「收起」按钮虽然 display:none（不再就地展开后它一直是隐藏的），
+    // 但**文字仍在 DOM 里**，整块取文本就会把"收起"两个字拼进标题（2026-09-18 实测）。
+    // ⚠️ 这段代码在**模板字符串**里（注入的 script 是拼出来的）：注释与字符串里都别用反引号，
+    //    会把模板字符串截断（我就这么踩了一次，报 ';' expected）。
+    var titleEl = card.querySelector(".yungame-video-title");
+    var name = ((titleEl ? titleEl.textContent : "") || "")
+      .trim()
+      .replace(/\s+/g, " ")
+      .slice(0, 90);
+    ov.innerHTML =
+      '<div class="yungame-video-bar"><span class="yungame-video-name"></span>' +
+      '<span class="yungame-video-hint">空格 播放/暂停 · Esc 退出</span>' +
+      '<button type="button" class="yungame-video-close" aria-label="关闭">✕</button></div>' +
+      '<div class="yungame-video-stage"></div>';
+    ov.querySelector(".yungame-video-name").textContent = name;
+    ov.querySelector(".yungame-video-stage").appendChild(holder);
+    document.body.appendChild(ov);
+    document.body.classList.add("yungame-video-open");
+    card.__overlay = ov;
+    // 把焦点收进浮层：键盘事件（空格 / Esc）只发给**有焦点的那个文档**。
+    // 点卡片时焦点本来就在这个 iframe 里，但用户如果中途点过外面（或站点自身抢焦点），
+    // 键盘就会跑到别处去 —— 显式聚焦一次最省事。tabIndex = -1 让它能被 focus 但不进 Tab 序列。
+    ov.tabIndex = -1;
+    try {
+      ov.focus();
+    } catch (e) {
+      /* 极少数环境下 focus 会抛，忽略即可 —— 键盘事件在多数情况下照样到得了 */
+    }
+    // 关闭入口：按钮、点背景、Esc（三个都有人习惯，缺一个就会被问"怎么退出去"）
+    ov.querySelector(".yungame-video-close").addEventListener("click", function (e) {
+      e.stopPropagation();
+      closeCard(card);
+    });
+    ov.addEventListener("click", function (e) {
+      if (e.target === ov) closeCard(card);
+    });
+    post("playday-maximize"); // 顺手把窗口最大化 —— "应用内最大化"的另一半
     // 兜底：DPlayer 没加载成功时退回原生 <video controls>。
     // 什么时候会这样：/vendor/ 路由挂了、或者详情页模板自己的 CSP 挡了外部脚本。
     // 宁可少两个按钮，也不能"点了卡片什么都不出来"。
@@ -371,7 +427,7 @@ function sectionScript(labels: VideoSectionLabels, accent?: string | null): stri
       v.addEventListener("ended", function () { post("playday-video-stop"); });
       card.__fbVideo = v;
       holder.appendChild(v);
-      card.classList.add("is-open");
+      card.classList.add("is-playing"); // 卡片只加个"正在播"标记，位置与排列不变
       return;
     }
     // 内置播放器：DPlayer（随包发布，见 vendor/README.md）。
@@ -397,8 +453,74 @@ function sectionScript(labels: VideoSectionLabels, accent?: string | null): stri
     // 网页全屏：定位由我们接管（见 toOverlay 的注释）。
     dp.on("webfullscreen", function () { toOverlay(card); });
     dp.on("webfullscreen_cancel", function () { leaveOverlay(card); });
-    card.classList.add("is-open");
+    card.classList.add("is-playing"); // 卡片只加个"正在播"标记，位置与排列不变
   }
+
+  /** 浮层样式（只注入一次）。样式在这里而不是 CSS 文件里：它是**视频注入**这套机制自带的 UI。 */
+  function ensureOverlayStyle() {
+    if (document.getElementById("yungame-video-overlay-style")) return;
+    var st = document.createElement("style");
+    st.id = "yungame-video-overlay-style";
+    st.textContent = [
+      ".yungame-video-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);",
+      "backdrop-filter:blur(6px);display:flex;flex-direction:column;gap:12px;padding:18px 22px 22px;}",
+      ".yungame-video-bar{display:flex;align-items:center;gap:14px;color:#fff;font-size:14px;}",
+      ".yungame-video-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;",
+      "white-space:nowrap;opacity:.92;}",
+      ".yungame-video-hint{flex:0 0 auto;opacity:.75;border:1px solid rgba(255,255,255,.35);",
+      "border-radius:999px;padding:3px 12px;font-size:13px;}",
+      ".yungame-video-close{flex:0 0 auto;width:34px;height:34px;border-radius:50%;cursor:pointer;",
+      "border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.1);color:#fff;font-size:15px;}",
+      ".yungame-video-close:hover{background:rgba(255,255,255,.22);}",
+      ".yungame-video-stage{flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;}",
+      ".yungame-video-stage .yungame-video-player{width:100%;height:100%;}",
+      ".yungame-video-stage video{max-width:100%;max-height:100%;}",
+      "body.yungame-video-open{overflow:hidden;}",
+      // 卡片上的"正在播"标记：一个小圆点，不动布局
+      ".yungame-video-card.is-playing{position:relative;}",
+      ".yungame-video-card.is-playing::after{content:'';position:absolute;top:8px;right:8px;",
+      "width:9px;height:9px;border-radius:50%;background:var(--accent,#2d7ff9);",
+      "box-shadow:0 0 0 2px rgba(0,0,0,.35);}",
+    ].join("");
+    document.head.appendChild(st);
+  }
+
+  // Esc 退出浮层（用户明确要求"并有提示按 esc 返回"）。挂在 document 上：
+  // 浮层里的播放器可能吃掉键盘事件，但 Esc 在捕获阶段先到我们这里更稳妥。
+  // ⚠️ 注册在 **window** 上（不是 document），而且用捕获阶段：
+  //   DPlayer 自带的 hotkey 也吃空格。事件流是 window → document → … ，同一阶段里按注册顺序，
+  //   而"捕获阶段 + window"是**最外层最先**的位置 —— 只有站在这儿，stopImmediatePropagation()
+  //   才能真正把它后面的听众（含 DPlayer 自己那套）全部掐掉。
+  //   2026-09-18 实测：注册在 document 上时空格"按了没反应"（两边各 toggle 一次，互相抵消）。
+  window.addEventListener(
+    "keydown",
+    function (e) {
+      if (!document.querySelector(".yungame-video-overlay")) return;
+      // 空格 = 播放 / 暂停（2026-09-18 用户："播放视频，添加空格暂停/恢复，这是基本控制"）。
+      // 三个细节都是必须的：
+      //   ① 捕获阶段（第三个参数 true）+ stopImmediatePropagation：DPlayer 自带 hotkey 里也有空格，
+      //      两边都处理就会"toggle 两次 = 看着像没反应"。捕获阶段我们先到，把后面的掐掉。
+      //   ② preventDefault：否则空格会去滚动页面（浮层里滚一下，画面就偏了）。
+      //   ③ 播放器从"正在播的那张卡片"上取（浮层不在卡片里，只能靠 .is-playing 定位）。
+      if (e.key === " " || e.key === "Spacebar" || e.code === "Space") {
+        var playing = document.querySelector(".yungame-video-card.is-playing");
+        var dp = playing && playing.__dp;
+        var video = (dp && dp.video) || (playing && playing.__fbVideo);
+        if (!video) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (video.paused || video.ended) void video.play();
+        else video.pause();
+        return;
+      }
+      if (e.key !== "Escape") return;
+      // 浮层不在卡片内部（这正是"卡片不动"的代价），所以不能按祖先找卡片 ——
+      // 用 openCard 打上的 .is-playing 定位正在播的那一张。
+      var card = document.querySelector(".yungame-video-card.is-playing");
+      if (card) closeCard(card);
+    },
+    true,
+  );
 
   // ⚠️ 监听挂在 document 上（不是 root）：网页全屏时按钮组被搬进 body 上的覆盖层，
   // 已经不在 root 内部了。下面的逻辑都靠 cardOf() 定位，点到页面别处会自然返回。

@@ -20,7 +20,6 @@ import Toolbar from "./Toolbar";
 import GamesView from "./views/GamesView";
 import NewsView from "./views/NewsView";
 import ToolsView from "./views/ToolsView";
-import GameDataView from "./views/GameDataView";
 import GameDetailPage from "../pages/GameDetailPage";
 import { useGamesStore } from "../stores/gamesStore";
 import { useUIStore } from "../stores/uiStore";
@@ -40,7 +39,7 @@ function TabPanel({
   const gameId = gameIdOfTab(tabId);
   if (gameId) return <GameDetailPage gameId={gameId} />;
 
-  if (tabId === "data") return <GameDataView />;
+  // 2026-09-18：`data`（静态总目录页）那个固定选项卡已移除，见 src/utils/tabs.ts。
   if (tabId === "tools") return <ToolsView />;
   // 主页里的"最近新增"子页（activePage 是主页的内部状态，不是顶层标签）。
   if (activePage === "news") return <NewsView />;

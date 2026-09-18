@@ -50,15 +50,15 @@ import TabContextMenu from "./TabContextMenu";
 import ThemeTopPicker from "./ThemeTopPicker";
 
 /**
- * 固定选项卡（主页 / 游戏资料 / 工具）的图标与文案 key。
+ * 固定选项卡（主页 / 工具）的图标与文案 key。
  * 它们的**顺序**不在这里 —— 顺序由 `src/utils/tabs.ts` 的 FIXED_TAB_IDS 决定，
  * 顶栏只照着 `tabState.tabs` 渲染；游戏标签是动态的，排在它们后面。
+ *
+ * 2026-09-18：原来的第三个固定选项卡「游戏资料」（静态总目录页）已移除，
+ * 见 `src/utils/tabs.ts` 的注释 —— 那一项只在那边删，不要在这里"打补丁"隐藏。
  */
 const FIXED_TAB_META: Record<FixedTabId, { labelKey: string; icon: typeof Home }> = {
   home: { labelKey: "tab_home", icon: Home },
-  // 「游戏资料」：详情页那套静态站点的**总目录页**。点里面的卡片在 iframe 里原地跳，
-  // 见 docs/design/main-tabs.md。
-  data: { labelKey: "tab_data", icon: BookOpen },
   tools: { labelKey: "tab_tools", icon: Wrench },
 };
 

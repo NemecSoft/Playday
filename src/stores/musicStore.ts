@@ -38,16 +38,6 @@ let audio: HTMLAudioElement | null = null;
 let loadedRel: string | null = null;
 let consecutiveErrors = 0;
 
-/**
- * "视频让位"状态：
- *   ducking    —— 有一次"因为放视频而暂停"还没结束；
- *   duckResume —— 那次暂停之前音乐**本来是在放的**（关掉视频后要接着放）。
- * 为什么要记这两个标记：不记的话关掉视频就不知道该不该继续放 ——
- * 用户本来就没开音乐，看完视频音乐却突然响了，比不恢复更烦人。
- */
-let ducking = false;
-let duckResume = false;
-
 function ensureAudio(): HTMLAudioElement | null {
   if (typeof window === "undefined") return null;
   if (audio) return audio;
@@ -152,13 +142,6 @@ interface MusicState {
   playTrack: (index: number) => void;
   /** 拖进度（秒）。 */
   seek: (sec: number) => void;
-  /**
-   * 放视频前让位：暂停音乐，并记住"本来在放"。
-   * @param opts.resume 关掉视频后是否允许自动恢复 —— 外部播放器感知不到结束，传 false。
-   */
-  duckForVideo: (opts?: { resume?: boolean }) => void;
-  /** 视频关掉后：若那次暂停前本来在放，就接着放。 */
-  unduckAfterVideo: () => void;
 }
 
 export const useMusicStore = create<MusicState>((set, get) => ({
@@ -251,8 +234,6 @@ export const useMusicStore = create<MusicState>((set, get) => ({
 
   play: () => {
     const st = get();
-    // 用户手动播 = 接管，"视频让位"关系就此结束（关掉视频不该再自动恢复一次）。
-    duckResume = false;
     if (st.tracks.length === 0) return;
     // 已经在放同一首就别重设 src（否则每次重渲染都会从头开始）。
     if (st.playing && loadedRel === st.tracks[st.trackIndex]?.rel) return;
@@ -260,7 +241,6 @@ export const useMusicStore = create<MusicState>((set, get) => ({
   },
 
   pause: () => {
-    duckResume = false;
     audio?.pause();
     set({ playing: false });
   },
@@ -340,26 +320,5 @@ export const useMusicStore = create<MusicState>((set, get) => ({
       // 元数据还没到时设置 currentTime 会抛，忽略：用户拖一下不该让界面崩。
     }
     set({ currentTime: t });
-  },
-
-  duckForVideo: (opts) => {
-    const st = get();
-    // 只在第一次让位时记录"本来在放"——否则在视频浮层里连点几个视频，
-    // 第二次进来时音乐已经停了，会误记成"本来没放"，关掉后就不恢复了。
-    if (!ducking) {
-      ducking = true;
-      duckResume = (opts?.resume ?? true) && st.playing;
-    }
-    if (st.playing) {
-      audio?.pause();
-      set({ playing: false });
-    }
-  },
-
-  unduckAfterVideo: () => {
-    const resume = duckResume;
-    ducking = false;
-    duckResume = false;
-    if (resume) playCurrent();
   },
 }));

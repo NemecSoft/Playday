@@ -12,14 +12,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // vi.hoisted：这些 mock 必须比 import 先就绪（vi.mock 的工厂在 import 期间执行，
 // 直接引用模块顶层的变量会踩 TDZ）。
-const { canPlayMock, launchGameMock, showNotificationMock } = vi.hoisted(() => ({
+const { canPlayMock, launchGameMock, showNotificationMock, checkGameLaunchMock } = vi.hoisted(() => ({
   canPlayMock: vi.fn(() => true),
   launchGameMock: vi.fn(async (): Promise<{ launched: boolean; error?: string }> => ({ launched: true })),
   showNotificationMock: vi.fn(async () => undefined),
+  // 默认"检测通过"：不桩它的话每个用例都得先摆好"这游戏能启动"这个前提。
+  checkGameLaunchMock: vi.fn(async (): Promise<{ ok: boolean; reason?: string }> => ({ ok: true })),
 }));
 
 vi.mock("../../api/client", () => ({
-  api: { launchGame: launchGameMock, showNotification: showNotificationMock },
+  api: {
+    launchGame: launchGameMock,
+    showNotification: showNotificationMock,
+    checkGameLaunch: checkGameLaunchMock,
+  },
 }));
 vi.mock("../../i18n", () => ({ t: (key: string) => key }));
 vi.mock("../../utils/assets", () => ({ preloadImages: vi.fn(async () => undefined) }));
@@ -51,11 +57,12 @@ function makeGame(over: Partial<Game> = {}): Game {
 }
 
 beforeEach(() => {
-  // 三个 mock 都要清调用记录：否则上一个用例的调用会让后面的
+  // 四个 mock 都要清调用记录：否则上一个用例的调用会让后面的
   // `not.toHaveBeenCalled()` 直接失败（这里踩过）。
   canPlayMock.mockClear().mockReturnValue(true);
   launchGameMock.mockClear().mockResolvedValue({ launched: true });
   showNotificationMock.mockClear();
+  checkGameLaunchMock.mockClear().mockResolvedValue({ ok: true });
   useGamesStore.setState({ games: [makeGame()], pendingLaunch: null, launchingGame: null });
   // 每个用例都从"音乐正在放"开始。
   useMusicStore.setState({ playing: true });
@@ -96,5 +103,35 @@ describe("启动游戏：背景音乐让位", () => {
     expect(ok).toBe(false);
     expect(showNotificationMock).toHaveBeenCalled(); // 失败原因必须告诉用户
     expect(useMusicStore.getState().playing).toBe(false);
+  });
+});
+
+describe("找不到游戏：直说找不到，不弹「正在启动」", () => {
+  it("启动前检测不通过 → 横幅状态从头到尾没被设过，直接报找不到，也不掐音乐", async () => {
+    checkGameLaunchMock.mockResolvedValue({
+      ok: false,
+      reason: "启动前检测未通过：文件不存在：D:/Z/PrisonBreak/go.bat（解析路径：D:/Z/PrisonBreak/go.bat）",
+    });
+
+    const ok = await useGamesStore.getState().launchGame("g1");
+
+    expect(ok).toBe(false);
+    // 最关键的一条：launchingGame 全程是 null —— 一旦被设过，横幅就会显示
+    // "正在启动《游戏名》…"并至少停留 MIN_LAUNCH_BANNER_MS（3 秒），
+    // 那正是用户要求去掉的观感（"启动了却起不来"）。
+    expect(useGamesStore.getState().launchingGame).toBeNull();
+    expect(checkGameLaunchMock).toHaveBeenCalledWith("g1", "a1");
+    expect(launchGameMock).not.toHaveBeenCalled(); // 已知起不来，不用再去真启动一次
+    expect(showNotificationMock).toHaveBeenCalled(); // 但必须告诉用户"找不到"
+    expect(useMusicStore.getState().playing).toBe(true); // 没启动就不该掐音乐
+  });
+
+  it("检测本身抛异常（IPC 挂了）→ 不当成「找不到」，照样交给 launchGame 试", async () => {
+    checkGameLaunchMock.mockRejectedValue(new Error("ipc broken"));
+
+    const ok = await useGamesStore.getState().launchGame("g1");
+
+    expect(ok).toBe(true);
+    expect(launchGameMock).toHaveBeenCalledWith("g1", "a1");
   });
 });

@@ -15,6 +15,9 @@ import {
   libraryStats,
 } from "../core/db";
 import { readSettings, writeSettings } from "../core/settings";
+import { defaultGameRootPath } from "../core/paths";
+import { checkLaunchAction } from "../core/launchCheck";
+import { makeCheckDeps } from "../core/checkMode";
 import { applyCoversToLibrary } from "../core/covers";
 import {
   launchGame,
@@ -97,6 +100,34 @@ export function registerGamesIpc(ipc: typeof ipcMain) {
       setGameHidden(id, hidden);
       return true;
     }
+  );
+
+  // 「找不到就直说」：点开始游戏**之前**的一次启动前检测。
+  //
+  // 为什么不能只靠 launch_game 里的检测：那时前端已经弹出"正在启动《游戏名》…"横幅了，
+  // 而横幅有最短展示时长（MIN_LAUNCH_BANNER_MS = 3 秒），于是用户会先看到"正在启动"停几秒、
+  // 然后才看到"找不到" —— 看起来像"启动了但没起来"（用户明确要求改掉这个顺序）。
+  //
+  // 判据完全复用 --check 自检那一套（launchCheck.checkLaunchAction）：
+  // 两侧不一致就会出现"体检说没问题、点了却起不来"。只看**启动项**，
+  // 不看存档路径 —— 存档是备份功能的事，不该拦住启动。
+  registerCommand(
+    ipc,
+    "check_game_launch",
+    async (args: { id?: string; actionId?: string | null }) => {
+      const id = args?.id ?? "";
+      const game = getGame(id);
+      if (!game) return { ok: false, reason: `游戏不存在：${id}` };
+      const finding = checkLaunchAction(
+        game,
+        makeCheckDeps(defaultGameRootPath(), args?.actionId ?? undefined)
+      );
+      // 详细原因（含解析后的绝对路径）留在主进程控制台：前端只用它判断"能不能启动"，
+      // 不再把它显示给玩家（2026-09-18 用户要求）。排查这类问题看这行日志。
+      if (finding) console.warn("[launch] 启动前检测未通过：", game.name, finding.detail);
+      return finding ? { ok: false, reason: finding.detail } : { ok: true };
+    },
+    { field: "id", log: true }
   );
 
   // 启动游戏。中间件统一解包 { id, actionId }，并开启耗时日志（启动是慢操作）。

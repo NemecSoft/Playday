@@ -216,21 +216,27 @@ export default function GameDetailPage({ gameId }: { gameId: string }) {
   const [htmlFound, setHtmlFound] = useState(false);
   const [htmlLoading, setHtmlLoading] = useState(true);
   const [serverUrl, setServerUrl] = useState("");
+  // 详情页**实际命中的目录名**（主进程按"优先游戏 id、其次游戏名"解析）—— 拼 iframe 地址
+  // 必须用它：命中 id 目录的游戏若拿 game.name 去拼，必然 404（页面打不开）。
+  const [htmlDir, setHtmlDir] = useState("");
   useEffect(() => {
     if (!game) return;
     let cancelled = false;
     setHtmlLoading(true);
+    // id 和名字都要传：主进程的命中规则是"优先 id、其次游戏名"，只给名字就用不上第 1 条。
     api
-      .getGameHtmlPage(game.name)
+      .getGameHtmlPage(game.id, game.name)
       .then((r) => {
         if (!cancelled) {
           setHtmlFound(r.found);
+          setHtmlDir(r.dir || "");
           setHtmlLoading(false);
         }
       })
       .catch(() => {
         if (!cancelled) {
           setHtmlFound(false);
+          setHtmlDir("");
           setHtmlLoading(false);
         }
       });
@@ -248,9 +254,11 @@ export default function GameDetailPage({ gameId }: { gameId: string }) {
   // Absolute URL for the game's page, served by the local HTTP server.
   // 带 `?lang=`：服务器会用这个语言生成注入的「游戏视频」区块文案，保证与界面一致。
   // （页面旁的其它内容由详情页自己的模板决定，不受影响。）
+  // 目录名优先用主进程给的 htmlDir，拿不到时才退回 game.name（老行为）。
+  const pageDir = htmlDir || game?.name || "";
   const gamePageUrl =
-    game && serverUrl
-      ? `${serverUrl}/games/${encodeURIComponent(game.name)}/index.html?lang=${encodeURIComponent(
+    game && serverUrl && pageDir
+      ? `${serverUrl}/games/${encodeURIComponent(pageDir)}/index.html?lang=${encodeURIComponent(
           language || "zh-CN"
         )}`
       : "";
@@ -280,23 +288,29 @@ export default function GameDetailPage({ gameId }: { gameId: string }) {
     };
   }, [game?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 详情页里的视频：开始播 → 背景音乐让位；暂停/放完 → 恢复。
+  // 详情页里的视频：开始播 → **暂停**背景音乐。
+  //
+  // 2026-09-18 用户要求（原话）："点第一个的时候背景音乐会自动暂停，但点第二个的时候背景音乐会恢复。
+  // 我的意思是，点第一个暂停，就不要再自动恢复了。即使停止播放视频，也不恢复背景音乐。"
+  // 所以 **playday-video-stop 故意不响应** —— 页面脚本还在发这条消息，主界面收下但不理它；
+  // 想继续听歌由用户自己点状态栏的播放键。理由和"启动游戏只停不恢复"一样
+  // （见 src/stores/gamesStore.ts 的 launchGame）：
+  //   · 跨源 iframe 发来的"停"只说明某个播放器停了，连点/切视频时来回抖；
+  //   · "看完视频音乐突然响起来"比"没恢复"更烦人。
+  //
   // playday-video-external：mkv/flv/avi 这类内置播放器解不了的，页面会点名要系统播放器打开
   // （它自己在 iframe 里拉不起系统播放器，只能请主界面代劳）。
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
       const d = e.data as { type?: string; rel?: string } | null;
       if (!d || typeof d.type !== "string") return;
-      const ms = useMusicStore.getState();
       if (d.type === "playday-video-play") {
-        ms.duckForVideo();
-      } else if (d.type === "playday-video-stop") {
-        ms.unduckAfterVideo();
+        useMusicStore.getState().pause();
       } else if (d.type === "playday-video-external" && typeof d.rel === "string") {
         const hit = videos.find((v) => v.rel === d.rel);
         if (!hit) return;
-        // 系统播放器是个独立窗口，我们感知不到它何时关 —— 只暂停，不自动恢复。
-        ms.duckForVideo({ resume: false });
+        // 系统播放器是个独立窗口，我们感知不到它何时关 —— 同样只暂停，不恢复。
+        useMusicStore.getState().pause();
         void openExternal(hit.absPath);
       }
     };
@@ -489,9 +503,9 @@ export default function GameDetailPage({ gameId }: { gameId: string }) {
     </div>
   );
 
-  // 三种状态：加载中 / 找到资料页（iframe）/ 没找到（404）。
+  // 三种状态：加载中 / 找到资料页（iframe）/ 这份资料还没做（显示"建设中"）。
   // 先把"内容"算出来，最后统一挂播放浮层 —— 浮层必须是 iframe 的兄弟节点才能盖住它，
-  // 所以不能只塞进某个分支里（否则 404 的游戏就播不了视频）。
+  // 所以不能只塞进某个分支里（否则还没有资料页的游戏就播不了视频）。
   let content: ReactNode;
   if (htmlLoading) {
     content = (
@@ -529,15 +543,16 @@ export default function GameDetailPage({ gameId }: { gameId: string }) {
       </div>
     );
   } else {
-    // 404: no static page for this game（没有详情页 HTML 就没有视频区块 ——
-    // 视频是服务器注入进 HTML 的，app 侧自 2026-09-14 起不再单独展示视频）。
+    // 没有静态资料页 = 这份资料**还没做**，不是"出错"、更不是"找不到游戏"。
+    // 2026-09-17 需求：这种空状态要显示"详情内容正在建设中"，不再甩一个 404 给用户 ——
+    // 404 是技术口径，网吧客人看到只会以为客户端坏了，然后来找运维（问了个我们答不上来的问题）。
+    // 顺带：没有资料页就没有视频区块（视频是服务器注入进 HTML 的，app 侧自 2026-09-14 起不再单独展示）。
     content = (
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         {detailTopbar}
-        <div className="flex flex-col items-center p-10 text-center">
-          <div className="mb-2 text-[72px] font-extrabold leading-none text-accent">404</div>
-          <p className="m-0">{t("details_page404", { name: game.name })}</p>
-          <p className="text-[13px] text-secondary-text">{t("details_page404hint")}</p>
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 p-10 text-center">
+          <p className="m-0 text-[15px]">{t("details_underConstruction", { name: game.name })}</p>
+          <p className="m-0 text-[13px] text-secondary-text">{t("details_underConstructionHint")}</p>
         </div>
       </div>
     );

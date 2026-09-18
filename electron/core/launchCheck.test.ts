@@ -5,7 +5,7 @@
 // 存档通配符）。所以断言尽量走**真实**纯函数（shared/launchPaths 的 resolvePath 与
 // resolveActionPath），只把副作用（判存在、列目录）和主进程侧的 fs 函数换成假的。
 import { describe, expect, it } from "vitest";
-import { checkGame, checkGames, matchWildcard, type CheckDeps } from "./launchCheck";
+import { checkGame, checkGames, checkLaunchAction, matchWildcard, type CheckDeps } from "./launchCheck";
 import type { Game, GameAction } from "./models";
 
 const GAME_ROOT = "D:/YunGame/PlayNite";
@@ -58,6 +58,38 @@ const fileAction = (path: string) => [{ id: "play", type: "File", path, isPlayAc
 // 免得每条断言里都混进基类游戏那个"路径不存在"的 action-missing 噪声。
 const urlAction = [{ id: "play", type: "URL", path: "https://example.invalid", isPlayAction: true } as GameAction];
 const kinds = (findings: ReturnType<typeof checkGame>) => findings.map((f) => f.kind);
+
+describe("checkLaunchAction：只回答「这台机器上点开始游戏能不能起来」", () => {
+  // 消费者是「点开始游戏」前的检测（electron/ipc/games.ts 的 check_game_launch）：
+  // 不通过就直接报"找不到"，不弹"正在启动"横幅。
+
+  it("启动项没问题、只有存档路径有问题 → 算能启动（存档是备份功能的事，不该拦启动）", () => {
+    const w = world({ files: ["X:/ok.exe"] });
+    const g = game({ actions: fileAction("X:/ok.exe"), savePaths: ["X:/none/save/*.*"] });
+    // 先钉住前提：checkGame 确实报了存档问题 —— 否则下面那条断言就是空转。
+    expect(kinds(checkGame(g, makeDeps(w)))).toEqual(["save-path-missing"]);
+    expect(checkLaunchAction(g, makeDeps(w))).toBeUndefined();
+  });
+
+  it("启动文件不存在 → action-missing，并带上解析后的绝对路径（便于直接去核）", () => {
+    const w = world({ dirs: ["X:/Game"] });
+    const g = game({ installDirectory: "X:/Game", actions: fileAction("X:/Game/gone.exe") });
+    const f = checkLaunchAction(g, makeDeps(w));
+    expect(f?.kind).toBe("action-missing");
+    expect(f?.detail).toContain("X:/Game/gone.exe");
+  });
+
+  it("既没有启动项也没有安装目录 → no-play-action", () => {
+    expect(checkLaunchAction(game({ actions: [] }), makeDeps(world()))?.kind).toBe("no-play-action");
+  });
+
+  it("启动项类型不认识 → action-unknown-type", () => {
+    const g = game({
+      actions: [{ id: "play", type: "Script", path: "a.ps1", isPlayAction: true } as GameAction],
+    });
+    expect(checkLaunchAction(g, makeDeps(world()))?.kind).toBe("action-unknown-type");
+  });
+});
 
 describe("启动项检查", () => {
   it("绝对路径 + 文件存在 → 没问题（走真实 resolveActionPath）", () => {

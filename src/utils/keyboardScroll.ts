@@ -89,6 +89,26 @@ export function isActivatableTarget(el: Element | null | undefined): boolean {
   return role === "button" || role === "menuitem" || role === "option" || role === "tab" || role === "checkbox";
 }
 
+/**
+ * 输入控件里 **PageUp / PageDown** 是否属于它自己（要让它自己翻）。
+ *
+ * 为什么单独判定：Home / End / 空格 在**任何**输入控件里都属于控件自己（移光标、打空格），
+ * 但 PageUp / PageDown 只有"自带滚动区 / 自带选项列表"的控件才有归属：
+ *   · textarea / contenteditable：上下翻的是它自己的内容；
+ *   · select：PgUp / PgDn 在选项里跳选。
+ * **单行 `<input>`（比如顶栏搜索框）在这两个键上什么也不做**，所以不该让 —— 否则
+ * "刚搜完、焦点还在搜索框里，按 PageDown 想翻下面的列表"会完全没反应。
+ * 而且这里不能指望 Chromium 的默认行为兜底：它按"焦点元素的可滚祖先"找目标，
+ * 焦点在工具栏里时向上找不到可滚祖先，而 html/body 都是 overflow:hidden，
+ * 最后什么都不滚 —— 这正是"PageUp/PageDown 完全没反应"的由来。
+ */
+export function pageKeysBelongToField(el: Element | null | undefined): boolean {
+  const node = el as (HTMLElement & { tagName?: string }) | null | undefined;
+  const tag = node?.tagName?.toLowerCase();
+  if (tag === "textarea" || tag === "select") return true;
+  return node?.isContentEditable === true;
+}
+
 // ============================================================================
 // 以下是 DOM 部分（不参与单测）
 // ============================================================================
@@ -166,7 +186,18 @@ export function applyScrollAction(el: HTMLElement, action: ScrollAction): void {
     return;
   }
   if (action === "bottom") {
+    // 到最下面要**下一帧再校一次**：窗口化列表的总高度在滚动过程中还会变
+    // （行被真实测量后总高度会变大），平滑滚动的目标一旦小于新高度，就停在半路了 ——
+    // 用户看到的就是"Ctrl+End 到不了最底，只往下挪一屏"。已经到底时这一下是空操作，
+    // 不会多滚；非窗口化的普通容器第一次就到底，也不会受影响。
     el.scrollTo({ top: el.scrollHeight, behavior });
+    if (typeof requestAnimationFrame === "function") {
+      requestAnimationFrame(() => {
+        if (el.scrollTop + el.clientHeight < el.scrollHeight - 2) {
+          el.scrollTo({ top: el.scrollHeight, behavior });
+        }
+      });
+    }
     return;
   }
   const step = pageStep(el.clientHeight);

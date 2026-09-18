@@ -10,6 +10,7 @@ import {
   Navigate,
   useNavigate,
 } from "react-router-dom";
+import { api } from "./api/client"; // 详情页请求"应用内最大化"时要调窗口命令（见下面的 message 监听）
 import TopBar from "./components/TopBar";
 import AppBody from "./components/AppBody";
 import StatusBar from "./components/StatusBar";
@@ -158,6 +159,30 @@ function AppShell() {
   // 这里收到后把主页筛选条件设为该标签（单一标签），并切回主页。
   // 两个来源：① 游戏详情页（路由 /game/:id）；② 「游戏资料」选项卡里的总目录页跳进去的游戏页
   // （同一批 HTML、同一段脚本）—— 所以这个监听是**全局**的。
+  // 详情页点开视频 → **应用内最大化**（2026-09-18 用户："点击视频，是要默认弹出为应用内最大化
+  // 播放，而不是变成一个大的视频播放，也就是，不要动原来的视频播放排列"）。
+  // 分工：页面内的放大（搬进整页覆盖层）由详情页自己完成（gameDetailInject.ts 的 enterMaximized），
+  // 这里只负责把**窗口**最大化 —— 两件一起才叫"应用内最大化"。
+  //
+  // ⚠️ 必须先问 isMaximized：`maximize_window` 是**切换**语义（最大化 ↔ 还原），
+  //    窗口本来就最大化时直接调它会把窗口**还原** —— gamesStore.ts 里专门留过这条教训。
+  useEffect(() => {
+    const onMaximize = (e: MessageEvent) => {
+      const d = e.data;
+      if (!d || d.type !== "playday-maximize") return;
+      void (async () => {
+        try {
+          if (await api.isMaximized()) return; // 已经是最大化 → 什么都不做
+          await api.maximizeWindow();
+        } catch {
+          /* 拿不到窗口就当没这回事（网站端没有这条命令） */
+        }
+      })();
+    };
+    window.addEventListener("message", onMaximize);
+    return () => window.removeEventListener("message", onMaximize);
+  }, []);
+
   useEffect(() => {
     const onTagFilter = (e: MessageEvent) => {
       const d = e.data;

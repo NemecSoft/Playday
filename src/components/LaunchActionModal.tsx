@@ -1,9 +1,12 @@
 // 启动方式选择弹窗：当一个游戏有多个可启动指令（比如 game.exe -dx11 / -dx12）时，
-// 弹窗让用户选一个来启动。每个指令显示它的名称和参数，点击后带该指令 id 启动游戏。
+// 弹窗让用户选一个来启动。每个指令显示它的**名称**，点击后带该指令 id 启动游戏。
 // 用 framer-motion 做开合动画，磨砂玻璃 + CSS 变量，跟随主题。
+//
+// ⚠️ 这里只给用户看"启动方式的名字"。指令的**路径（a.path）和命令行参数（a.arguments）
+//    是内部信息**，不显示（2026-09-18 用户要求：不要把执行的路径暴露给用户）。
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, X, HardDrive, Folder } from "lucide-react";
+import { Play, X } from "lucide-react";
 import { useGamesStore } from "../stores/gamesStore";
 import { useI18n } from "../i18n";
 
@@ -63,17 +66,8 @@ export default function LaunchActionModal() {
                   <Play size={18} fill="currentColor" />
                 </div>
                 <div className="launch-action-info">
-                  <div className="launch-action-name">{a.name || a.path}</div>
-                  <div className="launch-action-path">
-                    <Folder size={12} />
-                    <span>{a.path}</span>
-                  </div>
-                  {a.arguments ? (
-                    <div className="launch-action-args">
-                      <HardDrive size={12} />
-                      <span>{a.arguments}</span>
-                    </div>
-                  ) : null}
+                  {/* 没有名字时用通用的「开始游戏」兜底 —— 绝不回退成路径（那是内部信息）。 */}
+                  <div className="launch-action-name">{a.name || t("grid_play")}</div>
                 </div>
                 <div className="launch-action-go">
                   <Play size={14} fill="currentColor" />
@@ -81,8 +75,6 @@ export default function LaunchActionModal() {
               </button>
             ))}
           </div>
-
-          <div className="launch-modal-footer">{t("launch_cancel_hint")}</div>
         </motion.div>
       </motion.div>
     </AnimatePresence>

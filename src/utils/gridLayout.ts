@@ -91,6 +91,39 @@ export function rowHeightFor(
   return Math.round(colWidth * (9 / 16)) + titleHeight + rowGap;
 }
 
+/** 标题区高度的"按行"构成（除封面 + 行距以外的、写在卡片文字区的那部分）。 */
+export interface CardTitleHeights {
+  /** 基础：.grid-card padding-top + .title-wrap margin-top + .title 行高（不含副标题/简介）。 */
+  base: number;
+  /** 有副标题（英文原名）时要加的行高。 */
+  origName: number;
+  /** 有简介时要加的高度（margin-top + padding + N 行截断）。 */
+  descBlock: number;
+}
+
+/**
+ * 某一行的标题区高度：**只加这一行真的有的部分**。
+ *
+ * 为什么必须按行算（这是"拖动滚动条一跳一跳"的根因）：
+ *   以前整行统一按"有副标题 + 有简介"预留，可是库里大量老游戏没有英文原名（白留 ~15px）、
+ *   很多游戏没有简介（白留 ~70px）。首帧渲染完，ResizeObserver 实测回来把行高改小，
+ *   于是**总高度和下面所有行的 translateY 一起变** —— 滚动条拇指和内容在用户手指底下跳。
+ *   按行估准 → 实测值与估算值一致 → 虚拟列表不会在滚动中途改行高。
+ *
+ * 说明：别名（alt-names）会换行、行数取决于卡宽和文字长度，无法从数据算出，所以不含它；
+ * 它是目前唯一还可能让"实测 != 估算"的来源（见 GridView 里 estimateRowHeight 的注释）。
+ */
+export function cardTitleHeight(
+  heights: CardTitleHeights,
+  content: { origName: boolean; intro: boolean },
+): number {
+  return (
+    heights.base +
+    (content.origName ? heights.origName : 0) +
+    (content.intro ? heights.descBlock : 0)
+  );
+}
+
 /**
  * "正好一行一个"所需的最小卡片宽度（随窗口宽度变化）。
  *

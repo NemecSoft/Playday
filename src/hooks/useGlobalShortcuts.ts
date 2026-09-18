@@ -22,6 +22,7 @@ import {
   historyActionFor,
   isActivatableTarget,
   isTypingTarget,
+  pageKeysBelongToField,
   resolveScrollTarget,
   scrollMatchFor,
 } from "../utils/keyboardScroll";
@@ -108,12 +109,21 @@ export function useGlobalShortcuts() {
       if (!match) return;
 
       // 输入框 / 文本域 / 可编辑区里，这些键属于它自己（Home/End 移动光标、空格打空格）。
-      // ⚠️ 例外：**Ctrl+Home / Ctrl+End 仍然滚**。浏览器里它们是"光标移到开头/结尾"，
-      //   但在本应用里用户要的就是"一键到最上/最下"（需求点名了这两个键），
-      //   而且"搜索完想回到列表顶部"恰恰是焦点还在搜索框时最常发生的场景 ——
-      //   所以这里刻意偏离浏览器一点：输入框内 Home/End 管光标，Ctrl+Home/End 管列表。
+      // ⚠️ 两处例外，都是有理由的：
+      //   ① **Ctrl+Home / Ctrl+End 仍然滚**。浏览器里它们是"光标移到开头/结尾"，
+      //      但在本应用里用户要的就是"一键到最上/最下"（需求点名了这两个键），
+      //      而且"搜索完想回到列表顶部"恰恰是焦点还在搜索框时最常发生的场景 ——
+      //      所以这里刻意偏离浏览器一点：输入框内 Home/End 管光标，Ctrl+Home/End 管列表。
+      //   ② **单行输入框里的 PageUp / PageDown 也仍然滚**（见 pageKeysBelongToField）。
+      //      以前这里是一刀切 `isTypingTarget(el) && !ctrlJump`，把 PageUp/PageDown 也
+      //      让回给了搜索框 —— 而单行 input 对这两个键没有任何行为，Chromium 的默认
+      //      滚动又找不到可滚祖先（html/body 是 overflow:hidden），结果按 PageDown
+      //      完全没反应。textarea / select / 可编辑区照旧让回去（它们自己有滚动区）。
       const ctrlJump = e.ctrlKey && (e.key === "Home" || e.key === "End");
-      if (isTypingTarget(el) && !ctrlJump) return;
+      if (!ctrlJump && isTypingTarget(el)) {
+        const ownedByField = e.key === "Home" || e.key === "End" || match.source === "space";
+        if (ownedByField || pageKeysBelongToField(el)) return;
+      }
       // 焦点在按钮/链接上时，空格的含义是"激活它"，不抢（PageDown 等照常滚动，浏览器也这样）。
       if (match.source === "space" && isActivatableTarget(el)) return;
 

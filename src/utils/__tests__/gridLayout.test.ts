@@ -7,6 +7,7 @@
 import { describe, expect, it } from "vitest";
 import {
   CARD_WIDTH_MIN,
+  cardTitleHeight,
   columnsForScaledWidth,
   columnsForWidth,
   gridReferenceWidth,
@@ -91,5 +92,31 @@ describe("没有侧栏时与改动前完全一致（回归保护）", () => {
         expect(columnsForScaledWidth(w, 0, GAP, colWidth)).toBe(columnsForWidth(w, GAP, colWidth));
       }
     }
+  });
+});
+
+describe("cardTitleHeight：标题区高度按行算（估算要一开始就准）", () => {
+  // 贴近生产的一组值：基础 35px、副标题 15px、简介块（4 行）74px。
+  const H = { base: 35, origName: 15, descBlock: 74 };
+
+  it("既没副标题也没简介的行：只算基础值 —— 不再白留 15px / 74px", () => {
+    expect(cardTitleHeight(H, { origName: false, intro: false })).toBe(35);
+  });
+
+  it("有副标题算副标题、有简介算简介，各算各的", () => {
+    expect(cardTitleHeight(H, { origName: true, intro: false })).toBe(50);
+    expect(cardTitleHeight(H, { origName: false, intro: true })).toBe(109);
+  });
+
+  it("两条都有的行 = 老公式预留的最大值（说明没有算漏）", () => {
+    expect(cardTitleHeight(H, { origName: true, intro: true })).toBe(H.base + H.origName + H.descBlock);
+  });
+
+  it("同一行内差异只来自内容：估算值随内容单调不减（行高取行内最高那张卡）", () => {
+    const none = cardTitleHeight(H, { origName: false, intro: false });
+    const orig = cardTitleHeight(H, { origName: true, intro: false });
+    const both = cardTitleHeight(H, { origName: true, intro: true });
+    expect(none).toBeLessThan(orig);
+    expect(orig).toBeLessThan(both);
   });
 });

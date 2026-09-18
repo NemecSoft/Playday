@@ -181,6 +181,32 @@ export function checkGame(game: Game, deps: CheckDeps): Finding[] {
   return out;
 }
 
+/**
+ * 启动项相关的 finding kind —— 只有这几类会让"点开始游戏"起不来。
+ *
+ * 存档路径那两类（save-path-missing / save-no-match）**不属于启动问题**：
+ * 它们影响的是"备份存档"，没有它们游戏照样能开。点「开始游戏」时不该被它们拦下。
+ */
+export const LAUNCH_KINDS: readonly FindingKind[] = [
+  "no-play-action",
+  "action-resolve-error",
+  "action-missing",
+  "action-unknown-type",
+];
+
+/**
+ * 只回答一个问题：**这个游戏在当前这台机器上点「开始游戏」能不能起来**。
+ *
+ * 返回第一个启动项问题；返回 undefined = 能起来。
+ *
+ * 为什么复用 checkGame 而不是另写一套判据：它必须与"上线前体检"（`exe --check`）
+ * 完全一致 —— 否则会出现"体检说没问题、点了却起不来"这种最坏情况（本仓库真踩过：
+ * `{InstallDir}` 没展开，755 个游戏全坏）。这里只是把存档路径那部分滤掉。
+ */
+export function checkLaunchAction(game: Game, deps: CheckDeps): Finding | undefined {
+  return checkGame(game, deps).find((f) => LAUNCH_KINDS.includes(f.kind));
+}
+
 /** 检查一批游戏，汇总。 */
 export function checkGames(games: readonly Game[], deps: CheckDeps): CheckSummary {
   const findings: Finding[] = [];

@@ -11,7 +11,12 @@
  */
 
 /** 固定选项卡的 id（顺序即顶栏显示顺序）。 */
-export const FIXED_TAB_IDS = ["home", "data", "tools"] as const;
+// 2026-09-18 用户："主界面把选项卡的游戏资料去掉" —— 原先还有第三个固定选项卡「游戏资料」，
+// 它嵌的是详情页那套静态站点的**总目录页**（一面卡片墙）。现在主页网格 + 按数据现拼的详情页
+// 已经覆盖了这件事，那面墙成了重复入口，所以从**单一来源**（这里）去掉，而不是在顶栏隐藏它。
+// 注意：`src/components/views/GameDataView.tsx` 与 `src/utils/gameDataUrl.ts` 暂时留着（已无引用），
+// 要清就一起清掉，别只删一个。
+export const FIXED_TAB_IDS = ["home", "tools"] as const;
 export type FixedTabId = (typeof FIXED_TAB_IDS)[number];
 
 /** 某个游戏的详情标签：id 形如 `game:<gameId>`。 */

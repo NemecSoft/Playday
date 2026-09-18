@@ -1,10 +1,12 @@
 // 通用快捷键的键位规则（可执行说明）。
 // 实现：src/utils/keyboardScroll.ts（这里只测"纯决策"部分，DOM 解析不测）。
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  applyScrollAction,
   historyActionFor,
   isActivatableTarget,
   isTypingTarget,
+  pageKeysBelongToField,
   pageStep,
   scrollMatchFor,
   type KeyLike,
@@ -107,5 +109,77 @@ describe("该不该把键让出去", () => {
     expect(
       isActivatableTarget(el({ tagName: "DIV", getAttribute: () => null })),
     ).toBe(false);
+  });
+});
+
+describe("pageKeysBelongToField：PgUp/PgDn 在哪些输入控件里属于它自己", () => {
+  it("textarea / select / 可编辑区：自己有滚动区（或选项列表）→ 让回去", () => {
+    expect(pageKeysBelongToField(el({ tagName: "TEXTAREA" }))).toBe(true);
+    expect(pageKeysBelongToField(el({ tagName: "SELECT" }))).toBe(true);
+    expect(pageKeysBelongToField(el({ tagName: "DIV", isContentEditable: true }))).toBe(true);
+  });
+
+  it("单行 input（顶栏搜索框）：这两个键它自己不用 → 不让，交给列表翻页", () => {
+    // 这条就是"搜完想在列表里 PageDown 却没反应"的根因回归测试。
+    expect(pageKeysBelongToField(el({ tagName: "INPUT" }))).toBe(false);
+    expect(pageKeysBelongToField(el({ tagName: "DIV" }))).toBe(false);
+    expect(pageKeysBelongToField(null)).toBe(false);
+  });
+});
+
+describe("applyScrollAction：到顶 / 到底 / 翻屏", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  /** 假容器：只用到 scrollTo / scrollBy 和三个尺寸属性，不需要真 DOM。 */
+  const container = (
+    init: { scrollTop?: number; clientHeight?: number; scrollHeight?: number } = {},
+  ) => {
+    const to: Array<{ top?: number }> = [];
+    const by: Array<{ top?: number }> = [];
+    const node = {
+      scrollTop: init.scrollTop ?? 0,
+      clientHeight: init.clientHeight ?? 800,
+      scrollHeight: init.scrollHeight ?? 8000,
+      scrollTo: (o: { top?: number }) => to.push(o),
+      scrollBy: (o: { top?: number }) => by.push(o),
+    };
+    return { node: node as unknown as HTMLElement, to, by };
+  };
+
+  it("Home → 滚到 0", () => {
+    const { node, to } = container({ scrollTop: 3000 });
+    applyScrollAction(node, "top");
+    expect(to.map((o) => o.top)).toEqual([0]);
+  });
+
+  it("PageDown / PageUp → 按一屏（可视高 − 40px）上下翻，而不是跳到底", () => {
+    const down = container();
+    applyScrollAction(down.node, "pageDown");
+    expect(down.by.map((o) => o.top)).toEqual([760]);
+
+    const up = container();
+    applyScrollAction(up.node, "pageUp");
+    expect(up.by.map((o) => o.top)).toEqual([-760]);
+  });
+
+  it("Ctrl+End：一次没到底 → 下一帧再校一次（窗口化列表的总高度会变大）", () => {
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+    // 假容器不会真的滚动，所以第一次之后仍然"没到底" → 应当再校一次。
+    const { node, to } = container({ scrollTop: 0 });
+    applyScrollAction(node, "bottom");
+    expect(to.map((o) => o.top)).toEqual([8000, 8000]);
+  });
+
+  it("Ctrl+End：已经到底 → 不多滚一次", () => {
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => {
+      cb(0);
+      return 1;
+    });
+    const { node, to } = container({ scrollTop: 7200, clientHeight: 800, scrollHeight: 8000 });
+    applyScrollAction(node, "bottom");
+    expect(to.map((o) => o.top)).toEqual([8000]);
   });
 });

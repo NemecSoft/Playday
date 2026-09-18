@@ -78,7 +78,10 @@ export function createTray(): void {
   tray.setToolTip(APP_NAME);
   const menu = Menu.buildFromTemplate([
     {
-      label: `打开 ${APP_NAME}`,
+      // 文案是"显示 XX"而不是"打开 XX"（2026-09-18 用户要求）：这一步做的就是
+      // 把**已经存在**的主窗口 show + focus —— "显示"才说得准确，
+      // "打开"会让人以为是要重新拉起一个窗口。
+      label: `显示${APP_NAME}`,
       click: () => {
         // 让渲染进程帮忙把主窗口显示并聚焦。
         for (const win of BrowserWindow.getAllWindows()) {

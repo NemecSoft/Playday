@@ -92,57 +92,12 @@ function resetPlaying() {
   return fake;
 }
 
-describe("视频让位：暂停背景音乐，并且只有本来在放才恢复", () => {
-  beforeEach(() => {
-    useMusicStore.setState({ playing: false });
-  });
-
-  it("内置播放器：让位 → 暂停；关掉视频 → 自动恢复", () => {
-    const fake = resetPlaying();
-    useMusicStore.getState().duckForVideo();
-    expect(useMusicStore.getState().playing).toBe(false);
-    expect(fake.pauseCalls).toBeGreaterThan(0);
-
-    useMusicStore.getState().unduckAfterVideo();
-    expect(fake.playCalls).toBe(1); // 恢复了一次
-  });
-
-  it("本来就没在放 → 关掉视频不会突然开始放", () => {
-    const fake = resetPlaying();
-    useMusicStore.setState({ playing: false });
-    fake.playCalls = 0;
-
-    useMusicStore.getState().duckForVideo();
-    useMusicStore.getState().unduckAfterVideo();
-    expect(fake.playCalls).toBe(0);
-  });
-
-  it("系统播放器（resume:false）：暂停但不自动恢复", () => {
-    const fake = resetPlaying();
-    useMusicStore.getState().duckForVideo({ resume: false });
-    expect(useMusicStore.getState().playing).toBe(false);
-
-    useMusicStore.getState().unduckAfterVideo();
-    expect(fake.playCalls).toBe(0);
-  });
-
-  it("浮层里连点几个视频：只有第一次让位才记「本来在放」", () => {
-    const fake = resetPlaying();
-    useMusicStore.getState().duckForVideo(); // 第一次：本来在放
-    useMusicStore.getState().duckForVideo(); // 第二次：此时已经暂停
-    useMusicStore.getState().unduckAfterVideo();
-    expect(fake.playCalls).toBe(1); // 仍然恢复（不会被第二次误记成"本来没放"）
-  });
-
-  it("用户中途手动接管过 → 关掉视频不再擅自恢复", () => {
-    const fake = resetPlaying();
-    useMusicStore.getState().duckForVideo();
-    useMusicStore.getState().play(); // 用户自己点播放
-    fake.playCalls = 0;
-    useMusicStore.getState().unduckAfterVideo();
-    expect(fake.playCalls).toBe(0);
-  });
-});
+// 2026-09-18 起：视频与启动游戏一律**只暂停、不自动恢复**（用户要求："点第一个暂停，就不要再自动恢复了。
+// 即使停止播放视频，也不恢复背景音乐"）。store 里那套"让位 → 恢复"的 API（duckForVideo /
+// unduckAfterVideo / ducking / duckResume）连同这里的 5 个用例一起删掉了 —— 现在两边都是直接调 pause()，
+// 接线在 src/pages/GameDetailPage.tsx 的 postMessage 处理与 src/stores/gamesStore.ts 的 launchGame 里。
+// 别再加回"自动续放"：跨源 iframe 发来的"停"只代表某个播放器停了，连点/切视频时来回抖，
+// 而"看完视频音乐突然响起来"比不恢复更烦人。
 
 describe("播放模式：切模式不打断、单曲自动重放", () => {
   it("setMode 只重排队列：当前这首不变", () => {
