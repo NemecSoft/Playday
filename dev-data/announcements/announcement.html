@@ -1,11 +1,33 @@
+<!--
+  启动公告（进入系统前那个窗口的内容）。
+  改内容就直接编辑本文件：数据根下的 announcements/announcement.html，存盘后重开客户端生效。
+  样式见 src/styles/global.css 的 announcement 一节：
+    announcement-hero   整块容器（居中）
+    announcement-badge  顶部 NEW 徽章
+    ann-section         分节小标题（如「界面增强」，两侧带渐隐细线）
+    ul / li             列表项；**每一节各自从 1 开始**编号（1、2、3…），正文里不用自己写
+    hint                末尾的空位会被自动填成**当前时间**；在里面写了字就显示你写的字
+  测试机、正式机各有自己的一份，改这里只影响开发态。
+-->
 <div class="announcement-hero">
   <div class="announcement-badge">NEW</div>
-  <h1>欢迎使用 <span>Playnite</span></h1>
-  <p>你的游戏库，焕然一新。</p>
+  <h1>欢迎使用 <span>YunGame</span></h1>
+
+  <h2 class="ann-section">界面增强</h2>
   <ul>
-    <li>多名称 &amp; 拼音首字母搜索（如 zy → 自由之翼）</li>
-    <li>三种视图：网格 / 列表 / 详情</li>
-    <li>完全绿色便携 &amp; 多语言支持</li>
+    <li>简介开关，快速知道是什么游戏</li>
+    <li>左侧功能，按标签、类型等挑选游戏</li>
+    <li>自由分组、排序</li>
+    <li>界面主题、背景音乐自由切换</li>
   </ul>
-  <p class="hint">自定义公告：编辑本文件 <code>announcements/announcement.html</code></p>
+
+  <h2 class="ann-section">功能增强</h2>
+  <ul>
+    <li>详情页，游戏截图、视频攻略，更全面了解游戏</li>
+    <li>搜游戏，支持拼音首字母（smzh →使命召唤）</li>
+    <li>存档备份增强，存档+ID等集中为1个绿色exe文件，双击就能恢复存档</li>
+    <li>修改器、预置通关存档</li>
+  </ul>
+
+  <p class="hint"></p>
 </div>
